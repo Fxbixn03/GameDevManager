@@ -1,6 +1,3 @@
-## Eigene Dateien
-knowledge/*
-
 ## Lokale SQLite-Datenbank (Entwicklung)
 *.db
 *.db-shm
