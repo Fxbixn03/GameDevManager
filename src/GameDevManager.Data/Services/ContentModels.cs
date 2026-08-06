@@ -101,6 +101,29 @@ public sealed class ContentEditContext<TEntity>
     }
 }
 
+/// <summary>Eine Zeile der Loot-Table-Übersicht.</summary>
+/// <param name="TotalChance">Summe aller Wahrscheinlichkeiten — trägt den Health Check.</param>
+/// <param name="UsedByNpcCount">Wie viele NPCs diese Tabelle verwenden.</param>
+public sealed record LootTableListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    LootRollMode RollMode,
+    Guid? ContentTypeId,
+    string? TypeName,
+    int EntryCount,
+    double TotalChance,
+    int UsedByNpcCount,
+    DateTime UpdatedAtUtc);
+
+/// <summary>Eine Loot-Table, in der ein bestimmtes Item vorkommt — für die Item-Maske.</summary>
+public sealed record LootSourceForItem(
+    Guid LootTableId,
+    string LootTableName,
+    double Chance,
+    int MinQuantity,
+    int MaxQuantity);
+
 /// <summary>Eine Zeile der NPC-Übersicht.</summary>
 public sealed record NpcListRow(
     Guid Id,
@@ -109,6 +132,7 @@ public sealed record NpcListRow(
     NpcKind Kind,
     bool IsTrader,
     bool IsQuestGiver,
+    bool HasLootTable,
     Guid? ContentTypeId,
     string? TypeName,
     int OfferCount,

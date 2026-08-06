@@ -3,6 +3,7 @@
 @inject ItemService Items
 @inject CraftingService Crafting
 @inject NpcService Npcs
+@inject LootService Loot
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -198,27 +199,48 @@ else
 
                     @* ------------------------------------------------------------ Handel *@
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Handel</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Bezugsquellen</MudText>
 
-                        @if (_traders.Count == 0)
+                        @if (_traders.Count == 0 && _lootSources.Count == 0)
                         {
                             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                Kein Händler führt dieses Item.
+                                Kein Händler führt dieses Item, und es fällt aus keiner Loot-Table.
                             </MudText>
                         }
                         else
                         {
-                            @foreach (var trader in _traders)
+                            @if (_traders.Count > 0)
                             {
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween"
-                                          Class="gdm-field-row py-1">
-                                    <MudLink Href="@($"/modules/npcs/{trader.NpcId}")" Typo="Typo.body2">
-                                        @trader.NpcName
-                                    </MudLink>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
-                                        @DescribePrices(trader)
-                                    </MudText>
-                                </MudStack>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Händler</MudText>
+                                @foreach (var trader in _traders)
+                                {
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween"
+                                              Class="gdm-field-row py-1">
+                                        <MudLink Href="@($"/modules/npcs/{trader.NpcId}")" Typo="Typo.body2">
+                                            @trader.NpcName
+                                        </MudLink>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                                            @DescribePrices(trader)
+                                        </MudText>
+                                    </MudStack>
+                                }
+                            }
+
+                            @if (_lootSources.Count > 0)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Fällt aus</MudText>
+                                @foreach (var source in _lootSources)
+                                {
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween"
+                                              Class="gdm-field-row py-1">
+                                        <MudLink Href="@($"/modules/loot/{source.LootTableId}")" Typo="Typo.body2">
+                                            @source.LootTableName
+                                        </MudLink>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                                            @source.Chance.ToString("0.##") % · @DescribeQuantity(source)
+                                        </MudText>
+                                    </MudStack>
+                                }
                             }
                         }
                     </MudPaper>
@@ -241,6 +263,7 @@ else
     private List<RecipeListRow> _produces = [];
     private List<RecipeListRow> _consumes = [];
     private List<TraderForItem> _traders = [];
+    private List<LootSourceForItem> _lootSources = [];
     private Guid? _loadedId;
     private bool _notFound;
     private bool _saving;
@@ -275,6 +298,7 @@ else
         _produces = [];
         _consumes = [];
         _traders = [];
+        _lootSources = [];
 
         var projectId = await Project.GetCurrentIdAsync();
         _context = await Items.LoadForEditAsync(projectId, Id);
@@ -289,8 +313,14 @@ else
         {
             (_produces, _consumes) = await Crafting.GetRecipesForItemAsync(projectId, _context.Entity.Id);
             _traders = await Npcs.GetTradersForItemAsync(projectId, _context.Entity.Id);
+            _lootSources = await Loot.GetTablesForItemAsync(projectId, _context.Entity.Id);
         }
     }
+
+    private static string DescribeQuantity(LootSourceForItem source) =>
+        source.MinQuantity == source.MaxQuantity
+            ? $"{source.MinQuantity}×"
+            : $"{source.MinQuantity}–{source.MaxQuantity}×";
 
     /// <summary>Kurzfassung der Preise eines Händlers für die Seitenleiste.</summary>
     private static string DescribePrices(TraderForItem trader)

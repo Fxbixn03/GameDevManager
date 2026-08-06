@@ -394,6 +394,80 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.LootEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("Chance")
+                        .HasColumnType("float");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("LootTableId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MaxQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("LootTableId");
+
+                    b.ToTable("LootEntries");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.LootTable", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("RollMode")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("LootTables");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
                 {
                     b.Property<Guid>("Id")
@@ -422,6 +496,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<int>("Kind")
                         .HasColumnType("int");
 
+                    b.Property<Guid?>("LootTableId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -437,6 +514,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("IsTrader");
+
+                    b.HasIndex("LootTableId");
 
                     b.HasIndex("Name");
 
@@ -679,6 +758,35 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.LootEntry", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.LootTable", "LootTable")
+                        .WithMany("Entries")
+                        .HasForeignKey("LootTableId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LootTable");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.LootTable", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -755,6 +863,11 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>
                 {
                     b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.LootTable", b =>
+                {
+                    b.Navigation("Entries");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>

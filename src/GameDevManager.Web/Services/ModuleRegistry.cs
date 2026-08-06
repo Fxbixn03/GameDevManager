@@ -37,7 +37,7 @@ public static class ModuleRegistry
         new(ModuleKeys.Assets, "Assets", Icons.Material.Filled.PhotoLibrary, "Sprite-Bibliothek über alle Entitäten", Implemented: true),
         new(ModuleKeys.Player, "Spieler", Icons.Material.Filled.Person, "Spielerfigur und Skilltrees"),
         new(ModuleKeys.Classes, "Klassen", Icons.Material.Filled.School, "Klassen für Spieler und NPCs"),
-        new(ModuleKeys.Loot, "Loot-Tables", Icons.Material.Filled.Casino, "Drop-Wahrscheinlichkeiten und Mengen"),
+        new(ModuleKeys.Loot, "Loot-Tables", Icons.Material.Filled.Casino, "Drop-Wahrscheinlichkeiten und Mengen", Implemented: true),
         new(ModuleKeys.Effects, "Effekte", Icons.Material.Filled.AutoAwesome, "Effekte und deren Wirkung, z. B. Verbrennung"),
         new(ModuleKeys.Achievements, "Achievements", Icons.Material.Filled.EmojiEvents, "Erfolge, die der Spieler erreichen kann"),
         new(ModuleKeys.Collectibles, "Sammelobjekte", Icons.Material.Filled.Collections, "Statuen, Notizen und andere Sammelobjekte"),

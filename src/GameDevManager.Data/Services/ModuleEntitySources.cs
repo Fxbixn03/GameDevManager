@@ -102,8 +102,43 @@ public sealed class NpcEntitySource : ModuleEntitySource<Npc>
             .Distinct()
             .ToListAsync(ct));
 
+        hits.AddRange(await db.Npcs
+            .AsNoTracking()
+            .Where(npc => npc.LootTableId == entityId)
+            .Select(npc => new EntityReferenceHit(npc.Id, ModuleKeys.Npcs, npc.Name, "Loot-Table"))
+            .ToListAsync(ct));
+
         return hits;
     }
+}
+
+/// <summary>
+/// Loot-Tables für die modulübergreifenden Dienste. Ihre Einträge verweisen über eigene
+/// Spalten auf Items.
+/// </summary>
+public sealed class LootTableEntitySource : ModuleEntitySource<LootTable>
+{
+    public override string ModuleKey => ModuleKeys.Loot;
+
+    protected override DbSet<LootTable> Set(GameDevManagerDbContext db) => db.LootTables;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<LootTable> query) =>
+        query.Select(table => new SearchHit(
+            table.Id,
+            ModuleKeys.Loot,
+            SearchHitKind.Entity,
+            table.Name,
+            table.Entries.Count + " Eintrag/Einträge",
+            null));
+
+    public override Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct) =>
+        db.LootEntries
+            .AsNoTracking()
+            .Where(entry => entry.ItemId == entityId)
+            .Select(entry => new EntityReferenceHit(
+                entry.LootTableId, ModuleKeys.Loot, entry.LootTable!.Name, "Loot-Eintrag"))
+            .ToListAsync(ct);
 }
 
 /// <summary>

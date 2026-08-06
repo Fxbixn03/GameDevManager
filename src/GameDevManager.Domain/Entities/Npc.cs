@@ -38,5 +38,11 @@ public class Npc : ContentEntity
     /// <summary>Vergibt Quests. Das Quest-Modul knüpft später hier an.</summary>
     public bool IsQuestGiver { get; set; }
 
+    /// <summary>
+    /// Was beim Besiegen fällt. GUID-Referenz auf eine Loot-Table, ohne Fremdschlüssel —
+    /// im Konzept: „Diese Loot-Tables sollen dann im NPC-Modul auswählbar sein.“
+    /// </summary>
+    public Guid? LootTableId { get; set; }
+
     public List<TraderOffer> Offers { get; set; } = [];
 }

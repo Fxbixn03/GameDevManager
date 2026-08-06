@@ -27,6 +27,7 @@ public class NpcService(
                 n.Kind,
                 n.IsTrader,
                 n.IsQuestGiver,
+                n.LootTableId != null,
                 n.ContentTypeId,
                 n.ContentType!.Name,
                 n.Offers.Count,
@@ -139,6 +140,7 @@ public class NpcService(
         stored.Kind = npc.Kind;
         stored.IsTrader = npc.IsTrader;
         stored.IsQuestGiver = npc.IsQuestGiver;
+        stored.LootTableId = npc.LootTableId;
         stored.UpdatedAtUtc = now;
 
         SyncOffers(db, stored, npc);

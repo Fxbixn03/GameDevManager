@@ -1,0 +1,244 @@
+@page "/modules/loot"
+@inject LootService Loot
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Loot-Tables – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/loot/arten">
+            Loot-Arten
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/loot/neu">
+            Neue Loot-Table
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_tables is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_tables.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Casino" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">Noch keine Loot-Tables</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Eine Loot-Table legt fest, welche Items zu welcher Wahrscheinlichkeit in welcher
+            Menge fallen. NPCs und Mobs verweisen dann darauf.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/loot/neu">
+            Erste Loot-Table
+        </MudButton>
+    </div>
+}
+else
+{
+    @if (_overfull.Count > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4">
+            <MudText Typo="Typo.body2"><b>Wahrscheinlichkeiten über 100 %</b></MudText>
+            <MudText Typo="Typo.body2">
+                Bei diesen Tabellen wird ein einzelner Wurf verteilt, die Einträge kommen
+                zusammen aber über 100 % — die hinteren wären damit unerreichbar:
+            </MudText>
+            @foreach (var table in _overfull)
+            {
+                <MudText Typo="Typo.body2">
+                    <MudLink Href="@($"/modules/loot/{table.Id}")">@table.Name</MudLink>
+                    <span class="gdm-mono">(@table.TotalChance.ToString("0.##") %)</span>
+                </MudText>
+            }
+        </MudAlert>
+    }
+
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudTextField @bind-Value="_search"
+                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="max-width:340px;" />
+
+            <MudSelect T="Guid?"
+                       @bind-Value="_typeFilter"
+                       Label="Art"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Clearable="true"
+                       Style="max-width:220px;">
+                @foreach (var type in _types)
+                {
+                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSpacer />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_tables.Count</MudText>
+        </MudStack>
+    </MudPaper>
+
+    <MudTable T="LootTableListRow"
+              Items="Filtered"
+              Elevation="0"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm"
+              OnRowClick="OpenRow"
+              RowClass="cursor-pointer">
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Wurf</MudTh>
+            <MudTh>Einträge</MudTh>
+            <MudTh>Summe</MudTh>
+            <MudTh>Verwendet von</MudTh>
+            <MudTh>Art</MudTh>
+            <MudTh Style="width:56px;"></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">
+                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
+            </MudTd>
+            <MudTd DataLabel="Wurf">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
+                    @(context.RollMode == LootRollMode.SinglePick ? "Einzelwurf" : "Unabhängig")
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Einträge">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@context.EntryCount</MudText>
+            </MudTd>
+            <MudTd DataLabel="Summe">
+                <MudText Typo="Typo.body2"
+                         Class="gdm-mono"
+                         Color="@(IsOverfull(context) ? Color.Warning : Color.Default)">
+                    @context.TotalChance.ToString("0.##") %
+                </MudText>
+            </MudTd>
+            <MudTd DataLabel="Verwendet von">
+                @if (context.UsedByNpcCount == 0)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">niemandem</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">@context.UsedByNpcCount NPC(s)</MudText>
+                }
+            </MudTd>
+            <MudTd DataLabel="Art">
+                @if (context.TypeName is null)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
+                }
+            </MudTd>
+            <MudTd>
+                <MudTooltip Text="Löschen">
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                   Size="Size.Small"
+                                   OnClick="@(() => DeleteAsync(context))"
+                                   aria-label="@($"{context.Name} löschen")" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
+                Keine Loot-Table passt zur Suche.
+            </MudText>
+        </NoRecordsContent>
+    </MudTable>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Loot);
+
+    private List<LootTableListRow>? _tables;
+    private List<LootTableListRow> _overfull = [];
+    private List<ContentType> _types = [];
+    private string? _search;
+    private Guid? _typeFilter;
+
+    private string Subtitle => _tables is null
+        ? "Wird geladen …"
+        : $"{_tables.Count} Tabelle(n), {_tables.Sum(row => row.EntryCount)} Eintrag/Einträge";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _types = await ContentTypes.GetTypesAsync(projectId, ModuleKeys.Loot);
+        _tables = await Loot.GetTablesAsync(projectId);
+        _overfull = await Loot.FindOverfullTablesAsync(projectId);
+    }
+
+    private bool IsOverfull(LootTableListRow row) => _overfull.Any(table => table.Id == row.Id);
+
+    private List<LootTableListRow> Filtered
+    {
+        get
+        {
+            IEnumerable<LootTableListRow> rows = _tables ?? [];
+
+            if (_typeFilter is { } typeId)
+            {
+                rows = rows.Where(row => row.ContentTypeId == typeId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_search))
+            {
+                rows = rows.Where(row =>
+                    row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                    || (row.Description?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            return [.. rows];
+        }
+    }
+
+    private void OpenRow(TableRowClickEventArgs<LootTableListRow> args)
+    {
+        if (args.Item is { } row)
+        {
+            Navigation.NavigateTo($"/modules/loot/{row.Id}");
+        }
+    }
+
+    private async Task DeleteAsync(LootTableListRow row)
+    {
+        var warning = row.UsedByNpcCount == 0
+            ? string.Empty
+            : $" {row.UsedByNpcCount} NPC(s) verlieren dadurch ihre Loot-Zuordnung.";
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Loot-Table löschen",
+            $"„{row.Name}“ wird mit ihren {row.EntryCount} Eintrag/Einträgen gelöscht.{warning}",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Loot.DeleteTableAsync(row.Id);
+        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+}

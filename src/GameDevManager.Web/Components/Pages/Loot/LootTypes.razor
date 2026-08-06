@@ -1,0 +1,34 @@
+@page "/modules/loot/arten"
+
+<PageTitle>Loot-Arten – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="Loot-Arten"
+              Subtitle="Einträge und Wurfverfahren stehen fest an der Tabelle — alles Weitere definieren die Felder der Art."
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/loot">Zu den Loot-Tables</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddAsync">
+            Neue Art
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+<ContentTypeManager @ref="_manager"
+                    ModuleKey="@ModuleKeys.Loot"
+                    EntityNoun="Loot-Table"
+                    EmptyTitle="Noch keine Loot-Arten"
+                    EmptyHint="Über Arten lassen sich Angaben ergänzen, die die Tabelle selbst nicht kennt — etwa eine Stufenanforderung oder ein Glücks-Modifikator." />
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Loot);
+
+    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+
+    private ContentTypeManager? _manager;
+
+    private Task AddAsync() => _manager?.AddTypeAsync() ?? Task.CompletedTask;
+}

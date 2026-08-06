@@ -3,57 +3,63 @@ using System;
 using GameDevManager.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace GameDevManager.Data.Migrations.MySql.Migrations
+namespace GameDevManager.Data.Migrations.SqlServer.Migrations
 {
     [DbContext(typeof(GameDevManagerDbContext))]
-    partial class GameDevManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260806210213_LootTables")]
+    partial class LootTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.10")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Asset", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(260)
-                        .HasColumnType("varchar(260)");
+                        .HasColumnType("nvarchar(260)");
 
                     b.Property<Guid>("GameProjectId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("Height")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsPrimary")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<Guid?>("OwnerEntityId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("OwnerModuleKey")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<long>("SizeBytes")
                         .HasColumnType("bigint");
@@ -64,10 +70,10 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Property<string>("StorageKey")
                         .IsRequired()
                         .HasMaxLength(400)
-                        .HasColumnType("varchar(400)");
+                        .HasColumnType("nvarchar(400)");
 
                     b.Property<DateTime>("UploadedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("Width")
                         .HasColumnType("int");
@@ -85,19 +91,19 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Color")
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<Guid>("GameProjectId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -113,10 +119,10 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.AssetTagAssignment", b =>
                 {
                     b.Property<Guid>("AssetId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AssetTagId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("AssetId", "AssetTagId");
 
@@ -129,31 +135,31 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
-                        .HasColumnType("varchar(4000)");
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<Guid>("GameProjectId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Icon")
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("ModuleKey")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -169,32 +175,32 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ContentTypeId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
-                        .HasColumnType("varchar(4000)");
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<Guid>("GameProjectId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Symbol")
                         .HasMaxLength(10)
-                        .HasColumnType("varchar(10)");
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -211,34 +217,34 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ContentTypeId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<bool>("IsRequired")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<string>("ModuleKey")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<Guid?>("OwnerEntityId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ReferenceModuleKey")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -248,7 +254,7 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
                     b.Property<string>("Unit")
                         .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
 
@@ -263,15 +269,15 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("FieldDefinitionId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Label")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -287,36 +293,36 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool?>("BooleanValue")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("DateValue")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("FieldDefinitionId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double?>("NumberValue")
-                        .HasColumnType("double");
+                        .HasColumnType("float");
 
                     b.Property<Guid?>("OptionId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("OwnerEntityId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("OwnerModuleKey")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid?>("ReferenceValue")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TextValue")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -334,19 +340,19 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
-                        .HasColumnType("varchar(4000)");
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
@@ -357,28 +363,28 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ContentTypeId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
-                        .HasColumnType("varchar(4000)");
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<Guid>("GameProjectId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -395,16 +401,16 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("Chance")
-                        .HasColumnType("double");
+                        .HasColumnType("float");
 
                     b.Property<Guid>("ItemId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("LootTableId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("MaxQuantity")
                         .HasColumnType("int");
@@ -428,31 +434,31 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ContentTypeId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
-                        .HasColumnType("varchar(4000)");
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<Guid>("GameProjectId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("RollMode")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -469,40 +475,40 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ContentTypeId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
-                        .HasColumnType("varchar(4000)");
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<Guid>("GameProjectId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsQuestGiver")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsTrader")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<int>("Kind")
                         .HasColumnType("int");
 
                     b.Property<Guid?>("LootTableId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -525,34 +531,34 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ContentTypeId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
-                        .HasColumnType("varchar(4000)");
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<Guid>("GameProjectId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<Guid?>("OutputItemId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("OutputQuantity")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -571,16 +577,16 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ItemId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
                     b.Property<Guid>("RecipeId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -598,25 +604,25 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double?>("BuyPrice")
-                        .HasColumnType("double");
+                        .HasColumnType("float");
 
                     b.Property<Guid?>("CurrencyId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ItemId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("NpcId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double?>("RestockSeconds")
-                        .HasColumnType("double");
+                        .HasColumnType("float");
 
                     b.Property<double?>("SellPrice")
-                        .HasColumnType("double");
+                        .HasColumnType("float");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");

@@ -116,6 +116,30 @@ else
                                            Label="Questgeber" />
                             </MudStack>
                         </div>
+
+                        @* Im Konzept: „Diese Loot-Tables sollen dann im NPC-Modul auswählbar sein.“ *@
+                        <MudSelect T="Guid?"
+                                   Value="_context.Entity.LootTableId"
+                                   ValueChanged="@((Guid? id) => Touch(() => _context.Entity.LootTableId = id))"
+                                   Label="Loot-Table"
+                                   Variant="Variant.Outlined"
+                                   Clearable="true"
+                                   Disabled="@(_lootTables.Count == 0)"
+                                   HelperText="@(_lootTables.Count == 0
+                                       ? "Noch keine Loot-Tables angelegt."
+                                       : "Was beim Besiegen fällt.")">
+                            @foreach (var table in _lootTables)
+                            {
+                                <MudSelectItem T="Guid?" Value="@table.Id">@table.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        @if (_context.Entity.LootTableId is { } lootId)
+                        {
+                            <MudLink Href="@($"/modules/loot/{lootId}")" Typo="Typo.body2" Color="Color.Primary">
+                                Loot-Table öffnen
+                            </MudLink>
+                        }
                     </MudStack>
                 </MudPaper>
 
@@ -322,6 +346,7 @@ else
     private ReferencesPanel? _referencesPanel;
     private List<EntitySummary> _items = [];
     private List<EntitySummary> _currencies = [];
+    private List<EntitySummary> _lootTables = [];
     private Guid? _loadedId;
     private bool _notFound;
     private bool _saving;
@@ -357,6 +382,7 @@ else
         var projectId = await Project.GetCurrentIdAsync();
         _items = await References.GetEntitiesAsync(projectId, ModuleKeys.Items);
         _currencies = await References.GetEntitiesAsync(projectId, ModuleKeys.Currencies);
+        _lootTables = await References.GetEntitiesAsync(projectId, ModuleKeys.Loot);
         _context = await Npcs.LoadForEditAsync(projectId, Id);
 
         if (_context is null)
@@ -494,6 +520,7 @@ else
         reloaded.Entity.Kind = entity.Kind;
         reloaded.Entity.IsTrader = entity.IsTrader;
         reloaded.Entity.IsQuestGiver = entity.IsQuestGiver;
+        reloaded.Entity.LootTableId = entity.LootTableId;
         reloaded.Entity.Offers = entity.Offers;
 
         _context = reloaded;

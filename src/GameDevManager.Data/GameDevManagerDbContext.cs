@@ -31,6 +31,10 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<TraderOffer> TraderOffers => Set<TraderOffer>();
 
+    public DbSet<LootTable> LootTables => Set<LootTable>();
+
+    public DbSet<LootEntry> LootEntries => Set<LootEntry>();
+
     /// <summary>Hochgeladene Dateien aller Module; die Datei selbst liegt im Dateispeicher.</summary>
     public DbSet<Asset> Assets => Set<Asset>();
 
@@ -174,6 +178,22 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             // Die Übersicht filtert fast immer nach NPC/Mob und nach Rolle.
             entity.HasIndex(n => new { n.GameProjectId, n.Kind });
             entity.HasIndex(n => n.IsTrader);
+
+            // Trägt die Frage „welche NPCs benutzen diese Loot-Table?“.
+            entity.HasIndex(n => n.LootTableId);
+        });
+
+        ConfigureContentEntity<LootTable>(modelBuilder);
+
+        modelBuilder.Entity<LootEntry>(entity =>
+        {
+            entity.HasOne(e => e.LootTable)
+                .WithMany(t => t.Entries)
+                .HasForeignKey(e => e.LootTableId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „in welchen Loot-Tables kommt dieses Item vor?“.
+            entity.HasIndex(e => e.ItemId);
         });
 
         modelBuilder.Entity<TraderOffer>(entity =>
