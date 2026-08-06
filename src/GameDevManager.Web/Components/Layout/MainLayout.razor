@@ -1,0 +1,62 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<MudThemeProvider IsDarkMode="_isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Dense="true">
+        <MudLink Href="/" Underline="Underline.None" Color="Color.Inherit">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.SportsEsports" />
+                <MudText Typo="Typo.h6" Class="mr-4">GameDevManager</MudText>
+            </MudStack>
+        </MudLink>
+
+        <div style="display:flex; overflow-x:auto; align-items:center;">
+            @foreach (var module in ModuleRegistry.All)
+            {
+                <MudTooltip Text="@module.Name">
+                    <MudIconButton Icon="@module.Icon"
+                                   Href="@module.Route"
+                                   Color="@(IsActive(module) ? Color.Warning : Color.Inherit)" />
+                </MudTooltip>
+            }
+        </div>
+
+        <MudSpacer />
+        <MudTooltip Text="@(_isDarkMode ? "Helles Design" : "Dunkles Design")">
+            <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                           Color="Color.Inherit"
+                           OnClick="ToggleDarkMode" />
+        </MudTooltip>
+    </MudAppBar>
+
+    <MudMainContent Class="pa-6">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _isDarkMode = true;
+
+    protected override void OnInitialized() =>
+        Navigation.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e) =>
+        InvokeAsync(StateHasChanged);
+
+    private bool IsActive(ModuleDefinition module)
+    {
+        var path = new Uri(Navigation.Uri).AbsolutePath;
+        return path.StartsWith(module.Route, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ToggleDarkMode() => _isDarkMode = !_isDarkMode;
+
+    public void Dispose() =>
+        Navigation.LocationChanged -= OnLocationChanged;
+}

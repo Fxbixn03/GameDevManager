@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GameDevManager.Data.Migrations.MySql/GameDevManager.Data.Migrations.MySql.csproj" />
+    <Project Path="src/GameDevManager.Data.Migrations.PostgreSql/GameDevManager.Data.Migrations.PostgreSql.csproj" />
+    <Project Path="src/GameDevManager.Data.Migrations.Sqlite/GameDevManager.Data.Migrations.Sqlite.csproj" />
+    <Project Path="src/GameDevManager.Data.Migrations.SqlServer/GameDevManager.Data.Migrations.SqlServer.csproj" />
+    <Project Path="src/GameDevManager.Data/GameDevManager.Data.csproj" />
+    <Project Path="src/GameDevManager.Domain/GameDevManager.Domain.csproj" />
+    <Project Path="src/GameDevManager.Web/GameDevManager.Web.csproj" />
+  </Folder>
+</Solution>

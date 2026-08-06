@@ -1,0 +1,101 @@
+@page "/"
+@inject IDbContextFactory<GameDevManager.Data.GameDevManagerDbContext> DbFactory
+@inject GameDevManager.Data.DatabaseOptions DbOptions
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Dashboard – GameDevManager</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Dashboard</MudText>
+
+<MudGrid Spacing="3">
+
+    @* Fixe Card: Import/Export ist immer sichtbar *@
+    <MudItem xs="12" sm="6" md="4" lg="3">
+        <MudCard Elevation="3" Style="height:100%; border-top: 3px solid var(--mud-palette-warning);">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudIcon Icon="@Icons.Material.Filled.ImportExport" Color="Color.Warning" />
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Import / Export</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.body2">
+                    Export als JSON/ZIP inkl. Assets, später direkter Export nach Unity, Unreal Engine und Godot.
+                    Versioniert und diffbar.
+                </MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Disabled="true" StartIcon="@Icons.Material.Filled.FileDownload">In Entwicklung</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    @* Status-Card: zeigt, dass die Datenbankverbindung steht *@
+    <MudItem xs="12" sm="6" md="4" lg="3">
+        <MudCard Elevation="3" Style="height:100%;">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudIcon Icon="@Icons.Material.Filled.Storage" Color="@(_dbError is null ? Color.Success : Color.Error)" />
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Datenbank</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.body2">Provider: <b>@DbOptions.Provider</b></MudText>
+                @if (_dbError is null)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Success">Verbindung OK</MudText>
+                    <MudText Typo="Typo.body2">Angelegte Spielprojekte: @(_projectCount?.ToString() ?? "…")</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Error">@_dbError</MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    @* Modul-Cards aus der Registry *@
+    @foreach (var module in ModuleRegistry.All)
+    {
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Elevation="2" Style="height:100%;">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudIcon Icon="@module.Icon" />
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">@module.Name</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body2">@module.Description</MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="@module.Route" EndIcon="@Icons.Material.Filled.ArrowForward">Öffnen</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    private int? _projectCount;
+    private string? _dbError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            _projectCount = await db.GameProjects.CountAsync();
+        }
+        catch (Exception ex)
+        {
+            _dbError = $"Keine Verbindung: {ex.Message}";
+        }
+    }
+}

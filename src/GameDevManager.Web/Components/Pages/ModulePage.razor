@@ -1,0 +1,33 @@
+@page "/modules/{ModuleId}"
+
+@if (_module is null)
+{
+    <PageTitle>Unbekanntes Modul – GameDevManager</PageTitle>
+    <MudAlert Severity="Severity.Error">Es gibt kein Modul mit der ID „@ModuleId".</MudAlert>
+}
+else
+{
+    <PageTitle>@_module.Name – GameDevManager</PageTitle>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-4">
+        <MudIcon Icon="@_module.Icon" Size="Size.Large" />
+        <MudText Typo="Typo.h4">@_module.Name</MudText>
+    </MudStack>
+
+    <MudText Typo="Typo.body1" Class="mb-6">@_module.Description</MudText>
+
+    <MudAlert Severity="Severity.Info">
+        Dieses Modul ist noch in Entwicklung. Die Grundstruktur (Navigation, Datenbank, Layout) steht bereits —
+        die Fachlichkeit folgt Modul für Modul.
+    </MudAlert>
+}
+
+@code {
+    [Parameter]
+    public string ModuleId { get; set; } = "";
+
+    private ModuleDefinition? _module;
+
+    protected override void OnParametersSet() =>
+        _module = ModuleRegistry.Find(ModuleId);
+}
