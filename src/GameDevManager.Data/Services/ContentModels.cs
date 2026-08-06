@@ -38,36 +38,45 @@ public sealed record ItemListRow(
 public sealed record AssetLibraryEntry(Asset Asset, string? OwnerName);
 
 /// <summary>
-/// Alles, was die Bearbeitungsmaske eines Items braucht, in einem Zug geladen: das Item selbst,
-/// die verfügbaren Arten samt Feldern, die individuellen Felder dieses Items und die bereits
-/// erfassten Werte.
+/// Alles, was die Bearbeitungsmaske einer Modul-Entität braucht, in einem Zug geladen: die
+/// Entität selbst, die verfügbaren Arten samt Feldern, ihre individuellen Felder und die
+/// bereits erfassten Werte.
 /// <para>
 /// Weil sämtliche Arten mitgeladen werden, kommt der Wechsel der Art in der Maske ohne
 /// erneuten Datenbankzugriff aus.
 /// </para>
+/// <para>
+/// Modulübergreifend, damit jedes Modul dieselbe Maske bekommt — die Felder funktionieren
+/// laut Konzept überall gleich.
+/// </para>
 /// </summary>
-public sealed class ItemEditContext
+public sealed class ContentEditContext<TEntity>
+    where TEntity : ContentEntity
 {
-    public required Item Item { get; init; }
+    public required TEntity Entity { get; init; }
 
-    /// <summary>Das Item wurde noch nie gespeichert.</summary>
+    /// <summary>Die Entität wurde noch nie gespeichert.</summary>
     public required bool IsNew { get; init; }
 
     public required IReadOnlyList<ContentType> AvailableTypes { get; init; }
 
-    /// <summary>Nur für dieses Item definierte Felder (exotische Items mit einzigartigen Werten).</summary>
+    /// <summary>Nur für diese eine Entität definierte Felder (etwa exotische Items).</summary>
     public required List<FieldDefinition> IndividualFields { get; init; }
 
     /// <summary>Werte je Felddefinition; fehlende Einträge legt <see cref="ValueFor"/> bei Bedarf an.</summary>
     public required Dictionary<Guid, FieldValue> Values { get; init; }
 
-    /// <summary>Die aktuell gewählte Art, oder <c>null</c> wenn das Item keiner Art zugeordnet ist.</summary>
+    /// <summary>Die aktuell gewählte Art, oder <c>null</c> wenn die Entität keiner zugeordnet ist.</summary>
     public ContentType? SelectedType =>
-        AvailableTypes.FirstOrDefault(t => t.Id == Item.ContentTypeId);
+        AvailableTypes.FirstOrDefault(t => t.Id == Entity.ContentTypeId);
 
     /// <summary>Die Felder der gewählten Art, in ihrer Sortierreihenfolge.</summary>
     public IReadOnlyList<FieldDefinition> TypeFields =>
         SelectedType?.Fields ?? [];
+
+    /// <summary>Alle gerade geltenden Felder — Art-Felder und individuelle zusammen.</summary>
+    public IEnumerable<FieldDefinition> ApplicableFields =>
+        TypeFields.Concat(IndividualFields);
 
     /// <summary>
     /// Liefert den Wert zu einem Feld und legt ihn beim ersten Zugriff an, damit die Maske
@@ -83,11 +92,53 @@ public sealed class ItemEditContext
         var created = new FieldValue
         {
             FieldDefinitionId = definition.Id,
-            OwnerEntityId = Item.Id,
-            OwnerModuleKey = Item.ModuleKey
+            OwnerEntityId = Entity.Id,
+            OwnerModuleKey = Entity.ModuleKey
         };
 
         Values[definition.Id] = created;
         return created;
     }
 }
+
+/// <summary>Eine Zeile der Rezept-Übersicht.</summary>
+public sealed record RecipeListRow(
+    Guid Id,
+    string Name,
+    Guid? ContentTypeId,
+    string? TypeName,
+    Guid? OutputItemId,
+    string? OutputItemName,
+    int OutputQuantity,
+    Guid? OutputAssetId,
+    int IngredientCount,
+    DateTime UpdatedAtUtc);
+
+/// <summary>
+/// Ein Knoten des Crafting-Baums: ein Item in einer bestimmten Menge, darunter die Zutaten
+/// des Rezepts, das es herstellt.
+/// </summary>
+/// <param name="Quantity">Wie viele Stück an dieser Stelle gebraucht werden.</param>
+/// <param name="RecipeId">Das Rezept, das dieses Item herstellt — <c>null</c> bei Grundstoffen.</param>
+/// <param name="AlternativeRecipeCount">
+/// Weitere Rezepte, die dasselbe Item herstellen. Aufgeklappt wird nur das erste; der Rest
+/// wird angezeigt, damit nicht der Eindruck entsteht, es gäbe nur einen Weg.
+/// </param>
+/// <param name="IsCycle">
+/// Dieses Item kommt im Pfad bereits vor. Der Baum bricht hier ab — zyklische Rezepte sind
+/// laut Konzept ein Health-Check-Fall und keine Endlosschleife.
+/// </param>
+/// <summary>Ein Grundstoff samt Menge, die für eine Herstellung zusammenkommt.</summary>
+public sealed record CraftingRequirement(Guid ItemId, string Name, int Quantity, Guid? PrimaryAssetId);
+
+public sealed record CraftingTreeNode(
+    Guid ItemId,
+    string ItemName,
+    Guid? PrimaryAssetId,
+    int Quantity,
+    Guid? RecipeId,
+    string? RecipeName,
+    int RecipeOutputQuantity,
+    int AlternativeRecipeCount,
+    bool IsCycle,
+    IReadOnlyList<CraftingTreeNode> Children);

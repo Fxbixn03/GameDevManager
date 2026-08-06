@@ -41,6 +41,7 @@ public static class DatabaseServiceExtensions
     {
         services.AddScoped<ContentTypeService>();
         services.AddScoped<ItemService>();
+        services.AddScoped<CraftingService>();
         services.AddScoped<ReferenceService>();
         services.AddScoped<AssetService>();
 

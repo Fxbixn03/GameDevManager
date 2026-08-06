@@ -1,0 +1,502 @@
+@page "/modules/crafting/neu"
+@page "/modules/crafting/{Id:guid}"
+@inject CraftingService Crafting
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@PageHeading – GameDevManager</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        Es gibt kein Rezept mit dieser GUID. Vielleicht wurde es gelöscht.
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/crafting">Zurück zur Übersicht</MudButton>
+}
+else if (_context is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@PageHeading"
+                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            @if (_dirty)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                    Ungespeicherte Änderungen
+                </MudChip>
+            }
+            @if (!_context.IsNew)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="DeleteAsync">
+                    Löschen
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Href="/modules/crafting">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_saving"
+                       OnClick="SaveAsync">
+                Speichern
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    @if (_items.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Class="mb-4">
+            Es gibt noch keine Items. Ein Rezept braucht welche —
+            <MudLink Href="/modules/items" Color="Color.Primary">jetzt Items anlegen</MudLink>.
+        </MudAlert>
+    }
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+
+                @* ------------------------------------------------------------- Stammdaten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudTextField Value="_context.Entity.Name"
+                                      ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
+                                      T="string"
+                                      Label="Name *"
+                                      Variant="Variant.Outlined"
+                                      Immediate="true"
+                                      HelperText="@NameHint" />
+
+                        <MudTextField Value="_context.Entity.Description"
+                                      ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
+                                      T="string"
+                                      Label="Beschreibung"
+                                      Variant="Variant.Outlined"
+                                      Lines="2" />
+
+                        <MudSelect T="Guid?"
+                                   Value="_context.Entity.ContentTypeId"
+                                   ValueChanged="ChangeType"
+                                   Label="Rezept-Art"
+                                   Variant="Variant.Outlined"
+                                   Clearable="true"
+                                   HelperText="Über die Art kommen eigene Felder dazu, etwa Dauer oder Werkbank.">
+                            @foreach (var type in _context.AvailableTypes)
+                            {
+                                <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudStack>
+                </MudPaper>
+
+                @* ---------------------------------------------------------------- Ergebnis *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Ergebnis</MudText>
+
+                    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+                        <MudNumericField T="int"
+                                         Value="_context.Entity.OutputQuantity"
+                                         ValueChanged="@((int quantity) => Touch(() => _context.Entity.OutputQuantity = quantity))"
+                                         Label="Menge"
+                                         Variant="Variant.Outlined"
+                                         Min="1"
+                                         Style="max-width:110px;" />
+
+                        <div style="flex:1 1 auto; min-width:0;">
+                            <MudAutocomplete T="EntitySummary"
+                                             Value="OutputItem"
+                                             ValueChanged="SetOutputItem"
+                                             SearchFunc="SearchItemsAsync"
+                                             ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
+                                             Label="Hergestelltes Item"
+                                             Variant="Variant.Outlined"
+                                             Clearable="true"
+                                             ResetValueOnEmptyText="true"
+                                             CoerceValue="false"
+                                             MaxItems="50" />
+                        </div>
+
+                        <AssetThumbnail AssetId="_outputAssetId"
+                                        Size="Size.Small"
+                                        Alt="@(OutputItem?.Name ?? "")"
+                                        FallbackIcon="@Icons.Material.Filled.Category" />
+                    </MudStack>
+                </MudPaper>
+
+                @* ---------------------------------------------------------------- Zutaten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">Zutaten</MudText>
+                        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                   Size="Size.Small"
+                                   Disabled="@(_items.Count == 0)"
+                                   OnClick="AddIngredient">
+                            Zutat
+                        </MudButton>
+                    </MudStack>
+
+                    @if (_context.Entity.Ingredients.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Noch keine Zutaten. Ein Rezept ohne Zutaten ist zulässig — etwa für Dinge,
+                            die ohne Material entstehen.
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudStack Spacing="3">
+                            @foreach (var ingredient in _context.Entity.Ingredients)
+                            {
+                                <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+                                    <MudNumericField T="int"
+                                                     Value="ingredient.Quantity"
+                                                     ValueChanged="@((int quantity) => Touch(() => ingredient.Quantity = quantity))"
+                                                     Label="Menge"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Min="1"
+                                                     Style="max-width:110px;" />
+
+                                    <div style="flex:1 1 auto; min-width:0;">
+                                        <MudAutocomplete T="EntitySummary"
+                                                         Value="@ItemFor(ingredient.ItemId)"
+                                                         ValueChanged="@((EntitySummary? entity) => SetIngredientItem(ingredient, entity))"
+                                                         SearchFunc="SearchItemsAsync"
+                                                         ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
+                                                         Label="Item"
+                                                         Variant="Variant.Outlined"
+                                                         Margin="Margin.Dense"
+                                                         Clearable="true"
+                                                         ResetValueOnEmptyText="true"
+                                                         CoerceValue="false"
+                                                         MaxItems="50" />
+                                    </div>
+
+                                    <MudTooltip Text="Zutat entfernen">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => RemoveIngredient(ingredient))"
+                                                       aria-label="Zutat entfernen" />
+                                    </MudTooltip>
+                                </MudStack>
+                            }
+                        </MudStack>
+                    }
+                </MudPaper>
+
+                @* ------------------------------------------------------------------ Sprites *@
+                <AssetSpritePanel ModuleKey="@ModuleKeys.Crafting"
+                                  EntityId="_context.Entity.Id"
+                                  Disabled="_context.IsNew" />
+
+                @* ------------------------------------------------------------------- Felder *@
+                <div>
+                    <ContentFieldsPanel TEntity="Recipe"
+                                        Context="_context"
+                                        ModuleKey="@ModuleKeys.Crafting"
+                                        TypesRoute="/modules/crafting/arten"
+                                        IndividualHint="Für Angaben, die nur dieses eine Rezept braucht."
+                                        OnValueChanged="MarkDirty"
+                                        OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
+                </div>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <EntityIdChip Id="_context.Entity.Id" />
+
+                    @if (!_context.IsNew)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                    }
+                </MudPaper>
+
+                @if (_context.Entity.OutputItemId is { } outputId && !_context.IsNew)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">Crafting-Baum</MudText>
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                           Size="Size.Small"
+                                           Href="@($"/modules/crafting/baum/{outputId}")"
+                                           aria-label="Baum auf eigener Seite öffnen" />
+                        </MudStack>
+
+                        @if (_tree is null)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Wird geladen …</MudText>
+                        }
+                        else
+                        {
+                            <CraftingTreeView Node="_tree" />
+                        }
+                    </MudPaper>
+                }
+
+                @if (!_context.IsNew)
+                {
+                    <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Crafting);
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private ContentEditContext<Recipe>? _context;
+    private ReferencesPanel? _referencesPanel;
+    private List<EntitySummary> _items = [];
+    private CraftingTreeNode? _tree;
+    private Guid? _outputAssetId;
+    private Guid? _loadedId;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+
+    private string PageHeading => _context switch
+    {
+        null => "Rezept",
+        { IsNew: true } => "Neues Rezept",
+        { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
+        _ => "Rezept ohne Namen"
+    };
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
+
+    private EntitySummary? OutputItem =>
+        _context?.Entity.OutputItemId is { } id ? ItemFor(id) : null;
+
+    private string? NameHint =>
+        _context is { IsNew: true } && OutputItem is { } item && string.IsNullOrWhiteSpace(_context.Entity.Name)
+            ? $"Vorschlag: „{item.Name}“"
+            : null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_context is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _notFound = false;
+        _dirty = false;
+        _context = null;
+        _tree = null;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _items = await References.GetEntitiesAsync(projectId, ModuleKeys.Items);
+        _context = await Crafting.LoadForEditAsync(projectId, Id);
+
+        if (_context is null)
+        {
+            _notFound = true;
+            return;
+        }
+
+        await RefreshOutputAsync();
+    }
+
+    private EntitySummary? ItemFor(Guid itemId) =>
+        _items.FirstOrDefault(entity => entity.Id == itemId);
+
+    private Task<IEnumerable<EntitySummary>> SearchItemsAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? _items
+            : _items.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private async Task SetOutputItem(EntitySummary? entity)
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _context.Entity.OutputItemId = entity?.Id;
+
+        // Der Name eines Rezepts ist fast immer der des Ergebnisses — nur vorbelegen,
+        // solange der Nutzer nichts Eigenes eingetragen hat.
+        if (entity is not null && string.IsNullOrWhiteSpace(_context.Entity.Name))
+        {
+            _context.Entity.Name = entity.Name;
+        }
+
+        MarkDirty();
+        await RefreshOutputAsync();
+    }
+
+    private async Task RefreshOutputAsync()
+    {
+        if (_context?.Entity.OutputItemId is not { } outputId)
+        {
+            _outputAssetId = null;
+            _tree = null;
+            return;
+        }
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _tree = await Crafting.BuildTreeAsync(projectId, outputId);
+        _outputAssetId = _tree?.PrimaryAssetId;
+    }
+
+    private void AddIngredient() =>
+        Touch(() => _context!.Entity.Ingredients.Add(new RecipeIngredient
+        {
+            RecipeId = _context.Entity.Id,
+            ItemId = Guid.Empty,
+            Quantity = 1,
+            SortOrder = _context.Entity.Ingredients.Count
+        }));
+
+    private void RemoveIngredient(RecipeIngredient ingredient) =>
+        Touch(() => _context!.Entity.Ingredients.Remove(ingredient));
+
+    private void SetIngredientItem(RecipeIngredient ingredient, EntitySummary? entity) =>
+        Touch(() => ingredient.ItemId = entity?.Id ?? Guid.Empty);
+
+    private void ChangeType(Guid? contentTypeId) =>
+        Touch(() => _context!.Entity.ContentTypeId = contentTypeId);
+
+    private void Touch(Action change)
+    {
+        change();
+        MarkDirty();
+    }
+
+    private void MarkDirty() => _dirty = true;
+
+    private async Task SaveAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        // Leere Zutatenzeilen sind ein Bedienschritt, kein Inhalt — sie fliegen still raus.
+        _context.Entity.Ingredients.RemoveAll(ingredient => ingredient.ItemId == Guid.Empty);
+
+        _saving = true;
+
+        try
+        {
+            var wasNew = _context.IsNew;
+            await Crafting.SaveRecipeAsync(_context);
+            _dirty = false;
+
+            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+
+            if (wasNew)
+            {
+                Navigation.NavigateTo($"/modules/crafting/{_context.Entity.Id}");
+                return;
+            }
+
+            await RefreshOutputAsync();
+
+            if (_referencesPanel is not null)
+            {
+                await _referencesPanel.RefreshAsync();
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Rezept löschen",
+            $"„{_context.Entity.Name}“ wird mit seinen Zutaten und Feldwerten gelöscht. Die beteiligten Items bleiben.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Crafting.DeleteRecipeAsync(_context.Entity.Id);
+        Snackbar.Add("Rezept gelöscht.", Severity.Success);
+        Navigation.NavigateTo("/modules/crafting");
+    }
+
+    /// <summary>
+    /// Lädt nach einer Änderung an den Felddefinitionen neu und behält dabei, was in der Maske
+    /// noch nicht gespeichert ist.
+    /// </summary>
+    private async Task ReloadKeepingChangesAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var entity = _context.Entity;
+        var wasDirty = _dirty;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var reloaded = await Crafting.LoadForEditAsync(projectId, entity.Id);
+
+        if (reloaded is null)
+        {
+            _notFound = true;
+            _context = null;
+            return;
+        }
+
+        reloaded.Entity.Name = entity.Name;
+        reloaded.Entity.Description = entity.Description;
+        reloaded.Entity.ContentTypeId = entity.ContentTypeId;
+        reloaded.Entity.OutputItemId = entity.OutputItemId;
+        reloaded.Entity.OutputQuantity = entity.OutputQuantity;
+        reloaded.Entity.Ingredients = entity.Ingredients;
+
+        _context = reloaded;
+        _dirty = wasDirty;
+    }
+}

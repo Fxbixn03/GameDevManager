@@ -228,6 +228,28 @@ html {
     white-space: nowrap;
 }
 
+/* ------------------------------------------------------------------ Crafting-Baum */
+/* Die Tiefe wird über Einrückung und eine senkrechte Linie gezeigt — kein Graph-Layout,
+   damit der Baum ohne externe Bibliothek auskommt und auf jeder Breite lesbar bleibt. */
+
+.gdm-tree-row {
+    padding: 0.35rem 0;
+}
+
+.gdm-tree-quantity {
+    font-family: var(--gdm-font-mono);
+    color: var(--mud-palette-primary);
+    min-width: 2.5rem;
+    text-align: right;
+    flex: 0 0 auto;
+}
+
+.gdm-tree-children {
+    margin-left: 1.25rem;
+    padding-left: 1.25rem;
+    border-left: 1px solid var(--mud-palette-lines-default);
+}
+
 /* ------------------------------------------------------------------------ Assets */
 
 /* Vorschau eines Sprites. Der karierte Untergrund macht sichtbar, wo das Bild durchsichtig

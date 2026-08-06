@@ -1,0 +1,326 @@
+@page "/modules/crafting"
+@inject CraftingService Crafting
+@inject ContentTypeService ContentTypes
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Crafting – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/crafting/arten">
+            Rezept-Arten
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/crafting/neu">
+            Neues Rezept
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_recipes is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_recipes.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Construction" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">Noch keine Rezepte</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Ein Rezept führt Items zu einem neuen zusammen — „3× Holz + 5× Kohle = Fackel“.
+            @if (_itemCount == 0)
+            {
+                <text>Dafür braucht es zuerst Items.</text>
+            }
+        </MudText>
+        @if (_itemCount == 0)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/items">Zu den Items</MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/crafting/neu">Erstes Rezept</MudButton>
+        }
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudTextField @bind-Value="_search"
+                          Placeholder="Nach Rezept- oder Ergebnisname suchen"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="max-width:340px;" />
+
+            @* Der Konzept-Wunsch: nach Items filtern — und zwar in beiden Rollen. *@
+            <MudAutocomplete T="EntitySummary"
+                             Value="_itemFilter"
+                             ValueChanged="SetItemFilter"
+                             SearchFunc="SearchItemsAsync"
+                             ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
+                             Label="Item"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Clearable="true"
+                             ResetValueOnEmptyText="true"
+                             CoerceValue="false"
+                             Style="max-width:260px;" />
+
+            @if (_itemFilter is not null)
+            {
+                <MudSelect T="ItemRole"
+                           @bind-Value="_itemRole"
+                           Label="Rolle"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Style="max-width:180px;">
+                    <MudSelectItem T="ItemRole" Value="ItemRole.Any">Ergebnis oder Zutat</MudSelectItem>
+                    <MudSelectItem T="ItemRole" Value="ItemRole.Output">Nur als Ergebnis</MudSelectItem>
+                    <MudSelectItem T="ItemRole" Value="ItemRole.Ingredient">Nur als Zutat</MudSelectItem>
+                </MudSelect>
+            }
+
+            <MudSelect T="Guid?"
+                       @bind-Value="_typeFilter"
+                       Label="Art"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Clearable="true"
+                       Style="max-width:200px;">
+                @foreach (var type in _types)
+                {
+                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSpacer />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_recipes.Count</MudText>
+        </MudStack>
+    </MudPaper>
+
+    <MudTable T="RecipeListRow"
+              Items="Filtered"
+              Elevation="0"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm"
+              OnRowClick="OpenRow"
+              RowClass="cursor-pointer">
+        <HeaderContent>
+            <MudTh Style="width:56px;"></MudTh>
+            <MudTh>Rezept</MudTh>
+            <MudTh>Ergebnis</MudTh>
+            <MudTh>Zutaten</MudTh>
+            <MudTh>Art</MudTh>
+            <MudTh Style="width:96px;"></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Sprite">
+                <AssetThumbnail AssetId="context.OutputAssetId"
+                                Size="Size.Small"
+                                Alt="@(context.OutputItemName ?? context.Name)"
+                                FallbackIcon="@Icons.Material.Filled.Construction" />
+            </MudTd>
+            <MudTd DataLabel="Rezept">
+                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
+            </MudTd>
+            <MudTd DataLabel="Ergebnis">
+                @if (context.OutputItemName is null)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Warning">kein Ergebnis gesetzt</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">@context.OutputQuantity× @context.OutputItemName</MudText>
+                }
+            </MudTd>
+            <MudTd DataLabel="Zutaten">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@context.IngredientCount</MudText>
+            </MudTd>
+            <MudTd DataLabel="Art">
+                @if (context.TypeName is null)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
+                }
+            </MudTd>
+            <MudTd>
+                <MudStack Row="true" Spacing="0">
+                    @if (context.OutputItemId is { } outputId)
+                    {
+                        <MudTooltip Text="Crafting-Baum">
+                            <MudIconButton Icon="@Icons.Material.Filled.AccountTree"
+                                           Size="Size.Small"
+                                           Href="@($"/modules/crafting/baum/{outputId}")"
+                                           aria-label="Crafting-Baum anzeigen" />
+                        </MudTooltip>
+                    }
+                    <MudTooltip Text="Löschen">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteAsync(context))"
+                                       aria-label="@($"{context.Name} löschen")" />
+                    </MudTooltip>
+                </MudStack>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
+                Kein Rezept passt zu den Filtern.
+            </MudText>
+        </NoRecordsContent>
+    </MudTable>
+
+    @if (_cycles.Count > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mt-4">
+            <MudText Typo="Typo.body2"><b>Zyklische Rezepte gefunden</b></MudText>
+            <MudText Typo="Typo.body2">
+                Diese Items werden mittelbar aus sich selbst hergestellt — im Spiel ließen sie
+                sich damit nie von Grund auf herstellen:
+            </MudText>
+            @foreach (var cycle in _cycles)
+            {
+                <MudText Typo="Typo.body2" Class="gdm-mono">@cycle.ToString()</MudText>
+            }
+        </MudAlert>
+    }
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Crafting);
+
+    /// <summary>In welcher Rolle ein Item im Rezept vorkommen soll.</summary>
+    public enum ItemRole
+    {
+        Any,
+        Output,
+        Ingredient
+    }
+
+    private List<RecipeListRow>? _recipes;
+    private List<ContentType> _types = [];
+    private List<EntitySummary> _items = [];
+    private List<CraftingCycle> _cycles = [];
+    private HashSet<Guid> _recipesUsingFilterItem = [];
+    private int _itemCount;
+    private string? _search;
+    private Guid? _typeFilter;
+    private EntitySummary? _itemFilter;
+    private ItemRole _itemRole = ItemRole.Any;
+
+    private string Subtitle => _recipes is null
+        ? "Wird geladen …"
+        : $"{_recipes.Count} Rezept(e)";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+
+        _types = await ContentTypes.GetTypesAsync(projectId, ModuleKeys.Crafting);
+        _items = await References.GetEntitiesAsync(projectId, ModuleKeys.Items);
+        _itemCount = _items.Count;
+        _recipes = await Crafting.GetRecipesAsync(projectId);
+        _cycles = await Crafting.FindCyclesAsync(projectId);
+    }
+
+    private async Task SetItemFilter(EntitySummary? entity)
+    {
+        _itemFilter = entity;
+        _recipesUsingFilterItem = [];
+
+        if (entity is null)
+        {
+            return;
+        }
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var (_, consumes) = await Crafting.GetRecipesForItemAsync(projectId, entity.Id);
+        _recipesUsingFilterItem = [.. consumes.Select(row => row.Id)];
+    }
+
+    private Task<IEnumerable<EntitySummary>> SearchItemsAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? _items
+            : _items.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private List<RecipeListRow> Filtered
+    {
+        get
+        {
+            IEnumerable<RecipeListRow> rows = _recipes ?? [];
+
+            if (_typeFilter is { } typeId)
+            {
+                rows = rows.Where(row => row.ContentTypeId == typeId);
+            }
+
+            if (_itemFilter is { } item)
+            {
+                rows = _itemRole switch
+                {
+                    ItemRole.Output => rows.Where(row => row.OutputItemId == item.Id),
+                    ItemRole.Ingredient => rows.Where(row => _recipesUsingFilterItem.Contains(row.Id)),
+                    _ => rows.Where(row => row.OutputItemId == item.Id || _recipesUsingFilterItem.Contains(row.Id))
+                };
+            }
+
+            if (!string.IsNullOrWhiteSpace(_search))
+            {
+                rows = rows.Where(row =>
+                    row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                    || (row.OutputItemName?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            return [.. rows];
+        }
+    }
+
+    private void OpenRow(TableRowClickEventArgs<RecipeListRow> args)
+    {
+        if (args.Item is { } row)
+        {
+            Navigation.NavigateTo($"/modules/crafting/{row.Id}");
+        }
+    }
+
+    private async Task DeleteAsync(RecipeListRow row)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Rezept löschen",
+            $"„{row.Name}“ wird mit seinen Zutaten und Feldwerten gelöscht. Die beteiligten Items bleiben.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Crafting.DeleteRecipeAsync(row.Id);
+        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+}

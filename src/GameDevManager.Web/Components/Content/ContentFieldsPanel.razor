@@ -1,0 +1,221 @@
+@typeparam TEntity where TEntity : ContentEntity
+@inject ContentTypeService ContentTypes
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+@*
+    Die beiden Feldabschnitte einer Bearbeitungsmaske: die Felder der gewählten Art und die
+    individuellen Felder dieser einen Entität. Für jedes Modul gleich — deshalb hier und nicht
+    in den Modulseiten.
+*@
+
+@if (Context.SelectedType is { } selectedType)
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">
+                Felder der Art „@selectedType.Name“
+            </MudText>
+            <MudTooltip Text="Felder dieser Art bearbeiten">
+                <MudIconButton Icon="@Icons.Material.Filled.Tune"
+                               Size="Size.Small"
+                               Href="@TypesRoute"
+                               aria-label="Felder der Art bearbeiten" />
+            </MudTooltip>
+        </MudStack>
+
+        @if (Context.TypeFields.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Diese Art hat noch keine Felder.</MudText>
+        }
+        else
+        {
+            <MudStack Spacing="4">
+                @foreach (var field in Context.TypeFields)
+                {
+                    <DynamicFieldInput Definition="field"
+                                       Value="Context.ValueFor(field)"
+                                       ReferenceOptions="OptionsFor(field)"
+                                       OnValueChanged="OnValueChanged" />
+                }
+            </MudStack>
+        }
+    </MudPaper>
+}
+
+<MudPaper Elevation="0" Class="gdm-panel pa-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+        <MudText Typo="Typo.overline" Color="Color.Secondary">Individuelle Felder</MudText>
+        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                   Size="Size.Small"
+                   Disabled="Context.IsNew"
+                   OnClick="AddFieldAsync">
+            Feld hinzufügen
+        </MudButton>
+    </MudStack>
+
+    @if (Context.IsNew)
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            Individuelle Felder gehören zu genau diesem Eintrag — sie lassen sich anlegen,
+            sobald er einmal gespeichert wurde.
+        </MudText>
+    }
+    else if (Context.IndividualFields.Count == 0)
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@IndividualHint</MudText>
+    }
+    else
+    {
+        <MudStack Spacing="4">
+            @foreach (var field in Context.IndividualFields)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
+                    <div style="flex:1 1 auto; min-width:0;">
+                        <DynamicFieldInput Definition="field"
+                                           Value="Context.ValueFor(field)"
+                                           ReferenceOptions="OptionsFor(field)"
+                                           OnValueChanged="OnValueChanged" />
+                    </div>
+                    <MudTooltip Text="Feld bearbeiten">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditFieldAsync(field))"
+                                       aria-label="@($"Feld {field.Name} bearbeiten")" />
+                    </MudTooltip>
+                    <MudTooltip Text="Feld löschen">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteFieldAsync(field))"
+                                       aria-label="@($"Feld {field.Name} löschen")" />
+                    </MudTooltip>
+                </MudStack>
+            }
+        </MudStack>
+    }
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired]
+    public required ContentEditContext<TEntity> Context { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string ModuleKey { get; set; }
+
+    /// <summary>Route zur Arten-Verwaltung dieses Moduls.</summary>
+    [Parameter, EditorRequired]
+    public required string TypesRoute { get; set; }
+
+    /// <summary>Erklärt, wofür individuelle Felder in diesem Modul gut sind.</summary>
+    [Parameter]
+    public string IndividualHint { get; set; } =
+        "Für einzigartige Werte, die kein anderer Eintrag dieser Art hat.";
+
+    /// <summary>Meldet der Seite eine Wertänderung — für „ungespeicherte Änderungen“.</summary>
+    [Parameter]
+    public EventCallback OnValueChanged { get; set; }
+
+    /// <summary>
+    /// Meldet, dass eine Felddefinition angelegt, geändert oder gelöscht wurde. Die Seite muss
+    /// daraufhin ihren Kontext neu laden — das kann nur sie, weil es modulspezifisch ist.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnFieldDefinitionChanged { get; set; }
+
+    private readonly Dictionary<string, IReadOnlyList<EntitySummary>> _referenceOptions = [];
+
+    protected override async Task OnParametersSetAsync() => await LoadReferenceOptionsAsync();
+
+    /// <summary>
+    /// Lädt die auswählbaren Entitäten für alle sichtbaren Referenzfelder. Je Zielmodul nur
+    /// einmal — mehrere Referenzfelder auf dasselbe Modul teilen sich die Liste.
+    /// </summary>
+    private async Task LoadReferenceOptionsAsync()
+    {
+        var wanted = Context.ApplicableFields
+            .Where(field => field.Type == ContentFieldType.EntityReference)
+            .Select(field => field.ReferenceModuleKey)
+            .OfType<string>()
+            .Distinct();
+
+        var projectId = await Project.GetCurrentIdAsync();
+
+        foreach (var targetModule in wanted)
+        {
+            if (_referenceOptions.ContainsKey(targetModule))
+            {
+                continue;
+            }
+
+            _referenceOptions[targetModule] = await References.GetEntitiesAsync(projectId, targetModule);
+        }
+    }
+
+    private IReadOnlyList<EntitySummary> OptionsFor(FieldDefinition field) =>
+        field.ReferenceModuleKey is { } targetModule && _referenceOptions.TryGetValue(targetModule, out var options)
+            ? options
+            : [];
+
+    private async Task AddFieldAsync() =>
+        await ShowFieldDialogAsync(new FieldDefinition
+        {
+            ModuleKey = ModuleKey,
+            OwnerEntityId = Context.Entity.Id,
+            Name = string.Empty,
+            SortOrder = await ContentTypes.GetNextFieldSortOrderAsync(null, Context.Entity.Id)
+        }, isNew: true);
+
+    private Task EditFieldAsync(FieldDefinition field) =>
+        ShowFieldDialogAsync(field.Clone(), isNew: false);
+
+    private async Task ShowFieldDialogAsync(FieldDefinition draft, bool isNew)
+    {
+        var parameters = new DialogParameters<FieldDefinitionDialog>
+        {
+            { dialog => dialog.Field, draft },
+            { dialog => dialog.IsNew, isNew }
+        };
+
+        var reference = await Dialogs.ShowAsync<FieldDefinitionDialog>(
+            isNew ? "Neues Feld" : "Feld bearbeiten",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await reference.Result;
+        if (result is null || result.Canceled || result.Data is not FieldDefinition edited)
+        {
+            return;
+        }
+
+        try
+        {
+            await ContentTypes.SaveFieldAsync(edited);
+            await OnFieldDefinitionChanged.InvokeAsync();
+            Snackbar.Add($"Feld „{edited.Name}“ gespeichert.", Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteFieldAsync(FieldDefinition field)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Feld löschen",
+            $"Das Feld „{field.Name}“ und sein erfasster Wert werden gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await ContentTypes.DeleteFieldAsync(field.Id);
+        await OnFieldDefinitionChanged.InvokeAsync();
+        Snackbar.Add("Feld gelöscht.", Severity.Success);
+    }
+}

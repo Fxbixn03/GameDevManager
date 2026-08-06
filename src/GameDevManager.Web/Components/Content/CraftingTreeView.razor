@@ -1,0 +1,66 @@
+@*
+    Ein Knoten des Crafting-Baums, der sich selbst für seine Zutaten erneut aufruft. Die Tiefe
+    wird über Einrückung und senkrechte Linien gezeigt statt über ein Graph-Layout — das bleibt
+    lesbar, funktioniert ohne externe Bibliothek und passt zur flachen Gestaltung.
+*@
+
+<div class="gdm-tree-node">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="gdm-tree-row">
+        <MudText Typo="Typo.body2" Class="gdm-tree-quantity">@Node.Quantity×</MudText>
+
+        <AssetThumbnail AssetId="Node.PrimaryAssetId"
+                        Size="Size.Small"
+                        Alt="@Node.ItemName"
+                        FallbackIcon="@Icons.Material.Filled.Category" />
+
+        <div style="min-width:0;">
+            <MudLink Href="@($"/modules/items/{Node.ItemId}")" Typo="Typo.body1">@Node.ItemName</MudLink>
+
+            <div>
+                @if (Node.IsCycle)
+                {
+                    <MudTooltip Text="Dieses Item wird mittelbar aus sich selbst hergestellt — hier bricht der Baum ab.">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error"
+                                 Icon="@Icons.Material.Filled.ErrorOutline">
+                            Zyklus
+                        </MudChip>
+                    </MudTooltip>
+                }
+                else if (Node.RecipeId is { } recipeId)
+                {
+                    <MudLink Href="@($"/modules/crafting/{recipeId}")" Typo="Typo.caption" Color="Color.Secondary">
+                        @Node.RecipeName@(Node.RecipeOutputQuantity > 1 ? $" (ergibt {Node.RecipeOutputQuantity}×)" : "")
+                    </MudLink>
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Grundstoff — kein Rezept</MudText>
+                }
+
+                @if (Node.AlternativeRecipeCount > 0)
+                {
+                    <MudTooltip Text="Es gibt weitere Rezepte für dieses Item. Aufgeklappt wird das erste.">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">
+                            +@Node.AlternativeRecipeCount weitere
+                        </MudChip>
+                    </MudTooltip>
+                }
+            </div>
+        </div>
+    </MudStack>
+
+    @if (Node.Children.Count > 0)
+    {
+        <div class="gdm-tree-children">
+            @foreach (var child in Node.Children)
+            {
+                <CraftingTreeView Node="child" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required CraftingTreeNode Node { get; set; }
+}

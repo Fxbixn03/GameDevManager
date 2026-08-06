@@ -1,0 +1,154 @@
+@page "/modules/crafting/baum/{ItemId:guid}"
+@inject CraftingService Crafting
+@inject ReferenceService References
+@inject ProjectContext Project
+
+<PageTitle>Crafting-Baum – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="@($"Crafting-Baum: {_tree?.ItemName ?? "…"}")"
+              Subtitle="Woraus dieses Item hergestellt wird — und woraus dessen Zutaten wiederum."
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <div style="min-width:260px;">
+            <MudAutocomplete T="EntitySummary"
+                             Value="_selected"
+                             ValueChanged="SelectItemAsync"
+                             SearchFunc="SearchItemsAsync"
+                             ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
+                             Label="Anderes Item"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             ResetValueOnEmptyText="true"
+                             CoerceValue="false"
+                             MaxItems="50" />
+        </div>
+        <MudButton Variant="Variant.Outlined" Href="/modules/crafting">Zu den Rezepten</MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_tree is null)
+{
+    <MudAlert Severity="Severity.Error">
+        Es gibt kein Item mit dieser GUID. Vielleicht wurde es gelöscht.
+    </MudAlert>
+}
+else
+{
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <CraftingTreeView Node="_tree" />
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Gesamtbedarf</MudText>
+
+                @if (_totals.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Dieses Item wird von keinem Rezept hergestellt — es ist ein Grundstoff.
+                    </MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Was zusammenkommen muss, um ein Stück herzustellen. Rezeptausbeuten sind
+                        verrechnet und je Stufe aufgerundet — Reste bleiben übrig.
+                    </MudText>
+
+                    @foreach (var requirement in _totals)
+                    {
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween"
+                                  Class="gdm-field-row py-1">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <AssetThumbnail AssetId="requirement.PrimaryAssetId"
+                                                Size="Size.Small"
+                                                Alt="@requirement.Name"
+                                                FallbackIcon="@Icons.Material.Filled.Category" />
+                                <MudLink Href="@($"/modules/items/{requirement.ItemId}")" Typo="Typo.body2">
+                                    @requirement.Name
+                                </MudLink>
+                            </MudStack>
+                            <MudText Typo="Typo.body2" Class="gdm-mono">@requirement.Quantity×</MudText>
+                        </MudStack>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Crafting);
+
+    [Parameter]
+    public Guid ItemId { get; set; }
+
+    private CraftingTreeNode? _tree;
+    private List<EntitySummary> _items = [];
+    private EntitySummary? _selected;
+    private List<CraftingRequirement> _totals = [];
+    private Guid _loadedFor;
+    private bool _loading = true;
+
+    private List<BreadcrumbItem> Breadcrumbs =>
+    [
+        new("Baum", null, disabled: true)
+    ];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedFor == ItemId)
+        {
+            return;
+        }
+
+        _loadedFor = ItemId;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _items = await References.GetEntitiesAsync(projectId, ModuleKeys.Items);
+        _selected = _items.FirstOrDefault(entity => entity.Id == ItemId);
+        _tree = await Crafting.BuildTreeAsync(projectId, ItemId);
+        _totals = _tree is null ? [] : CraftingService.SummarizeBaseCost(_tree);
+
+        _loading = false;
+    }
+
+    private Task SelectItemAsync(EntitySummary? entity)
+    {
+        _selected = entity;
+
+        if (entity is not null && entity.Id != ItemId)
+        {
+            // Die Route trägt das Item, damit der Baum verlinkbar bleibt.
+            ItemId = entity.Id;
+            _loadedFor = entity.Id;
+            return LoadAsync();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task<IEnumerable<EntitySummary>> SearchItemsAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? _items
+            : _items.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+}

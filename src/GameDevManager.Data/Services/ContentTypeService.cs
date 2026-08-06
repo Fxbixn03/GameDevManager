@@ -256,6 +256,7 @@ public class ContentTypeService(IDbContextFactory<GameDevManagerDbContext> facto
         moduleKey switch
         {
             ModuleKeys.Items => db.Items.CountAsync(i => i.ContentTypeId == typeId, ct),
+            ModuleKeys.Crafting => db.Recipes.CountAsync(r => r.ContentTypeId == typeId, ct),
             _ => Task.FromResult(0)
         };
 

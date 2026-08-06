@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GameDevManager ist ein selbst gehostetes Verwaltungstool für Indie-Spieleentwickler: ein strukturiertes Wiki für Spielinhalte (Items, NPCs, Quests, Dialoge, Karten, …) mit späterem Export in Game Engines (Unity, Unreal, Godot oder JSON/ZIP).
 
-**Status: Kern steht, zwei Module umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem, das Items-Modul und die Asset-/Sprite-Bibliothek sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
+**Status: Kern steht, drei Module umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem, Items, die Asset-/Sprite-Bibliothek und Crafting sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
 
 **Sprache:** README, Konzept und Doku sind auf Deutsch. Neue Dokumentation und Commit-Messages ebenfalls auf Deutsch verfassen. Code (Bezeichner, Kommentare) auf Englisch.
 
@@ -56,7 +56,15 @@ Das Konzept verlangt in fast jedem Modul benutzerdefinierte Arten mit eigenen Fe
 
 Die Referenzansicht („Find All References“) lebt in `ReferenceService`. Sie wertet heute die Referenz-Felder aus; Module mit eigenen Verknüpfungstabellen tragen ihre Abfrage dort in den `switch` ein — genauso wie `ContentTypeService.CountUsagesAsync` und `ReferenceService.GetEntitiesAsync`. **Diese drei `switch`-Blöcke sind die Stellen, die ein neues Modul anfassen muss.**
 
-Ein neues Modul umsetzen heißt also: Entität von `ContentEntity` ableiten, in `GameDevManagerDbContext.OnModelCreating` mit `ConfigureContentEntity<T>` registrieren, einen Service nach dem Muster von `ItemService` schreiben, die drei `switch`-Blöcke ergänzen, Seiten unter `Components/Pages/<Modul>/` anlegen und in `ModuleRegistry` `Implemented: true` setzen. Beim Löschen einer Entität muss der Service `AssetService.DeleteForOwnerAsync` aufrufen — sonst bleiben Sprites und Dateien liegen.
+Ein neues Modul umsetzen heißt also:
+
+1. Entität von `ContentEntity` ableiten und in `GameDevManagerDbContext.OnModelCreating` mit `ConfigureContentEntity<T>` registrieren.
+2. Einen Service nach dem Muster von `ItemService`/`CraftingService` schreiben. Die Feldmechanik kommt komplett aus `ContentFields` (laden, Pflichtfelder prüfen, Werte in denselben `SaveChanges` einreihen, beim Löschen aufräumen) — nicht neu bauen.
+3. Die drei `switch`-Blöcke ergänzen. Beim Löschen einer Entität `AssetService.DeleteForOwnerAsync` aufrufen, sonst bleiben Sprites und Dateien liegen.
+4. Seiten unter `Components/Pages/<Modul>/` anlegen. Die Arten-Verwaltung ist eine Zeile (`<ContentTypeManager ModuleKey="…" />`), die Feldabschnitte der Maske ebenso (`<ContentFieldsPanel TEntity="…" …/>`).
+5. In `ModuleRegistry` `Implemented: true` setzen.
+
+**EF-Fallstrick bei Kind-Sammlungen** (Rezept-Zutaten, später Händler-Angebote, Loot-Einträge): Neue Kinder an einem **bestehenden** Elterndatensatz immer über `db.Set<T>().Add(...)` einfügen, nie über die Navigationsliste. Die Entitäten bringen ihre GUID schon mit, und EF hält sie beim Anhängen sonst für vorhandene Datensätze und erzeugt ein `UPDATE` auf eine Zeile, die es noch nicht gibt. Entfernt wird umgekehrt nur über die Navigationsliste — der Fremdschlüssel ist pflicht, EF löscht die Waise dadurch von selbst; zusätzlich `Remove` aufzurufen erzeugt einen zweiten `DELETE`.
 
 ### Assets
 
@@ -69,6 +77,17 @@ Dateien liegen **nicht** in der Datenbank, sondern im Dateisystem unter dem in `
 - `AssetTag` ist absichtlich auf Assets beschränkt. Das geplante Tag-Modul vergibt Tags modulübergreifend und wird diese Stichwörter voraussichtlich ablösen.
 
 In den Bearbeitungsmasken der Module wird `<AssetSpritePanel ModuleKey="…" EntityId="…" Disabled="@istNeu" />` eingebunden; die Listen zeigen das Icon über `<AssetThumbnail AssetId="…" />`.
+
+### Crafting
+
+Das Rezept trägt nur, was fachlich unumgänglich ist: Ergebnis-Item, Ausbeute und Zutaten mit Mengen. Herstellungsdauer, Werkbank oder Mindestlevel definiert der Nutzer als Felder an der Rezept-Art — dieselbe Regel wie bei den Items. Ergebnis und Zutaten sind reine GUID-Referenzen auf Items, ohne Fremdschlüssel über die Modulgrenze.
+
+`CraftingService` lädt für Bäume und Zyklenprüfung den gesamten Rezeptbestand eines Projekts einmal und löst ihn im Speicher auf (`CraftingGraph`) — bei der Größenordnung eines Spielprojekts deutlich billiger als eine Abfrage je Ebene. Zwei Dinge, die daran hängen:
+
+- **Zyklen** („zyklische Rezepte“ aus der Health-Check-Liste des Konzepts) findet `FindCyclesAsync` per Tiefensuche; der Baumaufbau bricht an einem wiederkehrenden Item ab und markiert den Knoten, statt endlos zu laufen.
+- **`SummarizeBaseCost`** rechnet einen Baum auf seine Grundstoffe herunter und verrechnet dabei die Rezeptausbeuten, je Stufe aufgerundet: Ein Rezept, das vier Stäbe liefert, wird für sechs Stäbe zweimal ausgeführt.
+
+Gibt es mehrere Rezepte für dasselbe Item, klappt der Baum das erste auf und weist die übrigen als Anzahl aus.
 
 Der Domain-Enum heißt `ContentFieldType` und nicht `FieldType` — letzteres kollidiert mit `MudBlazor.FieldType` und macht jede Razor-Datei mehrdeutig.
 

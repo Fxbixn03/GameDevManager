@@ -32,6 +32,20 @@ public class ReferenceService(IDbContextFactory<GameDevManagerDbContext> factory
 
         var hits = new List<EntityReferenceHit>();
 
+        // Rezepte verweisen über eigene Spalten auf Items statt über Feldwerte — Module mit
+        // eigenen Verknüpfungstabellen ergänzen ihre Abfrage hier.
+        hits.AddRange(await db.Recipes
+            .AsNoTracking()
+            .Where(r => r.OutputItemId == entityId)
+            .Select(r => new EntityReferenceHit(r.Id, ModuleKeys.Crafting, r.Name, "Ergebnis"))
+            .ToListAsync(ct));
+
+        hits.AddRange(await db.RecipeIngredients
+            .AsNoTracking()
+            .Where(i => i.ItemId == entityId)
+            .Select(i => new EntityReferenceHit(i.RecipeId, ModuleKeys.Crafting, i.Recipe!.Name, "Zutat"))
+            .ToListAsync(ct));
+
         foreach (var perModule in raw.GroupBy(r => r.OwnerModuleKey))
         {
             var names = await ResolveNamesAsync(
@@ -64,6 +78,12 @@ public class ReferenceService(IDbContextFactory<GameDevManagerDbContext> factory
                 .OrderBy(i => i.Name)
                 .Select(i => new EntitySummary(i.Id, ModuleKeys.Items, i.Name, i.ContentType!.Name))
                 .ToListAsync(ct),
+            ModuleKeys.Crafting => await db.Recipes
+                .AsNoTracking()
+                .Where(r => r.GameProjectId == projectId)
+                .OrderBy(r => r.Name)
+                .Select(r => new EntitySummary(r.Id, ModuleKeys.Crafting, r.Name, r.ContentType!.Name))
+                .ToListAsync(ct),
             _ => []
         };
     }
@@ -87,6 +107,10 @@ public class ReferenceService(IDbContextFactory<GameDevManagerDbContext> factory
                 .AsNoTracking()
                 .Where(i => ids.Contains(i.Id))
                 .ToDictionaryAsync(i => i.Id, i => i.Name, ct),
+            ModuleKeys.Crafting => await db.Recipes
+                .AsNoTracking()
+                .Where(r => ids.Contains(r.Id))
+                .ToDictionaryAsync(r => r.Id, r => r.Name, ct),
             _ => []
         };
 }

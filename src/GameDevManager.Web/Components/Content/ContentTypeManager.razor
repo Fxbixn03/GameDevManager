@@ -1,0 +1,374 @@
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+@*
+    Verwaltung der Arten eines Moduls samt ihrer Felder — modulübergreifend, weil Arten und
+    Felder laut Konzept überall gleich funktionieren. Die Modulseiten binden sie nur ein und
+    geben ihren Modul-Schlüssel mit.
+*@
+
+@if (_types is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_types.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Style" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@EmptyTitle</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@EmptyHint</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTypeAsync">Erste Art anlegen</MudButton>
+    </div>
+}
+else
+{
+    <MudStack Spacing="4">
+        @foreach (var type in _types)
+        {
+            <MudPaper Elevation="0" Class="gdm-panel">
+
+                @* --------------------------------------------------------- Kopf der Art *@
+                <div class="pa-4 gdm-panel-head">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                            <MudIcon Icon="@(string.IsNullOrWhiteSpace(type.Icon) ? Icons.Material.Filled.Style : type.Icon)"
+                                     Color="Color.Primary" />
+                            <div>
+                                <MudText Typo="Typo.h6">@type.Name</MudText>
+                                @if (!string.IsNullOrWhiteSpace(type.Description))
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@type.Description</MudText>
+                                }
+                            </div>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">
+                                @type.Fields.Count Feld(er)
+                            </MudChip>
+                        </MudStack>
+
+                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                            <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                       Size="Size.Small"
+                                       OnClick="@(() => AddFieldAsync(type))">
+                                Feld
+                            </MudButton>
+                            <MudTooltip Text="Art bearbeiten">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Size="Size.Small"
+                                               OnClick="@(() => EditTypeAsync(type))"
+                                               aria-label="@($"Art {type.Name} bearbeiten")" />
+                            </MudTooltip>
+                            <MudTooltip Text="Art löschen">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteTypeAsync(type))"
+                                               aria-label="@($"Art {type.Name} löschen")" />
+                            </MudTooltip>
+                        </MudStack>
+                    </MudStack>
+                </div>
+
+                @* ------------------------------------------------------ Felder der Art *@
+                @if (type.Fields.Count == 0)
+                {
+                    <div class="pa-4">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Diese Art hat noch keine Felder. Ohne Felder lassen sich nur Name und
+                            Beschreibung erfassen.
+                        </MudText>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var field in type.Fields)
+                    {
+                        <div class="pa-3 gdm-field-row">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="3">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                    <MudIcon Icon="@FieldTypeLabels.Icon(field.Type)" Size="Size.Small" Color="Color.Secondary" />
+                                    <div>
+                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                            <MudText Typo="Typo.body1">@field.Name</MudText>
+                                            @if (field.IsRequired)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">
+                                                    Pflicht
+                                                </MudChip>
+                                            }
+                                        </MudStack>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@DescribeField(field)</MudText>
+                                    </div>
+                                </MudStack>
+
+                                <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center">
+                                    <MudTooltip Text="Nach oben">
+                                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp"
+                                                       Size="Size.Small"
+                                                       Disabled="@(type.Fields.IndexOf(field) == 0)"
+                                                       OnClick="@(() => MoveFieldAsync(type, field, -1))"
+                                                       aria-label="Feld nach oben" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Nach unten">
+                                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown"
+                                                       Size="Size.Small"
+                                                       Disabled="@(type.Fields.IndexOf(field) == type.Fields.Count - 1)"
+                                                       OnClick="@(() => MoveFieldAsync(type, field, 1))"
+                                                       aria-label="Feld nach unten" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Feld bearbeiten">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => EditFieldAsync(field))"
+                                                       aria-label="@($"Feld {field.Name} bearbeiten")" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Feld löschen">
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeleteFieldAsync(field))"
+                                                       aria-label="@($"Feld {field.Name} löschen")" />
+                                    </MudTooltip>
+                                </MudStack>
+                            </MudStack>
+                        </div>
+                    }
+                }
+            </MudPaper>
+        }
+    </MudStack>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public required string ModuleKey { get; set; }
+
+    /// <summary>Wie die Entitäten dieses Moduls heißen — für Meldungen wie „von 3 Item(s) verwendet“.</summary>
+    [Parameter]
+    public string EntityNoun { get; set; } = "Eintrag";
+
+    [Parameter]
+    public string EmptyTitle { get; set; } = "Noch keine Arten";
+
+    [Parameter]
+    public string EmptyHint { get; set; } =
+        "Eine Art bündelt die Felder, die alle Einträge dieser Kategorie gemeinsam haben.";
+
+    /// <summary>Meldet der Seite, wie viele Arten es gibt — für die Kopfzeile.</summary>
+    [Parameter]
+    public EventCallback<int> OnLoaded { get; set; }
+
+    private List<ContentType>? _types;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    /// <summary>Lädt die Arten neu — auch von außen aufrufbar, etwa nach dem Anlegen.</summary>
+    public async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _types = await ContentTypes.GetTypesAsync(projectId, ModuleKey);
+
+        await OnLoaded.InvokeAsync(_types.Count);
+        StateHasChanged();
+    }
+
+    /// <summary>Öffnet den Dialog für eine neue Art — die Seite ruft das über ihren Knopf auf.</summary>
+    public async Task AddTypeAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+
+        await ShowTypeDialogAsync(new ContentType
+        {
+            GameProjectId = projectId,
+            ModuleKey = ModuleKey,
+            Name = string.Empty,
+            SortOrder = _types?.Count ?? 0
+        }, isNew: true);
+    }
+
+    private Task EditTypeAsync(ContentType type) =>
+        ShowTypeDialogAsync(new ContentType
+        {
+            Id = type.Id,
+            GameProjectId = type.GameProjectId,
+            ModuleKey = type.ModuleKey,
+            Name = type.Name,
+            Description = type.Description,
+            Icon = type.Icon,
+            SortOrder = type.SortOrder
+        }, isNew: false);
+
+    private async Task ShowTypeDialogAsync(ContentType draft, bool isNew)
+    {
+        var parameters = new DialogParameters<ContentTypeDialog>
+        {
+            { dialog => dialog.Type, draft },
+            { dialog => dialog.IsNew, isNew }
+        };
+
+        var reference = await Dialogs.ShowAsync<ContentTypeDialog>(
+            isNew ? "Neue Art" : "Art bearbeiten",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await reference.Result;
+        if (result is null || result.Canceled || result.Data is not ContentType edited)
+        {
+            return;
+        }
+
+        try
+        {
+            await ContentTypes.SaveTypeAsync(edited);
+            await LoadAsync();
+            Snackbar.Add($"Art „{edited.Name}“ gespeichert.", Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteTypeAsync(ContentType type)
+    {
+        var usages = await ContentTypes.CountUsagesAsync(ModuleKey, type.Id);
+
+        if (usages > 0)
+        {
+            Snackbar.Add(
+                $"„{type.Name}“ wird noch von {usages} {EntityNoun}(s) verwendet und kann nicht gelöscht werden.",
+                Severity.Warning);
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Art löschen",
+            $"„{type.Name}“ wird mit ihren {type.Fields.Count} Feld(ern) gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await ContentTypes.DeleteTypeAsync(type.Id);
+            await LoadAsync();
+            Snackbar.Add("Art gelöscht.", Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    // ----------------------------------------------------------------------------- Felder
+
+    private async Task AddFieldAsync(ContentType type) =>
+        await ShowFieldDialogAsync(new FieldDefinition
+        {
+            ModuleKey = ModuleKey,
+            ContentTypeId = type.Id,
+            Name = string.Empty,
+            SortOrder = await ContentTypes.GetNextFieldSortOrderAsync(type.Id, null)
+        }, isNew: true);
+
+    private Task EditFieldAsync(FieldDefinition field) =>
+        ShowFieldDialogAsync(field.Clone(), isNew: false);
+
+    private async Task ShowFieldDialogAsync(FieldDefinition draft, bool isNew)
+    {
+        var parameters = new DialogParameters<FieldDefinitionDialog>
+        {
+            { dialog => dialog.Field, draft },
+            { dialog => dialog.IsNew, isNew }
+        };
+
+        var reference = await Dialogs.ShowAsync<FieldDefinitionDialog>(
+            isNew ? "Neues Feld" : "Feld bearbeiten",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await reference.Result;
+        if (result is null || result.Canceled || result.Data is not FieldDefinition edited)
+        {
+            return;
+        }
+
+        try
+        {
+            await ContentTypes.SaveFieldAsync(edited);
+            await LoadAsync();
+            Snackbar.Add($"Feld „{edited.Name}“ gespeichert.", Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteFieldAsync(FieldDefinition field)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Feld löschen",
+            $"Das Feld „{field.Name}“ wird gelöscht — samt aller Werte, die dazu erfasst wurden.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await ContentTypes.DeleteFieldAsync(field.Id);
+        await LoadAsync();
+        Snackbar.Add("Feld gelöscht.", Severity.Success);
+    }
+
+    /// <summary>Tauscht ein Feld mit seinem Nachbarn und schreibt beide Sortiernummern fort.</summary>
+    private async Task MoveFieldAsync(ContentType type, FieldDefinition field, int offset)
+    {
+        var index = type.Fields.IndexOf(field);
+        var targetIndex = index + offset;
+
+        if (index < 0 || targetIndex < 0 || targetIndex >= type.Fields.Count)
+        {
+            return;
+        }
+
+        var neighbour = type.Fields[targetIndex];
+        (field.SortOrder, neighbour.SortOrder) = (targetIndex, index);
+
+        await ContentTypes.SaveFieldAsync(field);
+        await ContentTypes.SaveFieldAsync(neighbour);
+        await LoadAsync();
+    }
+
+    private static string DescribeField(FieldDefinition field)
+    {
+        var parts = new List<string> { FieldTypeLabels.Describe(field.Type) };
+
+        if (field.Type == ContentFieldType.EntityReference)
+        {
+            parts.Add($"→ {ModuleRegistry.Find(field.ReferenceModuleKey ?? string.Empty)?.Name ?? "unbekanntes Modul"}");
+        }
+
+        if (field.Type == ContentFieldType.Select && field.Options.Count > 0)
+        {
+            parts.Add(string.Join(" · ", field.Options.Select(option => option.Label)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(field.Unit))
+        {
+            parts.Add($"in {field.Unit}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(field.Description))
+        {
+            parts.Add(field.Description);
+        }
+
+        return string.Join(" — ", parts);
+    }
+}

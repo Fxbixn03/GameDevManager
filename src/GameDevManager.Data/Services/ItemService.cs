@@ -6,6 +6,7 @@ namespace GameDevManager.Data.Services;
 
 /// <summary>
 /// Lesen und Schreiben von Items samt ihrer benutzerdefinierten Feldwerte.
+/// Die Feldmechanik selbst steckt in <see cref="ContentFields"/> und ist für alle Module gleich.
 /// </summary>
 public class ItemService(
     IDbContextFactory<GameDevManagerDbContext> factory,
@@ -39,16 +40,16 @@ public class ItemService(
     /// Lädt alles, was die Bearbeitungsmaske braucht. Ohne <paramref name="itemId"/> entsteht
     /// ein neues, noch nicht gespeichertes Item.
     /// </summary>
-    public async Task<ItemEditContext?> LoadForEditAsync(
+    public async Task<ContentEditContext<Item>?> LoadForEditAsync(
         Guid projectId, Guid? itemId, CancellationToken ct = default)
     {
         var types = await contentTypes.GetTypesAsync(projectId, ModuleKeys.Items, ct);
 
         if (itemId is null)
         {
-            return new ItemEditContext
+            return new ContentEditContext<Item>
             {
-                Item = new Item { GameProjectId = projectId, Name = string.Empty },
+                Entity = new Item { GameProjectId = projectId, Name = string.Empty },
                 IsNew = true,
                 AvailableTypes = types,
                 IndividualFields = [],
@@ -67,57 +68,27 @@ public class ItemService(
             return null;
         }
 
-        var individualFields = await db.FieldDefinitions
-            .AsNoTracking()
-            .Where(f => f.OwnerEntityId == item.Id)
-            .Include(f => f.Options)
-            .ToListAsync(ct);
-
-        foreach (var field in individualFields)
+        return new ContentEditContext<Item>
         {
-            field.Options = [.. field.Options.OrderBy(o => o.SortOrder).ThenBy(o => o.Label)];
-        }
-
-        var values = await db.FieldValues
-            .AsNoTracking()
-            .Where(v => v.OwnerEntityId == item.Id)
-            .ToListAsync(ct);
-
-        return new ItemEditContext
-        {
-            Item = item,
+            Entity = item,
             IsNew = false,
             AvailableTypes = types,
-            IndividualFields = [.. individualFields.OrderBy(f => f.SortOrder).ThenBy(f => f.Name)],
-            Values = values.ToDictionary(v => v.FieldDefinitionId)
+            IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, item.Id, ct),
+            Values = await ContentFields.LoadValuesAsync(db, item.Id, ct)
         };
     }
 
-    /// <summary>
-    /// Speichert Stammdaten und Feldwerte in einem Zug. Werte von Feldern, die nach einem
-    /// Artwechsel nicht mehr gelten, werden entfernt — sonst bliebe unsichtbarer Inhalt in der
-    /// Datenbank stehen und würde in Exporten und der Referenzansicht wieder auftauchen.
-    /// </summary>
-    public async Task SaveItemAsync(ItemEditContext context, CancellationToken ct = default)
+    /// <summary>Speichert Stammdaten und Feldwerte in einem Zug.</summary>
+    public async Task SaveItemAsync(ContentEditContext<Item> context, CancellationToken ct = default)
     {
-        var item = context.Item;
+        var item = context.Entity;
 
         if (string.IsNullOrWhiteSpace(item.Name))
         {
             throw new ContentValidationException("Das Item braucht einen Namen.");
         }
 
-        var applicable = context.TypeFields
-            .Concat(context.IndividualFields)
-            .ToDictionary(f => f.Id);
-
-        foreach (var field in applicable.Values.Where(f => f.IsRequired))
-        {
-            if (context.ValueFor(field).IsEmpty)
-            {
-                throw new ContentValidationException($"Das Pflichtfeld „{field.Name}“ ist nicht gefüllt.");
-            }
-        }
+        ContentFields.ValidateRequired(context);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -132,7 +103,7 @@ public class ItemService(
                 GameProjectId = item.GameProjectId,
                 ContentTypeId = item.ContentTypeId,
                 Name = item.Name.Trim(),
-                Description = string.IsNullOrWhiteSpace(item.Description) ? null : item.Description.Trim(),
+                Description = Normalize(item.Description),
                 CreatedAtUtc = now,
                 UpdatedAtUtc = now
             };
@@ -143,59 +114,11 @@ public class ItemService(
         {
             stored.ContentTypeId = item.ContentTypeId;
             stored.Name = item.Name.Trim();
-            stored.Description = string.IsNullOrWhiteSpace(item.Description) ? null : item.Description.Trim();
+            stored.Description = Normalize(item.Description);
             stored.UpdatedAtUtc = now;
         }
 
-        var existingValues = await db.FieldValues
-            .Where(v => v.OwnerEntityId == item.Id)
-            .ToListAsync(ct);
-
-        foreach (var existing in existingValues)
-        {
-            if (!applicable.TryGetValue(existing.FieldDefinitionId, out var field))
-            {
-                db.FieldValues.Remove(existing);
-                continue;
-            }
-
-            var edited = context.ValueFor(field);
-            if (edited.IsEmpty)
-            {
-                db.FieldValues.Remove(existing);
-                continue;
-            }
-
-            CopyValues(edited, existing);
-        }
-
-        var alreadyStored = existingValues.Select(v => v.FieldDefinitionId).ToHashSet();
-
-        foreach (var (fieldId, field) in applicable)
-        {
-            if (alreadyStored.Contains(fieldId))
-            {
-                continue;
-            }
-
-            var edited = context.ValueFor(field);
-            if (edited.IsEmpty)
-            {
-                continue;
-            }
-
-            var created = new FieldValue
-            {
-                Id = edited.Id,
-                FieldDefinitionId = fieldId,
-                OwnerEntityId = item.Id,
-                OwnerModuleKey = ModuleKeys.Items
-            };
-
-            CopyValues(edited, created);
-            db.FieldValues.Add(created);
-        }
-
+        await ContentFields.StageValuesAsync(db, context, ct);
         await db.SaveChangesAsync(ct);
 
         // Die Maske zeigt anschließend den gespeicherten Stand.
@@ -215,15 +138,7 @@ public class ItemService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
-        // Zuerst die individuellen Felder — deren Werte fallen über den Fremdschlüssel mit.
-        await db.FieldDefinitions
-            .Where(f => f.OwnerEntityId == itemId)
-            .ExecuteDeleteAsync(ct);
-
-        // Danach die Werte der Art-Felder, die ohne Fremdschlüssel am Item hängen.
-        await db.FieldValues
-            .Where(v => v.OwnerEntityId == itemId)
-            .ExecuteDeleteAsync(ct);
+        await ContentFields.DeleteForEntityAsync(db, itemId, ct);
 
         await db.Items
             .Where(i => i.Id == itemId)
@@ -232,14 +147,6 @@ public class ItemService(
         await transaction.CommitAsync(ct);
     }
 
-    /// <summary>Überträgt die Wertspalten, ohne Id und Zuordnung anzufassen.</summary>
-    private static void CopyValues(FieldValue source, FieldValue target)
-    {
-        target.TextValue = string.IsNullOrWhiteSpace(source.TextValue) ? null : source.TextValue.Trim();
-        target.NumberValue = source.NumberValue;
-        target.BooleanValue = source.BooleanValue;
-        target.DateValue = source.DateValue;
-        target.ReferenceValue = source.ReferenceValue;
-        target.OptionId = source.OptionId;
-    }
+    private static string? Normalize(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

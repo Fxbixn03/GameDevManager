@@ -21,6 +21,10 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Item> Items => Set<Item>();
 
+    public DbSet<Recipe> Recipes => Set<Recipe>();
+
+    public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
+
     /// <summary>Hochgeladene Dateien aller Module; die Datei selbst liegt im Dateispeicher.</summary>
     public DbSet<Asset> Assets => Set<Asset>();
 
@@ -152,6 +156,24 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         });
 
         ConfigureContentEntity<Item>(modelBuilder);
+        ConfigureContentEntity<Recipe>(modelBuilder);
+
+        modelBuilder.Entity<Recipe>(entity =>
+        {
+            // Zeigt auf ein Item, also über die Modulgrenze — deshalb nur die GUID.
+            entity.HasIndex(r => r.OutputItemId);
+        });
+
+        modelBuilder.Entity<RecipeIngredient>(entity =>
+        {
+            entity.HasOne(i => i.Recipe)
+                .WithMany(r => r.Ingredients)
+                .HasForeignKey(i => i.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „welche Rezepte brauchen dieses Item?“.
+            entity.HasIndex(i => i.ItemId);
+        });
     }
 
     /// <summary>
