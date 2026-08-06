@@ -2,6 +2,15 @@
   <img src="Assets/Images/Icons/MainIcon.png" alt="GameDevManager Logo" width="200" />
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Blazor%20Server-512BD4?logo=blazor&logoColor=white" alt="Blazor Server" />
+  <img src="https://img.shields.io/badge/C%23%20%2F%20.NET-512BD4?logo=dotnet&logoColor=white" alt="C# / .NET" />
+  <img src="https://img.shields.io/badge/EF%20Core-512BD4?logo=dotnet&logoColor=white" alt="EF Core" />
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Self--hosted-333333" alt="Self-hosted" />
+</p>
+
 # GameDevManager
 
 Ein Verwaltungstool für die Spieleentwicklung. Damit baust du vor und während der Entwicklung ein strukturiertes Wiki für deine Spielwelt auf und exportierst die Inhalte später in deine Game Engine.
