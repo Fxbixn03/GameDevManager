@@ -1,0 +1,350 @@
+@inject ConditionService Conditions
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject ISnackbar Snackbar
+
+@*
+    Der Bedingungs-Editor aus dem Konzept — „ein einheitliches System, welches über alle Module
+    hinweg verknüpfbar ist“. Jedes Modul bindet ihn mit der GUID dessen ein, wozu die Bedingungen
+    gehören: ein NPC für seinen Shop, ein einzelner Händler-Posten für sich, später ein Dialog
+    oder eine Quest.
+
+    Er speichert selbst und nicht über die umgebende Maske, weil er an einer eigenen GUID hängt
+    und deshalb unabhängig davon ist, was die Seite gerade sonst bearbeitet.
+*@
+
+@if (_set is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudStack Spacing="3">
+        @if (_set.Conditions.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@EmptyHint</MudText>
+        }
+        else
+        {
+            <MudSelect T="ConditionLogic"
+                       Value="_set.Logic"
+                       ValueChanged="@((ConditionLogic logic) => Touch(() => _set.Logic = logic))"
+                       Label="Verknüpfung"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Style="max-width:280px;">
+                <MudSelectItem T="ConditionLogic" Value="@(ConditionLogic.All)">Alle müssen zutreffen</MudSelectItem>
+                <MudSelectItem T="ConditionLogic" Value="@(ConditionLogic.Any)">Mindestens eine muss zutreffen</MudSelectItem>
+            </MudSelect>
+
+            @foreach (var condition in _set.Conditions)
+            {
+                <div class="pa-2 gdm-field-row">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="ConditionKind"
+                                       Value="condition.Kind"
+                                       ValueChanged="@((ConditionKind kind) => ChangeKindAsync(condition, kind))"
+                                       Label="Bedingung"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense">
+                                @foreach (var kind in Enum.GetValues<ConditionKind>())
+                                {
+                                    <MudSelectItem T="ConditionKind" Value="@kind">@ConditionLabels.Describe(kind)</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+
+                        @if (condition.UsesTarget)
+                        {
+                            <MudItem xs="12" sm="6">
+                                @{
+                                    var module = condition.ExpectedTargetModule ?? string.Empty;
+                                }
+                                @if (Options(module).Count == 0)
+                                {
+                                    <MudTextField T="string"
+                                                  Value="@ModuleName(module)"
+                                                  Label="Bezug"
+                                                  HelperText="@($"Im Modul „{ModuleName(module)}“ gibt es dazu noch nichts.")"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Disabled="true" />
+                                }
+                                else
+                                {
+                                    <MudAutocomplete T="EntitySummary"
+                                                     Value="@TargetFor(condition)"
+                                                     ValueChanged="@((EntitySummary? e) => SetTarget(condition, e))"
+                                                     SearchFunc="@((string? s, CancellationToken ct) => SearchAsync(module, s))"
+                                                     ToStringFunc="@(e => e?.Name ?? string.Empty)"
+                                                     Label="@ModuleName(module)"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Clearable="true"
+                                                     ResetValueOnEmptyText="true"
+                                                     CoerceValue="false"
+                                                     MaxItems="50" />
+                                }
+                            </MudItem>
+                        }
+
+                        @if (condition.UsesNumber)
+                        {
+                            <MudItem xs="6" sm="4">
+                                <MudSelect T="ComparisonOperator"
+                                           Value="condition.Operator"
+                                           ValueChanged="@((ComparisonOperator op) => Touch(() => condition.Operator = op))"
+                                           Label="Vergleich"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense">
+                                    @foreach (var comparison in Enum.GetValues<ComparisonOperator>())
+                                    {
+                                        <MudSelectItem T="ComparisonOperator" Value="@comparison">
+                                            @ConditionLabels.Describe(comparison)
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+
+                            <MudItem xs="6" sm="4">
+                                <MudNumericField T="double?"
+                                                 Value="condition.NumberValue"
+                                                 ValueChanged="@((double? v) => Touch(() => condition.NumberValue = v))"
+                                                 Label="Wert"
+                                                 Variant="Variant.Outlined"
+                                                 Margin="Margin.Dense"
+                                                 Min="0" />
+                            </MudItem>
+                        }
+
+                        @if (condition.UsesBoolean)
+                        {
+                            <MudItem xs="12" sm="4" Class="d-flex align-center">
+                                <MudSwitch T="bool"
+                                           Value="@(condition.BooleanValue ?? true)"
+                                           ValueChanged="@((bool v) => Touch(() => condition.BooleanValue = v))"
+                                           Color="Color.Primary"
+                                           Label="@(condition.BooleanValue == false ? "trifft nicht zu" : "trifft zu")" />
+                            </MudItem>
+                        }
+
+                        @if (condition.Kind is ConditionKind.Flag or ConditionKind.QuestState or ConditionKind.Custom)
+                        {
+                            <MudItem xs="12" sm="@(condition.UsesBoolean ? 8 : 12)">
+                                <MudTextField T="string"
+                                              Value="condition.TextValue"
+                                              ValueChanged="@((string v) => Touch(() => condition.TextValue = v))"
+                                              Label="@TextLabel(condition.Kind)"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Immediate="true" />
+                            </MudItem>
+                        }
+
+                        <MudItem xs="12" Class="d-flex align-center justify-space-between">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @ConditionLabels.Sentence(condition, TargetName(condition))
+                            </MudText>
+                            <MudTooltip Text="Bedingung entfernen">
+                                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                               Size="Size.Small"
+                                               OnClick="@(() => Remove(condition))"
+                                               aria-label="Bedingung entfernen" />
+                            </MudTooltip>
+                        </MudItem>
+                    </MudGrid>
+                </div>
+            }
+        }
+
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+            <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="AddAsync">
+                Bedingung
+            </MudButton>
+
+            @if (_dirty)
+            {
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           OnClick="SaveAsync">
+                    Bedingungen speichern
+                </MudButton>
+                <MudText Typo="Typo.caption" Color="Color.Warning">Noch nicht gespeichert</MudText>
+            }
+        </MudStack>
+    </MudStack>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid OwnerId { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string OwnerModuleKey { get; set; }
+
+    [Parameter]
+    public string Slot { get; set; } = ConditionSlots.Availability;
+
+    [Parameter]
+    public string EmptyHint { get; set; } =
+        "Ohne Bedingung ist es immer verfügbar.";
+
+    /// <summary>Meldet der Seite, wie viele Bedingungen gespeichert wurden.</summary>
+    [Parameter]
+    public EventCallback<int> OnSaved { get; set; }
+
+    private ConditionSet? _set;
+    private readonly Dictionary<string, List<EntitySummary>> _options = [];
+    private Guid _loadedFor;
+    private bool _dirty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedFor == OwnerId)
+        {
+            return;
+        }
+
+        _loadedFor = OwnerId;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _set = await Conditions.LoadAsync(projectId, OwnerId, OwnerModuleKey, Slot);
+        _dirty = false;
+
+        foreach (var moduleKey in _set.Conditions
+            .Select(condition => condition.ExpectedTargetModule)
+            .OfType<string>()
+            .Distinct())
+        {
+            await EnsureOptionsAsync(projectId, moduleKey);
+        }
+    }
+
+    private async Task EnsureOptionsAsync(Guid projectId, string moduleKey)
+    {
+        if (!_options.ContainsKey(moduleKey))
+        {
+            _options[moduleKey] = await References.GetEntitiesAsync(projectId, moduleKey);
+        }
+    }
+
+    private List<EntitySummary> Options(string moduleKey) => _options.GetValueOrDefault(moduleKey, []);
+
+    private static string ModuleName(string moduleKey) =>
+        ModuleRegistry.Find(moduleKey)?.Name ?? moduleKey;
+
+    private EntitySummary? TargetFor(Condition condition) =>
+        condition.ExpectedTargetModule is { } moduleKey && condition.TargetEntityId is { } id
+            ? Options(moduleKey).FirstOrDefault(entity => entity.Id == id)
+            : null;
+
+    private string? TargetName(Condition condition) => TargetFor(condition)?.Name;
+
+    private void SetTarget(Condition condition, EntitySummary? entity) =>
+        Touch(() =>
+        {
+            condition.TargetEntityId = entity?.Id;
+            condition.TargetModuleKey = entity?.ModuleKey ?? condition.ExpectedTargetModule;
+        });
+
+    private Task<IEnumerable<EntitySummary>> SearchAsync(string moduleKey, string? search)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? Options(moduleKey)
+            : Options(moduleKey).Where(entity =>
+                entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private static string TextLabel(ConditionKind kind) => kind switch
+    {
+        ConditionKind.Flag => "Name des Schalters",
+        ConditionKind.QuestState => "Zustand",
+        _ => "Beschreibung"
+    };
+
+    private async Task AddAsync()
+    {
+        if (_set is null)
+        {
+            return;
+        }
+
+        var condition = new Condition
+        {
+            ConditionSetId = _set.Id,
+            Kind = ConditionKind.HasItem,
+            TargetModuleKey = ModuleKeys.Items,
+            NumberValue = 1,
+            SortOrder = _set.Conditions.Count
+        };
+
+        _set.Conditions.Add(condition);
+        _dirty = true;
+
+        await EnsureOptionsAsync(await Project.GetCurrentIdAsync(), ModuleKeys.Items);
+    }
+
+    private async Task ChangeKindAsync(Condition condition, ConditionKind kind)
+    {
+        condition.Kind = kind;
+        condition.TargetModuleKey = condition.ExpectedTargetModule;
+
+        // Beim Wechsel passen die alten Angaben nicht mehr — sie werden zurückgesetzt statt
+        // stehen zu bleiben und unbemerkt mitgespeichert zu werden.
+        condition.TargetEntityId = null;
+        condition.NumberValue = condition.UsesNumber ? 1 : null;
+        condition.BooleanValue = condition.UsesBoolean ? true : null;
+
+        _dirty = true;
+
+        if (condition.ExpectedTargetModule is { } moduleKey)
+        {
+            await EnsureOptionsAsync(await Project.GetCurrentIdAsync(), moduleKey);
+        }
+    }
+
+    private void Remove(Condition condition)
+    {
+        _set?.Conditions.Remove(condition);
+        _dirty = true;
+    }
+
+    private void Touch(Action change)
+    {
+        change();
+        _dirty = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_set is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Conditions.SaveAsync(_set);
+            _dirty = false;
+
+            Snackbar.Add(
+                _set.Conditions.Count == 0 ? "Bedingungen entfernt." : "Bedingungen gespeichert.",
+                Severity.Success);
+
+            await OnSaved.InvokeAsync(_set.Conditions.Count);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

@@ -138,7 +138,7 @@ public class ItemService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
-        await ContentFields.DeleteForEntityAsync(db, itemId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, itemId, ct);
 
         await db.Items
             .Where(i => i.Id == itemId)

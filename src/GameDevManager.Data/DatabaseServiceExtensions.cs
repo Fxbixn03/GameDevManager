@@ -46,6 +46,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<NpcService>();
         services.AddScoped<LootService>();
         services.AddScoped<MapService>();
+        services.AddScoped<ConditionService>();
         services.AddScoped<ReferenceService>();
         services.AddScoped<AssetService>();
         services.AddScoped<SearchService>();

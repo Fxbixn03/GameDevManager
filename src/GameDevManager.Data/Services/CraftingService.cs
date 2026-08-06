@@ -226,7 +226,7 @@ public class CraftingService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
-        await ContentFields.DeleteForEntityAsync(db, recipeId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, recipeId, ct);
 
         // Die Zutaten fallen über den Fremdschlüssel mit.
         await db.Recipes

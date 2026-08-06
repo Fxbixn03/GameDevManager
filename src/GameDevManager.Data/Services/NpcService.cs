@@ -143,7 +143,11 @@ public class NpcService(
         stored.LootTableId = npc.LootTableId;
         stored.UpdatedAtUtc = now;
 
-        SyncOffers(db, stored, npc);
+        var removedOfferIds = new List<Guid>();
+        SyncOffers(db, stored, npc, removedOfferIds);
+
+        // Bedingungen entfernter Posten hängen an deren GUID und fallen nicht von selbst mit.
+        await EntityCleanup.DeleteForEntitiesAsync(db, removedOfferIds, ct);
 
         await ContentFields.StageValuesAsync(db, context, ct);
         await db.SaveChangesAsync(ct);
@@ -197,7 +201,8 @@ public class NpcService(
         }
     }
 
-    private static void SyncOffers(GameDevManagerDbContext db, Npc stored, Npc incoming)
+    private static void SyncOffers(
+        GameDevManagerDbContext db, Npc stored, Npc incoming, List<Guid> removedOfferIds)
     {
         var wanted = incoming.Offers;
         var wantedIds = wanted.Select(offer => offer.Id).ToHashSet();
@@ -207,6 +212,7 @@ public class NpcService(
         foreach (var obsolete in stored.Offers.Where(o => !wantedIds.Contains(o.Id)).ToList())
         {
             stored.Offers.Remove(obsolete);
+            removedOfferIds.Add(obsolete.Id);
         }
 
         for (var index = 0; index < wanted.Count; index++)
@@ -253,7 +259,14 @@ public class NpcService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
-        await ContentFields.DeleteForEntityAsync(db, npcId, ct);
+        // Die Posten haben eigene GUIDs und können eigene Bedingungen tragen — sie müssen
+        // deshalb mit aufgeräumt werden, bevor sie über den Fremdschlüssel verschwinden.
+        var offerIds = await db.TraderOffers
+            .Where(offer => offer.NpcId == npcId)
+            .Select(offer => offer.Id)
+            .ToListAsync(ct);
+
+        await EntityCleanup.DeleteForEntitiesAsync(db, [npcId, .. offerIds], ct);
 
         // Die Angebote fallen über den Fremdschlüssel mit.
         await db.Npcs

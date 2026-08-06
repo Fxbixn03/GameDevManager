@@ -128,6 +128,85 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("AssetTagAssignments");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Condition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool?>("BooleanValue")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ConditionSetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("NumberValue")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Operator")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("TargetEntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TargetModuleKey")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TextValue")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConditionSetId");
+
+                    b.HasIndex("TargetEntityId");
+
+                    b.ToTable("Conditions");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ConditionSet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Logic")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("OwnerModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Slot")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("OwnerId", "Slot")
+                        .IsUnique();
+
+                    b.ToTable("ConditionSets");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -765,6 +844,28 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Condition", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ConditionSet", "ConditionSet")
+                        .WithMany("Conditions")
+                        .HasForeignKey("ConditionSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConditionSet");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ConditionSet", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -968,6 +1069,11 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.AssetTag", b =>
                 {
                     b.Navigation("Assignments");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ConditionSet", b =>
+                {
+                    b.Navigation("Conditions");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>

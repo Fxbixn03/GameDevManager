@@ -123,6 +123,85 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("AssetTagAssignments");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Condition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool?>("BooleanValue")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ConditionSetId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double?>("NumberValue")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Operator")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("TargetEntityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TargetModuleKey")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TextValue")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConditionSetId");
+
+                    b.HasIndex("TargetEntityId");
+
+                    b.ToTable("Conditions");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ConditionSet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Logic")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OwnerModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Slot")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("OwnerId", "Slot")
+                        .IsUnique();
+
+                    b.ToTable("ConditionSets");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -760,6 +839,28 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Condition", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ConditionSet", "ConditionSet")
+                        .WithMany("Conditions")
+                        .HasForeignKey("ConditionSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConditionSet");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ConditionSet", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -963,6 +1064,11 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.AssetTag", b =>
                 {
                     b.Navigation("Assignments");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ConditionSet", b =>
+                {
+                    b.Navigation("Conditions");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>

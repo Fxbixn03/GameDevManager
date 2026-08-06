@@ -1,0 +1,60 @@
+@*
+    Rahmen um den Bedingungs-Editor für Fälle, in denen kein Platz für einen eigenen Abschnitt
+    ist — etwa ein einzelner Händler-Posten in einer ohnehin dichten Zeile.
+*@
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Rule" />
+            <div>
+                <MudText Typo="Typo.h6">Bedingungen</MudText>
+                @if (!string.IsNullOrWhiteSpace(Subject))
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@Subject</MudText>
+                }
+            </div>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <div style="min-width:min(640px, 85vw);">
+            <ConditionEditor OwnerId="OwnerId"
+                             OwnerModuleKey="OwnerModuleKey"
+                             Slot="Slot"
+                             EmptyHint="@EmptyHint"
+                             OnSaved="OnSaved" />
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => MudDialog.Close(DialogResult.Ok(_count)))">
+            Fertig
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Guid OwnerId { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string OwnerModuleKey { get; set; }
+
+    [Parameter]
+    public string Slot { get; set; } = ConditionSlots.Availability;
+
+    /// <summary>Worum es geht — steht als Untertitel im Kopf.</summary>
+    [Parameter]
+    public string? Subject { get; set; }
+
+    [Parameter]
+    public string EmptyHint { get; set; } = "Ohne Bedingung ist es immer verfügbar.";
+
+    private int? _count;
+
+    private void OnSaved(int count) => _count = count;
+}

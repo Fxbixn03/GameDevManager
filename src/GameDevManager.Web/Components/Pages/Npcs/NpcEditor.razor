@@ -2,6 +2,7 @@
 @page "/modules/npcs/{Id:guid}"
 @inject NpcService Npcs
 @inject MapService Maps
+@inject ConditionService Conditions
 @inject ReferenceService References
 @inject ProjectContext Project
 @inject IDialogService Dialogs
@@ -158,6 +159,20 @@ else
                             </MudButton>
                         </MudStack>
 
+                        @* Im Konzept: „Manche Shops … sind nur nach einer Bedingung verfügbar.“ *@
+                        @if (!_context.IsNew)
+                        {
+                            <MudExpansionPanels Elevation="0" Class="mb-3">
+                                <MudExpansionPanel Text="@($"Verfügbarkeit des Shops{(_shopConditionCount > 0 ? $" ({_shopConditionCount})" : "")}")">
+                                    <ConditionEditor OwnerId="_context.Entity.Id"
+                                                     OwnerModuleKey="@ModuleKeys.Npcs"
+                                                     Slot="@ConditionSlots.Shop"
+                                                     EmptyHint="Ohne Bedingung ist der Shop immer offen."
+                                                     OnSaved="@((int count) => _shopConditionCount = count)" />
+                                </MudExpansionPanel>
+                            </MudExpansionPanels>
+                        }
+
                         @if (_items.Count == 0)
                         {
                             <MudAlert Severity="Severity.Info" Dense="true">
@@ -267,6 +282,17 @@ else
                                             </MudItem>
 
                                             <MudItem xs="12" sm="4" md="6" Class="d-flex align-center justify-end">
+                                                @* „…teilweise auch nur Items aus einem Shop“ — je Posten eigene Bedingungen. *@
+                                                <MudTooltip Text="Bedingungen für diesen Posten">
+                                                    <MudButton Size="Size.Small"
+                                                               Variant="Variant.Text"
+                                                               StartIcon="@Icons.Material.Filled.Rule"
+                                                               Disabled="_context.IsNew"
+                                                               OnClick="@(() => EditOfferConditionsAsync(offer))">
+                                                        @(_offerConditionCounts.GetValueOrDefault(offer.Id) is var n && n > 0
+                                                            ? $"Bedingungen ({n})" : "Bedingungen")
+                                                    </MudButton>
+                                                </MudTooltip>
                                                 <MudTooltip Text="Posten entfernen">
                                                     <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                                    Size="Size.Small"
@@ -349,14 +375,6 @@ else
                     </MudPaper>
                 }
 
-                @* Was das Konzept für dieses Modul noch vorsieht, aber die Grundlage fehlt. *@
-                <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">Kommt später</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Die Verfügbarkeitsbedingungen von Shops brauchen das Bedingungssystem. Bis
-                        dahin lassen sich solche Angaben als Felder an der NPC-Art erfassen.
-                    </MudText>
-                </MudPaper>
 
                 @if (!_context.IsNew)
                 {
@@ -379,6 +397,8 @@ else
     private List<EntitySummary> _currencies = [];
     private List<EntitySummary> _lootTables = [];
     private List<MapPlacement> _placements = [];
+    private Dictionary<Guid, int> _offerConditionCounts = [];
+    private int _shopConditionCount;
     private Guid? _loadedId;
     private bool _notFound;
     private bool _saving;
@@ -426,7 +446,43 @@ else
         if (!_context.IsNew)
         {
             _placements = await Maps.GetPlacementsForEntityAsync(projectId, _context.Entity.Id);
+            await RefreshConditionCountsAsync();
         }
+    }
+
+    /// <summary>Zählt die Bedingungen von Shop und Posten für die Abzeichen in der Maske.</summary>
+    private async Task RefreshConditionCountsAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var offerIds = _context.Entity.Offers.Select(offer => offer.Id).ToList();
+        _offerConditionCounts = await Conditions.CountByOwnersAsync(offerIds, ConditionSlots.Availability);
+
+        var shop = await Conditions.CountByOwnersAsync([_context.Entity.Id], ConditionSlots.Shop);
+        _shopConditionCount = shop.GetValueOrDefault(_context.Entity.Id);
+    }
+
+    private async Task EditOfferConditionsAsync(TraderOffer offer)
+    {
+        var itemName = ItemFor(offer.ItemId)?.Name ?? "Posten";
+
+        var parameters = new DialogParameters<ConditionDialog>
+        {
+            { dialog => dialog.OwnerId, offer.Id },
+            { dialog => dialog.OwnerModuleKey, ModuleKeys.Npcs },
+            { dialog => dialog.Slot, ConditionSlots.Availability },
+            { dialog => dialog.Subject, $"{itemName} bei {_context!.Entity.Name}" },
+            { dialog => dialog.EmptyHint, "Ohne Bedingung ist dieser Posten immer im Angebot." }
+        };
+
+        var reference = await Dialogs.ShowAsync<ConditionDialog>(
+            "Bedingungen", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        await reference.Result;
+        await RefreshConditionCountsAsync();
     }
 
     private EntitySummary? ItemFor(Guid itemId) => _items.FirstOrDefault(entity => entity.Id == itemId);

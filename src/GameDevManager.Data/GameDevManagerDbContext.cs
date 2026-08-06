@@ -35,6 +35,11 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
 
+    /// <summary>Bedingungssätze aller Module, adressiert über die GUID ihres Besitzers.</summary>
+    public DbSet<ConditionSet> ConditionSets => Set<ConditionSet>();
+
+    public DbSet<Condition> Conditions => Set<Condition>();
+
     public DbSet<GameMap> Maps => Set<GameMap>();
 
     public DbSet<MapMarker> MapMarkers => Set<MapMarker>();
@@ -185,6 +190,38 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Frage „welche NPCs benutzen diese Loot-Table?“.
             entity.HasIndex(n => n.LootTableId);
+        });
+
+        modelBuilder.Entity<ConditionSet>(entity =>
+        {
+            entity.Property(s => s.OwnerModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Property(s => s.Slot).HasMaxLength(50).IsRequired();
+
+            entity.HasOne(s => s.GameProject)
+                .WithMany()
+                .HasForeignKey(s => s.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Je Besitzer und Aspekt gibt es höchstens einen Satz.
+            entity.HasIndex(s => new { s.OwnerId, s.Slot }).IsUnique();
+        });
+
+        modelBuilder.Entity<Condition>(entity =>
+        {
+            entity.Property(c => c.TargetModuleKey).HasMaxLength(ModuleKeyLength);
+            entity.Property(c => c.TextValue).HasMaxLength(500);
+            entity.Ignore(c => c.UsesNumber);
+            entity.Ignore(c => c.UsesBoolean);
+            entity.Ignore(c => c.UsesTarget);
+            entity.Ignore(c => c.ExpectedTargetModule);
+
+            entity.HasOne(c => c.ConditionSet)
+                .WithMany(s => s.Conditions)
+                .HasForeignKey(c => c.ConditionSetId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „welche Bedingungen beziehen sich auf diese Entität?“.
+            entity.HasIndex(c => c.TargetEntityId);
         });
 
         ConfigureContentEntity<LootTable>(modelBuilder);

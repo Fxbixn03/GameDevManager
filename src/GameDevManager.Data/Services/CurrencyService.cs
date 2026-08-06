@@ -139,7 +139,7 @@ public class CurrencyService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
-        await ContentFields.DeleteForEntityAsync(db, currencyId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, currencyId, ct);
 
         await db.Currencies
             .Where(c => c.Id == currencyId)

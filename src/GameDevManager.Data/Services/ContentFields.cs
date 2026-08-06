@@ -123,23 +123,6 @@ public static class ContentFields
         }
     }
 
-    /// <summary>
-    /// Entfernt Feldwerte und individuelle Felder einer gelöschten Entität. Beides hängt über
-    /// die GUID und nicht über einen Fremdschlüssel daran, fällt also nicht von selbst mit.
-    /// </summary>
-    public static async Task DeleteForEntityAsync(
-        GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
-    {
-        // Zuerst die individuellen Felder — deren Werte fallen über den Fremdschlüssel mit.
-        await db.FieldDefinitions
-            .Where(f => f.OwnerEntityId == entityId)
-            .ExecuteDeleteAsync(ct);
-
-        await db.FieldValues
-            .Where(v => v.OwnerEntityId == entityId)
-            .ExecuteDeleteAsync(ct);
-    }
-
     /// <summary>Überträgt die Wertspalten, ohne Id und Zuordnung anzufassen.</summary>
     private static void CopyValues(FieldValue source, FieldValue target)
     {

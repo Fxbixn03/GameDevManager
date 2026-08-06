@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GameDevManager ist ein selbst gehostetes Verwaltungstool für Indie-Spieleentwickler: ein strukturiertes Wiki für Spielinhalte (Items, NPCs, Quests, Dialoge, Karten, …) mit späterem Export in Game Engines (Unity, Unreal, Godot oder JSON/ZIP).
 
-**Status: Kern steht, sieben Module umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem, die globale Suche, Items, die Asset-/Sprite-Bibliothek, Crafting, Währungen, NPCs, Loot-Tables und Karten sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
+**Status: Kern vollständig, sieben Module umgesetzt.** Die Kern-Architektur der Roadmap steht damit ganz: Entitätenmodell, Arten/Felder, GUID-Referenzen **und das Bedingungssystem**. Dazu Datenbankanbindung, Theme, Modul-Registry, globale Suche, Items, Asset-/Sprite-Bibliothek, Crafting, Währungen, NPCs, Loot-Tables und Karten; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
 
 **Sprache:** README, Konzept und Doku sind auf Deutsch. Neue Dokumentation und Commit-Messages ebenfalls auf Deutsch verfassen. Code (Bezeichner, Kommentare) auf Englisch.
 
@@ -72,6 +72,21 @@ Das Währungsmodul ist nach genau diesem Ablauf entstanden und der kürzeste Bel
 
 **EF-Fallstrick bei Kind-Sammlungen** (Rezept-Zutaten, später Händler-Angebote, Loot-Einträge): Neue Kinder an einem **bestehenden** Elterndatensatz immer über `db.Set<T>().Add(...)` einfügen, nie über die Navigationsliste. Die Entitäten bringen ihre GUID schon mit, und EF hält sie beim Anhängen sonst für vorhandene Datensätze und erzeugt ein `UPDATE` auf eine Zeile, die es noch nicht gibt. Entfernt wird umgekehrt nur über die Navigationsliste — der Fremdschlüssel ist pflicht, EF löscht die Waise dadurch von selbst; zusätzlich `Remove` aufzurufen erzeugt einen zweiten `DELETE`.
 
+### Bedingungssystem
+
+Das Konzept verlangt „ein einheitliches System, welches über alle Module hinweg verknüpfbar ist“. Es funktioniert nach demselben Prinzip wie die Feldwerte: Ein `ConditionSet` hängt über eine GUID an seinem Besitzer, nicht über einen Fremdschlüssel.
+
+- **Besitzer** kann eine ganze Entität sein (ein NPC) **oder ein Teilobjekt mit eigener GUID** (ein einzelner Händler-Posten). Genau das deckt „manche Shops und teilweise auch nur Items aus einem Shop“ ab.
+- **`Slot`** unterscheidet mehrere Bedingungssätze am selben Besitzer — siehe `ConditionSlots`. Ein NPC hat heute `Shop`; kommt später „erscheint, wenn …“ dazu, braucht das keine Umstellung.
+- **`ConditionKind`** legt fest, welche Spalten tragen: mengenbezogene Arten nutzen Operator und Zahl, Ja/Nein-Arten den booleschen Wert, Bezüge auf andere Entitäten eine GUID. `Custom` fängt alles ab, was das Tool noch nicht kennt.
+- Ein **leerer Satz wird gelöscht statt gespeichert** — „keine Bedingung“ soll keine Zeile hinterlassen.
+
+`FindProblemsAsync` ist der Health Check „unerfüllbare Bedingungen“. Er meldet nur, was sich ohne Kenntnis des laufenden Spiels sicher feststellen lässt: Ziele, die es nicht mehr gibt, und Widersprüche in einem „alle müssen zutreffen“-Satz (eine Menge gleichzeitig über und unter einer Grenze, ein Schalter gleichzeitig gesetzt und nicht gesetzt). Ziele in noch nicht umgesetzten Modulen gelten ausdrücklich **nicht** als fehlend.
+
+In der Oberfläche ist `<ConditionEditor OwnerId="…" OwnerModuleKey="…" Slot="…" />` überall einbindbar; `ConditionDialog` ist der Rahmen dafür, wo kein Platz für einen eigenen Abschnitt ist.
+
+**Beim Löschen einer Entität** räumt `EntityCleanup.DeleteForEntityAsync` Feldwerte, individuelle Felder **und** Bedingungssätze zusammen ab — an einer Stelle gebündelt, damit kein Modul eine Art davon vergisst. Hat eine Entität Teilobjekte mit eigenen GUIDs (Händler-Posten, später Dialogknoten), muss ihr Service `DeleteForEntitiesAsync` mit **allen** GUIDs aufrufen; sonst bleiben deren Bedingungen als Waisen zurück.
+
 ### Assets
 
 Dateien liegen **nicht** in der Datenbank, sondern im Dateisystem unter dem in `Assets:StoragePath` konfigurierten Pfad (relativ zum Anwendungsverzeichnis, Standard `assets/`). In der Datenbank steht nur der `StorageKey`. Das hält das Verhalten über alle vier Provider gleich und die Datenbanksicherungen klein.
@@ -105,7 +120,7 @@ NPCs und Mobs liegen laut Konzept im selben Modul und unterscheiden sich über `
 
 Das Warenangebot (`TraderOffer`) ist die zweite Kind-Sammlung nach den Rezept-Zutaten und folgt demselben Muster inklusive des EF-Fallstricks oben. Je Posten: Item, Währung, Verkaufs- und Ankaufspreis, Bestand (`null` = unbegrenzt) und Auffüllzeit. Ein Posten ohne Preis ist zulässig — ein Händler, der etwas führt, aber nicht handelt, ist ein gültiger Fall. Ein Preis **ohne** Währung wird abgelehnt, weil die Zahl dann nicht zu deuten wäre.
 
-Eine Konzept-Anforderung dieses Moduls fehlt noch, weil ihre Grundlage nicht steht: die **Verfügbarkeitsbedingungen** von Shops (Bedingungssystem). Der NPC-Editor weist in der Seitenleiste darauf hin; bis dahin lassen sich solche Angaben als Felder an der NPC-Art erfassen. Spawn-Orte kommen aus dem Karten-Modul und werden im NPC-Editor angezeigt.
+Alle Konzept-Anforderungen dieses Moduls sind abgedeckt: Spawn-Orte kommen aus dem Karten-Modul, Loot-Tables aus dem Loot-Modul, und die Verfügbarkeit von Shop und einzelnen Posten läuft über das Bedingungssystem.
 
 ### Loot-Tables
 

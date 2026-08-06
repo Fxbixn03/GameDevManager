@@ -252,7 +252,7 @@ public class LootService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
-        await ContentFields.DeleteForEntityAsync(db, tableId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, tableId, ct);
 
         // Ohne das zeigten die NPCs auf eine Tabelle, die es nicht mehr gibt.
         await db.Npcs
