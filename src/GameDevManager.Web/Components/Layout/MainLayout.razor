@@ -32,9 +32,13 @@
         </div>
 
         <MudSpacer />
+
+        <GlobalSearch />
+
         <MudTooltip Text="@(_isDarkMode ? "Helles Design" : "Dunkles Design")">
             <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
                            Color="Color.Inherit"
+                           Class="ml-2"
                            OnClick="ToggleDarkMode" />
         </MudTooltip>
     </MudAppBar>

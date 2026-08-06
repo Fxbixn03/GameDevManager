@@ -44,6 +44,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<CraftingService>();
         services.AddScoped<ReferenceService>();
         services.AddScoped<AssetService>();
+        services.AddScoped<SearchService>();
 
         return services;
     }

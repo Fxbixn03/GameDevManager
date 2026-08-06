@@ -228,6 +228,62 @@ html {
     white-space: nowrap;
 }
 
+/* ------------------------------------------------------------------------ Topbar */
+
+/* Die Modulleiste trägt alle Module und darf den Rest der Topbar nicht verdrängen:
+   sie schrumpft und scrollt notfalls waagerecht — ohne sichtbaren Balken, weil sie sonst
+   quer durch die Appbar liefe. */
+.gdm-module-strip {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.gdm-module-strip::-webkit-scrollbar {
+    display: none;
+}
+
+/* Das Modul, in dem man sich befindet — gelbe Unterkante statt Füllfläche. */
+.gdm-module-active {
+    border-bottom: 2px solid var(--mud-palette-primary);
+}
+
+/* Die Appbar bleibt in beiden Designs anthrazit. Das Suchfeld muss seine Farben deshalb
+   von der Appbar nehmen und nicht vom Seitenhintergrund — sonst stünde im hellen Design
+   dunkler Text auf dunklem Grund. */
+.gdm-topbar-search {
+    flex: 0 1 320px;
+    min-width: 150px;
+    margin: 0;
+}
+
+.gdm-topbar-search input,
+.gdm-topbar-search .mud-input-adornment .mud-icon-root,
+.gdm-topbar-search .mud-input-clear-button .mud-icon-root {
+    color: var(--mud-palette-appbar-text);
+}
+
+.gdm-topbar-search input::placeholder {
+    color: var(--mud-palette-appbar-text);
+    opacity: 0.6;
+}
+
+.gdm-topbar-search .mud-input-outlined-border {
+    border-color: rgba(230, 233, 237, 0.28);
+}
+
+.gdm-topbar-search .mud-input:hover .mud-input-outlined-border {
+    border-color: rgba(230, 233, 237, 0.5);
+}
+
+.gdm-topbar-search .mud-input.mud-focused .mud-input-outlined-border {
+    border-color: var(--mud-palette-primary);
+}
+
 /* ------------------------------------------------------------------ Crafting-Baum */
 /* Die Tiefe wird über Einrückung und eine senkrechte Linie gezeigt — kein Graph-Layout,
    damit der Baum ohne externe Bibliothek auskommt und auf jeder Breite lesbar bleibt. */

@@ -1,0 +1,104 @@
+@inject SearchService Search
+@inject ProjectContext Project
+@inject NavigationManager Navigation
+
+@*
+    Die globale Suche aus dem Konzept: ein Feld für alle Module. Neben Namen und Beschreibungen
+    nimmt sie auch eine eingefügte GUID entgegen und springt direkt zur Entität — Referenzen
+    laufen in diesem Tool ausschließlich über GUIDs.
+*@
+
+<MudAutocomplete T="SearchHit"
+                 Value="_selected"
+                 ValueChanged="OpenAsync"
+                 SearchFunc="SearchAsync"
+                 ToStringFunc="@(hit => hit?.Name ?? string.Empty)"
+                 Placeholder="Suchen oder GUID einfügen …"
+                 Variant="Variant.Outlined"
+                 Margin="Margin.Dense"
+                 Dense="true"
+                 Clearable="true"
+                 ResetValueOnEmptyText="true"
+                 CoerceValue="false"
+                 MinCharacters="@SearchService.MinimumQueryLength"
+                 MaxItems="20"
+                 Adornment="Adornment.Start"
+                 AdornmentIcon="@Icons.Material.Filled.Search"
+                 Class="gdm-topbar-search">
+    <ItemTemplate Context="hit">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+            @if (hit.PrimaryAssetId is not null)
+            {
+                <AssetThumbnail AssetId="hit.PrimaryAssetId" Size="Size.Small" Alt="@hit.Name" />
+            }
+            else
+            {
+                <MudIcon Icon="@IconFor(hit)" Size="Size.Small" Color="Color.Secondary" />
+            }
+
+            <div style="min-width:0;">
+                <MudText Typo="Typo.body2" Class="gdm-ellipsis">@hit.Name</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-ellipsis">
+                    @Describe(hit)
+                </MudText>
+            </div>
+        </MudStack>
+    </ItemTemplate>
+
+    <NoItemsTemplate>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-3">
+            Nichts gefunden.
+        </MudText>
+    </NoItemsTemplate>
+</MudAutocomplete>
+
+@code {
+    private SearchHit? _selected;
+
+    private async Task<IEnumerable<SearchHit>> SearchAsync(string? query, CancellationToken ct)
+    {
+        var projectId = await Project.GetCurrentIdAsync(ct);
+        return await Search.SearchAsync(projectId, query, ct: ct);
+    }
+
+    private Task OpenAsync(SearchHit? hit)
+    {
+        if (hit is null)
+        {
+            _selected = null;
+            return Task.CompletedTask;
+        }
+
+        // Das Feld leeren, damit es für die nächste Suche bereitsteht statt den Treffer zu halten.
+        _selected = null;
+        Navigation.NavigateTo(RouteFor(hit));
+
+        return Task.CompletedTask;
+    }
+
+    private static string RouteFor(SearchHit hit)
+    {
+        var module = ModuleRegistry.Find(hit.ModuleKey);
+
+        return hit.Kind switch
+        {
+            SearchHitKind.Asset => "/modules/assets",
+            SearchHitKind.ContentType => module is { Implemented: true } ? $"{module.Route}/arten" : "/",
+            _ => module is { Implemented: true } ? $"{module.Route}/{hit.Id}" : "/"
+        };
+    }
+
+    private static string IconFor(SearchHit hit) => hit.Kind switch
+    {
+        SearchHitKind.Asset => Icons.Material.Filled.Image,
+        SearchHitKind.ContentType => Icons.Material.Filled.Style,
+        _ => ModuleRegistry.Find(hit.ModuleKey)?.Icon ?? Icons.Material.Filled.Search
+    };
+
+    private static string Describe(SearchHit hit)
+    {
+        var module = ModuleRegistry.Find(hit.ModuleKey)?.Name ?? hit.ModuleKey;
+
+        return string.IsNullOrWhiteSpace(hit.Subtitle) ? module : $"{module} · {hit.Subtitle}";
+    }
+}
