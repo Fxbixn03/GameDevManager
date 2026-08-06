@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GameDevManager ist ein selbst gehostetes Verwaltungstool für Indie-Spieleentwickler: ein strukturiertes Wiki für Spielinhalte (Items, NPCs, Quests, Dialoge, Karten, …) mit späterem Export in Game Engines (Unity, Unreal, Godot oder JSON/ZIP).
 
-**Status: Kern steht, sechs Module umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem, die globale Suche, Items, die Asset-/Sprite-Bibliothek, Crafting, Währungen, NPCs und Loot-Tables sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
+**Status: Kern steht, sieben Module umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem, die globale Suche, Items, die Asset-/Sprite-Bibliothek, Crafting, Währungen, NPCs, Loot-Tables und Karten sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
 
 **Sprache:** README, Konzept und Doku sind auf Deutsch. Neue Dokumentation und Commit-Messages ebenfalls auf Deutsch verfassen. Code (Bezeichner, Kommentare) auf Englisch.
 
@@ -105,7 +105,7 @@ NPCs und Mobs liegen laut Konzept im selben Modul und unterscheiden sich über `
 
 Das Warenangebot (`TraderOffer`) ist die zweite Kind-Sammlung nach den Rezept-Zutaten und folgt demselben Muster inklusive des EF-Fallstricks oben. Je Posten: Item, Währung, Verkaufs- und Ankaufspreis, Bestand (`null` = unbegrenzt) und Auffüllzeit. Ein Posten ohne Preis ist zulässig — ein Händler, der etwas führt, aber nicht handelt, ist ein gültiger Fall. Ein Preis **ohne** Währung wird abgelehnt, weil die Zahl dann nicht zu deuten wäre.
 
-Zwei Konzept-Anforderungen dieses Moduls fehlen noch, weil ihre Grundlage nicht steht: **Spawn-Orte** (Karten-Modul) und die **Verfügbarkeitsbedingungen** von Shops (Bedingungssystem). Der NPC-Editor weist in der Seitenleiste darauf hin; bis dahin lassen sich solche Angaben als Felder an der NPC-Art erfassen. Beim Bau dieser Module hier nachziehen.
+Eine Konzept-Anforderung dieses Moduls fehlt noch, weil ihre Grundlage nicht steht: die **Verfügbarkeitsbedingungen** von Shops (Bedingungssystem). Der NPC-Editor weist in der Seitenleiste darauf hin; bis dahin lassen sich solche Angaben als Felder an der NPC-Art erfassen. Spawn-Orte kommen aus dem Karten-Modul und werden im NPC-Editor angezeigt.
 
 ### Loot-Tables
 
@@ -119,6 +119,16 @@ Einträge sind Item, Wahrscheinlichkeit in Prozent und eine Mengenspanne. Dassel
 Der Health Check „Loot-Wahrscheinlichkeiten über 100 %“ aus dem Konzept gilt deshalb **nur** für `SinglePick` (`LootService.FindOverfullTablesAsync`, angezeigt auf der Listenseite). Er blockt bewusst nicht das Speichern: Im Konzept steht er unter den Health Checks, also unter „nachschauen“ und nicht unter „verboten“ — sonst ließe sich eine Tabelle beim Umbauen zwischendurch nicht sichern.
 
 NPCs verweisen über `Npc.LootTableId` auf eine Tabelle. Beim Löschen einer Tabelle setzt `LootService` diese Verweise auf `null`, sonst zeigten NPCs auf etwas, das es nicht mehr gibt.
+
+### Karten
+
+Das Kartenbild ist das **primäre Sprite der Karte** und kommt damit aus der Asset-Bibliothek — eine eigene Bildspalte gäbe es sonst zweimal. Über weitere Sprites lassen sich Varianten hinterlegen und per Icon-Wahl umschalten.
+
+`MapMarker` speichert Lage und Radius **relativ** (0 bis 1), nicht in Pixeln. Damit sitzen Markierungen in jeder Darstellungsgröße richtig und bleiben es auch, wenn dasselbe Bild später in höherer Auflösung neu hochgeladen wird. Ein Marker mit `Radius` ist ein Bereich (Kreis), ohne einer ein Punkt.
+
+Worauf ein Marker zeigt, steht als `TargetModuleKey` + `TargetEntityId` daran. Ein Modell deckt damit alle Fälle des Konzepts ab: Spawn-Ort eines NPCs, Verknüpfung auf eine andere Karte (`IsMapLink`) und später das Gebiet einer Fraktion. Beim Löschen einer Karte werden Verknüpfungen **anderer** Karten hierher auf `null` gesetzt, sonst zeigten sie ins Leere.
+
+Klicks auf das Kartenbild werden über [gdm-map.js](src/GameDevManager.Web/wwwroot/js/gdm-map.js) in relative Koordinaten zurückgerechnet — die dargestellte Bildgröße kennt nur der Browser, Blazor liefert im `MouseEventArgs` bloß Bildschirmkoordinaten. Das ist bisher das einzige eigene JavaScript im Projekt.
 
 ### Globale Suche
 

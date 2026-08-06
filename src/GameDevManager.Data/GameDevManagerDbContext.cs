@@ -35,6 +35,10 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
 
+    public DbSet<GameMap> Maps => Set<GameMap>();
+
+    public DbSet<MapMarker> MapMarkers => Set<MapMarker>();
+
     /// <summary>Hochgeladene Dateien aller Module; die Datei selbst liegt im Dateispeicher.</summary>
     public DbSet<Asset> Assets => Set<Asset>();
 
@@ -184,6 +188,24 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         });
 
         ConfigureContentEntity<LootTable>(modelBuilder);
+        ConfigureContentEntity<GameMap>(modelBuilder);
+
+        modelBuilder.Entity<MapMarker>(entity =>
+        {
+            entity.Property(m => m.Label).HasMaxLength(200);
+            entity.Property(m => m.TargetModuleKey).HasMaxLength(ModuleKeyLength);
+            entity.Property(m => m.Color).HasMaxLength(20);
+            entity.Ignore(m => m.IsArea);
+            entity.Ignore(m => m.IsMapLink);
+
+            entity.HasOne(m => m.Map)
+                .WithMany(map => map.Markers)
+                .HasForeignKey(m => m.MapId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „wo auf den Karten kommt diese Entität vor?“.
+            entity.HasIndex(m => m.TargetEntityId);
+        });
 
         modelBuilder.Entity<LootEntry>(entity =>
         {

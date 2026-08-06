@@ -1,6 +1,7 @@
 @page "/modules/npcs/neu"
 @page "/modules/npcs/{Id:guid}"
 @inject NpcService Npcs
+@inject MapService Maps
 @inject ReferenceService References
 @inject ProjectContext Project
 @inject IDialogService Dialogs
@@ -317,13 +318,43 @@ else
                     }
                 </MudPaper>
 
+                @* --------------------------------------------------------- Spawn-Orte *@
+                @if (!_context.IsNew)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Spawn-Orte</MudText>
+
+                        @if (_placements.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Auf keiner Karte markiert. Setze dazu im Karten-Modul eine Markierung,
+                                die auf diesen NPC zeigt.
+                            </MudText>
+                        }
+                        else
+                        {
+                            @foreach (var placement in _placements)
+                            {
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween"
+                                          Class="gdm-field-row py-1">
+                                    <MudLink Href="@($"/modules/maps/{placement.MapId}")" Typo="Typo.body2">
+                                        @placement.MapName@(string.IsNullOrWhiteSpace(placement.Label) ? "" : $" — {placement.Label}")
+                                    </MudLink>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                                        @(placement.Radius is > 0 ? "Bereich" : "Punkt")
+                                    </MudText>
+                                </MudStack>
+                            }
+                        }
+                    </MudPaper>
+                }
+
                 @* Was das Konzept für dieses Modul noch vorsieht, aber die Grundlage fehlt. *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">Kommt später</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Spawn-Orte brauchen das Karten-Modul, Loot-Tables das Loot-Modul, und die
-                        Verfügbarkeitsbedingungen von Shops das Bedingungssystem. Bis dahin lassen
-                        sich solche Angaben als Felder an der NPC-Art erfassen.
+                        Die Verfügbarkeitsbedingungen von Shops brauchen das Bedingungssystem. Bis
+                        dahin lassen sich solche Angaben als Felder an der NPC-Art erfassen.
                     </MudText>
                 </MudPaper>
 
@@ -347,6 +378,7 @@ else
     private List<EntitySummary> _items = [];
     private List<EntitySummary> _currencies = [];
     private List<EntitySummary> _lootTables = [];
+    private List<MapPlacement> _placements = [];
     private Guid? _loadedId;
     private bool _notFound;
     private bool _saving;
@@ -388,6 +420,12 @@ else
         if (_context is null)
         {
             _notFound = true;
+            return;
+        }
+
+        if (!_context.IsNew)
+        {
+            _placements = await Maps.GetPlacementsForEntityAsync(projectId, _context.Entity.Id);
         }
     }
 

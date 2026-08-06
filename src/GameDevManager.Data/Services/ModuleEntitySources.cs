@@ -113,6 +113,39 @@ public sealed class NpcEntitySource : ModuleEntitySource<Npc>
 }
 
 /// <summary>
+/// Karten für die modulübergreifenden Dienste. Ihre Markierungen verweisen über eigene
+/// Spalten auf beliebige andere Entitäten.
+/// </summary>
+public sealed class MapEntitySource : ModuleEntitySource<GameMap>
+{
+    public override string ModuleKey => ModuleKeys.Maps;
+
+    protected override DbSet<GameMap> Set(GameDevManagerDbContext db) => db.Maps;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<GameMap> query) =>
+        query.Select(map => new SearchHit(
+            map.Id,
+            ModuleKeys.Maps,
+            SearchHitKind.Entity,
+            map.Name,
+            map.Markers.Count + " Markierung(en)",
+            db.Assets.Where(a => a.OwnerEntityId == map.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+
+    public override Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct) =>
+        db.MapMarkers
+            .AsNoTracking()
+            .Where(marker => marker.TargetEntityId == entityId)
+            .Select(marker => new EntityReferenceHit(
+                marker.MapId,
+                ModuleKeys.Maps,
+                marker.Map!.Name,
+                marker.Radius > 0 ? "Bereich auf der Karte" : "Markierung auf der Karte"))
+            .ToListAsync(ct);
+}
+
+/// <summary>
 /// Loot-Tables für die modulübergreifenden Dienste. Ihre Einträge verweisen über eigene
 /// Spalten auf Items.
 /// </summary>

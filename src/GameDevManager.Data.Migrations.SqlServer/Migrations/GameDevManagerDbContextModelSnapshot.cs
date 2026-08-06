@@ -333,6 +333,44 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("FieldValues");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameMap", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Maps");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.GameProject", b =>
                 {
                     b.Property<Guid>("Id")
@@ -466,6 +504,54 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("LootTables");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.MapMarker", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid?>("IconAssetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("MapId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double?>("Radius")
+                        .HasColumnType("float");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("TargetEntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TargetModuleKey")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<double>("X")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Y")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MapId");
+
+                    b.HasIndex("TargetEntityId");
+
+                    b.ToTable("MapMarkers");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
@@ -740,6 +826,24 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("FieldDefinition");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameMap", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Item", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -785,6 +889,17 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("ContentType");
 
                     b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.MapMarker", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameMap", "Map")
+                        .WithMany("Markers")
+                        .HasForeignKey("MapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Map");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
@@ -863,6 +978,11 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>
                 {
                     b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameMap", b =>
+                {
+                    b.Navigation("Markers");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.LootTable", b =>

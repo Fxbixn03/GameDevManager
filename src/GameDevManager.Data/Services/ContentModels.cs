@@ -101,6 +101,28 @@ public sealed class ContentEditContext<TEntity>
     }
 }
 
+/// <summary>Eine Zeile der Karten-Übersicht.</summary>
+public sealed record MapListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    Guid? ContentTypeId,
+    string? TypeName,
+    int MarkerCount,
+    int MapLinkCount,
+    DateTime UpdatedAtUtc,
+    Guid? ImageAssetId);
+
+/// <summary>Wo eine Entität auf einer Karte markiert ist — für NPCs sind das ihre Spawn-Orte.</summary>
+public sealed record MapPlacement(
+    Guid MapId,
+    string MapName,
+    Guid MarkerId,
+    string? Label,
+    double X,
+    double Y,
+    double? Radius);
+
 /// <summary>Eine Zeile der Loot-Table-Übersicht.</summary>
 /// <param name="TotalChance">Summe aller Wahrscheinlichkeiten — trägt den Health Check.</param>
 /// <param name="UsedByNpcCount">Wie viele NPCs diese Tabelle verwenden.</param>

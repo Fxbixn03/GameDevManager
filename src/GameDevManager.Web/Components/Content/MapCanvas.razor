@@ -1,0 +1,124 @@
+@inject IJSRuntime JS
+
+@*
+    Das Kartenbild mit seinen Markierungen. Die Markierungen liegen in Prozent über dem Bild,
+    weil ihre Koordinaten relativ gespeichert sind — damit sitzen sie in jeder Darstellungsgröße
+    richtig. Ein Klick auf die Karte wird über eine kleine JS-Hilfe in dieselben relativen
+    Koordinaten zurückgerechnet.
+*@
+
+<div class="gdm-map-canvas @(Placing ? "gdm-map-placing" : null)"
+     @ref="_surface"
+     @onclick="OnClickAsync">
+
+    @if (ImageAssetId is { } imageId)
+    {
+        <img src="@($"/assets/{imageId}")" alt="@Alt" class="gdm-map-image" />
+    }
+    else
+    {
+        <div class="gdm-map-missing">
+            <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported" Size="Size.Large" Color="Color.Secondary" />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Noch kein Kartenbild hochgeladen.</MudText>
+        </div>
+    }
+
+    @foreach (var marker in Markers)
+    {
+        @if (marker.IsArea)
+        {
+            @* Der Radius ist relativ zur Bildbreite; über padding-top wird der Kreis rund. *@
+            <div class="gdm-map-area @(marker.Id == SelectedId ? "gdm-map-selected" : null)"
+                 style="@AreaStyle(marker)"
+                 title="@Describe(marker)"
+                 @onclick="@(args => SelectAsync(marker, args))"
+                 @onclick:stopPropagation="true"></div>
+        }
+
+        <div class="gdm-map-marker @(marker.Id == SelectedId ? "gdm-map-selected" : null)"
+             style="@MarkerStyle(marker)"
+             title="@Describe(marker)"
+             @onclick="@(args => SelectAsync(marker, args))"
+             @onclick:stopPropagation="true">
+
+            @if (marker.IconAssetId is { } iconId)
+            {
+                <img src="@($"/assets/{iconId}")" alt="" class="gdm-map-marker-icon" />
+            }
+            else
+            {
+                <span class="gdm-map-marker-dot"></span>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(marker.Label))
+            {
+                <span class="gdm-map-marker-label">@marker.Label</span>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid? ImageAssetId { get; set; }
+
+    [Parameter]
+    public string? Alt { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<MapMarker> Markers { get; set; } = [];
+
+    [Parameter]
+    public Guid? SelectedId { get; set; }
+
+    /// <summary>Der nächste Klick auf die Karte setzt eine Markierung statt nur auszuwählen.</summary>
+    [Parameter]
+    public bool Placing { get; set; }
+
+    /// <summary>Meldet die relative Lage eines Klicks auf die freie Fläche.</summary>
+    [Parameter]
+    public EventCallback<(double X, double Y)> OnPointPicked { get; set; }
+
+    [Parameter]
+    public EventCallback<MapMarker> OnMarkerSelected { get; set; }
+
+    private ElementReference _surface;
+
+    private async Task OnClickAsync(MouseEventArgs args)
+    {
+        if (!OnPointPicked.HasDelegate)
+        {
+            return;
+        }
+
+        var point = await JS.InvokeAsync<RelativePoint?>(
+            "gdmMap.relativePoint", _surface, args.ClientX, args.ClientY);
+
+        if (point is not null)
+        {
+            await OnPointPicked.InvokeAsync((point.X, point.Y));
+        }
+    }
+
+    private Task SelectAsync(MapMarker marker, MouseEventArgs args) =>
+        OnMarkerSelected.InvokeAsync(marker);
+
+    private static string MarkerStyle(MapMarker marker) =>
+        string.Create(System.Globalization.CultureInfo.InvariantCulture,
+            $"left:{marker.X * 100:0.###}%; top:{marker.Y * 100:0.###}%; --gdm-marker-color:{MarkerColor(marker)};");
+
+    private static string AreaStyle(MapMarker marker) =>
+        string.Create(System.Globalization.CultureInfo.InvariantCulture,
+            $"left:{marker.X * 100:0.###}%; top:{marker.Y * 100:0.###}%; width:{(marker.Radius ?? 0) * 200:0.###}%; --gdm-marker-color:{MarkerColor(marker)};");
+
+    private static string MarkerColor(MapMarker marker) =>
+        string.IsNullOrWhiteSpace(marker.Color) ? "var(--mud-palette-primary)" : marker.Color;
+
+    private static string Describe(MapMarker marker) =>
+        string.IsNullOrWhiteSpace(marker.Label)
+            ? marker.IsArea ? "Bereich" : "Markierung"
+            : marker.Label;
+
+    /// <summary>Rückgabe der JS-Hilfe.</summary>
+    private sealed record RelativePoint(double X, double Y);
+}

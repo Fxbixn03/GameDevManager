@@ -1,0 +1,34 @@
+@page "/modules/maps/arten"
+
+<PageTitle>Karten-Arten – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="Karten-Arten"
+              Subtitle="Bild und Markierungen stehen fest an der Karte — alles Weitere definieren die Felder der Art."
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/maps">Zu den Karten</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddAsync">
+            Neue Art
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+<ContentTypeManager @ref="_manager"
+                    ModuleKey="@ModuleKeys.Maps"
+                    EntityNoun="Karte"
+                    EmptyTitle="Noch keine Karten-Arten"
+                    EmptyHint="Eine Art bündelt die Felder, die alle Karten dieser Kategorie gemeinsam haben — etwa „Höhle“ mit Tiefe, Lichtverhältnissen und Biom." />
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Maps);
+
+    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+
+    private ContentTypeManager? _manager;
+
+    private Task AddAsync() => _manager?.AddTypeAsync() ?? Task.CompletedTask;
+}

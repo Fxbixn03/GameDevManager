@@ -1,0 +1,194 @@
+@page "/modules/maps"
+@inject MapService Maps
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+<PageTitle>Karten – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/maps/arten">
+            Karten-Arten
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/maps/neu">
+            Neue Karte
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_maps is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_maps.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Map" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">Noch keine Karten</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Eine Karte ist ein hochgeladenes Bild, auf dem sich Markierungen setzen lassen —
+            Spawn-Orte von NPCs, Bereiche und Verknüpfungen auf andere Karten.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/maps/neu">Erste Karte</MudButton>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudTextField @bind-Value="_search"
+                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="max-width:340px;" />
+
+            <MudSelect T="Guid?"
+                       @bind-Value="_typeFilter"
+                       Label="Art"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Clearable="true"
+                       Style="max-width:220px;">
+                @foreach (var type in _types)
+                {
+                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSpacer />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_maps.Count</MudText>
+        </MudStack>
+    </MudPaper>
+
+    @* Karten sind Bilder — eine Kachelansicht sagt hier mehr als eine Tabelle. *@
+    <div class="gdm-map-grid">
+        @foreach (var map in Filtered)
+        {
+            <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                <MudLink Href="@($"/modules/maps/{map.Id}")" Underline="Underline.None">
+                    <div class="gdm-map-tile">
+                        @if (map.ImageAssetId is { } imageId)
+                        {
+                            <img src="@($"/assets/{imageId}")" alt="@map.Name" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported"
+                                     Size="Size.Large"
+                                     Color="Color.Secondary" />
+                        }
+                    </div>
+                </MudLink>
+
+                <div class="pa-3">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudLink Href="@($"/modules/maps/{map.Id}")" Typo="Typo.h6">@map.Name</MudLink>
+                        <MudTooltip Text="Löschen">
+                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                           Size="Size.Small"
+                                           OnClick="@(() => DeleteAsync(map))"
+                                           aria-label="@($"{map.Name} löschen")" />
+                        </MudTooltip>
+                    </MudStack>
+
+                    @if (!string.IsNullOrWhiteSpace(map.Description))
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                            @map.Description
+                        </MudText>
+                    }
+
+                    <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                            @map.MarkerCount Markierung(en)
+                        </MudChip>
+                        @if (map.MapLinkCount > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
+                                @map.MapLinkCount Verknüpfung(en)
+                            </MudChip>
+                        }
+                        @if (map.TypeName is not null)
+                        {
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@map.TypeName</MudChip>
+                        }
+                    </MudStack>
+                </div>
+            </MudPaper>
+        }
+    </div>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Maps);
+
+    private List<MapListRow>? _maps;
+    private List<ContentType> _types = [];
+    private string? _search;
+    private Guid? _typeFilter;
+
+    private string Subtitle => _maps is null
+        ? "Wird geladen …"
+        : $"{_maps.Count} Karte(n), {_maps.Sum(map => map.MarkerCount)} Markierung(en)";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _types = await ContentTypes.GetTypesAsync(projectId, ModuleKeys.Maps);
+        _maps = await Maps.GetMapsAsync(projectId);
+    }
+
+    private List<MapListRow> Filtered
+    {
+        get
+        {
+            IEnumerable<MapListRow> rows = _maps ?? [];
+
+            if (_typeFilter is { } typeId)
+            {
+                rows = rows.Where(row => row.ContentTypeId == typeId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_search))
+            {
+                rows = rows.Where(row =>
+                    row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                    || (row.Description?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            return [.. rows];
+        }
+    }
+
+    private async Task DeleteAsync(MapListRow map)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Karte löschen",
+            $"„{map.Name}“ wird mit ihren {map.MarkerCount} Markierung(en) und dem Kartenbild gelöscht. "
+            + "Verknüpfungen anderer Karten hierher verlieren ihr Ziel.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Maps.DeleteMapAsync(map.Id);
+        Snackbar.Add($"„{map.Name}“ wurde gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+}

@@ -330,6 +330,44 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.ToTable("FieldValues");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameMap", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar(4000)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Maps");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.GameProject", b =>
                 {
                     b.Property<Guid>("Id")
@@ -463,6 +501,54 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("LootTables");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.MapMarker", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<Guid?>("IconAssetId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<Guid>("MapId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<double?>("Radius")
+                        .HasColumnType("double");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("TargetEntityId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("TargetModuleKey")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<double>("X")
+                        .HasColumnType("double");
+
+                    b.Property<double>("Y")
+                        .HasColumnType("double");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MapId");
+
+                    b.HasIndex("TargetEntityId");
+
+                    b.ToTable("MapMarkers");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
@@ -737,6 +823,24 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Navigation("FieldDefinition");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameMap", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Item", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -782,6 +886,17 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Navigation("ContentType");
 
                     b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.MapMarker", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameMap", "Map")
+                        .WithMany("Markers")
+                        .HasForeignKey("MapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Map");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
@@ -860,6 +975,11 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>
                 {
                     b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameMap", b =>
+                {
+                    b.Navigation("Markers");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.LootTable", b =>
