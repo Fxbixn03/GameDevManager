@@ -289,6 +289,132 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("Currencies");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Dialogue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IncludesPlayer")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Dialogues");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DialogueChoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DialogueLineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("NextLineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DialogueLineId");
+
+                    b.HasIndex("NextLineId");
+
+                    b.ToTable("DialogueChoices");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DialogueLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DialogueId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("SpeakerNpcId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DialogueId");
+
+                    b.HasIndex("SpeakerNpcId");
+
+                    b.ToTable("DialogueLines");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DialogueParticipant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DialogueId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("NpcId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DialogueId");
+
+                    b.HasIndex("NpcId");
+
+                    b.ToTable("DialogueParticipants");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>
                 {
                     b.Property<Guid>("Id")
@@ -895,6 +1021,57 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Dialogue", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DialogueChoice", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.DialogueLine", "Line")
+                        .WithMany("Choices")
+                        .HasForeignKey("DialogueLineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Line");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DialogueLine", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Dialogue", "Dialogue")
+                        .WithMany("Lines")
+                        .HasForeignKey("DialogueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Dialogue");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DialogueParticipant", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Dialogue", "Dialogue")
+                        .WithMany("Participants")
+                        .HasForeignKey("DialogueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Dialogue");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -1079,6 +1256,18 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
                 {
                     b.Navigation("Fields");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Dialogue", b =>
+                {
+                    b.Navigation("Lines");
+
+                    b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DialogueLine", b =>
+                {
+                    b.Navigation("Choices");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>

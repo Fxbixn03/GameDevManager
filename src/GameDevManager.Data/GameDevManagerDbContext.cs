@@ -40,6 +40,14 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Condition> Conditions => Set<Condition>();
 
+    public DbSet<Dialogue> Dialogues => Set<Dialogue>();
+
+    public DbSet<DialogueParticipant> DialogueParticipants => Set<DialogueParticipant>();
+
+    public DbSet<DialogueLine> DialogueLines => Set<DialogueLine>();
+
+    public DbSet<DialogueChoice> DialogueChoices => Set<DialogueChoice>();
+
     public DbSet<GameMap> Maps => Set<GameMap>();
 
     public DbSet<MapMarker> MapMarkers => Set<MapMarker>();
@@ -222,6 +230,46 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Frage „welche Bedingungen beziehen sich auf diese Entität?“.
             entity.HasIndex(c => c.TargetEntityId);
+        });
+
+        ConfigureContentEntity<Dialogue>(modelBuilder);
+
+        modelBuilder.Entity<DialogueParticipant>(entity =>
+        {
+            entity.HasOne(p => p.Dialogue)
+                .WithMany(d => d.Participants)
+                .HasForeignKey(p => p.DialogueId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „an welchen Dialogen ist dieser NPC beteiligt?“.
+            entity.HasIndex(p => p.NpcId);
+        });
+
+        modelBuilder.Entity<DialogueLine>(entity =>
+        {
+            entity.Property(l => l.Text).HasMaxLength(4000).IsRequired();
+
+            entity.HasOne(l => l.Dialogue)
+                .WithMany(d => d.Lines)
+                .HasForeignKey(l => l.DialogueId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(l => l.SpeakerNpcId);
+        });
+
+        modelBuilder.Entity<DialogueChoice>(entity =>
+        {
+            entity.Property(c => c.Text).HasMaxLength(1000).IsRequired();
+
+            entity.HasOne(c => c.Line)
+                .WithMany(l => l.Choices)
+                .HasForeignKey(c => c.DialogueLineId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // NextLineId zeigt auf eine Zeile desselben Dialogs. Bewusst ohne Fremdschlüssel:
+            // ein solcher liefe im Kreis zurück auf dieselbe Tabelle, und die Löschregeln
+            // wären über die Provider hinweg nicht einheitlich zu bekommen.
+            entity.HasIndex(c => c.NextLineId);
         });
 
         ConfigureContentEntity<LootTable>(modelBuilder);

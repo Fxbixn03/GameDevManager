@@ -113,6 +113,47 @@ public sealed class NpcEntitySource : ModuleEntitySource<Npc>
 }
 
 /// <summary>
+/// Dialoge für die modulübergreifenden Dienste. Beteiligte und Sprecher verweisen über
+/// eigene Spalten auf NPCs.
+/// </summary>
+public sealed class DialogueEntitySource : ModuleEntitySource<Dialogue>
+{
+    public override string ModuleKey => ModuleKeys.Dialogs;
+
+    protected override DbSet<Dialogue> Set(GameDevManagerDbContext db) => db.Dialogues;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<Dialogue> query) =>
+        query.Select(dialogue => new SearchHit(
+            dialogue.Id,
+            ModuleKeys.Dialogs,
+            SearchHitKind.Entity,
+            dialogue.Name,
+            dialogue.Kind == DialogueKind.Bark ? "Sprechblasen" : dialogue.Lines.Count + " Zeile(n)",
+            null));
+
+    public override async Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
+    {
+        var hits = await db.DialogueParticipants
+            .AsNoTracking()
+            .Where(participant => participant.NpcId == entityId)
+            .Select(participant => new EntityReferenceHit(
+                participant.DialogueId, ModuleKeys.Dialogs, participant.Dialogue!.Name, "Beteiligt"))
+            .ToListAsync(ct);
+
+        hits.AddRange(await db.DialogueLines
+            .AsNoTracking()
+            .Where(line => line.SpeakerNpcId == entityId)
+            .Select(line => new EntityReferenceHit(
+                line.DialogueId, ModuleKeys.Dialogs, line.Dialogue!.Name, "Sprecher"))
+            .Distinct()
+            .ToListAsync(ct));
+
+        return hits;
+    }
+}
+
+/// <summary>
 /// Karten für die modulübergreifenden Dienste. Ihre Markierungen verweisen über eigene
 /// Spalten auf beliebige andere Entitäten.
 /// </summary>

@@ -101,6 +101,19 @@ public sealed class ContentEditContext<TEntity>
     }
 }
 
+/// <summary>Eine Zeile der Dialog-Übersicht.</summary>
+public sealed record DialogueListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    DialogueKind Kind,
+    bool IncludesPlayer,
+    Guid? ContentTypeId,
+    string? TypeName,
+    int ParticipantCount,
+    int LineCount,
+    DateTime UpdatedAtUtc);
+
 /// <summary>Eine Zeile der Karten-Übersicht.</summary>
 public sealed record MapListRow(
     Guid Id,

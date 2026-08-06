@@ -3,6 +3,7 @@
 @inject NpcService Npcs
 @inject MapService Maps
 @inject ConditionService Conditions
+@inject DialogueService Dialogues
 @inject ReferenceService References
 @inject ProjectContext Project
 @inject IDialogService Dialogs
@@ -344,6 +345,44 @@ else
                     }
                 </MudPaper>
 
+                @* ----------------------------------------------------------- Dialoge *@
+                @if (!_context.IsNew)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">Dialoge</MudText>
+                            <MudButton Size="Size.Small"
+                                       Variant="Variant.Text"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       Href="/modules/dialogs/neu">
+                                Neu
+                            </MudButton>
+                        </MudStack>
+
+                        @if (_dialogues.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                An keinem Dialog beteiligt.
+                            </MudText>
+                        }
+                        else
+                        {
+                            @foreach (var dialogue in _dialogues)
+                            {
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween"
+                                          Class="gdm-field-row py-1">
+                                    <MudLink Href="@($"/modules/dialogs/{dialogue.Id}")" Typo="Typo.body2">
+                                        @dialogue.Name
+                                    </MudLink>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @(dialogue.Kind == DialogueKind.Bark ? "Sprechblasen" : $"{dialogue.LineCount} Zeile(n)")
+                                    </MudText>
+                                </MudStack>
+                            }
+                        }
+                    </MudPaper>
+                }
+
                 @* --------------------------------------------------------- Spawn-Orte *@
                 @if (!_context.IsNew)
                 {
@@ -399,6 +438,7 @@ else
     private List<MapPlacement> _placements = [];
     private Dictionary<Guid, int> _offerConditionCounts = [];
     private int _shopConditionCount;
+    private List<DialogueListRow> _dialogues = [];
     private Guid? _loadedId;
     private bool _notFound;
     private bool _saving;
@@ -447,6 +487,7 @@ else
         {
             _placements = await Maps.GetPlacementsForEntityAsync(projectId, _context.Entity.Id);
             await RefreshConditionCountsAsync();
+            _dialogues = await Dialogues.GetDialoguesForNpcAsync(projectId, _context.Entity.Id);
         }
     }
 

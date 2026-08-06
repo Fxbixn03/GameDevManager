@@ -3,6 +3,7 @@ using System;
 using GameDevManager.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GameDevManager.Data.Migrations.Sqlite.Migrations
 {
     [DbContext(typeof(GameDevManagerDbContext))]
-    partial class GameDevManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260806213703_Dialogues")]
+    partial class Dialogues
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");

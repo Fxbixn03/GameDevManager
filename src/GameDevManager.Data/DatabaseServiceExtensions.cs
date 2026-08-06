@@ -47,6 +47,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<LootService>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
+        services.AddScoped<DialogueService>();
         services.AddScoped<ReferenceService>();
         services.AddScoped<AssetService>();
         services.AddScoped<SearchService>();
@@ -59,6 +60,7 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<IModuleEntitySource, NpcEntitySource>();
         services.AddSingleton<IModuleEntitySource, LootTableEntitySource>();
         services.AddSingleton<IModuleEntitySource, MapEntitySource>();
+        services.AddSingleton<IModuleEntitySource, DialogueEntitySource>();
 
         return services;
     }

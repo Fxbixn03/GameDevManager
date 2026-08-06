@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GameDevManager ist ein selbst gehostetes Verwaltungstool für Indie-Spieleentwickler: ein strukturiertes Wiki für Spielinhalte (Items, NPCs, Quests, Dialoge, Karten, …) mit späterem Export in Game Engines (Unity, Unreal, Godot oder JSON/ZIP).
 
-**Status: Kern vollständig, sieben Module umgesetzt.** Die Kern-Architektur der Roadmap steht damit ganz: Entitätenmodell, Arten/Felder, GUID-Referenzen **und das Bedingungssystem**. Dazu Datenbankanbindung, Theme, Modul-Registry, globale Suche, Items, Asset-/Sprite-Bibliothek, Crafting, Währungen, NPCs, Loot-Tables und Karten; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
+**Status: Kern vollständig, acht Module umgesetzt.** Die Kern-Architektur der Roadmap steht ganz: Entitätenmodell, Arten/Felder, GUID-Referenzen **und das Bedingungssystem**. Dazu Datenbankanbindung, Theme, Modul-Registry, globale Suche, Items, Asset-/Sprite-Bibliothek, Crafting, Währungen, NPCs, Loot-Tables, Karten und Dialoge; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
 
 **Sprache:** README, Konzept und Doku sind auf Deutsch. Neue Dokumentation und Commit-Messages ebenfalls auf Deutsch verfassen. Code (Bezeichner, Kommentare) auf Englisch.
 
@@ -134,6 +134,18 @@ Einträge sind Item, Wahrscheinlichkeit in Prozent und eine Mengenspanne. Dassel
 Der Health Check „Loot-Wahrscheinlichkeiten über 100 %“ aus dem Konzept gilt deshalb **nur** für `SinglePick` (`LootService.FindOverfullTablesAsync`, angezeigt auf der Listenseite). Er blockt bewusst nicht das Speichern: Im Konzept steht er unter den Health Checks, also unter „nachschauen“ und nicht unter „verboten“ — sonst ließe sich eine Tabelle beim Umbauen zwischendurch nicht sichern.
 
 NPCs verweisen über `Npc.LootTableId` auf eine Tabelle. Beim Löschen einer Tabelle setzt `LootService` diese Verweise auf `null`, sonst zeigten NPCs auf etwas, das es nicht mehr gibt.
+
+### Dialoge
+
+Die Klasse heißt `Dialogue` und nicht `Dialog`, weil der zugehörige Dienst sonst `DialogService` hieße und mit `MudBlazor.DialogService` kollidierte — in Razor-Dateien sind beide Namensräume importiert. In der Oberfläche heißt es weiterhin „Dialog“.
+
+`DialogueKind` trennt die beiden Formen aus dem Konzept: **`Bark`** sind Sprechblasen, deren Zeilen unabhängig nebeneinander stehen und zufällig erscheinen (Antworten sind dort verboten); **`Conversation`** ist ein Gespräch mit Verlauf, dessen erste Zeile der Einstieg ist und dessen `DialogueChoice`-Einträge weiterführen. `NextLineId = null` beendet das Gespräch.
+
+Beteiligte sind eine Liste von NPCs, der Spieler ein eigener Schalter — damit sind alle drei Fälle des Konzepts abgedeckt (NPC + Spieler, mehrere NPCs, mehrere NPCs + Spieler). Eine Zeile ohne `SpeakerNpcId` spricht der Spieler; er ist keine Entität und bekommt deshalb keine GUID.
+
+`FindProblemsAsync` ist der Health Check „Dialog-Sackgassen“: gemeldet werden Zeilen, die von der ersten aus über keine Antwort erreichbar sind — Inhalt, den der Spieler nie zu sehen bekommt. Eine Zeile **ohne** Antworten ist ausdrücklich kein Fund, das ist das normale Ende. Sprechblasen werden gar nicht geprüft.
+
+`NextLineId` hat bewusst **keinen** Fremdschlüssel: Er liefe im Kreis auf dieselbe Tabelle zurück, und die Löschregeln wären über die vier Provider hinweg nicht einheitlich zu bekommen. Stattdessen prüft der Service beim Speichern, dass das Ziel im selben Dialog existiert, und die Maske setzt Verweise auf gelöschte Zeilen auf `null`.
 
 ### Karten
 
