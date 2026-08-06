@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GameDevManager ist ein selbst gehostetes Verwaltungstool für Indie-Spieleentwickler: ein strukturiertes Wiki für Spielinhalte (Items, NPCs, Quests, Dialoge, Karten, …) mit späterem Export in Game Engines (Unity, Unreal, Godot oder JSON/ZIP).
 
-**Status: Kern steht, drei Module umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem, Items, die Asset-/Sprite-Bibliothek und Crafting sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
+**Status: Kern steht, vier Module umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem, die globale Suche, Items, die Asset-/Sprite-Bibliothek, Crafting und Währungen sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
 
 **Sprache:** README, Konzept und Doku sind auf Deutsch. Neue Dokumentation und Commit-Messages ebenfalls auf Deutsch verfassen. Code (Bezeichner, Kommentare) auf Englisch.
 
@@ -54,15 +54,21 @@ Das Konzept verlangt in fast jedem Modul benutzerdefinierte Arten mit eigenen Fe
 
 `FieldValue` und individuelle `FieldDefinition`s haben bewusst **keinen** Fremdschlüssel auf die Entität — sie sind modulübergreifend und referenzieren über die GUID, so wie das Konzept es für alles vorsieht. Beim Löschen einer Entität muss der Modul-Service deshalb selbst aufräumen (siehe `ItemService.DeleteItemAsync`).
 
-Die Referenzansicht („Find All References“) lebt in `ReferenceService`. Sie wertet heute die Referenz-Felder aus; Module mit eigenen Verknüpfungstabellen tragen ihre Abfrage dort in den `switch` ein — genauso wie `ContentTypeService.CountUsagesAsync` und `ReferenceService.GetEntitiesAsync`. **Diese drei `switch`-Blöcke sind die Stellen, die ein neues Modul anfassen muss.**
+### Ein Modul überall bekannt machen: `IModuleEntitySource`
+
+Vier Dienste arbeiten modulübergreifend — die Referenzansicht („Find All References“), die Referenz-Auswahlfelder, die Verwendungszählung der Arten und die globale Suche. Sie fragen **nicht** jeweils einen eigenen `switch` ab, sondern alle registrierten `IModuleEntitySource`. Je Modul gibt es genau eine solche Klasse in [ModuleEntitySources.cs](src/GameDevManager.Data/Services/ModuleEntitySources.cs); für Entitäten auf `ContentEntity`-Basis erbt sie von `ModuleEntitySource<T>` und braucht nur den `DbSet`-Zugriff und die Abbildung auf Suchtreffer.
+
+Verweist ein Modul über **eigene Spalten** auf fremde Entitäten (Rezept-Zutaten, später Händler-Angebote und Loot-Einträge), überschreibt es zusätzlich `FindReferencesAsync`. Diese Methode ist bewusst virtuell in der Basisklasse und keine Standardimplementierung an der Schnittstelle: Die Zuordnung zur Schnittstelle entsteht in der Basisklasse, eine gleichnamige Methode in einer abgeleiteten Klasse würde sie nicht ersetzen und stillschweigend nie laufen.
 
 Ein neues Modul umsetzen heißt also:
 
 1. Entität von `ContentEntity` ableiten und in `GameDevManagerDbContext.OnModelCreating` mit `ConfigureContentEntity<T>` registrieren.
-2. Einen Service nach dem Muster von `ItemService`/`CraftingService` schreiben. Die Feldmechanik kommt komplett aus `ContentFields` (laden, Pflichtfelder prüfen, Werte in denselben `SaveChanges` einreihen, beim Löschen aufräumen) — nicht neu bauen.
-3. Die drei `switch`-Blöcke ergänzen. Beim Löschen einer Entität `AssetService.DeleteForOwnerAsync` aufrufen, sonst bleiben Sprites und Dateien liegen.
+2. Einen Service nach dem Muster von `ItemService`/`CurrencyService` schreiben. Die Feldmechanik kommt komplett aus `ContentFields` (laden, Pflichtfelder prüfen, Werte in denselben `SaveChanges` einreihen, beim Löschen aufräumen) — nicht neu bauen. Beim Löschen einer Entität `AssetService.DeleteForOwnerAsync` aufrufen, sonst bleiben Sprites und Dateien liegen.
+3. Eine `ModuleEntitySource<T>` anlegen und in `AddGameDevManagerContentServices` registrieren. Damit ist das Modul in Referenzansicht, Auswahlfeldern, Arten-Zählung und Suche auf einmal da.
 4. Seiten unter `Components/Pages/<Modul>/` anlegen. Die Arten-Verwaltung ist eine Zeile (`<ContentTypeManager ModuleKey="…" />`), die Feldabschnitte der Maske ebenso (`<ContentFieldsPanel TEntity="…" …/>`).
 5. In `ModuleRegistry` `Implemented: true` setzen.
+
+Das Währungsmodul ist nach genau diesem Ablauf entstanden und der kürzeste Beleg, dass er trägt.
 
 **EF-Fallstrick bei Kind-Sammlungen** (Rezept-Zutaten, später Händler-Angebote, Loot-Einträge): Neue Kinder an einem **bestehenden** Elterndatensatz immer über `db.Set<T>().Add(...)` einfügen, nie über die Navigationsliste. Die Entitäten bringen ihre GUID schon mit, und EF hält sie beim Anhängen sonst für vorhandene Datensätze und erzeugt ein `UPDATE` auf eine Zeile, die es noch nicht gibt. Entfernt wird umgekehrt nur über die Navigationsliste — der Fremdschlüssel ist pflicht, EF löscht die Waise dadurch von selbst; zusätzlich `Remove` aufzurufen erzeugt einen zweiten `DELETE`.
 
@@ -88,6 +94,14 @@ Das Rezept trägt nur, was fachlich unumgänglich ist: Ergebnis-Item, Ausbeute u
 - **`SummarizeBaseCost`** rechnet einen Baum auf seine Grundstoffe herunter und verrechnet dabei die Rezeptausbeuten, je Stufe aufgerundet: Ein Rezept, das vier Stäbe liefert, wird für sechs Stäbe zweimal ausgeführt.
 
 Gibt es mehrere Rezepte für dasselbe Item, klappt der Baum das erste auf und weist die übrigen als Anzahl aus.
+
+### Währungen
+
+Beliebig viele nebeneinander; Händler nehmen später eine davon entgegen. Strukturell trägt die Währung nur ihr `Symbol` — es steht dort und nicht in einem benutzerdefinierten Feld, weil jede Ansicht, die einen Preis zeigt, es zuverlässig finden muss. Wechselkurse und Ähnliches sind Felder der Währungs-Art. Namen sind je Projekt eindeutig, sonst wären zwei Währungen in einer Preisangabe nicht auseinanderzuhalten.
+
+### Globale Suche
+
+`SearchService` durchsucht über die `IModuleEntitySource` alle Module plus Assets und Arten. Gesucht wird über kleingeschriebene Namen (`ToLower().Contains(...)`) statt über `LIKE` — das übersetzt sich über alle vier Provider gleich und hängt nicht an der Sortierfolge der Datenbank. Eine eingefügte GUID wird direkt aufgelöst. Das Suchfeld sitzt rechts in der Appbar ([GlobalSearch.razor](src/GameDevManager.Web/Components/Content/GlobalSearch.razor)).
 
 Der Domain-Enum heißt `ContentFieldType` und nicht `FieldType` — letzteres kollidiert mit `MudBlazor.FieldType` und macht jede Razor-Datei mehrdeutig.
 

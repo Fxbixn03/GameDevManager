@@ -1,0 +1,217 @@
+@page "/modules/currencies"
+@inject CurrencyService Currencies
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Währungen – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/currencies/arten">
+            Währungs-Arten
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/currencies/neu">
+            Neue Währung
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_currencies is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_currencies.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Paid" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">Noch keine Währungen</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Es sind beliebig viele nebeneinander möglich — etwa Gold für den Handel und
+            Ansehen für Fraktionsbelohnungen. Händler nehmen später eine davon entgegen.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/currencies/neu">
+            Erste Währung
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudTextField @bind-Value="_search"
+                          Placeholder="Nach Name, Zeichen oder Beschreibung suchen"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="max-width:360px;" />
+
+            <MudSelect T="Guid?"
+                       @bind-Value="_typeFilter"
+                       Label="Art"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Clearable="true"
+                       Style="max-width:220px;">
+                @foreach (var type in _types)
+                {
+                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSpacer />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_currencies.Count</MudText>
+        </MudStack>
+    </MudPaper>
+
+    <MudTable T="CurrencyListRow"
+              Items="Filtered"
+              Elevation="0"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm"
+              OnRowClick="OpenRow"
+              RowClass="cursor-pointer">
+        <HeaderContent>
+            <MudTh Style="width:56px;"></MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>Zeichen</MudTh>
+            <MudTh>Beschreibung</MudTh>
+            <MudTh>Art</MudTh>
+            <MudTh Style="width:56px;"></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Sprite">
+                <AssetThumbnail AssetId="context.PrimaryAssetId"
+                                Size="Size.Small"
+                                Alt="@context.Name"
+                                FallbackIcon="@Icons.Material.Filled.Paid" />
+            </MudTd>
+            <MudTd DataLabel="Name">
+                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
+            </MudTd>
+            <MudTd DataLabel="Zeichen">
+                @if (string.IsNullOrWhiteSpace(context.Symbol))
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Class="gdm-mono">@context.Symbol</MudText>
+                }
+            </MudTd>
+            <MudTd DataLabel="Beschreibung">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@Shorten(context.Description)</MudText>
+            </MudTd>
+            <MudTd DataLabel="Art">
+                @if (context.TypeName is null)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
+                }
+            </MudTd>
+            <MudTd>
+                <MudTooltip Text="Löschen">
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                   Size="Size.Small"
+                                   OnClick="@(() => DeleteAsync(context))"
+                                   aria-label="@($"{context.Name} löschen")" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
+                Keine Währung passt zur Suche.
+            </MudText>
+        </NoRecordsContent>
+    </MudTable>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Currencies);
+
+    private List<CurrencyListRow>? _currencies;
+    private List<ContentType> _types = [];
+    private string? _search;
+    private Guid? _typeFilter;
+
+    private string Subtitle => _currencies is null
+        ? "Wird geladen …"
+        : $"{_currencies.Count} Währung(en)";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _types = await ContentTypes.GetTypesAsync(projectId, ModuleKeys.Currencies);
+        _currencies = await Currencies.GetCurrenciesAsync(projectId);
+    }
+
+    private List<CurrencyListRow> Filtered
+    {
+        get
+        {
+            IEnumerable<CurrencyListRow> rows = _currencies ?? [];
+
+            if (_typeFilter is { } typeId)
+            {
+                rows = rows.Where(row => row.ContentTypeId == typeId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_search))
+            {
+                rows = rows.Where(row =>
+                    row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                    || (row.Symbol?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (row.Description?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            return [.. rows];
+        }
+    }
+
+    private void OpenRow(TableRowClickEventArgs<CurrencyListRow> args)
+    {
+        if (args.Item is { } row)
+        {
+            Navigation.NavigateTo($"/modules/currencies/{row.Id}");
+        }
+    }
+
+    private async Task DeleteAsync(CurrencyListRow row)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Währung löschen",
+            $"„{row.Name}“ wird mit allen Feldwerten und Sprites gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Currencies.DeleteCurrencyAsync(row.Id);
+        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+
+    private static string Shorten(string? text) =>
+        string.IsNullOrWhiteSpace(text)
+            ? "—"
+            : text.Length <= 90 ? text : string.Concat(text.AsSpan(0, 90), "…");
+}

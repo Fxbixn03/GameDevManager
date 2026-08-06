@@ -26,7 +26,7 @@ public static class ModuleRegistry
     [
         new(ModuleKeys.Items, "Items", Icons.Material.Filled.Category, "Items und Item-Arten mit eigenen Feldern definieren", Implemented: true),
         new(ModuleKeys.Crafting, "Crafting", Icons.Material.Filled.Construction, "Rezepte und Crafting-Trees auf Basis der Items", Implemented: true),
-        new(ModuleKeys.Currencies, "Währungen", Icons.Material.Filled.Paid, "Spielwährungen in beliebigen Variationen"),
+        new(ModuleKeys.Currencies, "Währungen", Icons.Material.Filled.Paid, "Spielwährungen in beliebigen Variationen", Implemented: true),
         new(ModuleKeys.Npcs, "NPCs", Icons.Material.Filled.People, "NPCs und Mobs, Händler, Spawns und Bedingungen"),
         new(ModuleKeys.Factions, "Fraktionen", Icons.Material.Filled.Flag, "Fraktionen, Rollen und Ränge für NPCs"),
         new(ModuleKeys.Diplomacy, "Diplomatie", Icons.Material.Filled.Handshake, "Allianzen und Feindschaften als Graph"),

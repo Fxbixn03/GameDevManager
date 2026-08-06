@@ -1,0 +1,34 @@
+@page "/modules/currencies/arten"
+
+<PageTitle>Währungs-Arten – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="Währungs-Arten"
+              Subtitle="Name und Zeichen stehen fest an der Währung — alles Weitere definieren die Felder der Art."
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/currencies">Zu den Währungen</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddAsync">
+            Neue Art
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+<ContentTypeManager @ref="_manager"
+                    ModuleKey="@ModuleKeys.Currencies"
+                    EntityNoun="Währung"
+                    EmptyTitle="Noch keine Währungs-Arten"
+                    EmptyHint="Über Arten lassen sich Angaben ergänzen, die die Währung selbst nicht kennt — etwa ein Wechselkurs zur Leitwährung oder die Fraktion, die sie ausgibt." />
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Currencies);
+
+    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+
+    private ContentTypeManager? _manager;
+
+    private Task AddAsync() => _manager?.AddTypeAsync() ?? Task.CompletedTask;
+}

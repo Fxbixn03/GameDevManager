@@ -25,6 +25,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
 
+    public DbSet<Currency> Currencies => Set<Currency>();
+
     /// <summary>Hochgeladene Dateien aller Module; die Datei selbst liegt im Dateispeicher.</summary>
     public DbSet<Asset> Assets => Set<Asset>();
 
@@ -157,6 +159,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
         ConfigureContentEntity<Item>(modelBuilder);
         ConfigureContentEntity<Recipe>(modelBuilder);
+        ConfigureContentEntity<Currency>(modelBuilder);
+
+        modelBuilder.Entity<Currency>(entity => entity.Property(c => c.Symbol).HasMaxLength(10));
 
         modelBuilder.Entity<Recipe>(entity =>
         {

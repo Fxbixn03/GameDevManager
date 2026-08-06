@@ -9,7 +9,9 @@ namespace GameDevManager.Data.Services;
 /// er bekommt den Modul-Schlüssel übergeben und funktioniert für Items genauso wie später für
 /// NPCs, Fraktionen oder Quests.
 /// </summary>
-public class ContentTypeService(IDbContextFactory<GameDevManagerDbContext> factory)
+public class ContentTypeService(
+    IDbContextFactory<GameDevManagerDbContext> factory,
+    IEnumerable<IModuleEntitySource> sources)
 {
     /// <summary>Alle Arten eines Moduls samt Feldern und Auswahlmöglichkeiten, fertig sortiert.</summary>
     public async Task<List<ContentType>> GetTypesAsync(Guid projectId, string moduleKey, CancellationToken ct = default)
@@ -248,17 +250,15 @@ public class ContentTypeService(IDbContextFactory<GameDevManagerDbContext> facto
     }
 
     /// <summary>
-    /// Zählt Entitäten je Modul. Neue Module tragen sich hier mit ihrer Tabelle ein — bis
-    /// dahin gilt eine Art als unbenutzt.
+    /// Zählt Entitäten je Modul. Module ohne eigene Quelle sind noch nicht umgesetzt — für
+    /// sie gilt eine Art als unbenutzt.
     /// </summary>
-    private static Task<int> CountUsagesAsync(
-        GameDevManagerDbContext db, string moduleKey, Guid typeId, CancellationToken ct) =>
-        moduleKey switch
-        {
-            ModuleKeys.Items => db.Items.CountAsync(i => i.ContentTypeId == typeId, ct),
-            ModuleKeys.Crafting => db.Recipes.CountAsync(r => r.ContentTypeId == typeId, ct),
-            _ => Task.FromResult(0)
-        };
+    private async Task<int> CountUsagesAsync(
+        GameDevManagerDbContext db, string moduleKey, Guid typeId, CancellationToken ct)
+    {
+        var source = sources.FirstOrDefault(candidate => candidate.ModuleKey == moduleKey);
+        return source is null ? 0 : await source.CountByTypeAsync(db, typeId, ct);
+    }
 
     private static void Validate(FieldDefinition field)
     {

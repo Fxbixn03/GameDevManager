@@ -30,8 +30,14 @@ public sealed record SearchHit(
 /// Beschreibungen aller umgesetzten Module und löst zusätzlich GUIDs direkt auf — Referenzen
 /// laufen in diesem Tool ausschließlich über GUIDs, und die aus einer Fundstelle oder einem
 /// Export zu kopieren und hier einzufügen ist der schnellste Weg zur Entität.
+/// <para>
+/// Die Module melden sich über <see cref="IModuleEntitySource"/>; Assets und Arten kommen
+/// hinzu, weil sie keine Modul-Entitäten sind.
+/// </para>
 /// </summary>
-public class SearchService(IDbContextFactory<GameDevManagerDbContext> factory)
+public class SearchService(
+    IDbContextFactory<GameDevManagerDbContext> factory,
+    IEnumerable<IModuleEntitySource> sources)
 {
     /// <summary>Ab dieser Länge wird gesucht — kürzer träfe fast alles.</summary>
     public const int MinimumQueryLength = 2;
@@ -56,67 +62,34 @@ public class SearchService(IDbContextFactory<GameDevManagerDbContext> factory)
         // Kleinschreibung auf beiden Seiten statt LIKE: das übersetzt sich über alle vier
         // Provider gleich und verhält sich unabhängig von der Sortierfolge der Datenbank.
         var needle = trimmed.ToLowerInvariant();
-
         var hits = new List<SearchHit>();
 
-        hits.AddRange(await db.Items
-            .AsNoTracking()
-            .Where(i => i.GameProjectId == projectId
-                && (i.Name.ToLower().Contains(needle)
-                    || (i.Description != null && i.Description.ToLower().Contains(needle))))
-            .Take(limit)
-            .Select(i => new SearchHit(
-                i.Id,
-                ModuleKeys.Items,
-                SearchHitKind.Entity,
-                i.Name,
-                i.ContentType!.Name,
-                db.Assets.Where(a => a.OwnerEntityId == i.Id && a.IsPrimary)
-                    .Select(a => (Guid?)a.Id).FirstOrDefault()))
-            .ToListAsync(ct));
-
-        hits.AddRange(await db.Recipes
-            .AsNoTracking()
-            .Where(r => r.GameProjectId == projectId
-                && (r.Name.ToLower().Contains(needle)
-                    || (r.Description != null && r.Description.ToLower().Contains(needle))))
-            .Take(limit)
-            .Select(r => new SearchHit(
-                r.Id,
-                ModuleKeys.Crafting,
-                SearchHitKind.Entity,
-                r.Name,
-                db.Items.Where(i => i.Id == r.OutputItemId).Select(i => "ergibt " + i.Name).FirstOrDefault(),
-                db.Assets.Where(a => a.OwnerEntityId == r.OutputItemId && a.IsPrimary)
-                    .Select(a => (Guid?)a.Id).FirstOrDefault()))
-            .ToListAsync(ct));
+        foreach (var source in sources)
+        {
+            hits.AddRange(await source.SearchAsync(db, projectId, needle, limit, ct));
+        }
 
         hits.AddRange(await db.Assets
             .AsNoTracking()
             .Where(a => a.GameProjectId == projectId
                 && (a.FileName.ToLower().Contains(needle)
                     || (a.Description != null && a.Description.ToLower().Contains(needle))))
+            .OrderBy(a => a.FileName)
             .Take(limit)
             .Select(a => new SearchHit(
-                a.Id,
-                ModuleKeys.Assets,
-                SearchHitKind.Asset,
-                a.FileName,
-                a.Description,
-                a.Id))
+                // Bewusst das Asset-Modul und nicht das der besitzenden Entität: der Treffer
+                // führt in die Bibliothek, also soll dort auch „Assets“ stehen.
+                a.Id, ModuleKeys.Assets, SearchHitKind.Asset,
+                a.FileName, a.Description, a.Id))
             .ToListAsync(ct));
 
         hits.AddRange(await db.ContentTypes
             .AsNoTracking()
             .Where(t => t.GameProjectId == projectId && t.Name.ToLower().Contains(needle))
+            .OrderBy(t => t.Name)
             .Take(limit)
             .Select(t => new SearchHit(
-                t.Id,
-                t.ModuleKey,
-                SearchHitKind.ContentType,
-                t.Name,
-                "Art",
-                null))
+                t.Id, t.ModuleKey, SearchHitKind.ContentType, t.Name, "Art", null))
             .ToListAsync(ct));
 
         return [.. Rank(hits, needle).Take(limit)];
@@ -124,42 +97,27 @@ public class SearchService(IDbContextFactory<GameDevManagerDbContext> factory)
 
     /// <summary>
     /// Löst eine eingefügte GUID auf. Wo sie liegt, ist vorher nicht bekannt — deshalb wird
-    /// jede Tabelle gefragt, die eine Referenz-GUID vergibt.
+    /// jede Quelle gefragt, die Referenz-GUIDs vergibt.
     /// </summary>
-    private static async Task<List<SearchHit>> FindByIdAsync(
+    private async Task<List<SearchHit>> FindByIdAsync(
         GameDevManagerDbContext db, Guid projectId, Guid id, CancellationToken ct)
     {
-        var item = await db.Items
-            .AsNoTracking()
-            .Where(i => i.Id == id && i.GameProjectId == projectId)
-            .Select(i => new SearchHit(
-                i.Id, ModuleKeys.Items, SearchHitKind.Entity, i.Name, "GUID-Treffer",
-                db.Assets.Where(a => a.OwnerEntityId == i.Id && a.IsPrimary)
-                    .Select(a => (Guid?)a.Id).FirstOrDefault()))
-            .FirstOrDefaultAsync(ct);
-
-        if (item is not null)
+        foreach (var source in sources)
         {
-            return [item];
-        }
-
-        var recipe = await db.Recipes
-            .AsNoTracking()
-            .Where(r => r.Id == id && r.GameProjectId == projectId)
-            .Select(r => new SearchHit(
-                r.Id, ModuleKeys.Crafting, SearchHitKind.Entity, r.Name, "GUID-Treffer", null))
-            .FirstOrDefaultAsync(ct);
-
-        if (recipe is not null)
-        {
-            return [recipe];
+            if (await source.FindByIdAsync(db, projectId, id, ct) is { } hit)
+            {
+                return [hit with { Subtitle = "GUID-Treffer" }];
+            }
         }
 
         var asset = await db.Assets
             .AsNoTracking()
             .Where(a => a.Id == id && a.GameProjectId == projectId)
             .Select(a => new SearchHit(
-                a.Id, ModuleKeys.Assets, SearchHitKind.Asset, a.FileName, "GUID-Treffer", a.Id))
+                // Bewusst das Asset-Modul und nicht das der besitzenden Entität: der Treffer
+                // führt in die Bibliothek, also soll dort auch „Assets“ stehen.
+                a.Id, ModuleKeys.Assets, SearchHitKind.Asset,
+                a.FileName, "GUID-Treffer", a.Id))
             .FirstOrDefaultAsync(ct);
 
         if (asset is not null)

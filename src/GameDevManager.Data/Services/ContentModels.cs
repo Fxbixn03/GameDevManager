@@ -101,6 +101,17 @@ public sealed class ContentEditContext<TEntity>
     }
 }
 
+/// <summary>Eine Zeile der Währungs-Übersicht.</summary>
+public sealed record CurrencyListRow(
+    Guid Id,
+    string Name,
+    string? Symbol,
+    string? Description,
+    Guid? ContentTypeId,
+    string? TypeName,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Rezept-Übersicht.</summary>
 public sealed record RecipeListRow(
     Guid Id,

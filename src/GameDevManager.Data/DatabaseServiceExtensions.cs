@@ -42,9 +42,16 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ContentTypeService>();
         services.AddScoped<ItemService>();
         services.AddScoped<CraftingService>();
+        services.AddScoped<CurrencyService>();
         services.AddScoped<ReferenceService>();
         services.AddScoped<AssetService>();
         services.AddScoped<SearchService>();
+
+        // Je Modul eine Quelle. Referenzansicht, Auswahlfelder, Arten-Zählung und globale
+        // Suche fragen sie alle ab — ein neues Modul wird hier eingetragen und ist überall da.
+        services.AddSingleton<IModuleEntitySource, ItemEntitySource>();
+        services.AddSingleton<IModuleEntitySource, RecipeEntitySource>();
+        services.AddSingleton<IModuleEntitySource, CurrencyEntitySource>();
 
         return services;
     }
