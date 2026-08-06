@@ -1,0 +1,230 @@
+@inject AssetService Library
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject ISnackbar Snackbar
+
+@*
+    Bearbeitet die Angaben zu einem Asset: Beschreibung, Zuordnung zu einer Entität und
+    Stichwörter. Die Datei selbst bleibt unangetastet — ein anderes Bild heißt neu hochladen.
+*@
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+            <AssetThumbnail AssetId="Asset.Id" Size="Size.Small" Alt="@Asset.FileName" />
+            <div>
+                <MudText Typo="Typo.h6">@Asset.FileName</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@Describe()</MudText>
+            </div>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudStack Spacing="4" Style="min-width:min(560px, 80vw);">
+            <MudTextField @bind-Value="_description"
+                          Label="Beschreibung (optional)"
+                          Variant="Variant.Outlined"
+                          Lines="2" />
+
+            <MudSelect T="string"
+                       Value="_ownerModuleKey"
+                       ValueChanged="ChangeModuleAsync"
+                       Label="Gehört zu Modul"
+                       Variant="Variant.Outlined"
+                       HelperText="Ohne Modul bleibt es ein Werkzeug-Asset, z. B. ein Karten-Marker.">
+                <MudSelectItem T="string" Value="@(null as string)">Werkzeug-Asset (keine Entität)</MudSelectItem>
+                @foreach (var module in ModuleRegistry.All.Where(m => m.Implemented))
+                {
+                    <MudSelectItem T="string" Value="@module.Id">@module.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (_ownerModuleKey is not null)
+            {
+                @if (_entities.Count == 0)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true">
+                        In diesem Modul gibt es noch keine Entität, der sich das Asset zuordnen ließe.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudAutocomplete T="EntitySummary"
+                                     Value="SelectedEntity"
+                                     ValueChanged="SetEntity"
+                                     SearchFunc="SearchEntitiesAsync"
+                                     ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
+                                     Label="Entität"
+                                     Variant="Variant.Outlined"
+                                     Clearable="true"
+                                     ResetValueOnEmptyText="true"
+                                     CoerceValue="false"
+                                     MaxItems="50" />
+                }
+            }
+
+            <MudSelect T="Guid"
+                       MultiSelection="true"
+                       SelectedValues="_selectedTagIds"
+                       SelectedValuesChanged="ids => _selectedTagIds = [.. ids]"
+                       MultiSelectionTextFunc="@(_ => DescribeTags())"
+                       Label="Stichwörter"
+                       Variant="Variant.Outlined"
+                       Disabled="@(_tags.Count == 0)"
+                       HelperText="@(_tags.Count == 0 ? "Noch keine Stichwörter angelegt — unten eines hinzufügen." : null)">
+                @foreach (var tag in _tags)
+                {
+                    <MudSelectItem T="Guid" Value="@tag.Id">@tag.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <MudTextField @bind-Value="_newTagName"
+                              Label="Neues Stichwort"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Immediate="true"
+                              OnKeyDown="OnNewTagKeyDown" />
+                <MudButton StartIcon="@Icons.Material.Filled.Add"
+                           Size="Size.Small"
+                           Disabled="@string.IsNullOrWhiteSpace(_newTagName)"
+                           OnClick="AddTagAsync">
+                    Anlegen
+                </MudButton>
+            </MudStack>
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">Abbrechen</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync">Speichern</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public required Asset Asset { get; set; }
+
+    private string? _description;
+    private string? _ownerModuleKey;
+    private Guid? _ownerEntityId;
+    private List<EntitySummary> _entities = [];
+    private List<AssetTag> _tags = [];
+    private HashSet<Guid> _selectedTagIds = [];
+    private string? _newTagName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _description = Asset.Description;
+        _ownerModuleKey = Asset.OwnerModuleKey;
+        _ownerEntityId = Asset.OwnerEntityId;
+        _selectedTagIds = [.. Asset.Tags.Select(assignment => assignment.AssetTagId)];
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _tags = await Library.GetTagsAsync(projectId);
+
+        await LoadEntitiesAsync();
+    }
+
+    private async Task LoadEntitiesAsync()
+    {
+        _entities = _ownerModuleKey is null
+            ? []
+            : await References.GetEntitiesAsync(await Project.GetCurrentIdAsync(), _ownerModuleKey);
+    }
+
+    private EntitySummary? SelectedEntity => _entities.FirstOrDefault(entity => entity.Id == _ownerEntityId);
+
+    private void SetEntity(EntitySummary? entity) => _ownerEntityId = entity?.Id;
+
+    private async Task ChangeModuleAsync(string? moduleKey)
+    {
+        _ownerModuleKey = moduleKey;
+        _ownerEntityId = null;
+        await LoadEntitiesAsync();
+    }
+
+    private Task<IEnumerable<EntitySummary>> SearchEntitiesAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? _entities
+            : _entities.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private string DescribeTags()
+    {
+        var names = _tags.Where(tag => _selectedTagIds.Contains(tag.Id)).Select(tag => tag.Name).ToList();
+        return names.Count == 0 ? string.Empty : string.Join(", ", names);
+    }
+
+    private async Task OnNewTagKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter" or "NumpadEnter")
+        {
+            await AddTagAsync();
+        }
+    }
+
+    private async Task AddTagAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_newTagName))
+        {
+            return;
+        }
+
+        var tag = new AssetTag
+        {
+            GameProjectId = await Project.GetCurrentIdAsync(),
+            Name = _newTagName,
+            SortOrder = _tags.Count
+        };
+
+        try
+        {
+            await Library.SaveTagAsync(tag);
+            _tags = await Library.GetTagsAsync(tag.GameProjectId);
+
+            // Frisch angelegte Stichwörter sind fast immer für dieses Asset gedacht.
+            _selectedTagIds.Add(tag.Id);
+            _newTagName = null;
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        try
+        {
+            await Library.SaveMetadataAsync(
+                Asset.Id, _description, _ownerModuleKey, _ownerEntityId, _selectedTagIds);
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private string Describe()
+    {
+        var parts = new List<string> { Asset.MimeType };
+
+        if (Asset.Width is { } width && Asset.Height is { } height)
+        {
+            parts.Add($"{width} × {height}");
+        }
+
+        parts.Add(AssetFormat.Size(Asset.SizeBytes));
+
+        return string.Join(" · ", parts);
+    }
+}

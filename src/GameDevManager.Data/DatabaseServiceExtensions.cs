@@ -1,3 +1,4 @@
+using GameDevManager.Data.Assets;
 using GameDevManager.Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -41,6 +42,30 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ContentTypeService>();
         services.AddScoped<ItemService>();
         services.AddScoped<ReferenceService>();
+        services.AddScoped<AssetService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Richtet den Dateispeicher für Assets ein. <paramref name="basePath"/> ist die Wurzel,
+    /// gegen die ein relativ konfigurierter Pfad aufgelöst wird — üblicherweise das
+    /// Anwendungsverzeichnis.
+    /// </summary>
+    public static IServiceCollection AddGameDevManagerAssetStorage(
+        this IServiceCollection services, IConfiguration configuration, string basePath)
+    {
+        var options = configuration.GetSection(AssetStorageOptions.SectionName).Get<AssetStorageOptions>()
+                      ?? new AssetStorageOptions();
+
+        options.RootPath = Path.IsPathRooted(options.StoragePath)
+            ? options.StoragePath
+            : Path.Combine(basePath, options.StoragePath);
+
+        Directory.CreateDirectory(options.RootPath);
+
+        services.AddSingleton(options);
+        services.AddSingleton<IAssetStorage, FileSystemAssetStorage>();
 
         return services;
     }

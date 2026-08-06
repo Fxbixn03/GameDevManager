@@ -1,0 +1,45 @@
+@*
+    Vorschau eines Assets. Der karierte Untergrund kommt aus app.css und macht sichtbar,
+    wo ein Sprite durchsichtig ist — bei Sprites ist genau das die häufigste Frage.
+*@
+
+<div class="gdm-thumb @SizeClass" style="@Style" title="@Title">
+    @if (AssetId is { } id)
+    {
+        <img src="@($"/assets/{id}")" alt="@(Alt ?? string.Empty)" loading="lazy" />
+    }
+    else
+    {
+        <MudIcon Icon="@FallbackIcon" Color="Color.Secondary" Size="@IconSize" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid? AssetId { get; set; }
+
+    [Parameter]
+    public string? Alt { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>Symbol, solange kein Sprite hinterlegt ist.</summary>
+    [Parameter]
+    public string FallbackIcon { get; set; } = Icons.Material.Filled.ImageNotSupported;
+
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    private string SizeClass => Size switch
+    {
+        Size.Small => "gdm-thumb-sm",
+        Size.Large => "gdm-thumb-lg",
+        _ => "gdm-thumb-md"
+    };
+
+    private Size IconSize => Size == Size.Small ? Size.Small : Size.Medium;
+}

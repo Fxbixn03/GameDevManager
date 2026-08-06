@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GameDevManager ist ein selbst gehostetes Verwaltungstool für Indie-Spieleentwickler: ein strukturiertes Wiki für Spielinhalte (Items, NPCs, Quests, Dialoge, Karten, …) mit späterem Export in Game Engines (Unity, Unreal, Godot oder JSON/ZIP).
 
-**Status: Kern steht, erstes Modul umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem und das Items-Modul sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
+**Status: Kern steht, zwei Module umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem, das Items-Modul und die Asset-/Sprite-Bibliothek sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
 
 **Sprache:** README, Konzept und Doku sind auf Deutsch. Neue Dokumentation und Commit-Messages ebenfalls auf Deutsch verfassen. Code (Bezeichner, Kommentare) auf Englisch.
 
@@ -56,7 +56,19 @@ Das Konzept verlangt in fast jedem Modul benutzerdefinierte Arten mit eigenen Fe
 
 Die Referenzansicht („Find All References“) lebt in `ReferenceService`. Sie wertet heute die Referenz-Felder aus; Module mit eigenen Verknüpfungstabellen tragen ihre Abfrage dort in den `switch` ein — genauso wie `ContentTypeService.CountUsagesAsync` und `ReferenceService.GetEntitiesAsync`. **Diese drei `switch`-Blöcke sind die Stellen, die ein neues Modul anfassen muss.**
 
-Ein neues Modul umsetzen heißt also: Entität von `ContentEntity` ableiten, in `GameDevManagerDbContext.OnModelCreating` mit `ConfigureContentEntity<T>` registrieren, einen Service nach dem Muster von `ItemService` schreiben, die drei `switch`-Blöcke ergänzen, Seiten unter `Components/Pages/<Modul>/` anlegen und in `ModuleRegistry` `Implemented: true` setzen.
+Ein neues Modul umsetzen heißt also: Entität von `ContentEntity` ableiten, in `GameDevManagerDbContext.OnModelCreating` mit `ConfigureContentEntity<T>` registrieren, einen Service nach dem Muster von `ItemService` schreiben, die drei `switch`-Blöcke ergänzen, Seiten unter `Components/Pages/<Modul>/` anlegen und in `ModuleRegistry` `Implemented: true` setzen. Beim Löschen einer Entität muss der Service `AssetService.DeleteForOwnerAsync` aufrufen — sonst bleiben Sprites und Dateien liegen.
+
+### Assets
+
+Dateien liegen **nicht** in der Datenbank, sondern im Dateisystem unter dem in `Assets:StoragePath` konfigurierten Pfad (relativ zum Anwendungsverzeichnis, Standard `assets/`). In der Datenbank steht nur der `StorageKey`. Das hält das Verhalten über alle vier Provider gleich und die Datenbanksicherungen klein.
+
+- Ein `Asset` hängt wie die Feldwerte über `OwnerEntityId` + `OwnerModuleKey` an einer Entität — ohne Fremdschlüssel. Ohne Besitzer ist es ein **Werkzeug-Asset** (Karten-Marker, Platzhalter) und zugleich der Zustand frisch hochgeladener, noch nicht zugeordneter Dateien.
+- Je Entität ist höchstens ein Asset `IsPrimary` — das Icon, das die Modul-Listen zeigen. Der `AssetService` hält das nach: Wird das Icon gelöscht oder auf eine andere Entität umgehängt, rückt ein übrig gebliebenes Sprite nach.
+- Ausgeliefert wird über den Endpunkt `/assets/{id}` in `Program.cs`, nicht über ein statisches Verzeichnis. Der Endpunkt setzt bewusst `nosniff` und eine enge CSP, weil hier vom Nutzer hochgeladene Dateien zurückgehen und SVG Skripte enthalten kann.
+- `ImageDimensionReader` liest Breite und Höhe aus dem Dateikopf (PNG, GIF, BMP, JPEG, WebP) ohne Bildbibliothek — für unbekannte Formate wie SVG bleiben die Maße leer.
+- `AssetTag` ist absichtlich auf Assets beschränkt. Das geplante Tag-Modul vergibt Tags modulübergreifend und wird diese Stichwörter voraussichtlich ablösen.
+
+In den Bearbeitungsmasken der Module wird `<AssetSpritePanel ModuleKey="…" EntityId="…" Disabled="@istNeu" />` eingebunden; die Listen zeigen das Icon über `<AssetThumbnail AssetId="…" />`.
 
 Der Domain-Enum heißt `ContentFieldType` und nicht `FieldType` — letzteres kollidiert mit `MudBlazor.FieldType` und macht jede Razor-Datei mehrdeutig.
 

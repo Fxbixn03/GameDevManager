@@ -1,0 +1,147 @@
+@inject AssetService Library
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+@*
+    Verwaltet die Stichwörter der Asset-Bibliothek. Das Konzept gibt bewusst keine vor —
+    „Prio“, „Animation“ oder „Alternatives Design“ sind Vorschläge, keine Vorgaben.
+*@
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Label" />
+            <MudText Typo="Typo.h6">Stichwörter</MudText>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudStack Spacing="3" Style="min-width:min(520px, 80vw);">
+            @if (_tags.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Noch keine Stichwörter. Lege unten das erste an — etwa „Animation“ für
+                    Sprites, die zu einer Bewegung gehören.
+                </MudText>
+            }
+            else
+            {
+                @foreach (var tag in _tags)
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudTextField Value="tag.Name"
+                                      ValueChanged="@((string name) => RenameAsync(tag, name))"
+                                      T="string"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+                        <MudTooltip Text="Löschen">
+                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                           Size="Size.Small"
+                                           OnClick="@(() => DeleteAsync(tag))"
+                                           aria-label="@($"Stichwort {tag.Name} löschen")" />
+                        </MudTooltip>
+                    </MudStack>
+                }
+            }
+
+            <MudDivider Class="my-1" />
+
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <MudTextField @bind-Value="_newName"
+                              Label="Neues Stichwort"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Immediate="true"
+                              OnKeyDown="OnKeyDown" />
+                <MudButton StartIcon="@Icons.Material.Filled.Add"
+                           Size="Size.Small"
+                           Disabled="@string.IsNullOrWhiteSpace(_newName)"
+                           OnClick="AddAsync">
+                    Anlegen
+                </MudButton>
+            </MudStack>
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => MudDialog.Close(DialogResult.Ok(true)))">
+            Fertig
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private List<AssetTag> _tags = [];
+    private string? _newName;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync() =>
+        _tags = await Library.GetTagsAsync(await Project.GetCurrentIdAsync());
+
+    private async Task OnKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter" or "NumpadEnter")
+        {
+            await AddAsync();
+        }
+    }
+
+    private async Task AddAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_newName))
+        {
+            return;
+        }
+
+        await SaveAsync(new AssetTag
+        {
+            GameProjectId = await Project.GetCurrentIdAsync(),
+            Name = _newName,
+            SortOrder = _tags.Count
+        });
+
+        _newName = null;
+    }
+
+    private Task RenameAsync(AssetTag tag, string name)
+    {
+        tag.Name = name;
+        return SaveAsync(tag);
+    }
+
+    private async Task SaveAsync(AssetTag tag)
+    {
+        try
+        {
+            await Library.SaveTagAsync(tag);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(AssetTag tag)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Stichwort löschen",
+            $"„{tag.Name}“ wird von allen Assets entfernt.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Library.DeleteTagAsync(tag.Id);
+        await LoadAsync();
+    }
+}

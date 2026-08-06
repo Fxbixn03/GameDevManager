@@ -1,0 +1,114 @@
+@inject AssetService Library
+@inject ProjectContext Project
+@inject ISnackbar Snackbar
+
+@*
+    Auswahlknopf zum Hochladen. Ohne OwnerEntityId entstehen Werkzeug-Assets ohne Entität,
+    mit OwnerEntityId Sprites dieser Entität.
+*@
+
+<MudFileUpload T="IReadOnlyList<IBrowserFile>"
+               FilesChanged="UploadAsync"
+               Accept="@Accept"
+               MaximumFileCount="20"
+               Disabled="@(Disabled || _busy)">
+    <CustomContent Context="upload">
+        <MudButton Variant="@Variant"
+                   Color="@Color"
+                   Size="@Size"
+                   StartIcon="@Icons.Material.Filled.Upload"
+                   Disabled="@(Disabled || _busy)"
+                   OnClick="@(() => upload.OpenFilePickerAsync())">
+            @if (_busy)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+            }
+            @Text
+        </MudButton>
+    </CustomContent>
+</MudFileUpload>
+
+@code {
+    [Parameter]
+    public string? OwnerModuleKey { get; set; }
+
+    [Parameter]
+    public Guid? OwnerEntityId { get; set; }
+
+    /// <summary>Wird nach dem Hochladen aufgerufen, damit die Seite neu laden kann.</summary>
+    [Parameter]
+    public EventCallback OnUploaded { get; set; }
+
+    [Parameter]
+    public string Text { get; set; } = "Hochladen";
+
+    [Parameter]
+    public Variant Variant { get; set; } = Variant.Filled;
+
+    [Parameter]
+    public Color Color { get; set; } = Color.Primary;
+
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private bool _busy;
+
+    private string Accept => string.Join(",", Library.Options.AllowedMimeTypes);
+
+    private async Task UploadAsync(IReadOnlyList<IBrowserFile>? files)
+    {
+        if (files is null || files.Count == 0)
+        {
+            return;
+        }
+
+        _busy = true;
+        var projectId = await Project.GetCurrentIdAsync();
+        var uploaded = 0;
+
+        try
+        {
+            foreach (var file in files)
+            {
+                if (file.Size > Library.Options.MaxFileSizeBytes)
+                {
+                    Snackbar.Add(
+                        $"„{file.Name}“ ist mit {Format(file.Size)} größer als das Limit von {Format(Library.Options.MaxFileSizeBytes)}.",
+                        Severity.Error);
+                    continue;
+                }
+
+                try
+                {
+                    // OpenReadStream lässt standardmäßig nur 512 KB zu — das Limit dieser
+                    // Anwendung steht in der Konfiguration.
+                    await using var content = file.OpenReadStream(Library.Options.MaxFileSizeBytes);
+                    await Library.UploadAsync(
+                        projectId, file.Name, file.ContentType, content, OwnerModuleKey, OwnerEntityId);
+
+                    uploaded++;
+                }
+                catch (ContentValidationException ex)
+                {
+                    Snackbar.Add(ex.Message, Severity.Error);
+                }
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
+
+        if (uploaded > 0)
+        {
+            Snackbar.Add(uploaded == 1 ? "Datei hochgeladen." : $"{uploaded} Dateien hochgeladen.", Severity.Success);
+            await OnUploaded.InvokeAsync();
+        }
+    }
+
+    private static string Format(long bytes) =>
+        bytes >= 1024 * 1024 ? $"{bytes / 1024d / 1024d:0.#} MB" : $"{bytes / 1024d:0.#} KB";
+}

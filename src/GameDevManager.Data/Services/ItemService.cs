@@ -9,7 +9,8 @@ namespace GameDevManager.Data.Services;
 /// </summary>
 public class ItemService(
     IDbContextFactory<GameDevManagerDbContext> factory,
-    ContentTypeService contentTypes)
+    ContentTypeService contentTypes,
+    AssetService assets)
 {
     /// <summary>Übersicht aller Items eines Projekts, alphabetisch.</summary>
     public async Task<List<ItemListRow>> GetItemsAsync(Guid projectId, CancellationToken ct = default)
@@ -26,7 +27,11 @@ public class ItemService(
                 i.Description,
                 i.ContentTypeId,
                 i.ContentType!.Name,
-                i.UpdatedAtUtc))
+                i.UpdatedAtUtc,
+                db.Assets
+                    .Where(a => a.OwnerEntityId == i.Id && a.IsPrimary)
+                    .Select(a => (Guid?)a.Id)
+                    .FirstOrDefault()))
             .ToListAsync(ct);
     }
 
@@ -200,9 +205,13 @@ public class ItemService(
         item.Description = stored.Description;
     }
 
-    /// <summary>Löscht ein Item mit seinen Werten und seinen individuellen Feldern.</summary>
+    /// <summary>Löscht ein Item mit seinen Werten, individuellen Feldern und Sprites.</summary>
     public async Task DeleteItemAsync(Guid itemId, CancellationToken ct = default)
     {
+        // Zuerst die Assets: dabei werden auch Dateien entfernt, und das lässt sich nicht
+        // zurückrollen — es soll also passieren, bevor der Rest angefasst wird.
+        await assets.DeleteForOwnerAsync(itemId, ct);
+
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 

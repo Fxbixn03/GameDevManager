@@ -28,7 +28,14 @@ public sealed record ItemListRow(
     string? Description,
     Guid? ContentTypeId,
     string? TypeName,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
+/// <summary>
+/// Ein Asset in der Bibliothek samt dem Namen der Entität, zu der es gehört. Der Name steht
+/// nicht am Asset, weil die Entität in jedem Modul liegen kann und über ihre GUID hängt.
+/// </summary>
+public sealed record AssetLibraryEntry(Asset Asset, string? OwnerName);
 
 /// <summary>
 /// Alles, was die Bearbeitungsmaske eines Items braucht, in einem Zug geladen: das Item selbst,

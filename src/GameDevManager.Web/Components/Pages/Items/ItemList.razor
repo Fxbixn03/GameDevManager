@@ -83,6 +83,7 @@ else
               OnRowClick="OpenRow"
               RowClass="cursor-pointer">
         <HeaderContent>
+            <MudTh Style="width:56px;"></MudTh>
             <MudTh>Name</MudTh>
             <MudTh>Art</MudTh>
             <MudTh>Beschreibung</MudTh>
@@ -90,6 +91,12 @@ else
             <MudTh Style="width:56px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
+            <MudTd DataLabel="Sprite">
+                <AssetThumbnail AssetId="context.PrimaryAssetId"
+                                Size="Size.Small"
+                                Alt="@context.Name"
+                                FallbackIcon="@Icons.Material.Filled.Category" />
+            </MudTd>
             <MudTd DataLabel="Name">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>

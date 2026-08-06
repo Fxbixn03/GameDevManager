@@ -21,6 +21,13 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Item> Items => Set<Item>();
 
+    /// <summary>Hochgeladene Dateien aller Module; die Datei selbst liegt im Dateispeicher.</summary>
+    public DbSet<Asset> Assets => Set<Asset>();
+
+    public DbSet<AssetTag> AssetTags => Set<AssetTag>();
+
+    public DbSet<AssetTagAssignment> AssetTagAssignments => Set<AssetTagAssignment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -92,6 +99,56 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Referenzansicht („Find All References"): wer zeigt auf diese GUID?
             entity.HasIndex(v => v.ReferenceValue);
+        });
+
+        modelBuilder.Entity<Asset>(entity =>
+        {
+            entity.Property(a => a.OwnerModuleKey).HasMaxLength(ModuleKeyLength);
+            entity.Property(a => a.FileName).HasMaxLength(260).IsRequired();
+            entity.Property(a => a.MimeType).HasMaxLength(100).IsRequired();
+            entity.Property(a => a.StorageKey).HasMaxLength(400).IsRequired();
+            entity.Property(a => a.Description).HasMaxLength(2000);
+            entity.Ignore(a => a.IsToolAsset);
+
+            entity.HasOne(a => a.GameProject)
+                .WithMany()
+                .HasForeignKey(a => a.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(a => a.GameProjectId);
+
+            // Trägt sowohl die Sprite-Liste einer Entität als auch die Suche nach dem primären Sprite.
+            entity.HasIndex(a => new { a.OwnerEntityId, a.IsPrimary });
+        });
+
+        modelBuilder.Entity<AssetTag>(entity =>
+        {
+            entity.Property(t => t.Name).HasMaxLength(100).IsRequired();
+            entity.Property(t => t.Color).HasMaxLength(20);
+
+            entity.HasOne(t => t.GameProject)
+                .WithMany()
+                .HasForeignKey(t => t.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Ein Stichwort gibt es je Projekt nur einmal; der AssetService prüft das vorher
+            // und meldet es verständlich, dieser Index ist die Absicherung dahinter.
+            entity.HasIndex(t => new { t.GameProjectId, t.Name }).IsUnique();
+        });
+
+        modelBuilder.Entity<AssetTagAssignment>(entity =>
+        {
+            entity.HasKey(a => new { a.AssetId, a.AssetTagId });
+
+            entity.HasOne(a => a.Asset)
+                .WithMany(asset => asset.Tags)
+                .HasForeignKey(a => a.AssetId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(a => a.Tag)
+                .WithMany(tag => tag.Assignments)
+                .HasForeignKey(a => a.AssetTagId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         ConfigureContentEntity<Item>(modelBuilder);

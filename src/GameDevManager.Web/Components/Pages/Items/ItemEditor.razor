@@ -101,6 +101,11 @@ else
                     </MudStack>
                 </MudPaper>
 
+                @* ------------------------------------------------------------------ Sprites *@
+                <AssetSpritePanel ModuleKey="@ModuleKeys.Items"
+                                  EntityId="_context.Item.Id"
+                                  Disabled="_context.IsNew" />
+
                 @* -------------------------------------------------------- Felder der Art *@
                 @if (_context.SelectedType is { } selectedType)
                 {

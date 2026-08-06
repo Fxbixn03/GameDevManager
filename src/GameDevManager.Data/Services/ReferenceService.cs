@@ -68,7 +68,17 @@ public class ReferenceService(IDbContextFactory<GameDevManagerDbContext> factory
         };
     }
 
-    /// <summary>Löst GUIDs eines Moduls auf ihre Anzeigenamen auf.</summary>
+    /// <summary>
+    /// Löst GUIDs eines Moduls auf ihre Anzeigenamen auf — für alle Ansichten, die Entitäten
+    /// nur über ihre GUID kennen (Referenzansicht, Asset-Bibliothek).
+    /// </summary>
+    public async Task<Dictionary<Guid, string>> ResolveNamesAsync(
+        string moduleKey, List<Guid> ids, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+        return await ResolveNamesAsync(db, moduleKey, ids, ct);
+    }
+
     private static async Task<Dictionary<Guid, string>> ResolveNamesAsync(
         GameDevManagerDbContext db, string moduleKey, List<Guid> ids, CancellationToken ct) =>
         moduleKey switch
