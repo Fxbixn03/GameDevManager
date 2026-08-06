@@ -42,6 +42,18 @@
             ],
             "isBackground": true,
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Hot-Reload",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "watch",
+                "--project",
+                "${input:runProject}"
+            ],
+            "isBackground": true,
+            "problemMatcher": "$msCompile"
         }
     ],
     "inputs": [
