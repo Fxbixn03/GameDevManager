@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: .NET SDK einrichten
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore GameDevManager.slnx
+
+      - name: Build (Release)
+        run: dotnet build GameDevManager.slnx --no-restore --configuration Release
+
+      # Läuft auch ohne Testprojekte durch — sobald Tests existieren, werden sie hier ausgeführt.
+      - name: Tests
+        run: dotnet test GameDevManager.slnx --no-build --configuration Release --verbosity normal
