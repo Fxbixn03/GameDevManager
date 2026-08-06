@@ -1,0 +1,101 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${input:buildTarget}",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Rebuild",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${input:buildTarget}",
+                "--no-incremental",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "--project",
+                "${input:runProject}"
+            ],
+            "isBackground": true,
+            "problemMatcher": "$msCompile"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "buildTarget",
+            "type": "pickString",
+            "description": "Was soll gebaut werden?",
+            "default": "${workspaceFolder}/GameDevManager.slnx",
+            "options": [
+                {
+                    "label": "Gesamte Solution",
+                    "value": "${workspaceFolder}/GameDevManager.slnx"
+                },
+                {
+                    "label": "GameDevManager.Web",
+                    "value": "${workspaceFolder}/src/GameDevManager.Web"
+                },
+                {
+                    "label": "GameDevManager.Domain",
+                    "value": "${workspaceFolder}/src/GameDevManager.Domain"
+                },
+                {
+                    "label": "GameDevManager.Data",
+                    "value": "${workspaceFolder}/src/GameDevManager.Data"
+                },
+                {
+                    "label": "GameDevManager.Data.Migrations.SqlServer",
+                    "value": "${workspaceFolder}/src/GameDevManager.Data.Migrations.SqlServer"
+                },
+                {
+                    "label": "GameDevManager.Data.Migrations.PostgreSql",
+                    "value": "${workspaceFolder}/src/GameDevManager.Data.Migrations.PostgreSql"
+                },
+                {
+                    "label": "GameDevManager.Data.Migrations.MySql",
+                    "value": "${workspaceFolder}/src/GameDevManager.Data.Migrations.MySql"
+                },
+                {
+                    "label": "GameDevManager.Data.Migrations.Sqlite",
+                    "value": "${workspaceFolder}/src/GameDevManager.Data.Migrations.Sqlite"
+                }
+            ]
+        },
+        {
+            "id": "runProject",
+            "type": "pickString",
+            "description": "Welches Projekt soll gestartet werden?",
+            "default": "${workspaceFolder}/src/GameDevManager.Web",
+            "options": [
+                {
+                    "label": "GameDevManager.Web",
+                    "value": "${workspaceFolder}/src/GameDevManager.Web"
+                }
+            ]
+        }
+    ]
+}
