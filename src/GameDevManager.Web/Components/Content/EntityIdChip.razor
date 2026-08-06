@@ -1,0 +1,37 @@
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+
+@*
+    Die GUID einer Entität — die einzige Referenz, über die andere Module sie ansprechen
+    (siehe Konzept). Deshalb monospace und mit einem Knopf zum Kopieren.
+*@
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+    <span class="gdm-mono">@Id</span>
+    <MudTooltip Text="GUID kopieren">
+        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
+                       Size="Size.Small"
+                       Color="Color.Default"
+                       OnClick="CopyAsync"
+                       aria-label="GUID kopieren" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid Id { get; set; }
+
+    private async Task CopyAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", Id.ToString());
+            Snackbar.Add("GUID kopiert.", Severity.Success);
+        }
+        catch (JSException)
+        {
+            // Ohne sicheren Kontext (HTTP auf einem fremden Host) gibt es keine Zwischenablage.
+            Snackbar.Add("Kopieren wurde vom Browser abgelehnt.", Severity.Warning);
+        }
+    }
+}

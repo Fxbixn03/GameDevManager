@@ -1,5 +1,6 @@
 using GameDevManager.Data;
 using GameDevManager.Web.Components;
+using GameDevManager.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 
@@ -10,6 +11,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddMudServices();
 builder.Services.AddGameDevManagerDatabase(builder.Configuration);
+builder.Services.AddScoped<ProjectContext>();
 
 var app = builder.Build();
 
@@ -31,11 +33,14 @@ app.MapRazorComponents<App>()
 
 // Ausstehende Migrationen beim Start anwenden (abschaltbar über "Database:AutoMigrate": false).
 var dbOptions = app.Services.GetRequiredService<DatabaseOptions>();
+var contextFactory = app.Services.GetRequiredService<IDbContextFactory<GameDevManagerDbContext>>();
+
 if (dbOptions.AutoMigrate)
 {
-    var factory = app.Services.GetRequiredService<IDbContextFactory<GameDevManagerDbContext>>();
-    await using var db = await factory.CreateDbContextAsync();
+    await using var db = await contextFactory.CreateDbContextAsync();
     await db.Database.MigrateAsync();
+
+    await ProjectContext.EnsureDefaultProjectAsync(contextFactory);
 }
 
 app.Run();

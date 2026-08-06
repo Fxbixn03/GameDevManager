@@ -1,0 +1,219 @@
+@*
+    Das Eingabeelement zu einem benutzerdefinierten Feld. Welcher Typ gerendert wird, entscheidet
+    die Felddefinition — hier laufen alle ContentFieldType-Ausprägungen zusammen. Neue Feldtypen brauchen
+    einen Zweig in dieser Datei und sonst nichts in den Modulseiten.
+*@
+
+@switch (Definition.Type)
+{
+    case ContentFieldType.Text:
+        <MudTextField T="string"
+                      Value="Value.TextValue"
+                      ValueChanged="SetText"
+                      Label="@Label"
+                      HelperText="@Definition.Description"
+                      Variant="Variant.Outlined"
+                      Immediate="false"
+                      Adornment="@(string.IsNullOrWhiteSpace(Definition.Unit) ? Adornment.None : Adornment.End)"
+                      AdornmentText="@Definition.Unit" />
+        break;
+
+    case ContentFieldType.MultilineText:
+        <MudTextField T="string"
+                      Value="Value.TextValue"
+                      ValueChanged="SetText"
+                      Label="@Label"
+                      HelperText="@Definition.Description"
+                      Variant="Variant.Outlined"
+                      Lines="4" />
+        break;
+
+    case ContentFieldType.Integer:
+        <MudNumericField T="int?"
+                         Value="IntegerValue"
+                         ValueChanged="SetInteger"
+                         Label="@Label"
+                         HelperText="@Definition.Description"
+                         Variant="Variant.Outlined"
+                         Clearable="true"
+                         Adornment="@(string.IsNullOrWhiteSpace(Definition.Unit) ? Adornment.None : Adornment.End)"
+                         AdornmentText="@Definition.Unit" />
+        break;
+
+    case ContentFieldType.Decimal:
+        <MudNumericField T="double?"
+                         Value="Value.NumberValue"
+                         ValueChanged="SetDecimal"
+                         Label="@Label"
+                         HelperText="@Definition.Description"
+                         Variant="Variant.Outlined"
+                         Clearable="true"
+                         Adornment="@(string.IsNullOrWhiteSpace(Definition.Unit) ? Adornment.None : Adornment.End)"
+                         AdornmentText="@Definition.Unit" />
+        break;
+
+    case ContentFieldType.Boolean:
+        <div>
+            <MudSwitch T="bool"
+                       Value="BooleanValue"
+                       ValueChanged="SetBoolean"
+                       Color="Color.Primary"
+                       Label="@Label" />
+            @if (!string.IsNullOrWhiteSpace(Definition.Description))
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@Definition.Description</MudText>
+            }
+        </div>
+        break;
+
+    case ContentFieldType.Date:
+        <MudDatePicker Date="Value.DateValue"
+                       DateChanged="SetDate"
+                       Label="@Label"
+                       HelperText="@Definition.Description"
+                       Variant="Variant.Outlined"
+                       Clearable="true"
+                       Editable="true" />
+        break;
+
+    case ContentFieldType.Select:
+        <MudSelect T="Guid?"
+                   Value="Value.OptionId"
+                   ValueChanged="SetOption"
+                   Label="@Label"
+                   HelperText="@Definition.Description"
+                   Variant="Variant.Outlined"
+                   Clearable="true">
+            @foreach (var option in Definition.Options)
+            {
+                <MudSelectItem T="Guid?" Value="@option.Id">@option.Label</MudSelectItem>
+            }
+        </MudSelect>
+        break;
+
+    case ContentFieldType.EntityReference:
+        @if (ReferenceOptions.Count == 0)
+        {
+            <MudTextField T="string"
+                          Value="@ReferenceModuleName"
+                          Label="@Label"
+                          HelperText="@($"Im Modul „{ReferenceModuleName}“ gibt es noch nichts zum Verweisen.")"
+                          Variant="Variant.Outlined"
+                          Disabled="true" />
+        }
+        else
+        {
+            <MudAutocomplete T="EntitySummary"
+                             Value="SelectedReference"
+                             ValueChanged="SetReference"
+                             SearchFunc="SearchReferencesAsync"
+                             ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
+                             Label="@Label"
+                             HelperText="@ReferenceHelperText"
+                             Variant="Variant.Outlined"
+                             Clearable="true"
+                             ResetValueOnEmptyText="true"
+                             CoerceValue="false"
+                             MaxItems="50">
+                <ItemTemplate Context="entity">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudText Typo="Typo.body2">@entity.Name</MudText>
+                        @if (!string.IsNullOrWhiteSpace(entity.TypeName))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@entity.TypeName</MudText>
+                        }
+                    </MudStack>
+                </ItemTemplate>
+            </MudAutocomplete>
+        }
+        break;
+
+    case ContentFieldType.Color:
+        <MudColorPicker Text="@Value.TextValue"
+                        TextChanged="SetText"
+                        Label="@Label"
+                        HelperText="@Definition.Description"
+                        Variant="Variant.Outlined"
+                        ColorPickerView="ColorPickerView.Spectrum"
+                        ShowAlpha="false" />
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public required FieldDefinition Definition { get; set; }
+
+    [Parameter, EditorRequired]
+    public required FieldValue Value { get; set; }
+
+    /// <summary>
+    /// Die auswählbaren Entitäten des Zielmoduls — nur bei <see cref="ContentFieldType.EntityReference"/>
+    /// gefüllt, geladen von der aufrufenden Seite.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<EntitySummary> ReferenceOptions { get; set; } = [];
+
+    /// <summary>Meldet der Seite, dass sich ein Wert geändert hat (für „ungespeicherte Änderungen").</summary>
+    [Parameter]
+    public EventCallback OnValueChanged { get; set; }
+
+    private string Label => Definition.IsRequired ? $"{Definition.Name} *" : Definition.Name;
+
+    private string ReferenceModuleName =>
+        ModuleRegistry.Find(Definition.ReferenceModuleKey ?? string.Empty)?.Name
+        ?? Definition.ReferenceModuleKey
+        ?? "—";
+
+    private string ReferenceHelperText =>
+        string.IsNullOrWhiteSpace(Definition.Description)
+            ? $"Verweist auf: {ReferenceModuleName}"
+            : Definition.Description;
+
+    private int? IntegerValue =>
+        Value.NumberValue is null ? null : (int)Math.Round(Value.NumberValue.Value);
+
+    private bool BooleanValue => Value.BooleanValue ?? false;
+
+    private EntitySummary? SelectedReference =>
+        ReferenceOptions.FirstOrDefault(option => option.Id == Value.ReferenceValue);
+
+    protected override void OnParametersSet()
+    {
+        // Ein Ja/Nein-Feld hat immer eine Antwort. Ohne diese Vorbelegung bliebe der Wert
+        // „leer" und ein Pflicht-Schalter ließe sich nie erfüllen.
+        if (Definition.Type == ContentFieldType.Boolean && Value.BooleanValue is null)
+        {
+            Value.BooleanValue = false;
+        }
+    }
+
+    private Task SetText(string? text) => ApplyAsync(() => Value.TextValue = text);
+
+    private Task SetInteger(int? number) => ApplyAsync(() => Value.NumberValue = number);
+
+    private Task SetDecimal(double? number) => ApplyAsync(() => Value.NumberValue = number);
+
+    private Task SetBoolean(bool flag) => ApplyAsync(() => Value.BooleanValue = flag);
+
+    private Task SetDate(DateTime? date) => ApplyAsync(() => Value.DateValue = date);
+
+    private Task SetOption(Guid? optionId) => ApplyAsync(() => Value.OptionId = optionId);
+
+    private Task SetReference(EntitySummary? entity) => ApplyAsync(() => Value.ReferenceValue = entity?.Id);
+
+    private async Task ApplyAsync(Action change)
+    {
+        change();
+        await OnValueChanged.InvokeAsync();
+    }
+
+    private Task<IEnumerable<EntitySummary>> SearchReferencesAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? ReferenceOptions
+            : ReferenceOptions.Where(option =>
+                option.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+}

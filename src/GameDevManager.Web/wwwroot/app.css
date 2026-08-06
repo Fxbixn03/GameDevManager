@@ -192,6 +192,34 @@ html {
     border-top: 2px solid var(--mud-palette-primary);
 }
 
+/* Abgesetzte Fläche für Formularabschnitte und Seitenleisten — dieselbe 1px-Kante wie Cards,
+   damit sich Ebenen ohne Schlagschatten trennen. */
+.gdm-panel {
+    border: 1px solid var(--mud-palette-lines-default);
+    background-color: var(--mud-palette-surface);
+}
+
+/* Kopfzeile innerhalb eines Panels, z. B. eine Art über ihrer Feldliste. */
+.gdm-panel-head {
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+
+/* Zeilen einer Liste innerhalb eines Panels: Trennlinien nur zwischen den Zeilen. */
+.gdm-field-row + .gdm-field-row {
+    border-top: 1px solid var(--mud-palette-lines-default);
+}
+
+/* Leerzustand einer Liste. Gestrichelt, weil hier noch nichts steht. */
+.gdm-empty {
+    border: 1px dashed var(--mud-palette-lines-default);
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
 /* Anklickbare Card: Hover hebt nur die Kante hervor, die Fläche bleibt ruhig. */
 .gdm-card-link {
     transition: border-color 120ms linear, background-color 120ms linear;

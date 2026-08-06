@@ -1,0 +1,108 @@
+@*
+    Anlegen und Bearbeiten einer Art (Item-Art „Waffe“, NPC-Art „Händler“, …). Die Felder der
+    Art werden nicht hier, sondern auf der Arten-Seite gepflegt.
+*@
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@(string.IsNullOrWhiteSpace(Type.Icon) ? Icons.Material.Filled.Style : Type.Icon)" />
+            <MudText Typo="Typo.h6">@(IsNew ? "Neue Art" : "Art bearbeiten")</MudText>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudStack Spacing="4" Style="min-width:min(520px, 80vw);">
+            <MudTextField @bind-Value="Type.Name"
+                          Label="Name"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Required="true"
+                          HelperText="Zum Beispiel „Waffe“, „Rüstung“ oder „Verbrauchsgegenstand“." />
+
+            <MudTextField @bind-Value="Type.Description"
+                          Label="Beschreibung (optional)"
+                          Variant="Variant.Outlined"
+                          Lines="2" />
+
+            <MudSelect T="string"
+                       @bind-Value="Type.Icon"
+                       Label="Icon (optional)"
+                       Variant="Variant.Outlined"
+                       Clearable="true">
+                @foreach (var icon in IconChoices)
+                {
+                    <MudSelectItem T="string" Value="@icon.Value">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@icon.Value" Size="Size.Small" />
+                            <MudText Typo="Typo.body2">@icon.Key</MudText>
+                        </MudStack>
+                    </MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudNumericField @bind-Value="Type.SortOrder"
+                             Label="Sortierung"
+                             Variant="Variant.Outlined"
+                             HelperText="Kleinere Zahlen stehen in Listen weiter oben." />
+
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Dense="true">@_error</MudAlert>
+            }
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">Abbrechen</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Übernehmen</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public required ContentType Type { get; set; }
+
+    [Parameter]
+    public bool IsNew { get; set; }
+
+    private string? _error;
+
+    /// <summary>
+    /// Kleine kuratierte Auswahl statt freier Icon-Eingabe — die Material-Namen kennt niemand
+    /// auswendig, und ein Tippfehler ergäbe ein leeres Icon.
+    /// </summary>
+    private static readonly Dictionary<string, string> IconChoices = new()
+    {
+        ["Allgemein"] = Icons.Material.Filled.Category,
+        ["Waffe"] = Icons.Material.Filled.Hardware,
+        ["Rüstung"] = Icons.Material.Filled.Shield,
+        ["Trank"] = Icons.Material.Filled.Science,
+        ["Nahrung"] = Icons.Material.Filled.Restaurant,
+        ["Rohstoff"] = Icons.Material.Filled.Grass,
+        ["Werkzeug"] = Icons.Material.Filled.Build,
+        ["Schmuck"] = Icons.Material.Filled.Diamond,
+        ["Schlüssel"] = Icons.Material.Filled.VpnKey,
+        ["Buch"] = Icons.Material.Filled.MenuBook,
+        ["Währung"] = Icons.Material.Filled.Paid,
+        ["Magie"] = Icons.Material.Filled.AutoAwesome,
+        ["Munition"] = Icons.Material.Filled.Bolt,
+        ["Behälter"] = Icons.Material.Filled.Inventory2,
+        ["Quest"] = Icons.Material.Filled.Assignment
+    };
+
+    private void Submit()
+    {
+        if (string.IsNullOrWhiteSpace(Type.Name))
+        {
+            _error = "Bitte einen Namen angeben.";
+            return;
+        }
+
+        _error = null;
+        MudDialog.Close(DialogResult.Ok(Type));
+    }
+}

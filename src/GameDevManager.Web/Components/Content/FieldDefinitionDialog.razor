@@ -1,0 +1,200 @@
+@*
+    Anlegen und Bearbeiten einer Felddefinition — gleich für Art-Felder und für individuelle
+    Felder einer einzelnen Entität. Der Dialog arbeitet auf einer Kopie; gespeichert wird erst
+    von der aufrufenden Seite.
+*@
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.ViewList" />
+            <MudText Typo="Typo.h6">@(IsNew ? "Neues Feld" : "Feld bearbeiten")</MudText>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudStack Spacing="4" Style="min-width:min(560px, 80vw);">
+            <MudTextField @bind-Value="Field.Name"
+                          Label="Name"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Required="true"
+                          Error="@(_error is not null && string.IsNullOrWhiteSpace(Field.Name))" />
+
+            <MudTextField @bind-Value="Field.Description"
+                          Label="Hilfetext (optional)"
+                          Variant="Variant.Outlined"
+                          HelperText="Steht in der Maske unter dem Eingabefeld." />
+
+            <MudSelect T="ContentFieldType"
+                       Value="Field.Type"
+                       ValueChanged="ChangeType"
+                       Label="Datentyp"
+                       Variant="Variant.Outlined">
+                @foreach (var type in Enum.GetValues<ContentFieldType>())
+                {
+                    <MudSelectItem T="ContentFieldType" Value="@type">@FieldTypeLabels.Describe(type)</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (!IsNew && _originalType != Field.Type)
+            {
+                <MudAlert Severity="Severity.Warning" Dense="true">
+                    Beim Wechsel des Datentyps werden die bisher erfassten Werte dieses Feldes gelöscht —
+                    sie stehen in einer anderen Spalte und lassen sich nicht umdeuten.
+                </MudAlert>
+            }
+
+            @if (Field.Type == ContentFieldType.EntityReference)
+            {
+                <MudSelect T="string"
+                           @bind-Value="Field.ReferenceModuleKey"
+                           Label="Zielmodul"
+                           Variant="Variant.Outlined"
+                           HelperText="Auf Entitäten welches Moduls darf dieses Feld verweisen?">
+                    @foreach (var module in ModuleRegistry.All)
+                    {
+                        <MudSelectItem T="string" Value="@module.Id">
+                            @module.Name @(module.Implemented ? string.Empty : "(noch nicht umgesetzt)")
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            @if (Field.Type == ContentFieldType.Select)
+            {
+                <div>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">Auswahlmöglichkeiten</MudText>
+
+                    @foreach (var option in Field.Options)
+                    {
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-2">
+                            <MudTextField @bind-Value="option.Label"
+                                          Label="Bezeichnung"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" />
+                            <MudTooltip Text="Entfernen">
+                                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                               Size="Size.Small"
+                                               OnClick="@(() => Field.Options.Remove(option))"
+                                               aria-label="Auswahlmöglichkeit entfernen" />
+                            </MudTooltip>
+                        </MudStack>
+                    }
+
+                    <MudButton StartIcon="@Icons.Material.Filled.Add"
+                               Size="Size.Small"
+                               Class="mt-2"
+                               OnClick="AddOption">
+                        Auswahlmöglichkeit
+                    </MudButton>
+                </div>
+            }
+
+            @if (Field.Type is ContentFieldType.Integer or ContentFieldType.Decimal or ContentFieldType.Text)
+            {
+                <MudTextField @bind-Value="Field.Unit"
+                              Label="Einheit (optional)"
+                              Variant="Variant.Outlined"
+                              HelperText="Reine Anzeige, z. B. „kg“, „s“ oder „%“." />
+            }
+
+            <MudSwitch @bind-Value="Field.IsRequired"
+                       Color="Color.Primary"
+                       Label="Pflichtfeld" />
+
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Dense="true">@_error</MudAlert>
+            }
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">Abbrechen</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Übernehmen</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>Die zu bearbeitende Kopie — der Dialog gibt sie bei „Übernehmen" zurück.</summary>
+    [Parameter, EditorRequired]
+    public required FieldDefinition Field { get; set; }
+
+    [Parameter]
+    public bool IsNew { get; set; }
+
+    private ContentFieldType _originalType;
+    private string? _error;
+
+    protected override void OnInitialized() => _originalType = Field.Type;
+
+    private void ChangeType(ContentFieldType type)
+    {
+        Field.Type = type;
+
+        if (type != ContentFieldType.EntityReference)
+        {
+            Field.ReferenceModuleKey = null;
+        }
+
+        if (type != ContentFieldType.Select)
+        {
+            Field.Options.Clear();
+        }
+        else if (Field.Options.Count == 0)
+        {
+            AddOption();
+        }
+    }
+
+    private void AddOption() =>
+        Field.Options.Add(new FieldOption
+        {
+            FieldDefinitionId = Field.Id,
+            Label = string.Empty,
+            SortOrder = Field.Options.Count
+        });
+
+    private void Submit()
+    {
+        _error = Validate();
+        if (_error is not null)
+        {
+            return;
+        }
+
+        MudDialog.Close(DialogResult.Ok(Field));
+    }
+
+    private string? Validate()
+    {
+        if (string.IsNullOrWhiteSpace(Field.Name))
+        {
+            return "Bitte einen Namen angeben.";
+        }
+
+        if (Field.Type == ContentFieldType.EntityReference && string.IsNullOrWhiteSpace(Field.ReferenceModuleKey))
+        {
+            return "Bitte das Zielmodul der Referenz wählen.";
+        }
+
+        if (Field.Type == ContentFieldType.Select)
+        {
+            if (Field.Options.Count == 0)
+            {
+                return "Eine Auswahl braucht mindestens eine Möglichkeit.";
+            }
+
+            if (Field.Options.Any(option => string.IsNullOrWhiteSpace(option.Label)))
+            {
+                return "Auswahlmöglichkeiten dürfen nicht leer sein.";
+            }
+        }
+
+        return null;
+    }
+}

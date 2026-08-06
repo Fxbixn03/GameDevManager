@@ -8,6 +8,19 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 {
     public DbSet<GameProject> GameProjects => Set<GameProject>();
 
+    /// <summary>Benutzerdefinierte Arten aller Module (Item-Art „Waffe", NPC-Art „Händler", …).</summary>
+    public DbSet<ContentType> ContentTypes => Set<ContentType>();
+
+    /// <summary>Felddefinitionen — entweder an einer Art oder an einer einzelnen Entität.</summary>
+    public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
+
+    public DbSet<FieldOption> FieldOptions => Set<FieldOption>();
+
+    /// <summary>Feldwerte aller Module, adressiert über die GUID der besitzenden Entität.</summary>
+    public DbSet<FieldValue> FieldValues => Set<FieldValue>();
+
+    public DbSet<Item> Items => Set<Item>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -17,5 +30,106 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.Property(p => p.Name).HasMaxLength(200).IsRequired();
             entity.Property(p => p.Description).HasMaxLength(4000);
         });
+
+        modelBuilder.Entity<ContentType>(entity =>
+        {
+            entity.Property(t => t.ModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Property(t => t.Name).HasMaxLength(200).IsRequired();
+            entity.Property(t => t.Description).HasMaxLength(4000);
+            entity.Property(t => t.Icon).HasMaxLength(100);
+
+            entity.HasOne(t => t.GameProject)
+                .WithMany()
+                .HasForeignKey(t => t.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Arten werden immer je Projekt und Modul geladen.
+            entity.HasIndex(t => new { t.GameProjectId, t.ModuleKey });
+        });
+
+        modelBuilder.Entity<FieldDefinition>(entity =>
+        {
+            entity.Property(f => f.ModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Property(f => f.Name).HasMaxLength(200).IsRequired();
+            entity.Property(f => f.Description).HasMaxLength(2000);
+            entity.Property(f => f.Unit).HasMaxLength(30);
+            entity.Property(f => f.ReferenceModuleKey).HasMaxLength(ModuleKeyLength);
+            entity.Ignore(f => f.IsIndividual);
+
+            // Art-Felder verschwinden mit ihrer Art; individuelle Felder hängen an keiner
+            // Fremdschlüsselbeziehung und werden vom ContentService mit der Entität entfernt.
+            entity.HasOne(f => f.ContentType)
+                .WithMany(t => t.Fields)
+                .HasForeignKey(f => f.ContentTypeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(f => f.ContentTypeId);
+            entity.HasIndex(f => f.OwnerEntityId);
+        });
+
+        modelBuilder.Entity<FieldOption>(entity =>
+        {
+            entity.Property(o => o.Label).HasMaxLength(200).IsRequired();
+
+            entity.HasOne(o => o.FieldDefinition)
+                .WithMany(f => f.Options)
+                .HasForeignKey(o => o.FieldDefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<FieldValue>(entity =>
+        {
+            entity.Property(v => v.OwnerModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Ignore(v => v.IsEmpty);
+
+            entity.HasOne(v => v.FieldDefinition)
+                .WithMany()
+                .HasForeignKey(v => v.FieldDefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Pro Entität und Feld gibt es höchstens einen Wert.
+            entity.HasIndex(v => new { v.OwnerEntityId, v.FieldDefinitionId }).IsUnique();
+
+            // Trägt die Referenzansicht („Find All References"): wer zeigt auf diese GUID?
+            entity.HasIndex(v => v.ReferenceValue);
+        });
+
+        ConfigureContentEntity<Item>(modelBuilder);
     }
+
+    /// <summary>
+    /// Gemeinsame Abbildung aller Modul-Entitäten. Jedes Modul bekommt eine eigene Tabelle,
+    /// teilt sich aber Aufbau und Beziehungen der Basis.
+    /// </summary>
+    private static void ConfigureContentEntity<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : ContentEntity
+    {
+        modelBuilder.Entity<TEntity>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(4000);
+
+            // Nur eine Konstante der konkreten Klasse, keine Spalte.
+            entity.Ignore(e => e.ModuleKey);
+
+            entity.HasOne(e => e.GameProject)
+                .WithMany()
+                .HasForeignKey(e => e.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Bewusst kein Cascade: eine Art, die noch verwendet wird, darf nicht
+            // stillschweigend Inhalte mitreißen — der ContentService blockt das vorher ab.
+            entity.HasOne(e => e.ContentType)
+                .WithMany()
+                .HasForeignKey(e => e.ContentTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.GameProjectId);
+            entity.HasIndex(e => e.ContentTypeId);
+            entity.HasIndex(e => e.Name);
+        });
+    }
+
+    /// <summary>Modul-Schlüssel sind kurze Bezeichner; die Länge hält die Indizes MySQL-tauglich.</summary>
+    private const int ModuleKeyLength = 50;
 }

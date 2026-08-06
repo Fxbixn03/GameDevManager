@@ -1,3 +1,4 @@
+using GameDevManager.Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,19 @@ public static class DatabaseServiceExtensions
         services.AddSingleton(options);
         services.AddDbContextFactory<GameDevManagerDbContext>(builder =>
             builder.UseGameDevManagerProvider(options.Provider, connectionString));
+
+        return services.AddGameDevManagerContentServices();
+    }
+
+    /// <summary>
+    /// Registriert die fachlichen Dienste. Sie legen sich ihren DbContext je Aufruf über die
+    /// Factory an und sind deshalb ohne Zustand — <c>Scoped</c> genügt.
+    /// </summary>
+    public static IServiceCollection AddGameDevManagerContentServices(this IServiceCollection services)
+    {
+        services.AddScoped<ContentTypeService>();
+        services.AddScoped<ItemService>();
+        services.AddScoped<ReferenceService>();
 
         return services;
     }

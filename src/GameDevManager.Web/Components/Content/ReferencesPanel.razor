@@ -1,0 +1,81 @@
+@inject ReferenceService References
+
+@*
+    Die Referenzansicht aus dem Konzept — „Find All References" für eine Entität: wer verweist
+    über welches Feld auf diese GUID. Aktuell speist sie sich aus den Referenz-Feldern; Module
+    mit eigenen Verknüpfungstabellen (Crafting, Loot, Händler) kommen im ReferenceService dazu.
+*@
+
+<MudPaper Elevation="0" Class="gdm-panel pa-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+        <MudText Typo="Typo.overline" Color="Color.Secondary">Verwendet von</MudText>
+        @if (_hits is not null)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">@_hits.Count</MudChip>
+        }
+    </MudStack>
+
+    @if (_hits is null)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (_hits.Count == 0)
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            Auf diese Entität verweist bisher nichts.
+        </MudText>
+    }
+    else
+    {
+        <MudList T="string" Dense="true" Gutters="false">
+            @foreach (var hit in _hits)
+            {
+                <MudListItem T="string" Href="@RouteFor(hit)" Icon="@IconFor(hit)">
+                    <MudText Typo="Typo.body2">@hit.SourceName</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @ModuleName(hit.SourceModuleKey) · Feld „@hit.FieldName“
+                    </MudText>
+                </MudListItem>
+            }
+        </MudList>
+    }
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid EntityId { get; set; }
+
+    private List<EntityReferenceHit>? _hits;
+    private Guid _loadedFor;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedFor == EntityId)
+        {
+            return;
+        }
+
+        _loadedFor = EntityId;
+        _hits = null;
+        _hits = await References.FindReferencesAsync(EntityId);
+    }
+
+    /// <summary>Lädt die Fundstellen neu — nach dem Speichern aufzurufen.</summary>
+    public async Task RefreshAsync()
+    {
+        _hits = await References.FindReferencesAsync(EntityId);
+        StateHasChanged();
+    }
+
+    private static string ModuleName(string moduleKey) =>
+        ModuleRegistry.Find(moduleKey)?.Name ?? moduleKey;
+
+    private static string IconFor(EntityReferenceHit hit) =>
+        ModuleRegistry.Find(hit.SourceModuleKey)?.Icon ?? Icons.Material.Filled.Link;
+
+    private static string? RouteFor(EntityReferenceHit hit)
+    {
+        var module = ModuleRegistry.Find(hit.SourceModuleKey);
+        return module is { Implemented: true } ? $"{module.Route}/{hit.SourceEntityId}" : null;
+    }
+}

@@ -1,0 +1,507 @@
+@page "/modules/items/neu"
+@page "/modules/items/{Id:guid}"
+@inject ItemService Items
+@inject ContentTypeService ContentTypes
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@PageHeading – GameDevManager</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        Es gibt kein Item mit dieser GUID. Vielleicht wurde es gelöscht.
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/items">Zurück zur Übersicht</MudButton>
+}
+else if (_context is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@PageHeading"
+                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            @if (_dirty)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                    Ungespeicherte Änderungen
+                </MudChip>
+            }
+            @if (!_context.IsNew)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="DeleteAsync">
+                    Löschen
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Href="/modules/items">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_saving"
+                       OnClick="SaveAsync">
+                Speichern
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+
+                @* ------------------------------------------------------------- Stammdaten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudTextField Value="_context.Item.Name"
+                                      ValueChanged="@((string name) => Touch(() => _context.Item.Name = name))"
+                                      T="string"
+                                      Label="Name *"
+                                      Variant="Variant.Outlined"
+                                      Immediate="true" />
+
+                        <MudTextField Value="_context.Item.Description"
+                                      ValueChanged="@((string text) => Touch(() => _context.Item.Description = text))"
+                                      T="string"
+                                      Label="Beschreibung"
+                                      Variant="Variant.Outlined"
+                                      Lines="3" />
+
+                        <MudSelect T="Guid?"
+                                   Value="_context.Item.ContentTypeId"
+                                   ValueChanged="ChangeTypeAsync"
+                                   Label="Item-Art"
+                                   Variant="Variant.Outlined"
+                                   Clearable="true"
+                                   HelperText="Die Art bestimmt, welche Felder dieses Item hat.">
+                            @foreach (var type in _context.AvailableTypes)
+                            {
+                                <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        @if (_context.AvailableTypes.Count == 0)
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true">
+                                Es gibt noch keine Item-Arten.
+                                <MudLink Href="/modules/items/arten" Color="Color.Primary">Jetzt eine anlegen</MudLink>,
+                                um eigene Felder wie Schaden oder Gewicht zu definieren.
+                            </MudAlert>
+                        }
+                    </MudStack>
+                </MudPaper>
+
+                @* -------------------------------------------------------- Felder der Art *@
+                @if (_context.SelectedType is { } selectedType)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">
+                                Felder der Art „@selectedType.Name“
+                            </MudText>
+                            <MudTooltip Text="Felder dieser Art bearbeiten">
+                                <MudIconButton Icon="@Icons.Material.Filled.Tune"
+                                               Size="Size.Small"
+                                               Href="/modules/items/arten"
+                                               aria-label="Felder der Art bearbeiten" />
+                            </MudTooltip>
+                        </MudStack>
+
+                        @if (_context.TypeFields.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Diese Art hat noch keine Felder.
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudStack Spacing="4">
+                                @foreach (var field in _context.TypeFields)
+                                {
+                                    <DynamicFieldInput Definition="field"
+                                                       Value="_context.ValueFor(field)"
+                                                       ReferenceOptions="OptionsFor(field)"
+                                                       OnValueChanged="MarkDirty" />
+                                }
+                            </MudStack>
+                        }
+                    </MudPaper>
+                }
+
+                @* ----------------------------------------------------- Individuelle Felder *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">Individuelle Felder</MudText>
+                        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                   Size="Size.Small"
+                                   Disabled="_context.IsNew"
+                                   OnClick="AddIndividualFieldAsync">
+                            Feld hinzufügen
+                        </MudButton>
+                    </MudStack>
+
+                    @if (_context.IsNew)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Individuelle Felder gehören zu genau diesem Item — sie lassen sich anlegen,
+                            sobald es einmal gespeichert wurde.
+                        </MudText>
+                    }
+                    else if (_context.IndividualFields.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Für einzigartige Werte, die kein anderes Item dieser Art hat — etwa die
+                            Sonderfunktion eines exotischen Items.
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudStack Spacing="4">
+                            @foreach (var field in _context.IndividualFields)
+                            {
+                                <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
+                                    <div style="flex:1 1 auto;">
+                                        <DynamicFieldInput Definition="field"
+                                                           Value="_context.ValueFor(field)"
+                                                           ReferenceOptions="OptionsFor(field)"
+                                                           OnValueChanged="MarkDirty" />
+                                    </div>
+                                    <MudTooltip Text="Feld bearbeiten">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => EditIndividualFieldAsync(field))"
+                                                       aria-label="@($"Feld {field.Name} bearbeiten")" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Feld löschen">
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeleteIndividualFieldAsync(field))"
+                                                       aria-label="@($"Feld {field.Name} löschen")" />
+                                    </MudTooltip>
+                                </MudStack>
+                            }
+                        </MudStack>
+                    }
+                </MudPaper>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <EntityIdChip Id="_context.Item.Id" />
+
+                    @if (_context.IsNew)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                            Wird beim Speichern vergeben.
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.body2">@_context.Item.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.body2">@_context.Item.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                    }
+                </MudPaper>
+
+                @if (!_context.IsNew)
+                {
+                    <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Item.Id" />
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Items);
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private ItemEditContext? _context;
+    private ReferencesPanel? _referencesPanel;
+    private readonly Dictionary<string, IReadOnlyList<EntitySummary>> _referenceOptions = [];
+    private Guid? _loadedId;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+
+    private string PageHeading => _context switch
+    {
+        null => "Item",
+        { IsNew: true } => "Neues Item",
+        { Item.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
+        _ => "Item ohne Namen"
+    };
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_context is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _notFound = false;
+        _dirty = false;
+        _context = null;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _context = await Items.LoadForEditAsync(projectId, Id);
+
+        if (_context is null)
+        {
+            _notFound = true;
+            return;
+        }
+
+        await LoadReferenceOptionsAsync();
+    }
+
+    /// <summary>
+    /// Lädt die auswählbaren Entitäten für alle sichtbaren Referenzfelder. Je Zielmodul nur
+    /// einmal — mehrere Referenzfelder auf dasselbe Modul teilen sich die Liste.
+    /// </summary>
+    private async Task LoadReferenceOptionsAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var projectId = await Project.GetCurrentIdAsync();
+
+        var wanted = _context.TypeFields
+            .Concat(_context.IndividualFields)
+            .Where(field => field.Type == ContentFieldType.EntityReference)
+            .Select(field => field.ReferenceModuleKey)
+            .OfType<string>()
+            .Distinct();
+
+        foreach (var moduleKey in wanted)
+        {
+            if (_referenceOptions.ContainsKey(moduleKey))
+            {
+                continue;
+            }
+
+            _referenceOptions[moduleKey] = await References.GetEntitiesAsync(projectId, moduleKey);
+        }
+    }
+
+    private IReadOnlyList<EntitySummary> OptionsFor(FieldDefinition field) =>
+        field.ReferenceModuleKey is { } moduleKey && _referenceOptions.TryGetValue(moduleKey, out var options)
+            ? options
+            : [];
+
+    private async Task ChangeTypeAsync(Guid? contentTypeId)
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _context.Item.ContentTypeId = contentTypeId;
+        MarkDirty();
+        await LoadReferenceOptionsAsync();
+    }
+
+    private void Touch(Action change)
+    {
+        change();
+        MarkDirty();
+    }
+
+    private void MarkDirty() => _dirty = true;
+
+    private async Task SaveAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            var wasNew = _context.IsNew;
+            await Items.SaveItemAsync(_context);
+            _dirty = false;
+
+            Snackbar.Add($"„{_context.Item.Name}“ wurde gespeichert.", Severity.Success);
+
+            if (wasNew)
+            {
+                // Erst ab jetzt gibt es individuelle Felder und eine Referenzansicht.
+                Navigation.NavigateTo($"/modules/items/{_context.Item.Id}");
+                return;
+            }
+
+            if (_referencesPanel is not null)
+            {
+                await _referencesPanel.RefreshAsync();
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Item löschen",
+            $"„{_context.Item.Name}“ wird mit allen Feldwerten und individuellen Feldern gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Items.DeleteItemAsync(_context.Item.Id);
+        Snackbar.Add("Item gelöscht.", Severity.Success);
+        Navigation.NavigateTo("/modules/items");
+    }
+
+    private async Task AddIndividualFieldAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var field = new FieldDefinition
+        {
+            ModuleKey = ModuleKeys.Items,
+            OwnerEntityId = _context.Item.Id,
+            Name = string.Empty,
+            SortOrder = await ContentTypes.GetNextFieldSortOrderAsync(null, _context.Item.Id)
+        };
+
+        await ShowFieldDialogAsync(field, isNew: true);
+    }
+
+    private Task EditIndividualFieldAsync(FieldDefinition field) =>
+        ShowFieldDialogAsync(field.Clone(), isNew: false);
+
+    private async Task ShowFieldDialogAsync(FieldDefinition draft, bool isNew)
+    {
+        var parameters = new DialogParameters<FieldDefinitionDialog>
+        {
+            { dialog => dialog.Field, draft },
+            { dialog => dialog.IsNew, isNew }
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var reference = await Dialogs.ShowAsync<FieldDefinitionDialog>(
+            isNew ? "Neues Feld" : "Feld bearbeiten", parameters, options);
+
+        var result = await reference.Result;
+        if (result is null || result.Canceled || result.Data is not FieldDefinition edited)
+        {
+            return;
+        }
+
+        try
+        {
+            await ContentTypes.SaveFieldAsync(edited);
+            await ReloadKeepingChangesAsync();
+            Snackbar.Add($"Feld „{edited.Name}“ gespeichert.", Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteIndividualFieldAsync(FieldDefinition field)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Feld löschen",
+            $"Das Feld „{field.Name}“ und sein erfasster Wert werden gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await ContentTypes.DeleteFieldAsync(field.Id);
+        await ReloadKeepingChangesAsync();
+        Snackbar.Add("Feld gelöscht.", Severity.Success);
+    }
+
+    /// <summary>
+    /// Lädt Felder und Werte neu, nachdem eine Felddefinition geändert wurde. Die noch nicht
+    /// gespeicherten Stammdaten der Maske bleiben erhalten.
+    /// </summary>
+    private async Task ReloadKeepingChangesAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var name = _context.Item.Name;
+        var description = _context.Item.Description;
+        var contentTypeId = _context.Item.ContentTypeId;
+        var wasDirty = _dirty;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var reloaded = await Items.LoadForEditAsync(projectId, _context.Item.Id);
+
+        if (reloaded is null)
+        {
+            _notFound = true;
+            _context = null;
+            return;
+        }
+
+        reloaded.Item.Name = name;
+        reloaded.Item.Description = description;
+        reloaded.Item.ContentTypeId = contentTypeId;
+
+        _context = reloaded;
+        _dirty = wasDirty;
+
+        await LoadReferenceOptionsAsync();
+    }
+}
