@@ -1,27 +1,222 @@
-/* Basis-Styles — das eigentliche Styling kommt von MudBlazor. */
+/*
+ * GameDevManager — globale Basis-Styles.
+ *
+ * Farben und Typografie kommen aus dem MudBlazor-Theme (Theme/GameDevManagerTheme.cs);
+ * hier stehen nur Dinge, die sich nicht über das Theme setzen lassen: die Schriften selbst
+ * und das Abrunden einzelner MudBlazor-Komponenten, das der Border-Radius des Themes
+ * nicht erreicht (Icon-Buttons, Chips, Avatare, Switches, …).
+ *
+ * Keine festen Hex-Werte verwenden — immer die Theme-Variablen (--mud-palette-*),
+ * damit Hell/Dunkel-Umschaltung ohne Sonderfälle funktioniert.
+ */
 
-h1:focus {
-    outline: none;
+/* ---------------------------------------------------------------- Schriften */
+/* Lokal ausgeliefert (wwwroot/fonts) — das Tool wird self-hosted betrieben und
+   soll ohne Internetverbindung und ohne externe CDNs vollständig funktionieren. */
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('fonts/inter-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('fonts/inter-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+        U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
+        U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 100 800;
+    font-display: swap;
+    src: url('fonts/jetbrains-mono-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 100 800;
+    font-display: swap;
+    src: url('fonts/jetbrains-mono-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+        U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
+        U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* -------------------------------------------------------------------- Basis */
+
+:root {
+    --gdm-font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, ui-monospace, monospace;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+::selection {
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+}
+
+/* Eckiger, schmaler Scrollbalken im Anthrazit-Ton. MudThemeProvider läuft mit
+   DefaultScrollbar="true", damit sich MudBlazor hier nicht einmischt. */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--mud-palette-lines-inputs) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--mud-palette-lines-inputs);
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--mud-palette-text-secondary);
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* ------------------------------------------------- Eckig statt abgerundet */
+/* Das Theme setzt --mud-default-borderradius auf 0. Die folgenden Komponenten
+   runden in MudBlazor fest verdrahtet ab und brauchen deshalb eine Ausnahme. */
+
+.mud-icon-button,
+.mud-button-root.mud-icon-button,
+.mud-avatar,
+.mud-chip,
+.mud-badge-dot .mud-badge,
+.mud-badge-icon .mud-badge,
+.mud-switch .mud-switch-track,
+.mud-switch .mud-button-root.mud-icon-button,
+.mud-slider .mud-slider-track,
+.mud-slider input[type='range']::-webkit-slider-thumb,
+.mud-progress-linear,
+.mud-progress-linear-bar,
+.mud-skeleton-text,
+.mud-skeleton-circle {
+    border-radius: 0;
+}
+
+/* Ripple-Overlays folgen der Form der Fläche, sonst blitzt ein Kreis auf. */
+.mud-ripple-visible {
+    border-radius: 0;
+}
+
+/* ---------------------------------------------------------- Flächen & Kanten */
+/* Der flache Look trennt Ebenen über 1px-Linien statt über Schlagschatten. */
+
+.mud-card {
+    border: 1px solid var(--mud-palette-lines-default);
+}
+
+.mud-appbar {
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+
+.mud-drawer {
+    border-right: 1px solid var(--mud-palette-lines-default);
+}
+
+.mud-table-container .mud-table-head .mud-table-cell {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* Tabs schreibt MudBlazor fest in Versalien — das Theme-Setting greift hier nicht.
+   Groß-/Kleinschreibung ist ruhiger und passt zu den Buttons. */
+.mud-tab {
+    text-transform: none;
+    letter-spacing: 0.01em;
+}
+
+/* ------------------------------------------------------------ Fokus & Formen */
+/* Ein eckiger gelber Ring ist der einzige Fokus-Indikator — gut sichtbar auf Anthrazit. */
+
+:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
 }
 
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    outline: 1px solid var(--mud-palette-success);
 }
 
 .invalid {
-    outline: 1px solid #e50000;
+    outline: 1px solid var(--mud-palette-error);
 }
 
 .validation-message {
-    color: #e50000;
+    color: var(--mud-palette-error);
+    font-size: 0.75rem;
 }
+
+/* ---------------------------------------------------------------- Utilities */
+
+/* Für GUIDs, IDs und JSON-Vorschauen — dort zählt Zeichengenauigkeit. */
+.gdm-mono {
+    font-family: var(--gdm-font-mono);
+    font-size: 0.8125em;
+    letter-spacing: -0.01em;
+}
+
+/* Gelbe Kante oben, um eine Card als hervorgehoben zu markieren. */
+.gdm-accent-top {
+    border-top: 2px solid var(--mud-palette-primary);
+}
+
+/* Anklickbare Card: Hover hebt nur die Kante hervor, die Fläche bleibt ruhig. */
+.gdm-card-link {
+    transition: border-color 120ms linear, background-color 120ms linear;
+}
+
+.gdm-card-link:hover {
+    border-color: var(--mud-palette-primary);
+    background-color: var(--mud-palette-background-gray);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gdm-card-link {
+        transition: none;
+    }
+}
+
+/* ------------------------------------------------------------------- Fehler */
 
 .blazor-error-boundary {
-    background: #b32121;
+    background: var(--mud-palette-error);
+    color: var(--mud-palette-error-text);
     padding: 1rem;
-    color: white;
+    font-size: 0.875rem;
 }
 
-    .blazor-error-boundary::after {
-        content: "Ein unerwarteter Fehler ist aufgetreten."
-    }
+.blazor-error-boundary::after {
+    content: "Ein unerwarteter Fehler ist aufgetreten."
+}

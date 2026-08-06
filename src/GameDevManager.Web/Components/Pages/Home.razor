@@ -11,10 +11,10 @@
 
     @* Fixe Card: Import/Export ist immer sichtbar *@
     <MudItem xs="12" sm="6" md="4" lg="3">
-        <MudCard Elevation="3" Style="height:100%; border-top: 3px solid var(--mud-palette-warning);">
+        <MudCard Elevation="0" Class="gdm-accent-top" Style="height:100%;">
             <MudCardHeader>
                 <CardHeaderAvatar>
-                    <MudIcon Icon="@Icons.Material.Filled.ImportExport" Color="Color.Warning" />
+                    <MudIcon Icon="@Icons.Material.Filled.ImportExport" Color="Color.Primary" />
                 </CardHeaderAvatar>
                 <CardHeaderContent>
                     <MudText Typo="Typo.h6">Import / Export</MudText>
@@ -34,7 +34,7 @@
 
     @* Status-Card: zeigt, dass die Datenbankverbindung steht *@
     <MudItem xs="12" sm="6" md="4" lg="3">
-        <MudCard Elevation="3" Style="height:100%;">
+        <MudCard Elevation="0" Style="height:100%;">
             <MudCardHeader>
                 <CardHeaderAvatar>
                     <MudIcon Icon="@Icons.Material.Filled.Storage" Color="@(_dbError is null ? Color.Success : Color.Error)" />
@@ -62,7 +62,7 @@
     @foreach (var module in ModuleRegistry.All)
     {
         <MudItem xs="12" sm="6" md="4" lg="3">
-            <MudCard Elevation="2" Style="height:100%;">
+            <MudCard Elevation="0" Class="gdm-card-link" Style="height:100%;">
                 <MudCardHeader>
                     <CardHeaderAvatar>
                         <MudIcon Icon="@module.Icon" />
@@ -75,7 +75,7 @@
                     <MudText Typo="Typo.body2">@module.Description</MudText>
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton Href="@module.Route" EndIcon="@Icons.Material.Filled.ArrowForward">Öffnen</MudButton>
+                    <MudButton Href="@module.Route" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">Öffnen</MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>

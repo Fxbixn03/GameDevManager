@@ -2,27 +2,31 @@
 @inject NavigationManager Navigation
 @implements IDisposable
 
-<MudThemeProvider IsDarkMode="_isDarkMode" />
+<MudThemeProvider Theme="GameDevManagerTheme.Instance" IsDarkMode="_isDarkMode" DefaultScrollbar="true" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="1" Dense="true">
+    @* Elevation 0 — die Appbar setzt sich über die Trennlinie aus app.css ab, nicht über einen Schatten. *@
+    <MudAppBar Elevation="0" Dense="true">
         <MudLink Href="/" Underline="Underline.None" Color="Color.Inherit">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                <MudIcon Icon="@Icons.Material.Filled.SportsEsports" />
-                <MudText Typo="Typo.h6" Class="mr-4">GameDevManager</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Color="Color.Primary" />
+                <MudText Typo="Typo.h6">GameDevManager</MudText>
             </MudStack>
         </MudLink>
 
-        <div style="display:flex; overflow-x:auto; align-items:center;">
+        <MudDivider Vertical="true" FlexItem="true" Class="mx-4 my-3" />
+
+        <div class="gdm-module-strip">
             @foreach (var module in ModuleRegistry.All)
             {
                 <MudTooltip Text="@module.Name">
                     <MudIconButton Icon="@module.Icon"
                                    Href="@module.Route"
-                                   Color="@(IsActive(module) ? Color.Warning : Color.Inherit)" />
+                                   Class="@(IsActive(module) ? "gdm-module-active" : null)"
+                                   Color="@(IsActive(module) ? Color.Primary : Color.Inherit)" />
                 </MudTooltip>
             }
         </div>

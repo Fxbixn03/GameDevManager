@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <ResourcePreloader />
+    @* Ohne Preload lädt die UI-Schrift erst nach dem CSS und der erste Frame flackert.
+       Bewusst der unfingerprintete Pfad — genau den fordert app.css per @@font-face an. *@
+    <link rel="preload" as="font" type="font/woff2" href="fonts/inter-latin.woff2" crossorigin />
     <link rel="stylesheet" href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["GameDevManager.Web.styles.css"]" />

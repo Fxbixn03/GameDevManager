@@ -1,1 +1,19 @@
-/* Das Layout wird vollständig von MudBlazor gestylt. */
+/* Modul-Leiste in der Appbar: horizontal scrollbar, ohne sichtbaren Balken —
+   bei 22 Modulen wird sie auf schmalen Fenstern sonst zum Blocker. */
+
+.gdm-module-strip {
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.gdm-module-strip::-webkit-scrollbar {
+    height: 0;
+}
+
+/* Das aktive Modul bekommt zusätzlich zur gelben Icon-Farbe eine gelbe Unterkante,
+   damit es auch ohne Farbwahrnehmung erkennbar bleibt. */
+.gdm-module-strip ::deep .gdm-module-active {
+    box-shadow: inset 0 -2px 0 0 var(--mud-palette-primary);
+}
