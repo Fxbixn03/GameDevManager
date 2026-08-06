@@ -65,6 +65,48 @@ public sealed class RecipeEntitySource : ModuleEntitySource<Recipe>
 }
 
 /// <summary>
+/// NPCs und Mobs für die modulübergreifenden Dienste. Ihre Warenangebote verweisen über
+/// eigene Spalten auf Items und Währungen.
+/// </summary>
+public sealed class NpcEntitySource : ModuleEntitySource<Npc>
+{
+    public override string ModuleKey => ModuleKeys.Npcs;
+
+    protected override DbSet<Npc> Set(GameDevManagerDbContext db) => db.Npcs;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<Npc> query) =>
+        query.Select(npc => new SearchHit(
+            npc.Id,
+            ModuleKeys.Npcs,
+            SearchHitKind.Entity,
+            npc.Name,
+            npc.Kind == NpcKind.Mob ? "Mob" : npc.IsTrader ? "Händler" : npc.ContentType!.Name,
+            db.Assets.Where(a => a.OwnerEntityId == npc.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+
+    public override async Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
+    {
+        var hits = await db.TraderOffers
+            .AsNoTracking()
+            .Where(offer => offer.ItemId == entityId)
+            .Select(offer => new EntityReferenceHit(
+                offer.NpcId, ModuleKeys.Npcs, offer.Npc!.Name, "Handelsware"))
+            .ToListAsync(ct);
+
+        hits.AddRange(await db.TraderOffers
+            .AsNoTracking()
+            .Where(offer => offer.CurrencyId == entityId)
+            .Select(offer => new EntityReferenceHit(
+                offer.NpcId, ModuleKeys.Npcs, offer.Npc!.Name, "Währung im Angebot"))
+            .Distinct()
+            .ToListAsync(ct));
+
+        return hits;
+    }
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

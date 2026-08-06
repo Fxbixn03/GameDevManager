@@ -1,0 +1,34 @@
+@page "/modules/npcs/arten"
+
+<PageTitle>NPC-Arten – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="NPC-Arten"
+              Subtitle="Typ, Rollen und Warenangebot stehen fest am NPC — alles Weitere definieren die Felder der Art."
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/npcs">Zu den NPCs</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddAsync">
+            Neue Art
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+<ContentTypeManager @ref="_manager"
+                    ModuleKey="@ModuleKeys.Npcs"
+                    EntityNoun="NPC"
+                    EmptyTitle="Noch keine NPC-Arten"
+                    EmptyHint="Eine Art bündelt die Felder, die alle Figuren dieser Kategorie gemeinsam haben — etwa „Wache“ mit Lebenspunkten, Stufe und Wachbereich." />
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Npcs);
+
+    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+
+    private ContentTypeManager? _manager;
+
+    private Task AddAsync() => _manager?.AddTypeAsync() ?? Task.CompletedTask;
+}

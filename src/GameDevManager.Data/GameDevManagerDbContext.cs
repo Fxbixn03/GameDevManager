@@ -27,6 +27,10 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Currency> Currencies => Set<Currency>();
 
+    public DbSet<Npc> Npcs => Set<Npc>();
+
+    public DbSet<TraderOffer> TraderOffers => Set<TraderOffer>();
+
     /// <summary>Hochgeladene Dateien aller Module; die Datei selbst liegt im Dateispeicher.</summary>
     public DbSet<Asset> Assets => Set<Asset>();
 
@@ -162,6 +166,27 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         ConfigureContentEntity<Currency>(modelBuilder);
 
         modelBuilder.Entity<Currency>(entity => entity.Property(c => c.Symbol).HasMaxLength(10));
+
+        ConfigureContentEntity<Npc>(modelBuilder);
+
+        modelBuilder.Entity<Npc>(entity =>
+        {
+            // Die Übersicht filtert fast immer nach NPC/Mob und nach Rolle.
+            entity.HasIndex(n => new { n.GameProjectId, n.Kind });
+            entity.HasIndex(n => n.IsTrader);
+        });
+
+        modelBuilder.Entity<TraderOffer>(entity =>
+        {
+            entity.HasOne(o => o.Npc)
+                .WithMany(n => n.Offers)
+                .HasForeignKey(o => o.NpcId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Fragen „wer handelt mit diesem Item?“ und „wo wird diese Währung benutzt?“.
+            entity.HasIndex(o => o.ItemId);
+            entity.HasIndex(o => o.CurrencyId);
+        });
 
         modelBuilder.Entity<Recipe>(entity =>
         {

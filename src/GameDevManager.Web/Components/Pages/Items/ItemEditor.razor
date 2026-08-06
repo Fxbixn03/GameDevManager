@@ -2,6 +2,7 @@
 @page "/modules/items/{Id:guid}"
 @inject ItemService Items
 @inject CraftingService Crafting
+@inject NpcService Npcs
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -195,6 +196,33 @@ else
                         }
                     </MudPaper>
 
+                    @* ------------------------------------------------------------ Handel *@
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Handel</MudText>
+
+                        @if (_traders.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Kein Händler führt dieses Item.
+                            </MudText>
+                        }
+                        else
+                        {
+                            @foreach (var trader in _traders)
+                            {
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween"
+                                          Class="gdm-field-row py-1">
+                                    <MudLink Href="@($"/modules/npcs/{trader.NpcId}")" Typo="Typo.body2">
+                                        @trader.NpcName
+                                    </MudLink>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                                        @DescribePrices(trader)
+                                    </MudText>
+                                </MudStack>
+                            }
+                        }
+                    </MudPaper>
+
                     <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
                 }
             </MudStack>
@@ -212,6 +240,7 @@ else
     private ReferencesPanel? _referencesPanel;
     private List<RecipeListRow> _produces = [];
     private List<RecipeListRow> _consumes = [];
+    private List<TraderForItem> _traders = [];
     private Guid? _loadedId;
     private bool _notFound;
     private bool _saving;
@@ -245,6 +274,7 @@ else
         _context = null;
         _produces = [];
         _consumes = [];
+        _traders = [];
 
         var projectId = await Project.GetCurrentIdAsync();
         _context = await Items.LoadForEditAsync(projectId, Id);
@@ -258,7 +288,33 @@ else
         if (!_context.IsNew)
         {
             (_produces, _consumes) = await Crafting.GetRecipesForItemAsync(projectId, _context.Entity.Id);
+            _traders = await Npcs.GetTradersForItemAsync(projectId, _context.Entity.Id);
         }
+    }
+
+    /// <summary>Kurzfassung der Preise eines Händlers für die Seitenleiste.</summary>
+    private static string DescribePrices(TraderForItem trader)
+    {
+        var parts = new List<string>();
+
+        if (trader.SellPrice is { } sell)
+        {
+            parts.Add($"VK {sell:0.##}");
+        }
+
+        if (trader.BuyPrice is { } buy)
+        {
+            parts.Add($"AK {buy:0.##}");
+        }
+
+        if (parts.Count == 0)
+        {
+            return "ohne Preis";
+        }
+
+        return string.IsNullOrWhiteSpace(trader.CurrencyLabel)
+            ? string.Join(" · ", parts)
+            : $"{string.Join(" · ", parts)} {trader.CurrencyLabel}";
     }
 
     private void ChangeType(Guid? contentTypeId)

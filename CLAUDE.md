@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GameDevManager ist ein selbst gehostetes Verwaltungstool für Indie-Spieleentwickler: ein strukturiertes Wiki für Spielinhalte (Items, NPCs, Quests, Dialoge, Karten, …) mit späterem Export in Game Engines (Unity, Unreal, Godot oder JSON/ZIP).
 
-**Status: Kern steht, vier Module umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem, die globale Suche, Items, die Asset-/Sprite-Bibliothek, Crafting und Währungen sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
+**Status: Kern steht, fünf Module umgesetzt.** Datenbankanbindung, Theme, Modul-Registry, das Arten-/Feldsystem, die globale Suche, Items, die Asset-/Sprite-Bibliothek, Crafting, Währungen und NPCs sind fertig; alle übrigen Module landen noch auf der Platzhalterseite `ModulePage.razor`. Template-Reste (`Class1.cs` in Domain/Data, Counter-/Weather-Seiten, leere `NavMenu.razor`) sind noch da und können weg. Testprojekte gibt es nicht. Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
 
 **Sprache:** README, Konzept und Doku sind auf Deutsch. Neue Dokumentation und Commit-Messages ebenfalls auf Deutsch verfassen. Code (Bezeichner, Kommentare) auf Englisch.
 
@@ -98,6 +98,14 @@ Gibt es mehrere Rezepte für dasselbe Item, klappt der Baum das erste auf und we
 ### Währungen
 
 Beliebig viele nebeneinander; Händler nehmen später eine davon entgegen. Strukturell trägt die Währung nur ihr `Symbol` — es steht dort und nicht in einem benutzerdefinierten Feld, weil jede Ansicht, die einen Preis zeigt, es zuverlässig finden muss. Wechselkurse und Ähnliches sind Felder der Währungs-Art. Namen sind je Projekt eindeutig, sonst wären zwei Währungen in einer Preisangabe nicht auseinanderzuhalten.
+
+### NPCs
+
+NPCs und Mobs liegen laut Konzept im selben Modul und unterscheiden sich über `NpcKind` — eine echte Spalte und keine Art, weil das Tool danach filtert und später Loot-Tables und Spawns daran hängen. Die Rollen sind zwei Schalter (`IsTrader`, `IsQuestGiver`), womit „Händler, Quest, beides oder gar nichts“ direkt abgebildet ist.
+
+Das Warenangebot (`TraderOffer`) ist die zweite Kind-Sammlung nach den Rezept-Zutaten und folgt demselben Muster inklusive des EF-Fallstricks oben. Je Posten: Item, Währung, Verkaufs- und Ankaufspreis, Bestand (`null` = unbegrenzt) und Auffüllzeit. Ein Posten ohne Preis ist zulässig — ein Händler, der etwas führt, aber nicht handelt, ist ein gültiger Fall. Ein Preis **ohne** Währung wird abgelehnt, weil die Zahl dann nicht zu deuten wäre.
+
+Drei Konzept-Anforderungen dieses Moduls fehlen bewusst, weil ihre Grundlage nicht steht: **Spawn-Orte** (Karten-Modul), **Loot-Tables** (Loot-Modul) und die **Verfügbarkeitsbedingungen** von Shops (Bedingungssystem). Der NPC-Editor weist in der Seitenleiste darauf hin; bis dahin lassen sich solche Angaben als Felder an der NPC-Art erfassen. Beim Bau dieser Module hier nachziehen.
 
 ### Globale Suche
 

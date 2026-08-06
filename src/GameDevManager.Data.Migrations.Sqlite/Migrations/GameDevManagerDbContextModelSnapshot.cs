@@ -389,6 +389,57 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsQuestGiver")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsTrader")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("IsTrader");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Kind");
+
+                    b.ToTable("Npcs");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Recipe", b =>
                 {
                     b.Property<Guid>("Id")
@@ -460,6 +511,47 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("RecipeId");
 
                     b.ToTable("RecipeIngredients");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.TraderOffer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("BuyPrice")
+                        .HasColumnType("REAL");
+
+                    b.Property<Guid?>("CurrencyId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("NpcId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("RestockSeconds")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("SellPrice")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("Stock")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurrencyId");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("NpcId");
+
+                    b.ToTable("TraderOffers");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Asset", b =>
@@ -582,6 +674,24 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Recipe", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -611,6 +721,17 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("Recipe");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.TraderOffer", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Npc", "Npc")
+                        .WithMany("Offers")
+                        .HasForeignKey("NpcId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Npc");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Asset", b =>
                 {
                     b.Navigation("Tags");
@@ -629,6 +750,11 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>
                 {
                     b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
+                {
+                    b.Navigation("Offers");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Recipe", b =>

@@ -1,0 +1,502 @@
+@page "/modules/npcs/neu"
+@page "/modules/npcs/{Id:guid}"
+@inject NpcService Npcs
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@PageHeading – GameDevManager</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        Es gibt keinen NPC mit dieser GUID. Vielleicht wurde er gelöscht.
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/npcs">Zurück zur Übersicht</MudButton>
+}
+else if (_context is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@PageHeading"
+                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            @if (_dirty)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                    Ungespeicherte Änderungen
+                </MudChip>
+            }
+            @if (!_context.IsNew)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="DeleteAsync">
+                    Löschen
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Href="/modules/npcs">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_saving"
+                       OnClick="SaveAsync">
+                Speichern
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+
+                @* ------------------------------------------------------------- Stammdaten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudTextField Value="_context.Entity.Name"
+                                      ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
+                                      T="string"
+                                      Label="Name *"
+                                      Variant="Variant.Outlined"
+                                      Immediate="true" />
+
+                        <MudTextField Value="_context.Entity.Description"
+                                      ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
+                                      T="string"
+                                      Label="Beschreibung"
+                                      Variant="Variant.Outlined"
+                                      Lines="3" />
+
+                        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudSelect T="NpcKind"
+                                       Value="_context.Entity.Kind"
+                                       ValueChanged="@((NpcKind kind) => Touch(() => _context.Entity.Kind = kind))"
+                                       Label="Typ"
+                                       Variant="Variant.Outlined"
+                                       Style="max-width:180px;">
+                                <MudSelectItem T="NpcKind" Value="@(NpcKind.Npc)">NPC</MudSelectItem>
+                                <MudSelectItem T="NpcKind" Value="@(NpcKind.Mob)">Mob (Gegner)</MudSelectItem>
+                            </MudSelect>
+
+                            <MudSelect T="Guid?"
+                                       Value="_context.Entity.ContentTypeId"
+                                       ValueChanged="ChangeType"
+                                       Label="NPC-Art"
+                                       Variant="Variant.Outlined"
+                                       Clearable="true"
+                                       Style="max-width:240px;">
+                                @foreach (var type in _context.AvailableTypes)
+                                {
+                                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudStack>
+
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Rollen</MudText>
+                            <MudStack Row="true" Spacing="4" Wrap="Wrap.Wrap">
+                                <MudSwitch T="bool"
+                                           Value="_context.Entity.IsTrader"
+                                           ValueChanged="@((bool on) => Touch(() => _context.Entity.IsTrader = on))"
+                                           Color="Color.Primary"
+                                           Label="Händler" />
+                                <MudSwitch T="bool"
+                                           Value="_context.Entity.IsQuestGiver"
+                                           ValueChanged="@((bool on) => Touch(() => _context.Entity.IsQuestGiver = on))"
+                                           Color="Color.Primary"
+                                           Label="Questgeber" />
+                            </MudStack>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+
+                @* --------------------------------------------------------- Warenangebot *@
+                @if (_context.Entity.IsTrader)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">Warenangebot</MudText>
+                            <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                       Size="Size.Small"
+                                       Disabled="@(_items.Count == 0)"
+                                       OnClick="AddOffer">
+                                Posten
+                            </MudButton>
+                        </MudStack>
+
+                        @if (_items.Count == 0)
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true">
+                                Es gibt noch keine Items zum Handeln —
+                                <MudLink Href="/modules/items" Color="Color.Primary">jetzt welche anlegen</MudLink>.
+                            </MudAlert>
+                        }
+                        else if (_context.Entity.Offers.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Noch kein Posten. Je Posten lassen sich Verkaufs- und Ankaufspreis,
+                                Währung, Lagerbestand und Auffüllzeit festlegen.
+                            </MudText>
+                        }
+                        else
+                        {
+                            @if (_currencies.Count == 0)
+                            {
+                                <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
+                                    Es gibt noch keine Währungen. Ohne Währung lässt sich kein Preis eintragen —
+                                    <MudLink Href="/modules/currencies" Color="Color.Primary">jetzt eine anlegen</MudLink>.
+                                </MudAlert>
+                            }
+
+                            <MudStack Spacing="0">
+                                @foreach (var offer in _context.Entity.Offers)
+                                {
+                                    <div class="pa-2 gdm-field-row">
+                                        <MudGrid Spacing="2">
+                                            <MudItem xs="12" sm="6" md="4">
+                                                <MudAutocomplete T="EntitySummary"
+                                                                 Value="@ItemFor(offer.ItemId)"
+                                                                 ValueChanged="@((EntitySummary? e) => Touch(() => offer.ItemId = e?.Id ?? Guid.Empty))"
+                                                                 SearchFunc="SearchItemsAsync"
+                                                                 ToStringFunc="@(e => e?.Name ?? string.Empty)"
+                                                                 Label="Item"
+                                                                 Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense"
+                                                                 Clearable="true"
+                                                                 ResetValueOnEmptyText="true"
+                                                                 CoerceValue="false"
+                                                                 MaxItems="50" />
+                                            </MudItem>
+
+                                            <MudItem xs="6" sm="3" md="2">
+                                                <MudNumericField T="double?"
+                                                                 Value="offer.SellPrice"
+                                                                 ValueChanged="@((double? v) => Touch(() => offer.SellPrice = v))"
+                                                                 Label="Verkauf"
+                                                                 HelperText="an Spieler"
+                                                                 Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense"
+                                                                 Min="0"
+                                                                 Clearable="true" />
+                                            </MudItem>
+
+                                            <MudItem xs="6" sm="3" md="2">
+                                                <MudNumericField T="double?"
+                                                                 Value="offer.BuyPrice"
+                                                                 ValueChanged="@((double? v) => Touch(() => offer.BuyPrice = v))"
+                                                                 Label="Ankauf"
+                                                                 HelperText="vom Spieler"
+                                                                 Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense"
+                                                                 Min="0"
+                                                                 Clearable="true" />
+                                            </MudItem>
+
+                                            <MudItem xs="12" sm="6" md="4">
+                                                <MudSelect T="Guid?"
+                                                           Value="offer.CurrencyId"
+                                                           ValueChanged="@((Guid? v) => Touch(() => offer.CurrencyId = v))"
+                                                           Label="Währung"
+                                                           Variant="Variant.Outlined"
+                                                           Margin="Margin.Dense"
+                                                           Clearable="true">
+                                                    @foreach (var currency in _currencies)
+                                                    {
+                                                        <MudSelectItem T="Guid?" Value="@currency.Id">@currency.Name</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </MudItem>
+
+                                            <MudItem xs="6" sm="4" md="3">
+                                                <MudNumericField T="int?"
+                                                                 Value="offer.Stock"
+                                                                 ValueChanged="@((int? v) => Touch(() => offer.Stock = v))"
+                                                                 Label="Bestand"
+                                                                 HelperText="leer = unbegrenzt"
+                                                                 Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense"
+                                                                 Min="0"
+                                                                 Clearable="true" />
+                                            </MudItem>
+
+                                            <MudItem xs="6" sm="4" md="3">
+                                                <MudNumericField T="double?"
+                                                                 Value="offer.RestockSeconds"
+                                                                 ValueChanged="@((double? v) => Touch(() => offer.RestockSeconds = v))"
+                                                                 Label="Auffüllzeit"
+                                                                 Adornment="Adornment.End"
+                                                                 AdornmentText="s"
+                                                                 Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense"
+                                                                 Min="0"
+                                                                 Clearable="true" />
+                                            </MudItem>
+
+                                            <MudItem xs="12" sm="4" md="6" Class="d-flex align-center justify-end">
+                                                <MudTooltip Text="Posten entfernen">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                                   Size="Size.Small"
+                                                                   OnClick="@(() => RemoveOffer(offer))"
+                                                                   aria-label="Posten entfernen" />
+                                                </MudTooltip>
+                                            </MudItem>
+                                        </MudGrid>
+                                    </div>
+                                }
+                            </MudStack>
+                        }
+                    </MudPaper>
+                }
+
+                @* ------------------------------------------------------------------ Sprites *@
+                <AssetSpritePanel ModuleKey="@ModuleKeys.Npcs"
+                                  EntityId="_context.Entity.Id"
+                                  Disabled="_context.IsNew" />
+
+                @* ------------------------------------------------------------------- Felder *@
+                <div>
+                    <ContentFieldsPanel TEntity="Npc"
+                                        Context="_context"
+                                        ModuleKey="@ModuleKeys.Npcs"
+                                        TypesRoute="/modules/npcs/arten"
+                                        IndividualHint="Für einzigartige Werte, die kein anderer NPC dieser Art hat."
+                                        OnValueChanged="MarkDirty"
+                                        OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
+                </div>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <EntityIdChip Id="_context.Entity.Id" />
+
+                    @if (!_context.IsNew)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                    }
+                </MudPaper>
+
+                @* Was das Konzept für dieses Modul noch vorsieht, aber die Grundlage fehlt. *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">Kommt später</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Spawn-Orte brauchen das Karten-Modul, Loot-Tables das Loot-Modul, und die
+                        Verfügbarkeitsbedingungen von Shops das Bedingungssystem. Bis dahin lassen
+                        sich solche Angaben als Felder an der NPC-Art erfassen.
+                    </MudText>
+                </MudPaper>
+
+                @if (!_context.IsNew)
+                {
+                    <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Npcs);
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private ContentEditContext<Npc>? _context;
+    private ReferencesPanel? _referencesPanel;
+    private List<EntitySummary> _items = [];
+    private List<EntitySummary> _currencies = [];
+    private Guid? _loadedId;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+
+    private string PageHeading => _context switch
+    {
+        null => "NPC",
+        { IsNew: true } => "Neuer NPC",
+        { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
+        _ => "NPC ohne Namen"
+    };
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_context is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _notFound = false;
+        _dirty = false;
+        _context = null;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _items = await References.GetEntitiesAsync(projectId, ModuleKeys.Items);
+        _currencies = await References.GetEntitiesAsync(projectId, ModuleKeys.Currencies);
+        _context = await Npcs.LoadForEditAsync(projectId, Id);
+
+        if (_context is null)
+        {
+            _notFound = true;
+        }
+    }
+
+    private EntitySummary? ItemFor(Guid itemId) => _items.FirstOrDefault(entity => entity.Id == itemId);
+
+    private Task<IEnumerable<EntitySummary>> SearchItemsAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? _items
+            : _items.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private void AddOffer() =>
+        Touch(() => _context!.Entity.Offers.Add(new TraderOffer
+        {
+            NpcId = _context.Entity.Id,
+            ItemId = Guid.Empty,
+            // Gibt es nur eine Währung, ist sie fast immer die gemeinte.
+            CurrencyId = _currencies.Count == 1 ? _currencies[0].Id : null,
+            SortOrder = _context.Entity.Offers.Count
+        }));
+
+    private void RemoveOffer(TraderOffer offer) =>
+        Touch(() => _context!.Entity.Offers.Remove(offer));
+
+    private void ChangeType(Guid? contentTypeId) =>
+        Touch(() => _context!.Entity.ContentTypeId = contentTypeId);
+
+    private void Touch(Action change)
+    {
+        change();
+        MarkDirty();
+    }
+
+    private void MarkDirty() => _dirty = true;
+
+    private async Task SaveAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        // Leere Eingabezeilen sind ein Bedienschritt, kein Inhalt.
+        _context.Entity.Offers.RemoveAll(offer => offer.ItemId == Guid.Empty);
+
+        _saving = true;
+
+        try
+        {
+            var wasNew = _context.IsNew;
+            await Npcs.SaveNpcAsync(_context);
+            _dirty = false;
+
+            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+
+            if (wasNew)
+            {
+                Navigation.NavigateTo($"/modules/npcs/{_context.Entity.Id}");
+                return;
+            }
+
+            if (_referencesPanel is not null)
+            {
+                await _referencesPanel.RefreshAsync();
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "NPC löschen",
+            $"„{_context.Entity.Name}“ wird mit Warenangebot, Feldwerten, individuellen Feldern und Sprites gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Npcs.DeleteNpcAsync(_context.Entity.Id);
+        Snackbar.Add("NPC gelöscht.", Severity.Success);
+        Navigation.NavigateTo("/modules/npcs");
+    }
+
+    /// <summary>
+    /// Lädt nach einer Änderung an den Felddefinitionen neu und behält dabei, was in der Maske
+    /// noch nicht gespeichert ist.
+    /// </summary>
+    private async Task ReloadKeepingChangesAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var entity = _context.Entity;
+        var wasDirty = _dirty;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var reloaded = await Npcs.LoadForEditAsync(projectId, entity.Id);
+
+        if (reloaded is null)
+        {
+            _notFound = true;
+            _context = null;
+            return;
+        }
+
+        reloaded.Entity.Name = entity.Name;
+        reloaded.Entity.Description = entity.Description;
+        reloaded.Entity.ContentTypeId = entity.ContentTypeId;
+        reloaded.Entity.Kind = entity.Kind;
+        reloaded.Entity.IsTrader = entity.IsTrader;
+        reloaded.Entity.IsQuestGiver = entity.IsQuestGiver;
+        reloaded.Entity.Offers = entity.Offers;
+
+        _context = reloaded;
+        _dirty = wasDirty;
+    }
+}

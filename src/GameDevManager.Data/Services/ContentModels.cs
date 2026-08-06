@@ -101,6 +101,28 @@ public sealed class ContentEditContext<TEntity>
     }
 }
 
+/// <summary>Eine Zeile der NPC-Übersicht.</summary>
+public sealed record NpcListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    NpcKind Kind,
+    bool IsTrader,
+    bool IsQuestGiver,
+    Guid? ContentTypeId,
+    string? TypeName,
+    int OfferCount,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
+/// <summary>Ein Händler, der ein bestimmtes Item führt — für die Item-Maske.</summary>
+public sealed record TraderForItem(
+    Guid NpcId,
+    string NpcName,
+    double? SellPrice,
+    double? BuyPrice,
+    string? CurrencyLabel);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,
