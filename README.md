@@ -71,9 +71,9 @@ Auf dem Dashboard wird es eine Import/Export-Card geben. Darüber sind zwei Wege
 
 ## Roadmap
 
-1. **Konzept ausarbeiten**
-2. Kern-Architektur: Entitätenmodell, eigene Arten und Felder, GUID-Referenzen, Bedingungssystem
-3. Erste Module: Dashboard, Items, Asset-Bibliothek
+1. Konzept ausarbeiten - Done ✔️
+2. Kern-Architektur: Entitätenmodell, eigene Arten und Felder, GUID-Referenzen, Bedingungssystem - Done ✔️
+3. Erste Module: Dashboard, Items, Asset-Bibliothek - Done ✔️
 4. Darauf aufbauend: Crafting, NPCs, Loot-Tables, Karten
 5. Story-Ebene: Dialoge, Story, Quests, Events
 6. Import/Export mit Engine-Anbindung
