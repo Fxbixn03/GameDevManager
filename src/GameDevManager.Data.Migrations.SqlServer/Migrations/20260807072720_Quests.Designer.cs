@@ -4,6 +4,7 @@ using GameDevManager.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GameDevManager.Data.Migrations.SqlServer.Migrations
 {
     [DbContext(typeof(GameDevManagerDbContext))]
-    partial class GameDevManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260807072720_Quests")]
+    partial class Quests
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

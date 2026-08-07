@@ -319,6 +319,53 @@ public sealed class StoryEntrySource : ModuleEntitySource<StoryEntry>
 }
 
 /// <summary>
+/// Quests für die modulübergreifenden Dienste. Questgeber, Story-Anbindung und Dialog
+/// verweisen über eigene Spalten auf fremde Entitäten.
+/// </summary>
+public sealed class QuestEntitySource : ModuleEntitySource<Quest>
+{
+    public override string ModuleKey => ModuleKeys.Quests;
+
+    protected override DbSet<Quest> Set(GameDevManagerDbContext db) => db.Quests;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<Quest> query) =>
+        query.Select(quest => new SearchHit(
+            quest.Id,
+            ModuleKeys.Quests,
+            SearchHitKind.Entity,
+            quest.Name,
+            quest.Kind == QuestKind.MainMission ? "Hauptmission"
+                : quest.Kind == QuestKind.Event ? "Event"
+                : "Nebenmission",
+            db.Assets.Where(a => a.OwnerEntityId == quest.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+
+    public override async Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
+    {
+        var hits = await db.Quests
+            .AsNoTracking()
+            .Where(quest => quest.GiverNpcId == entityId)
+            .Select(quest => new EntityReferenceHit(quest.Id, ModuleKeys.Quests, quest.Name, "Questgeber"))
+            .ToListAsync(ct);
+
+        hits.AddRange(await db.Quests
+            .AsNoTracking()
+            .Where(quest => quest.StoryEntryId == entityId)
+            .Select(quest => new EntityReferenceHit(quest.Id, ModuleKeys.Quests, quest.Name, "Story-Anbindung"))
+            .ToListAsync(ct));
+
+        hits.AddRange(await db.Quests
+            .AsNoTracking()
+            .Where(quest => quest.DialogueId == entityId)
+            .Select(quest => new EntityReferenceHit(quest.Id, ModuleKeys.Quests, quest.Name, "Dialog zur Quest"))
+            .ToListAsync(ct));
+
+        return hits;
+    }
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

@@ -932,6 +932,64 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.ToTable("Npcs");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Quest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<Guid?>("DialogueId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("GiverNpcId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("StoryEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("DialogueId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("GiverNpcId");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("StoryEntryId");
+
+                    b.HasIndex("GameProjectId", "Kind");
+
+                    b.ToTable("Quests");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Recipe", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1420,6 +1478,24 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Quest", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
                         .WithMany()

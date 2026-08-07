@@ -1,0 +1,267 @@
+@page "/modules/quests"
+@inject QuestService Quests
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Quests – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/quests/arten">
+            Quest-Arten
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/quests/neu">
+            Neue Quest
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_quests is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    @if (_withoutCompletion.Count > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">
+            <b>@_withoutCompletion.Count Quest(s) ohne Abschlussbedingung</b> — das Spiel wüsste nie,
+            wann sie erledigt sind:
+            @foreach (var quest in _withoutCompletion.Take(5))
+            {
+                <MudLink Href="@($"/modules/quests/{quest.Id}")" Class="ml-1">@quest.Name</MudLink>
+            }
+            @if (_withoutCompletion.Count > 5)
+            {
+                <span class="ml-1">… und @(_withoutCompletion.Count - 5) weitere</span>
+            }
+        </MudAlert>
+    }
+
+    @if (_quests.Count == 0)
+    {
+        <div class="gdm-empty">
+            <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+            <MudText Typo="Typo.h6">Noch keine Quests</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                Haupt- und Nebenmissionen sowie Events — verknüpfbar mit Story-Abschnitten,
+                Questgeber-NPCs und Dialogen, mit Bedingungen für Verfügbarkeit und Abschluss.
+            </MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/quests/neu">
+                Erste Quest
+            </MudButton>
+        </div>
+    }
+    else
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudTextField @bind-Value="_search"
+                              Placeholder="Nach Name, Questgeber oder Story suchen"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Immediate="true"
+                              Clearable="true"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Style="max-width:360px;" />
+
+                <MudSelect T="QuestKind?"
+                           @bind-Value="_kindFilter"
+                           Label="Form"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Clearable="true"
+                           Style="max-width:200px;">
+                    @foreach (var kind in Enum.GetValues<QuestKind>())
+                    {
+                        <MudSelectItem T="QuestKind?" Value="@kind">@QuestService.KindLabel(kind)</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudSelect T="Guid?"
+                           @bind-Value="_typeFilter"
+                           Label="Art"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Clearable="true"
+                           Style="max-width:220px;">
+                    @foreach (var type in _types)
+                    {
+                        <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudSpacer />
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_quests.Count</MudText>
+            </MudStack>
+        </MudPaper>
+
+        <MudTable T="QuestListRow"
+                  Items="Filtered"
+                  Elevation="0"
+                  Hover="true"
+                  Dense="true"
+                  Breakpoint="Breakpoint.Sm"
+                  OnRowClick="OpenRow"
+                  RowClass="cursor-pointer">
+            <HeaderContent>
+                <MudTh Style="width:56px;"></MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Form</MudTh>
+                <MudTh>Questgeber</MudTh>
+                <MudTh>Story</MudTh>
+                <MudTh>Art</MudTh>
+                <MudTh Style="width:56px;"></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Sprite">
+                    <AssetThumbnail AssetId="context.PrimaryAssetId"
+                                    Size="Size.Small"
+                                    Alt="@context.Name"
+                                    FallbackIcon="@Icons.Material.Filled.Assignment" />
+                </MudTd>
+                <MudTd DataLabel="Name">
+                    <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
+                </MudTd>
+                <MudTd DataLabel="Form">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                             Color="@(context.Kind == QuestKind.MainMission ? Color.Primary : Color.Default)">
+                        @QuestService.KindLabel(context.Kind)
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Questgeber">
+                    @if (context.GiverNpcId is null)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2">@(context.GiverNpcName ?? "(gelöschter NPC)")</MudText>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Story">
+                    @if (context.StoryEntryId is null)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2">@(context.StoryEntryName ?? "(gelöschter Abschnitt)")</MudText>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Art">
+                    @if (context.TypeName is null)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
+                    }
+                </MudTd>
+                <MudTd>
+                    <MudTooltip Text="Löschen">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteAsync(context))"
+                                       aria-label="@($"{context.Name} löschen")" />
+                    </MudTooltip>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
+                    Keine Quest passt zur Suche.
+                </MudText>
+            </NoRecordsContent>
+        </MudTable>
+    }
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Quests);
+
+    private List<QuestListRow>? _quests;
+    private List<EntitySummary> _withoutCompletion = [];
+    private List<ContentType> _types = [];
+    private string? _search;
+    private QuestKind? _kindFilter;
+    private Guid? _typeFilter;
+
+    private string Subtitle => _quests is null
+        ? "Wird geladen …"
+        : $"{_quests.Count} Quest(s)";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _types = await ContentTypes.GetTypesAsync(projectId, ModuleKeys.Quests);
+        _quests = await Quests.GetQuestsAsync(projectId);
+        _withoutCompletion = await Quests.FindQuestsWithoutCompletionAsync(projectId);
+    }
+
+    private List<QuestListRow> Filtered
+    {
+        get
+        {
+            IEnumerable<QuestListRow> rows = _quests ?? [];
+
+            if (_kindFilter is { } kind)
+            {
+                rows = rows.Where(row => row.Kind == kind);
+            }
+
+            if (_typeFilter is { } typeId)
+            {
+                rows = rows.Where(row => row.ContentTypeId == typeId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_search))
+            {
+                rows = rows.Where(row =>
+                    row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                    || (row.GiverNpcName?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (row.StoryEntryName?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (row.Description?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            return [.. rows];
+        }
+    }
+
+    private void OpenRow(TableRowClickEventArgs<QuestListRow> args)
+    {
+        if (args.Item is { } row)
+        {
+            Navigation.NavigateTo($"/modules/quests/{row.Id}");
+        }
+    }
+
+    private async Task DeleteAsync(QuestListRow row)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Quest löschen",
+            $"„{row.Name}“ wird mit Feldwerten, Bedingungen und Sprites gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Quests.DeleteQuestAsync(row.Id);
+        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+}

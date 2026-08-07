@@ -1,0 +1,424 @@
+@page "/modules/quests/neu"
+@page "/modules/quests/{Id:guid}"
+@inject QuestService Quests
+@inject ConditionService Conditions
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@PageHeading – GameDevManager</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        Es gibt keine Quest mit dieser GUID. Vielleicht wurde sie gelöscht.
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/quests">Zurück zur Übersicht</MudButton>
+}
+else if (_context is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@PageHeading"
+                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            @if (_dirty)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                    Ungespeicherte Änderungen
+                </MudChip>
+            }
+            @if (!_context.IsNew)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="DeleteAsync">
+                    Löschen
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Href="/modules/quests">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_saving"
+                       OnClick="SaveAsync">
+                Speichern
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+
+                @* ------------------------------------------------------------- Stammdaten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudTextField Value="_context.Entity.Name"
+                                      ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
+                                      T="string"
+                                      Label="Name *"
+                                      Variant="Variant.Outlined"
+                                      Immediate="true" />
+
+                        <MudTextField Value="_context.Entity.Description"
+                                      ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
+                                      T="string"
+                                      Label="Beschreibung"
+                                      Variant="Variant.Outlined"
+                                      Lines="3" />
+
+                        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudSelect T="QuestKind"
+                                       Value="_context.Entity.Kind"
+                                       ValueChanged="@((QuestKind kind) => Touch(() => _context.Entity.Kind = kind))"
+                                       Label="Form"
+                                       Variant="Variant.Outlined"
+                                       Style="max-width:220px;">
+                                @foreach (var kind in Enum.GetValues<QuestKind>())
+                                {
+                                    <MudSelectItem T="QuestKind" Value="@kind">@QuestService.KindLabel(kind)</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <MudSelect T="Guid?"
+                                       Value="_context.Entity.ContentTypeId"
+                                       ValueChanged="ChangeType"
+                                       Label="Quest-Art"
+                                       Variant="Variant.Outlined"
+                                       Clearable="true"
+                                       Style="max-width:240px;">
+                                @foreach (var type in _context.AvailableTypes)
+                                {
+                                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudStack>
+
+                        @if (_context.Entity.Kind == QuestKind.Event)
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true">
+                                Zufalls-Events mit Spawns, Loot und Orten bekommen im
+                                <MudLink Href="/modules/events" Color="Color.Primary">Event-Modul</MudLink>
+                                mehr Möglichkeiten.
+                            </MudAlert>
+                        }
+                    </MudStack>
+                </MudPaper>
+
+                @* ---------------------------------------------------------- Verknüpfungen *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Verknüpfungen</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudAutocomplete T="EntitySummary"
+                                         Value="@EntityFor(_npcs, _context.Entity.GiverNpcId)"
+                                         ValueChanged="@((EntitySummary? e) => Touch(() => _context.Entity.GiverNpcId = e?.Id))"
+                                         SearchFunc="@((s, ct) => SearchAsync(_npcs, s, ct))"
+                                         ToStringFunc="@(e => e?.Name ?? string.Empty)"
+                                         Label="Questgeber (NPC)"
+                                         HelperText="Wer die Quest vergibt. Die Rolle „Questgeber“ wird am NPC geschaltet."
+                                         Variant="Variant.Outlined"
+                                         Clearable="true"
+                                         ResetValueOnEmptyText="true"
+                                         CoerceValue="false"
+                                         MaxItems="50" />
+
+                        <MudAutocomplete T="EntitySummary"
+                                         Value="@EntityFor(_storyEntries, _context.Entity.StoryEntryId)"
+                                         ValueChanged="@((EntitySummary? e) => Touch(() => _context.Entity.StoryEntryId = e?.Id))"
+                                         SearchFunc="@((s, ct) => SearchAsync(_storyEntries, s, ct))"
+                                         ToStringFunc="@(e => e?.Name ?? string.Empty)"
+                                         Label="Story-Abschnitt"
+                                         HelperText="An welchen Teil der Story die Quest angelehnt ist."
+                                         Variant="Variant.Outlined"
+                                         Clearable="true"
+                                         ResetValueOnEmptyText="true"
+                                         CoerceValue="false"
+                                         MaxItems="50" />
+
+                        <MudAutocomplete T="EntitySummary"
+                                         Value="@EntityFor(_dialogues, _context.Entity.DialogueId)"
+                                         ValueChanged="@((EntitySummary? e) => Touch(() => _context.Entity.DialogueId = e?.Id))"
+                                         SearchFunc="@((s, ct) => SearchAsync(_dialogues, s, ct))"
+                                         ToStringFunc="@(e => e?.Name ?? string.Empty)"
+                                         Label="Dialog"
+                                         HelperText="Der Dialog, aus dem die Quest hervorgeht."
+                                         Variant="Variant.Outlined"
+                                         Clearable="true"
+                                         ResetValueOnEmptyText="true"
+                                         CoerceValue="false"
+                                         MaxItems="50" />
+                    </MudStack>
+                </MudPaper>
+
+                @* ------------------------------------------------------------ Bedingungen *@
+                @if (!_context.IsNew)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Bedingungen</MudText>
+
+                        <MudExpansionPanels Elevation="0" MultiExpansion="true">
+                            @* „Manche Quests sind nur nach einer Bedingung verfügbar.“ *@
+                            <MudExpansionPanel Text="@($"Verfügbarkeit{(_availabilityCount > 0 ? $" ({_availabilityCount})" : "")}")">
+                                <ConditionEditor OwnerId="_context.Entity.Id"
+                                                 OwnerModuleKey="@ModuleKeys.Quests"
+                                                 Slot="@ConditionSlots.Availability"
+                                                 EmptyHint="Ohne Bedingung ist die Quest von Anfang an verfügbar."
+                                                 OnSaved="@((int count) => _availabilityCount = count)" />
+                            </MudExpansionPanel>
+
+                            @* Der Health Check „Quests ohne Abschlussbedingung“ schaut auf diesen Slot. *@
+                            <MudExpansionPanel Text="@($"Abschluss{(_completionCount > 0 ? $" ({_completionCount})" : "")}")">
+                                <ConditionEditor OwnerId="_context.Entity.Id"
+                                                 OwnerModuleKey="@ModuleKeys.Quests"
+                                                 Slot="@ConditionSlots.Completion"
+                                                 EmptyHint="Ohne Abschlussbedingung wüsste das Spiel nie, wann die Quest erledigt ist."
+                                                 OnSaved="@((int count) => _completionCount = count)" />
+                            </MudExpansionPanel>
+                        </MudExpansionPanels>
+                    </MudPaper>
+                }
+
+                @* ------------------------------------------------------------------ Sprites *@
+                <AssetSpritePanel ModuleKey="@ModuleKeys.Quests"
+                                  EntityId="_context.Entity.Id"
+                                  Disabled="_context.IsNew" />
+
+                @* ------------------------------------------------------------------- Felder *@
+                <div>
+                    <ContentFieldsPanel TEntity="Quest"
+                                        Context="_context"
+                                        ModuleKey="@ModuleKeys.Quests"
+                                        TypesRoute="/modules/quests/arten"
+                                        IndividualHint="Für Angaben, die nur diese eine Quest braucht."
+                                        OnValueChanged="MarkDirty"
+                                        OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
+                </div>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <EntityIdChip Id="_context.Entity.Id" />
+
+                    @if (!_context.IsNew)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                    }
+                </MudPaper>
+
+                @if (!_context.IsNew)
+                {
+                    <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Quests);
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private ContentEditContext<Quest>? _context;
+    private ReferencesPanel? _referencesPanel;
+    private List<EntitySummary> _npcs = [];
+    private List<EntitySummary> _storyEntries = [];
+    private List<EntitySummary> _dialogues = [];
+    private int _availabilityCount;
+    private int _completionCount;
+    private Guid? _loadedId;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+
+    private string PageHeading => _context switch
+    {
+        null => "Quest",
+        { IsNew: true } => "Neue Quest",
+        { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
+        _ => "Quest ohne Namen"
+    };
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_context is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _notFound = false;
+        _dirty = false;
+        _context = null;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _npcs = await References.GetEntitiesAsync(projectId, ModuleKeys.Npcs);
+        _storyEntries = await References.GetEntitiesAsync(projectId, ModuleKeys.Story);
+        _dialogues = await References.GetEntitiesAsync(projectId, ModuleKeys.Dialogs);
+        _context = await Quests.LoadForEditAsync(projectId, Id);
+
+        if (_context is null)
+        {
+            _notFound = true;
+            return;
+        }
+
+        if (!_context.IsNew)
+        {
+            var counts = await Conditions.CountByOwnersAsync([_context.Entity.Id], ConditionSlots.Availability);
+            _availabilityCount = counts.GetValueOrDefault(_context.Entity.Id);
+
+            counts = await Conditions.CountByOwnersAsync([_context.Entity.Id], ConditionSlots.Completion);
+            _completionCount = counts.GetValueOrDefault(_context.Entity.Id);
+        }
+    }
+
+    private static EntitySummary? EntityFor(List<EntitySummary> pool, Guid? id) =>
+        id is null ? null : pool.FirstOrDefault(entity => entity.Id == id);
+
+    private static Task<IEnumerable<EntitySummary>> SearchAsync(
+        List<EntitySummary> pool, string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? pool
+            : pool.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private void ChangeType(Guid? contentTypeId) =>
+        Touch(() => _context!.Entity.ContentTypeId = contentTypeId);
+
+    private void Touch(Action change)
+    {
+        change();
+        MarkDirty();
+    }
+
+    private void MarkDirty() => _dirty = true;
+
+    private async Task SaveAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            var wasNew = _context.IsNew;
+            await Quests.SaveQuestAsync(_context);
+            _dirty = false;
+
+            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+
+            if (wasNew)
+            {
+                Navigation.NavigateTo($"/modules/quests/{_context.Entity.Id}");
+                return;
+            }
+
+            if (_referencesPanel is not null)
+            {
+                await _referencesPanel.RefreshAsync();
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Quest löschen",
+            $"„{_context.Entity.Name}“ wird mit Feldwerten, individuellen Feldern, Bedingungen und Sprites gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Quests.DeleteQuestAsync(_context.Entity.Id);
+        Snackbar.Add("Quest gelöscht.", Severity.Success);
+        Navigation.NavigateTo("/modules/quests");
+    }
+
+    /// <summary>
+    /// Lädt nach einer Änderung an den Felddefinitionen neu und behält dabei, was in der Maske
+    /// noch nicht gespeichert ist.
+    /// </summary>
+    private async Task ReloadKeepingChangesAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var entity = _context.Entity;
+        var wasDirty = _dirty;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var reloaded = await Quests.LoadForEditAsync(projectId, entity.Id);
+
+        if (reloaded is null)
+        {
+            _notFound = true;
+            _context = null;
+            return;
+        }
+
+        reloaded.Entity.Name = entity.Name;
+        reloaded.Entity.Description = entity.Description;
+        reloaded.Entity.ContentTypeId = entity.ContentTypeId;
+        reloaded.Entity.Kind = entity.Kind;
+        reloaded.Entity.GiverNpcId = entity.GiverNpcId;
+        reloaded.Entity.StoryEntryId = entity.StoryEntryId;
+        reloaded.Entity.DialogueId = entity.DialogueId;
+
+        _context = reloaded;
+        _dirty = wasDirty;
+    }
+}

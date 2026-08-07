@@ -55,4 +55,11 @@ public static class ConditionSlots
 
     /// <summary>Das Warenangebot eines NPCs als Ganzes.</summary>
     public const string Shop = "shop";
+
+    /// <summary>
+    /// „Ist abgeschlossen, wenn …“ — für Quests. Getrennt von der Verfügbarkeit, weil beides
+    /// gleichzeitig an derselben Quest hängt; der Health Check „Quests ohne
+    /// Abschlussbedingung“ schaut genau auf diesen Slot.
+    /// </summary>
+    public const string Completion = "completion";
 }

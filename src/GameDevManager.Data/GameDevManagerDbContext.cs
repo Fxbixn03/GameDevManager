@@ -41,6 +41,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<StoryParticipant> StoryParticipants => Set<StoryParticipant>();
 
+    public DbSet<Quest> Quests => Set<Quest>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -325,6 +327,19 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Frage „an welchen Story-Abschnitten ist diese Entität beteiligt?“.
             entity.HasIndex(p => p.TargetEntityId);
+        });
+
+        ConfigureContentEntity<Quest>(modelBuilder);
+
+        modelBuilder.Entity<Quest>(entity =>
+        {
+            // Die Übersicht filtert nach Haupt-/Nebenmission/Event.
+            entity.HasIndex(q => new { q.GameProjectId, q.Kind });
+
+            // Tragen die Referenzansicht der verknüpften Entitäten.
+            entity.HasIndex(q => q.GiverNpcId);
+            entity.HasIndex(q => q.StoryEntryId);
+            entity.HasIndex(q => q.DialogueId);
         });
 
         ConfigureContentEntity<LootTable>(modelBuilder);

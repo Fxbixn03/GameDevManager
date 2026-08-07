@@ -239,6 +239,21 @@ public sealed record StoryListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>Eine Zeile der Quest-Übersicht. Questgeber- und Story-Name sind aufgelöst.</summary>
+public sealed record QuestListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    QuestKind Kind,
+    Guid? GiverNpcId,
+    string? GiverNpcName,
+    Guid? StoryEntryId,
+    string? StoryEntryName,
+    Guid? ContentTypeId,
+    string? TypeName,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,
