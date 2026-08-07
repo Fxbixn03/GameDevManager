@@ -1,32 +1,33 @@
 @page "/modules/achievements/arten"
+@inject IStringLocalizer<AchievementTypes> L
 
-<PageTitle>Achievement-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Achievement-Arten"
-              Subtitle="Versteckt-Schalter und Freischaltung stehen fest am Achievement — alles Weitere definieren die Felder der Art."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/achievements">Zu den Achievements</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/achievements">@L["ToAchievements"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Achievements"
-                    EntityNoun="Achievement"
-                    EmptyTitle="Noch keine Achievement-Arten"
-                    EmptyHint="Über Arten lassen sich Erfolge einteilen — etwa Story, Sammeln oder Herausforderung — und um eigene Felder wie Punkte oder Seltenheit ergänzen." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Achievements);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 

@@ -10,15 +10,16 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<NpcEditor> L
 
-<PageTitle>@PageHeading – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
 @if (_notFound)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">
-        Es gibt keinen NPC mit dieser GUID. Vielleicht wurde er gelöscht.
+        @L["NotFoundMessage"]
     </MudAlert>
-    <MudButton Variant="Variant.Outlined" Href="/modules/npcs">Zurück zur Übersicht</MudButton>
+    <MudButton Variant="Variant.Outlined" Href="/modules/npcs">@L["BackToList"]</MudButton>
 }
 else if (_context is null)
 {
@@ -28,13 +29,13 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Subtitle="@(_context.IsNew ? (string?)L["NotSavedYet"] : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
-                    Ungespeicherte Änderungen
+                    @L["UnsavedChanges"]
                 </MudChip>
             }
             @if (!_context.IsNew)
@@ -43,16 +44,16 @@ else
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
-                    Löschen
+                    @L["Delete"]
                 </MudButton>
             }
-            <MudButton Variant="Variant.Outlined" Href="/modules/npcs">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/npcs">@L["Cancel"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
                        OnClick="SaveAsync">
-                Speichern
+                @L["Save"]
             </MudButton>
         </Actions>
     </ModuleHeader>
@@ -63,20 +64,20 @@ else
 
                 @* ------------------------------------------------------------- Stammdaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["MasterDataSection"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudTextField Value="_context.Entity.Name"
                                       ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
                                       T="string"
-                                      Label="Name *"
+                                      Label="@L["NameLabel"]"
                                       Variant="Variant.Outlined"
                                       Immediate="true" />
 
                         <MudTextField Value="_context.Entity.Description"
                                       ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
                                       T="string"
-                                      Label="Beschreibung"
+                                      Label="@L["DescriptionLabel"]"
                                       Variant="Variant.Outlined"
                                       Lines="3" />
 
@@ -84,17 +85,17 @@ else
                             <MudSelect T="NpcKind"
                                        Value="_context.Entity.Kind"
                                        ValueChanged="@((NpcKind kind) => Touch(() => _context.Entity.Kind = kind))"
-                                       Label="Typ"
+                                       Label="@L["KindLabel"]"
                                        Variant="Variant.Outlined"
                                        Style="max-width:180px;">
-                                <MudSelectItem T="NpcKind" Value="@(NpcKind.Npc)">NPC</MudSelectItem>
-                                <MudSelectItem T="NpcKind" Value="@(NpcKind.Mob)">Mob (Gegner)</MudSelectItem>
+                                <MudSelectItem T="NpcKind" Value="@(NpcKind.Npc)">@L["KindNpc"]</MudSelectItem>
+                                <MudSelectItem T="NpcKind" Value="@(NpcKind.Mob)">@L["KindMob"]</MudSelectItem>
                             </MudSelect>
 
                             <MudSelect T="Guid?"
                                        Value="_context.Entity.ContentTypeId"
                                        ValueChanged="ChangeType"
-                                       Label="NPC-Art"
+                                       Label="@L["TypeLabel"]"
                                        Variant="Variant.Outlined"
                                        Clearable="true"
                                        Style="max-width:240px;">
@@ -106,18 +107,18 @@ else
                         </MudStack>
 
                         <div>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Rollen</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["RolesLabel"]</MudText>
                             <MudStack Row="true" Spacing="4" Wrap="Wrap.Wrap">
                                 <MudSwitch T="bool"
                                            Value="_context.Entity.IsTrader"
                                            ValueChanged="@((bool on) => Touch(() => _context.Entity.IsTrader = on))"
                                            Color="Color.Primary"
-                                           Label="Händler" />
+                                           Label="@L["TraderLabel"]" />
                                 <MudSwitch T="bool"
                                            Value="_context.Entity.IsQuestGiver"
                                            ValueChanged="@((bool on) => Touch(() => _context.Entity.IsQuestGiver = on))"
                                            Color="Color.Primary"
-                                           Label="Questgeber" />
+                                           Label="@L["QuestGiverLabel"]" />
                             </MudStack>
                         </div>
 
@@ -125,13 +126,13 @@ else
                         <MudSelect T="Guid?"
                                    Value="_context.Entity.LootTableId"
                                    ValueChanged="@((Guid? id) => Touch(() => _context.Entity.LootTableId = id))"
-                                   Label="Loot-Table"
+                                   Label="@L["LootTableLabel"]"
                                    Variant="Variant.Outlined"
                                    Clearable="true"
                                    Disabled="@(_lootTables.Count == 0)"
                                    HelperText="@(_lootTables.Count == 0
-                                       ? "Noch keine Loot-Tables angelegt."
-                                       : "Was beim Besiegen fällt.")">
+                                       ? L["NoLootTablesHint"]
+                                       : L["LootTableHint"])">
                             @foreach (var table in _lootTables)
                             {
                                 <MudSelectItem T="Guid?" Value="@table.Id">@table.Name</MudSelectItem>
@@ -142,13 +143,13 @@ else
                         <MudSelect T="Guid?"
                                    Value="_context.Entity.CharacterClassId"
                                    ValueChanged="@((Guid? id) => Touch(() => _context.Entity.CharacterClassId = id))"
-                                   Label="Klasse"
+                                   Label="@L["ClassLabel"]"
                                    Variant="Variant.Outlined"
                                    Clearable="true"
                                    Disabled="@(_classes.Count == 0)"
                                    HelperText="@(_classes.Count == 0
-                                       ? "Noch keine Klassen angelegt."
-                                       : "Die Klasse aus dem Klassen-Modul.")">
+                                       ? L["NoClassesHint"]
+                                       : L["ClassHint"])">
                             @foreach (var characterClass in _classes)
                             {
                                 <MudSelectItem T="Guid?" Value="@characterClass.Id">@characterClass.Name</MudSelectItem>
@@ -158,7 +159,7 @@ else
                         @if (_context.Entity.LootTableId is { } lootId)
                         {
                             <MudLink Href="@($"/modules/loot/{lootId}")" Typo="Typo.body2" Color="Color.Primary">
-                                Loot-Table öffnen
+                                @L["OpenLootTable"]
                             </MudLink>
                         }
                     </MudStack>
@@ -169,12 +170,12 @@ else
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                            <MudText Typo="Typo.overline" Color="Color.Secondary">Warenangebot</MudText>
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["OffersSection"]</MudText>
                             <MudButton StartIcon="@Icons.Material.Filled.Add"
                                        Size="Size.Small"
                                        Disabled="@(_items.Count == 0)"
                                        OnClick="AddOffer">
-                                Posten
+                                @L["AddOffer"]
                             </MudButton>
                         </MudStack>
 
@@ -182,11 +183,11 @@ else
                         @if (!_context.IsNew)
                         {
                             <MudExpansionPanels Elevation="0" Class="mb-3">
-                                <MudExpansionPanel Text="@($"Verfügbarkeit des Shops{(_shopConditionCount > 0 ? $" ({_shopConditionCount})" : "")}")">
+                                <MudExpansionPanel Text="@(_shopConditionCount > 0 ? L["ShopAvailabilityCount", _shopConditionCount] : L["ShopAvailability"])">
                                     <ConditionEditor OwnerId="_context.Entity.Id"
                                                      OwnerModuleKey="@ModuleKeys.Npcs"
                                                      Slot="@ConditionSlots.Shop"
-                                                     EmptyHint="Ohne Bedingung ist der Shop immer offen."
+                                                     EmptyHint="@L["ShopConditionEmptyHint"]"
                                                      OnSaved="@((int count) => _shopConditionCount = count)" />
                                 </MudExpansionPanel>
                             </MudExpansionPanels>
@@ -195,15 +196,14 @@ else
                         @if (_items.Count == 0)
                         {
                             <MudAlert Severity="Severity.Info" Dense="true">
-                                Es gibt noch keine Items zum Handeln —
-                                <MudLink Href="/modules/items" Color="Color.Primary">jetzt welche anlegen</MudLink>.
+                                @L["NoItemsToTrade"]
+                                <MudLink Href="/modules/items" Color="Color.Primary">@L["CreateItemsNow"]</MudLink>.
                             </MudAlert>
                         }
                         else if (_context.Entity.Offers.Count == 0)
                         {
                             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                Noch kein Posten. Je Posten lassen sich Verkaufs- und Ankaufspreis,
-                                Währung, Lagerbestand und Auffüllzeit festlegen.
+                                @L["NoOffersHint"]
                             </MudText>
                         }
                         else
@@ -211,8 +211,8 @@ else
                             @if (_currencies.Count == 0)
                             {
                                 <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
-                                    Es gibt noch keine Währungen. Ohne Währung lässt sich kein Preis eintragen —
-                                    <MudLink Href="/modules/currencies" Color="Color.Primary">jetzt eine anlegen</MudLink>.
+                                    @L["NoCurrenciesWarning"]
+                                    <MudLink Href="/modules/currencies" Color="Color.Primary">@L["CreateCurrencyNow"]</MudLink>.
                                 </MudAlert>
                             }
 
@@ -227,7 +227,7 @@ else
                                                                  ValueChanged="@((EntitySummary? e) => Touch(() => offer.ItemId = e?.Id ?? Guid.Empty))"
                                                                  SearchFunc="SearchItemsAsync"
                                                                  ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                                                 Label="Item"
+                                                                 Label="@L["ItemLabel"]"
                                                                  Variant="Variant.Outlined"
                                                                  Margin="Margin.Dense"
                                                                  Clearable="true"
@@ -240,8 +240,8 @@ else
                                                 <MudNumericField T="double?"
                                                                  Value="offer.SellPrice"
                                                                  ValueChanged="@((double? v) => Touch(() => offer.SellPrice = v))"
-                                                                 Label="Verkauf"
-                                                                 HelperText="an Spieler"
+                                                                 Label="@L["SellLabel"]"
+                                                                 HelperText="@L["SellHelper"]"
                                                                  Variant="Variant.Outlined"
                                                                  Margin="Margin.Dense"
                                                                  Min="0"
@@ -252,8 +252,8 @@ else
                                                 <MudNumericField T="double?"
                                                                  Value="offer.BuyPrice"
                                                                  ValueChanged="@((double? v) => Touch(() => offer.BuyPrice = v))"
-                                                                 Label="Ankauf"
-                                                                 HelperText="vom Spieler"
+                                                                 Label="@L["BuyLabel"]"
+                                                                 HelperText="@L["BuyHelper"]"
                                                                  Variant="Variant.Outlined"
                                                                  Margin="Margin.Dense"
                                                                  Min="0"
@@ -264,7 +264,7 @@ else
                                                 <MudSelect T="Guid?"
                                                            Value="offer.CurrencyId"
                                                            ValueChanged="@((Guid? v) => Touch(() => offer.CurrencyId = v))"
-                                                           Label="Währung"
+                                                           Label="@L["CurrencyLabel"]"
                                                            Variant="Variant.Outlined"
                                                            Margin="Margin.Dense"
                                                            Clearable="true">
@@ -279,8 +279,8 @@ else
                                                 <MudNumericField T="int?"
                                                                  Value="offer.Stock"
                                                                  ValueChanged="@((int? v) => Touch(() => offer.Stock = v))"
-                                                                 Label="Bestand"
-                                                                 HelperText="leer = unbegrenzt"
+                                                                 Label="@L["StockLabel"]"
+                                                                 HelperText="@L["StockHelper"]"
                                                                  Variant="Variant.Outlined"
                                                                  Margin="Margin.Dense"
                                                                  Min="0"
@@ -291,7 +291,7 @@ else
                                                 <MudNumericField T="double?"
                                                                  Value="offer.RestockSeconds"
                                                                  ValueChanged="@((double? v) => Touch(() => offer.RestockSeconds = v))"
-                                                                 Label="Auffüllzeit"
+                                                                 Label="@L["RestockLabel"]"
                                                                  Adornment="Adornment.End"
                                                                  AdornmentText="s"
                                                                  Variant="Variant.Outlined"
@@ -302,21 +302,21 @@ else
 
                                             <MudItem xs="12" sm="4" md="6" Class="d-flex align-center justify-end">
                                                 @* „…teilweise auch nur Items aus einem Shop“ — je Posten eigene Bedingungen. *@
-                                                <MudTooltip Text="Bedingungen für diesen Posten">
+                                                <MudTooltip Text="@L["OfferConditionsTooltip"]">
                                                     <MudButton Size="Size.Small"
                                                                Variant="Variant.Text"
                                                                StartIcon="@Icons.Material.Filled.Rule"
                                                                Disabled="_context.IsNew"
                                                                OnClick="@(() => EditOfferConditionsAsync(offer))">
                                                         @(_offerConditionCounts.GetValueOrDefault(offer.Id) is var n && n > 0
-                                                            ? $"Bedingungen ({n})" : "Bedingungen")
+                                                            ? L["ConditionsButtonCount", n] : L["ConditionsButton"])
                                                     </MudButton>
                                                 </MudTooltip>
-                                                <MudTooltip Text="Posten entfernen">
+                                                <MudTooltip Text="@L["RemoveOffer"]">
                                                     <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                                    Size="Size.Small"
                                                                    OnClick="@(() => RemoveOffer(offer))"
-                                                                   aria-label="Posten entfernen" />
+                                                                   aria-label="@L["RemoveOffer"]" />
                                                 </MudTooltip>
                                             </MudItem>
                                         </MudGrid>
@@ -338,7 +338,7 @@ else
                                         Context="_context"
                                         ModuleKey="@ModuleKeys.Npcs"
                                         TypesRoute="/modules/npcs/arten"
-                                        IndividualHint="Für einzigartige Werte, die kein anderer NPC dieser Art hat."
+                                        IndividualHint="@L["IndividualHint"]"
                                         OnValueChanged="MarkDirty"
                                         OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
                 </div>
@@ -348,17 +348,17 @@ else
         <MudItem xs="12" md="4">
             <MudStack Spacing="4">
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["ReferenceSection"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidLabel"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CreatedLabel"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@L["UpdatedLabel"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
                     }
                 </MudPaper>
@@ -368,19 +368,19 @@ else
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                            <MudText Typo="Typo.overline" Color="Color.Secondary">Dialoge</MudText>
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["DialoguesSection"]</MudText>
                             <MudButton Size="Size.Small"
                                        Variant="Variant.Text"
                                        StartIcon="@Icons.Material.Filled.Add"
                                        Href="/modules/dialogs/neu">
-                                Neu
+                                @L["NewButton"]
                             </MudButton>
                         </MudStack>
 
                         @if (_dialogues.Count == 0)
                         {
                             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                An keinem Dialog beteiligt.
+                                @L["NoDialogues"]
                             </MudText>
                         }
                         else
@@ -393,7 +393,7 @@ else
                                         @dialogue.Name
                                     </MudLink>
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                        @(dialogue.Kind == DialogueKind.Bark ? "Sprechblasen" : $"{dialogue.LineCount} Zeile(n)")
+                                        @(dialogue.Kind == DialogueKind.Bark ? L["Barks"] : L["LineCount", dialogue.LineCount])
                                     </MudText>
                                 </MudStack>
                             }
@@ -406,12 +406,12 @@ else
                 @if (!_context.IsNew)
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Fraktionen</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["FactionsSection"]</MudText>
 
                         @if (_factions.Count == 0)
                         {
                             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                In keiner Fraktion Mitglied. Mitglieder werden im Fraktions-Modul zugeordnet.
+                                @L["NoFactions"]
                             </MudText>
                         }
                         else
@@ -424,7 +424,7 @@ else
                                         @faction.FactionName
                                     </MudLink>
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                        @(faction.Role ?? "Mitglied")
+                                        @(faction.Role ?? L["MemberFallback"])
                                     </MudText>
                                 </MudStack>
                             }
@@ -436,13 +436,12 @@ else
                 @if (!_context.IsNew)
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Spawn-Orte</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SpawnSection"]</MudText>
 
                         @if (_placements.Count == 0)
                         {
                             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                Auf keiner Karte markiert. Setze dazu im Karten-Modul eine Markierung,
-                                die auf diesen NPC zeigt.
+                                @L["NoSpawns"]
                             </MudText>
                         }
                         else
@@ -455,7 +454,7 @@ else
                                         @placement.MapName@(string.IsNullOrWhiteSpace(placement.Label) ? "" : $" — {placement.Label}")
                                     </MudLink>
                                     <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
-                                        @(placement.Radius is > 0 ? "Bereich" : "Punkt")
+                                        @(placement.Radius is > 0 ? L["Area"] : L["Point"])
                                     </MudText>
                                 </MudStack>
                             }
@@ -498,10 +497,10 @@ else
 
     private string PageHeading => _context switch
     {
-        null => "NPC",
-        { IsNew: true } => "Neuer NPC",
+        null => L["HeadingFallback"],
+        { IsNew: true } => L["HeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "NPC ohne Namen"
+        _ => L["HeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -562,19 +561,19 @@ else
 
     private async Task EditOfferConditionsAsync(TraderOffer offer)
     {
-        var itemName = ItemFor(offer.ItemId)?.Name ?? "Posten";
+        var itemName = ItemFor(offer.ItemId)?.Name ?? L["OfferFallbackName"];
 
         var parameters = new DialogParameters<ConditionDialog>
         {
             { dialog => dialog.OwnerId, offer.Id },
             { dialog => dialog.OwnerModuleKey, ModuleKeys.Npcs },
             { dialog => dialog.Slot, ConditionSlots.Availability },
-            { dialog => dialog.Subject, $"{itemName} bei {_context!.Entity.Name}" },
-            { dialog => dialog.EmptyHint, "Ohne Bedingung ist dieser Posten immer im Angebot." }
+            { dialog => dialog.Subject, L["ConditionSubject", itemName, _context!.Entity.Name] },
+            { dialog => dialog.EmptyHint, L["OfferConditionEmptyHint"] }
         };
 
         var reference = await Dialogs.ShowAsync<ConditionDialog>(
-            "Bedingungen", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+            L["ConditionsDialogTitle"], parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
         await reference.Result;
         await RefreshConditionCountsAsync();
@@ -633,7 +632,7 @@ else
             await Npcs.SaveNpcAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -664,10 +663,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "NPC löschen",
-            $"„{_context.Entity.Name}“ wird mit Warenangebot, Feldwerten, individuellen Feldern und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -675,7 +674,7 @@ else
         }
 
         await Npcs.DeleteNpcAsync(_context.Entity.Id);
-        Snackbar.Add("NPC gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/npcs");
     }
 

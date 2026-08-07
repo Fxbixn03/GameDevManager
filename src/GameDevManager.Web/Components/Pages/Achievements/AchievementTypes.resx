@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Achievement-Arten – GameDevManager</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Achievement-Arten</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Versteckt-Schalter und Freischaltung stehen fest am Achievement — alles Weitere definieren die Felder der Art.</value>
+  </data>
+  <data name="ToAchievements" xml:space="preserve">
+    <value>Zu den Achievements</value>
+  </data>
+  <data name="NewType" xml:space="preserve">
+    <value>Neue Art</value>
+  </data>
+  <data name="EntityNoun" xml:space="preserve">
+    <value>Achievement</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Achievement-Arten</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Über Arten lassen sich Erfolge einteilen — etwa Story, Sammeln oder Herausforderung — und um eigene Felder wie Punkte oder Seltenheit ergänzen.</value>
+  </data>
+  <data name="BreadcrumbTypes" xml:space="preserve">
+    <value>Arten</value>
+  </data>
+</root>

@@ -6,11 +6,12 @@
 @inject ConditionService Conditions
 @inject QuestService Quests
 @inject ProjectContext Project
+@inject IStringLocalizer<StatisticsPage> L
 
-<PageTitle>Statistik – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Subtitle="Kennzahlen über alle Module und die Health Checks des Konzepts an einer Stelle." />
+              Subtitle="@L["Subtitle"]" />
 
 @if (_counts is null)
 {
@@ -19,7 +20,7 @@
 else
 {
     @* ------------------------------------------------------------------ Kennzahlen *@
-    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">Kennzahlen</MudText>
+    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">@L["MetricsHeading"]</MudText>
     <MudGrid Spacing="2" Class="mb-2">
         @foreach (var count in _counts)
         {
@@ -47,24 +48,24 @@ else
     {
         <MudPaper Elevation="0" Class="gdm-panel pa-3 mb-6">
             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                Davon NPCs: <b>@_npcBreakdown.NpcCount friedlich</b>, <b>@_npcBreakdown.MobCount feindlich (Mobs)</b>
-                — @_npcBreakdown.TraderCount Händler, @_npcBreakdown.QuestGiverCount Questgeber.
+                @L["NpcBreakdownIntro"] <b>@L["NpcBreakdownPeaceful", _npcBreakdown.NpcCount]</b>, <b>@L["NpcBreakdownHostile", _npcBreakdown.MobCount]</b>
+                @L["NpcBreakdownRoles", _npcBreakdown.TraderCount, _npcBreakdown.QuestGiverCount]
             </MudText>
         </MudPaper>
     }
 
     @* --------------------------------------------------------------- Health Checks *@
-    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">Health Checks</MudText>
+    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">@L["HealthChecksHeading"]</MudText>
 
     <MudStack Spacing="3">
         @* Zyklische Rezepte *@
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
                 <MudIcon Icon="@StatusIcon(_cycles.Count)" Color="@StatusColor(_cycles.Count)" Size="Size.Small" />
-                <MudText Typo="Typo.subtitle1"><b>Zyklische Rezepte</b></MudText>
+                <MudText Typo="Typo.subtitle1"><b>@L["CyclesTitle"]</b></MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_cycles.Count)</MudText>
                 <MudSpacer />
-                <MudLink Href="/modules/crafting" Typo="Typo.caption">Zum Crafting</MudLink>
+                <MudLink Href="/modules/crafting" Typo="Typo.caption">@L["ToCrafting"]</MudLink>
             </MudStack>
             @foreach (var cycle in _cycles)
             {
@@ -76,16 +77,15 @@ else
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
                 <MudIcon Icon="@StatusIcon(_deadItems.Count)" Color="@StatusColor(_deadItems.Count)" Size="Size.Small" />
-                <MudText Typo="Typo.subtitle1"><b>Items ohne Bezugsquelle</b></MudText>
+                <MudText Typo="Typo.subtitle1"><b>@L["DeadItemsTitle"]</b></MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_deadItems.Count)</MudText>
                 <MudSpacer />
-                <MudLink Href="/modules/items" Typo="Typo.caption">Zu den Items</MudLink>
+                <MudLink Href="/modules/items" Typo="Typo.caption">@L["ToItems"]</MudLink>
             </MudStack>
             @if (_deadItems.Count > 0)
             {
                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
-                    Kein Rezept stellt sie her, kein Händler führt sie, keine Loot-Table lässt sie fallen —
-                    toter Content.
+                    @L["DeadItemsHint"]
                 </MudText>
                 @foreach (var item in _deadItems)
                 {
@@ -100,10 +100,10 @@ else
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
                 <MudIcon Icon="@StatusIcon(_questsWithoutCompletion.Count)" Color="@StatusColor(_questsWithoutCompletion.Count)" Size="Size.Small" />
-                <MudText Typo="Typo.subtitle1"><b>Quests ohne Abschlussbedingung</b></MudText>
+                <MudText Typo="Typo.subtitle1"><b>@L["QuestsTitle"]</b></MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_questsWithoutCompletion.Count)</MudText>
                 <MudSpacer />
-                <MudLink Href="/modules/quests" Typo="Typo.caption">Zu den Quests</MudLink>
+                <MudLink Href="/modules/quests" Typo="Typo.caption">@L["ToQuests"]</MudLink>
             </MudStack>
             @foreach (var quest in _questsWithoutCompletion)
             {
@@ -117,10 +117,10 @@ else
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
                 <MudIcon Icon="@StatusIcon(_dialogueProblems.Count)" Color="@StatusColor(_dialogueProblems.Count)" Size="Size.Small" />
-                <MudText Typo="Typo.subtitle1"><b>Dialog-Sackgassen</b></MudText>
+                <MudText Typo="Typo.subtitle1"><b>@L["DialoguesTitle"]</b></MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_dialogueProblems.Count)</MudText>
                 <MudSpacer />
-                <MudLink Href="/modules/dialogs" Typo="Typo.caption">Zu den Dialogen</MudLink>
+                <MudLink Href="/modules/dialogs" Typo="Typo.caption">@L["ToDialogues"]</MudLink>
             </MudStack>
             @foreach (var problem in _dialogueProblems)
             {
@@ -137,10 +137,10 @@ else
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
                 <MudIcon Icon="@StatusIcon(_overfullTables.Count)" Color="@StatusColor(_overfullTables.Count)" Size="Size.Small" />
-                <MudText Typo="Typo.subtitle1"><b>Loot-Wahrscheinlichkeiten über 100 %</b></MudText>
+                <MudText Typo="Typo.subtitle1"><b>@L["LootTitle"]</b></MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_overfullTables.Count)</MudText>
                 <MudSpacer />
-                <MudLink Href="/modules/loot" Typo="Typo.caption">Zu den Loot-Tables</MudLink>
+                <MudLink Href="/modules/loot" Typo="Typo.caption">@L["ToLoot"]</MudLink>
             </MudStack>
             @foreach (var table in _overfullTables)
             {
@@ -157,10 +157,10 @@ else
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
                 <MudIcon Icon="@StatusIcon(_orphanedAssets.Count)" Color="@StatusColor(_orphanedAssets.Count)" Size="Size.Small" />
-                <MudText Typo="Typo.subtitle1"><b>Verwaiste Sprites</b></MudText>
+                <MudText Typo="Typo.subtitle1"><b>@L["OrphansTitle"]</b></MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_orphanedAssets.Count)</MudText>
                 <MudSpacer />
-                <MudLink Href="/modules/assets" Typo="Typo.caption">Zur Asset-Bibliothek</MudLink>
+                <MudLink Href="/modules/assets" Typo="Typo.caption">@L["ToAssets"]</MudLink>
             </MudStack>
             @foreach (var orphan in _orphanedAssets)
             {
@@ -178,7 +178,7 @@ else
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
                 <MudIcon Icon="@StatusIcon(_conditionProblems.Count)" Color="@StatusColor(_conditionProblems.Count)" Size="Size.Small" />
-                <MudText Typo="Typo.subtitle1"><b>Unerfüllbare Bedingungen</b></MudText>
+                <MudText Typo="Typo.subtitle1"><b>@L["ConditionsTitle"]</b></MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_conditionProblems.Count)</MudText>
             </MudStack>
             @foreach (var problem in _conditionProblems)
@@ -230,6 +230,6 @@ else
     private static Color StatusColor(int findings) =>
         findings == 0 ? Color.Success : Color.Warning;
 
-    private static string FundLabel(int findings) =>
-        findings == 0 ? "keine Funde" : $"{findings} Fund(e)";
+    private string FundLabel(int findings) =>
+        findings == 0 ? L["NoFindings"] : L["FindingsCount", findings];
 }

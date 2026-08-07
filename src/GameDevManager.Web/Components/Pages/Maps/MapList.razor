@@ -4,21 +4,22 @@
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<MapList> L
 
-<PageTitle>Karten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/maps/arten">
-            Karten-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/maps/neu">
-            Neue Karte
+            @L["NewMap"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -31,12 +32,11 @@ else if (_maps.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Map" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Karten</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Eine Karte ist ein hochgeladenes Bild, auf dem sich Markierungen setzen lassen —
-            Spawn-Orte von NPCs, Bereiche und Verknüpfungen auf andere Karten.
+            @L["EmptyHint"]
         </MudText>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/maps/neu">Erste Karte</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/maps/neu">@L["FirstMap"]</MudButton>
     </div>
 }
 else
@@ -44,7 +44,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -55,7 +55,7 @@ else
 
             <MudSelect T="Guid?"
                        @bind-Value="_typeFilter"
-                       Label="Art"
+                       Label="@L["TypeFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
@@ -67,7 +67,7 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_maps.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _maps.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -94,11 +94,11 @@ else
                 <div class="pa-3">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
                         <MudLink Href="@($"/modules/maps/{map.Id}")" Typo="Typo.h6">@map.Name</MudLink>
-                        <MudTooltip Text="Löschen">
+                        <MudTooltip Text="@L["DeleteTooltip"]">
                             <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                            Size="Size.Small"
                                            OnClick="@(() => DeleteAsync(map))"
-                                           aria-label="@($"{map.Name} löschen")" />
+                                           aria-label="@L["DeleteAria", map.Name]" />
                         </MudTooltip>
                     </MudStack>
 
@@ -111,12 +111,12 @@ else
 
                     <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
                         <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                            @map.MarkerCount Markierung(en)
+                            @L["MarkerCountChip", map.MarkerCount]
                         </MudChip>
                         @if (map.MapLinkCount > 0)
                         {
                             <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
-                                @map.MapLinkCount Verknüpfung(en)
+                                @L["MapLinkCountChip", map.MapLinkCount]
                             </MudChip>
                         }
                         @if (map.TypeName is not null)
@@ -139,8 +139,8 @@ else
     private Guid? _typeFilter;
 
     private string Subtitle => _maps is null
-        ? "Wird geladen …"
-        : $"{_maps.Count} Karte(n), {_maps.Sum(map => map.MarkerCount)} Markierung(en)";
+        ? L["Loading"]
+        : L["SubtitleCount", _maps.Count, _maps.Sum(map => map.MarkerCount)];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -176,11 +176,10 @@ else
     private async Task DeleteAsync(MapListRow map)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Karte löschen",
-            $"„{map.Name}“ wird mit ihren {map.MarkerCount} Markierung(en) und dem Kartenbild gelöscht. "
-            + "Verknüpfungen anderer Karten hierher verlieren ihr Ziel.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", map.Name, map.MarkerCount],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -188,7 +187,7 @@ else
         }
 
         await Maps.DeleteMapAsync(map.Id);
-        Snackbar.Add($"„{map.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", map.Name], Severity.Success);
         await LoadAsync();
     }
 }

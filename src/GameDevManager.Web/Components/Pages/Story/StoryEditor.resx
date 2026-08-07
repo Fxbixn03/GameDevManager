@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>Es gibt keinen Story-Abschnitt mit dieser GUID. Vielleicht wurde er gelöscht.</value>
+  </data>
+  <data name="BackToTimeline" xml:space="preserve">
+    <value>Zurück zum Zeitstreifen</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="MasterDataSection" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="SummaryLabel" xml:space="preserve">
+    <value>Kurzfassung</value>
+  </data>
+  <data name="SummaryHelper" xml:space="preserve">
+    <value>Erscheint im Zeitstreifen und in der Suche.</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Abschnitts-Art</value>
+  </data>
+  <data name="TypeHelper" xml:space="preserve">
+    <value>Über die Art kommen eigene Felder dazu, etwa Akt oder Kapitel.</value>
+  </data>
+  <data name="BodySection" xml:space="preserve">
+    <value>Story-Text</value>
+  </data>
+  <data name="BodyLabel" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="BodyPlaceholder" xml:space="preserve">
+    <value>Hier wird die Story geschrieben …</value>
+  </data>
+  <data name="ParticipantsSection" xml:space="preserve">
+    <value>Beteiligte</value>
+  </data>
+  <data name="AddParticipant" xml:space="preserve">
+    <value>Beteiligter</value>
+  </data>
+  <data name="NoParticipants" xml:space="preserve">
+    <value>Noch niemand beteiligt. NPCs, Fraktionen und Karten-Orte werden per Referenz verknüpft und tauchen dann in deren Referenzansicht auf.</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="EntityLabel" xml:space="preserve">
+    <value>Entität</value>
+  </data>
+  <data name="RemoveParticipant" xml:space="preserve">
+    <value>Beteiligten entfernen</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für Angaben, die nur dieser eine Abschnitt braucht.</value>
+  </data>
+  <data name="ReferenceSection" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="GuidLabel" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="TimelinePosition" xml:space="preserve">
+    <value>Position im Zeitstreifen</value>
+  </data>
+  <data name="TimelineReorderHint" xml:space="preserve">
+    <value>Umsortiert wird direkt im Zeitstreifen.</value>
+  </data>
+  <data name="CreatedLabel" xml:space="preserve">
+    <value>Angelegt</value>
+  </data>
+  <data name="UpdatedLabel" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="HeadingDefault" xml:space="preserve">
+    <value>Story-Abschnitt</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neuer Abschnitt</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Abschnitt ohne Namen</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Story-Abschnitt löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit Text, Beteiligten, Feldwerten, individuellen Feldern und Sprites gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Story-Abschnitt gelöscht.</value>
+  </data>
+</root>

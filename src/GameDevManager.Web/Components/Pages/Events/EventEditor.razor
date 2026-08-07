@@ -7,15 +7,16 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<EventEditor> L
 
-<PageTitle>@PageHeading – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
 @if (_notFound)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">
-        Es gibt kein Event mit dieser GUID. Vielleicht wurde es gelöscht.
+        @L["NotFoundMessage"]
     </MudAlert>
-    <MudButton Variant="Variant.Outlined" Href="/modules/events">Zurück zur Übersicht</MudButton>
+    <MudButton Variant="Variant.Outlined" Href="/modules/events">@L["BackToList"]</MudButton>
 }
 else if (_context is null)
 {
@@ -25,13 +26,13 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Subtitle="@(_context.IsNew ? L["NotSavedYet"].Value : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
-                    Ungespeicherte Änderungen
+                    @L["UnsavedChanges"]
                 </MudChip>
             }
             @if (!_context.IsNew)
@@ -40,16 +41,16 @@ else
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
-                    Löschen
+                    @L["DeleteButton"]
                 </MudButton>
             }
-            <MudButton Variant="Variant.Outlined" Href="/modules/events">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/events">@L["CancelButton"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
                        OnClick="SaveAsync">
-                Speichern
+                @L["SaveButton"]
             </MudButton>
         </Actions>
     </ModuleHeader>
@@ -60,20 +61,20 @@ else
 
                 @* ------------------------------------------------------------- Stammdaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionBasics"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudTextField Value="_context.Entity.Name"
                                       ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
                                       T="string"
-                                      Label="Name *"
+                                      Label="@L["LabelName"]"
                                       Variant="Variant.Outlined"
                                       Immediate="true" />
 
                         <MudTextField Value="_context.Entity.Description"
                                       ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
                                       T="string"
-                                      Label="Beschreibung"
+                                      Label="@L["LabelDescription"]"
                                       Variant="Variant.Outlined"
                                       Lines="3" />
 
@@ -81,7 +82,7 @@ else
                             <MudNumericField T="double"
                                              Value="_context.Entity.Chance"
                                              ValueChanged="@((double v) => Touch(() => _context.Entity.Chance = v))"
-                                             Label="Wahrscheinlichkeit"
+                                             Label="@L["LabelChance"]"
                                              Variant="Variant.Outlined"
                                              Min="0"
                                              Max="100"
@@ -92,7 +93,7 @@ else
                             <MudSelect T="Guid?"
                                        Value="_context.Entity.ContentTypeId"
                                        ValueChanged="ChangeType"
-                                       Label="Event-Art"
+                                       Label="@L["LabelType"]"
                                        Variant="Variant.Outlined"
                                        Clearable="true"
                                        Style="max-width:240px;">
@@ -107,13 +108,13 @@ else
                         <MudSelect T="Guid?"
                                    Value="_context.Entity.RewardLootTableId"
                                    ValueChanged="@((Guid? id) => Touch(() => _context.Entity.RewardLootTableId = id))"
-                                   Label="Belohnung (Loot-Table)"
+                                   Label="@L["LabelRewardLootTable"]"
                                    Variant="Variant.Outlined"
                                    Clearable="true"
                                    Disabled="@(_lootTables.Count == 0)"
                                    HelperText="@(_lootTables.Count == 0
-                                       ? "Noch keine Loot-Tables angelegt."
-                                       : "Was das Event als Belohnung ausschüttet.")">
+                                       ? L["NoLootTablesHint"].Value
+                                       : L["RewardHint"].Value)">
                             @foreach (var table in _lootTables)
                             {
                                 <MudSelectItem T="Guid?" Value="@table.Id">@table.Name</MudSelectItem>
@@ -125,26 +126,26 @@ else
                 @* ---------------------------------------------------------------- Spawns *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary">Mob-Spawns</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionSpawns"]</MudText>
                         <MudButton StartIcon="@Icons.Material.Filled.Add"
                                    Size="Size.Small"
                                    Disabled="@(_npcs.Count == 0)"
                                    OnClick="AddSpawn">
-                            Spawn
+                            @L["AddSpawn"]
                         </MudButton>
                     </MudStack>
 
                     @if (_npcs.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true">
-                            Es gibt noch keine NPCs/Mobs —
-                            <MudLink Href="/modules/npcs" Color="Color.Primary">jetzt welche anlegen</MudLink>.
+                            @L["NoNpcsPrefix"]
+                            <MudLink Href="/modules/npcs" Color="Color.Primary">@L["NoNpcsLink"]</MudLink>.
                         </MudAlert>
                     }
                     else if (_context.Entity.Spawns.Count == 0)
                     {
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            Noch kein Spawn. Je Eintrag: welcher Mob und wie viele davon erscheinen.
+                            @L["NoSpawnsHint"]
                         </MudText>
                     }
                     else
@@ -160,7 +161,7 @@ else
                                                              ValueChanged="@((EntitySummary? e) => Touch(() => spawn.NpcId = e?.Id ?? Guid.Empty))"
                                                              SearchFunc="SearchNpcsAsync"
                                                              ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                                             Label="NPC / Mob"
+                                                             Label="@L["LabelNpc"]"
                                                              Variant="Variant.Outlined"
                                                              Margin="Margin.Dense"
                                                              Clearable="true"
@@ -173,18 +174,18 @@ else
                                             <MudNumericField T="int"
                                                              Value="spawn.Count"
                                                              ValueChanged="@((int v) => Touch(() => spawn.Count = v))"
-                                                             Label="Anzahl"
+                                                             Label="@L["LabelCount"]"
                                                              Variant="Variant.Outlined"
                                                              Margin="Margin.Dense"
                                                              Min="1" />
                                         </MudItem>
 
                                         <MudItem xs="12" sm="2" Class="d-flex align-center justify-end">
-                                            <MudTooltip Text="Spawn entfernen">
+                                            <MudTooltip Text="@L["RemoveSpawnTooltip"]">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                                Size="Size.Small"
                                                                OnClick="@(() => RemoveSpawn(spawn))"
-                                                               aria-label="Spawn entfernen" />
+                                                               aria-label="@L["RemoveSpawnTooltip"]" />
                                             </MudTooltip>
                                         </MudItem>
                                     </MudGrid>
@@ -205,7 +206,7 @@ else
                                         Context="_context"
                                         ModuleKey="@ModuleKeys.Events"
                                         TypesRoute="/modules/events/arten"
-                                        IndividualHint="Für Angaben, die nur dieses eine Event braucht."
+                                        IndividualHint="@L["IndividualHint"]"
                                         OnValueChanged="MarkDirty"
                                         OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
                 </div>
@@ -215,17 +216,17 @@ else
         <MudItem xs="12" md="4">
             <MudStack Spacing="4">
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["LabelGuid"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CreatedLabel"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@L["UpdatedLabel"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
                     }
                 </MudPaper>
@@ -234,13 +235,12 @@ else
                 @if (!_context.IsNew)
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Orte</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionPlaces"]</MudText>
 
                         @if (_placements.Count == 0)
                         {
                             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                Auf keiner Karte markiert. Setze dazu im Karten-Modul eine Markierung
-                                oder einen Bereich, der auf dieses Event zeigt — etwa „nur in Höhlen“.
+                                @L["NoPlacements"]
                             </MudText>
                         }
                         else
@@ -253,7 +253,7 @@ else
                                         @placement.MapName@(string.IsNullOrWhiteSpace(placement.Label) ? "" : $" — {placement.Label}")
                                     </MudLink>
                                     <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
-                                        @(placement.Radius is > 0 ? "Bereich" : "Punkt")
+                                        @(placement.Radius is > 0 ? L["PlacementArea"].Value : L["PlacementPoint"].Value)
                                     </MudText>
                                 </MudStack>
                             }

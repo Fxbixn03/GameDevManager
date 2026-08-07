@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Es gibt kein Item mit dieser GUID. Vielleicht wurde es gelöscht.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SectionBasics" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Item-Art</value>
+  </data>
+  <data name="TypeHelperText" xml:space="preserve">
+    <value>Die Art bestimmt, welche Felder dieses Item hat.</value>
+  </data>
+  <data name="NoTypesIntro" xml:space="preserve">
+    <value>Es gibt noch keine Item-Arten.</value>
+  </data>
+  <data name="NoTypesLink" xml:space="preserve">
+    <value>Jetzt eine anlegen</value>
+  </data>
+  <data name="NoTypesSuffix" xml:space="preserve">
+    <value>, um eigene Felder wie Schaden oder Gewicht zu definieren.</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für einzigartige Werte, die kein anderes Item dieser Art hat — etwa die Sonderfunktion eines exotischen Items.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="AssignedOnSave" xml:space="preserve">
+    <value>Wird beim Speichern vergeben.</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Angelegt</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="SectionCrafting" xml:space="preserve">
+    <value>Crafting</value>
+  </data>
+  <data name="TreeButton" xml:space="preserve">
+    <value>Baum</value>
+  </data>
+  <data name="NoRecipes" xml:space="preserve">
+    <value>Dieses Item kommt in keinem Rezept vor.</value>
+  </data>
+  <data name="ProducedBy" xml:space="preserve">
+    <value>Wird hergestellt durch</value>
+  </data>
+  <data name="ConsumedBy" xml:space="preserve">
+    <value>Wird gebraucht für</value>
+  </data>
+  <data name="SectionSources" xml:space="preserve">
+    <value>Bezugsquellen</value>
+  </data>
+  <data name="NoSources" xml:space="preserve">
+    <value>Kein Händler führt dieses Item, und es fällt aus keiner Loot-Table.</value>
+  </data>
+  <data name="TradersCaption" xml:space="preserve">
+    <value>Händler</value>
+  </data>
+  <data name="DropsFromCaption" xml:space="preserve">
+    <value>Fällt aus</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neues Item</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Item ohne Namen</value>
+  </data>
+  <data name="QuantityExact" xml:space="preserve">
+    <value>{0}×</value>
+  </data>
+  <data name="QuantityRange" xml:space="preserve">
+    <value>{0}–{1}×</value>
+  </data>
+  <data name="SellPriceFormat" xml:space="preserve">
+    <value>VK {0:0.##}</value>
+  </data>
+  <data name="BuyPriceFormat" xml:space="preserve">
+    <value>AK {0:0.##}</value>
+  </data>
+  <data name="NoPrice" xml:space="preserve">
+    <value>ohne Preis</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Item löschen</value>
+  </data>
+  <data name="DeleteWarningRecipes" xml:space="preserve">
+    <value>Achtung: {0} Rezept(e) verweisen darauf und stehen danach ins Leere.</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit allen Feldwerten, individuellen Feldern und Sprites gelöscht.{1}</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Item gelöscht.</value>
+  </data>
+</root>

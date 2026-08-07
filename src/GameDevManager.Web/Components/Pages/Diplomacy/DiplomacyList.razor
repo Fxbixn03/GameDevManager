@@ -5,26 +5,27 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<DiplomacyList> L
 
-<PageTitle>Diplomatie – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Hub"
                    Href="/modules/diplomacy/graph">
-            Graph
+            @L["GraphButton"]
         </MudButton>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/diplomacy/arten">
-            Beziehungs-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/diplomacy/neu">
-            Neue Beziehung
+            @L["NewRelation"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -37,13 +38,12 @@ else if (_relations.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Handshake" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Beziehungen</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Beziehungen verbinden je zwei Fraktionen — von Allianz bis Krieg — und werden
-            als Graph angezeigt. Dafür braucht es mindestens zwei Fraktionen.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/diplomacy/neu">
-            Erste Beziehung
+            @L["FirstRelation"]
         </MudButton>
     </div>
 }
@@ -52,7 +52,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Name oder Fraktion suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -63,19 +63,19 @@ else
 
             <MudSelect T="DiplomaticStance?"
                        @bind-Value="_stanceFilter"
-                       Label="Haltung"
+                       Label="@L["StanceFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
                        Style="max-width:220px;">
                 @foreach (var stance in Enum.GetValues<DiplomaticStance>())
                 {
-                    <MudSelectItem T="DiplomaticStance?" Value="@stance">@DiplomacyService.StanceLabel(stance)</MudSelectItem>
+                    <MudSelectItem T="DiplomaticStance?" Value="@stance">@StanceLabel(stance)</MudSelectItem>
                 }
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_relations.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _relations.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -88,32 +88,32 @@ else
               OnRowClick="OpenRow"
               RowClass="cursor-pointer">
         <HeaderContent>
-            <MudTh>Name</MudTh>
-            <MudTh>Fraktionen</MudTh>
-            <MudTh>Haltung</MudTh>
-            <MudTh>Art</MudTh>
+            <MudTh>@L["HeaderName"]</MudTh>
+            <MudTh>@L["HeaderFactions"]</MudTh>
+            <MudTh>@L["HeaderStance"]</MudTh>
+            <MudTh>@L["HeaderType"]</MudTh>
             <MudTh Style="width:56px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Name">
+            <MudTd DataLabel="@L["HeaderName"]">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>
-            <MudTd DataLabel="Fraktionen">
+            <MudTd DataLabel="@L["HeaderFactions"]">
                 <MudText Typo="Typo.body2">
-                    @(context.FactionAName ?? "(gelöschte Fraktion)")
+                    @(context.FactionAName ?? L["DeletedFaction"])
                     <MudIcon Icon="@Icons.Material.Filled.SyncAlt" Size="Size.Small" Class="mx-1" Style="vertical-align:middle;" />
-                    @(context.FactionBName ?? "(gelöschte Fraktion)")
+                    @(context.FactionBName ?? L["DeletedFaction"])
                 </MudText>
             </MudTd>
-            <MudTd DataLabel="Haltung">
+            <MudTd DataLabel="@L["HeaderStance"]">
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@StanceColor(context.Stance)">
-                    @DiplomacyService.StanceLabel(context.Stance)
+                    @StanceLabel(context.Stance)
                 </MudChip>
             </MudTd>
-            <MudTd DataLabel="Art">
+            <MudTd DataLabel="@L["HeaderType"]">
                 @if (context.TypeName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                 }
                 else
                 {
@@ -121,17 +121,17 @@ else
                 }
             </MudTd>
             <MudTd>
-                <MudTooltip Text="Löschen">
+                <MudTooltip Text="@L["DeleteTooltip"]">
                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                    Size="Size.Small"
                                    OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@($"{context.Name} löschen")" />
+                                   aria-label="@L["DeleteAria", context.Name]" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                Keine Beziehung passt zur Suche.
+                @L["NoRecords"]
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -145,8 +145,8 @@ else
     private DiplomaticStance? _stanceFilter;
 
     private string Subtitle => _relations is null
-        ? "Wird geladen …"
-        : $"{_relations.Count} Beziehung(en)";
+        ? L["Loading"]
+        : L["SubtitleCount", _relations.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -179,6 +179,16 @@ else
         }
     }
 
+    private string StanceLabel(DiplomaticStance stance) => stance switch
+    {
+        DiplomaticStance.Alliance => L["StanceAlliance"],
+        DiplomaticStance.Friendship => L["StanceFriendship"],
+        DiplomaticStance.Neutral => L["StanceNeutral"],
+        DiplomaticStance.Hostility => L["StanceHostility"],
+        DiplomaticStance.War => L["StanceWar"],
+        _ => stance.ToString()
+    };
+
     /// <summary>Warnfarbe orange statt Gelb — Gelb ist im Theme der Akzent, kein Signal.</summary>
     public static Color StanceColor(DiplomaticStance stance) => stance switch
     {
@@ -200,10 +210,10 @@ else
     private async Task DeleteAsync(DiplomacyListRow row)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Beziehung löschen",
-            $"„{row.Name}“ wird mit allen Feldwerten gelöscht. Die Fraktionen bleiben erhalten.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -211,7 +221,7 @@ else
         }
 
         await Diplomacy.DeleteRelationAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 }

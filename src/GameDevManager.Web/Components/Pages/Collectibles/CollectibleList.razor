@@ -5,21 +5,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<CollectibleList> L
 
-<PageTitle>Sammelobjekte – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/collectibles/arten">
-            Sammelobjekt-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/collectibles/neu">
-            Neues Sammelobjekt
+            @L["NewCollectible"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -32,13 +33,12 @@ else if (_collectibles.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Collections" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Sammelobjekte</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Statuen, Notizen und andere Dinge, die der Spieler sammeln kann. Fundorte werden
-            im Karten-Modul markiert.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/collectibles/neu">
-            Erstes Sammelobjekt
+            @L["FirstCollectible"]
         </MudButton>
     </div>
 }
@@ -47,7 +47,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -58,7 +58,7 @@ else
 
             <MudSelect T="Guid?"
                        @bind-Value="_typeFilter"
-                       Label="Art"
+                       Label="@L["TypeFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
@@ -70,7 +70,7 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_collectibles.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _collectibles.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -84,30 +84,30 @@ else
               RowClass="cursor-pointer">
         <HeaderContent>
             <MudTh Style="width:56px;"></MudTh>
-            <MudTh>Name</MudTh>
-            <MudTh>Beschreibung</MudTh>
-            <MudTh>Fundorte</MudTh>
-            <MudTh>Art</MudTh>
+            <MudTh>@L["HeaderName"]</MudTh>
+            <MudTh>@L["HeaderDescription"]</MudTh>
+            <MudTh>@L["HeaderPlacements"]</MudTh>
+            <MudTh>@L["HeaderType"]</MudTh>
             <MudTh Style="width:56px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Sprite">
+            <MudTd DataLabel="@L["HeaderSprite"]">
                 <AssetThumbnail AssetId="context.PrimaryAssetId"
                                 Size="Size.Small"
                                 Alt="@context.Name"
                                 FallbackIcon="@Icons.Material.Filled.Collections" />
             </MudTd>
-            <MudTd DataLabel="Name">
+            <MudTd DataLabel="@L["HeaderName"]">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>
-            <MudTd DataLabel="Beschreibung">
+            <MudTd DataLabel="@L["HeaderDescription"]">
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@Shorten(context.Description)</MudText>
             </MudTd>
-            <MudTd DataLabel="Fundorte">
+            <MudTd DataLabel="@L["HeaderPlacements"]">
                 @if (context.PlacementCount == 0)
                 {
-                    <MudTooltip Text="Noch auf keiner Karte markiert">
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">keine</MudText>
+                    <MudTooltip Text="@L["NoPlacementsTooltip"]">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoPlacements"]</MudText>
                     </MudTooltip>
                 }
                 else
@@ -115,10 +115,10 @@ else
                     <MudText Typo="Typo.body2">@context.PlacementCount</MudText>
                 }
             </MudTd>
-            <MudTd DataLabel="Art">
+            <MudTd DataLabel="@L["HeaderType"]">
                 @if (context.TypeName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                 }
                 else
                 {
@@ -126,17 +126,17 @@ else
                 }
             </MudTd>
             <MudTd>
-                <MudTooltip Text="Löschen">
+                <MudTooltip Text="@L["DeleteTooltip"]">
                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                    Size="Size.Small"
                                    OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@($"{context.Name} löschen")" />
+                                   aria-label="@L["DeleteAria", context.Name]" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                Kein Sammelobjekt passt zur Suche.
+                @L["NoRecords"]
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -151,8 +151,8 @@ else
     private Guid? _typeFilter;
 
     private string Subtitle => _collectibles is null
-        ? "Wird geladen …"
-        : $"{_collectibles.Count} Sammelobjekt(e)";
+        ? L["Loading"]
+        : L["SubtitleCount", _collectibles.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -196,10 +196,10 @@ else
     private async Task DeleteAsync(CollectibleListRow row)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Sammelobjekt löschen",
-            $"„{row.Name}“ wird mit Feldwerten und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -207,7 +207,7 @@ else
         }
 
         await Collectibles.DeleteCollectibleAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 

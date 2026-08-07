@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Fraktionen – GameDevManager</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>Fraktions-Arten</value>
+  </data>
+  <data name="NewFaction" xml:space="preserve">
+    <value>Neue Fraktion</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Fraktionen</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Fraktionen bauen auf den NPCs auf: Mitglieder kommen aus dem NPC-Modul und können je Fraktion einen Rang bekommen. Gebiete entstehen später im Karten-Modul.</value>
+  </data>
+  <data name="FirstFaction" xml:space="preserve">
+    <value>Erste Fraktion</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Nach Name oder Beschreibung suchen</value>
+  </data>
+  <data name="TypeFilterLabel" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="HeaderSprite" xml:space="preserve">
+    <value>Sprite</value>
+  </data>
+  <data name="HeaderName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="HeaderDescription" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="HeaderMembers" xml:space="preserve">
+    <value>Mitglieder</value>
+  </data>
+  <data name="HeaderType" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="NoType" xml:space="preserve">
+    <value>ohne Art</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>{0} löschen</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>Keine Fraktion passt zur Suche.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Fraktion(en)</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Fraktion löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit Mitgliederliste, Feldwerten und Sprites gelöscht. Die NPCs selbst bleiben erhalten.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gelöscht.</value>
+  </data>
+</root>

@@ -5,21 +5,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<DialogueList> L
 
-<PageTitle>Dialoge – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/dialogs/arten">
-            Dialog-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/dialogs/neu">
-            Neuer Dialog
+            @L["NewDialogue"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -32,14 +33,12 @@ else if (_dialogues.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Chat" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Dialoge</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Sprechblasen erscheinen zufällig in der Open World, Gespräche haben einen Verlauf
-            mit Antwortmöglichkeiten. Beteiligt sein können NPCs untereinander, mit dem Spieler
-            oder beides.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/dialogs/neu">
-            Ersten Dialog anlegen
+            @L["FirstDialogue"]
         </MudButton>
     </div>
 }
@@ -48,9 +47,9 @@ else
     @if (_problems.Count > 0)
     {
         <MudAlert Severity="Severity.Warning" Class="mb-4">
-            <MudText Typo="Typo.body2"><b>Dialog-Sackgassen</b></MudText>
+            <MudText Typo="Typo.body2"><b>@L["ProblemsTitle"]</b></MudText>
             <MudText Typo="Typo.body2">
-                Diese Zeilen sind von keiner Antwort aus erreichbar — der Spieler bekommt sie nie zu sehen:
+                @L["ProblemsHint"]
             </MudText>
             @foreach (var problem in _problems)
             {
@@ -65,7 +64,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -76,18 +75,18 @@ else
 
             <MudSelect T="DialogueKind?"
                        @bind-Value="_kindFilter"
-                       Label="Form"
+                       Label="@L["KindFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
                        Style="max-width:190px;">
-                <MudSelectItem T="DialogueKind?" Value="@(DialogueKind.Conversation)">Gespräche</MudSelectItem>
-                <MudSelectItem T="DialogueKind?" Value="@(DialogueKind.Bark)">Sprechblasen</MudSelectItem>
+                <MudSelectItem T="DialogueKind?" Value="@(DialogueKind.Conversation)">@L["FilterConversations"]</MudSelectItem>
+                <MudSelectItem T="DialogueKind?" Value="@(DialogueKind.Bark)">@L["FilterBarks"]</MudSelectItem>
             </MudSelect>
 
             <MudSelect T="Guid?"
                        @bind-Value="_typeFilter"
-                       Label="Art"
+                       Label="@L["TypeFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
@@ -99,7 +98,7 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_dialogues.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _dialogues.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -112,34 +111,34 @@ else
               OnRowClick="OpenRow"
               RowClass="cursor-pointer">
         <HeaderContent>
-            <MudTh>Name</MudTh>
-            <MudTh>Form</MudTh>
-            <MudTh>Beteiligte</MudTh>
-            <MudTh>Zeilen</MudTh>
-            <MudTh>Art</MudTh>
+            <MudTh>@L["HeaderName"]</MudTh>
+            <MudTh>@L["HeaderKind"]</MudTh>
+            <MudTh>@L["HeaderParticipants"]</MudTh>
+            <MudTh>@L["HeaderLines"]</MudTh>
+            <MudTh>@L["HeaderType"]</MudTh>
             <MudTh Style="width:56px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Name">
+            <MudTd DataLabel="@L["HeaderName"]">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>
-            <MudTd DataLabel="Form">
+            <MudTd DataLabel="@L["HeaderKind"]">
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
-                    @(context.Kind == DialogueKind.Bark ? "Sprechblasen" : "Gespräch")
+                    @(context.Kind == DialogueKind.Bark ? L["KindBark"] : L["KindConversation"])
                 </MudChip>
             </MudTd>
-            <MudTd DataLabel="Beteiligte">
+            <MudTd DataLabel="@L["HeaderParticipants"]">
                 <MudText Typo="Typo.body2" Color="Color.Secondary">
-                    @context.ParticipantCount NPC(s)@(context.IncludesPlayer ? " + Spieler" : "")
+                    @(context.IncludesPlayer ? L["ParticipantsWithPlayer", context.ParticipantCount] : L["ParticipantsNpcOnly", context.ParticipantCount])
                 </MudText>
             </MudTd>
-            <MudTd DataLabel="Zeilen">
+            <MudTd DataLabel="@L["HeaderLines"]">
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@context.LineCount</MudText>
             </MudTd>
-            <MudTd DataLabel="Art">
+            <MudTd DataLabel="@L["HeaderType"]">
                 @if (context.TypeName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                 }
                 else
                 {
@@ -147,17 +146,17 @@ else
                 }
             </MudTd>
             <MudTd>
-                <MudTooltip Text="Löschen">
+                <MudTooltip Text="@L["DeleteTooltip"]">
                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                    Size="Size.Small"
                                    OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@($"{context.Name} löschen")" />
+                                   aria-label="@L["DeleteAria", context.Name]" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                Kein Dialog passt zu den Filtern.
+                @L["NoRecords"]
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -174,9 +173,10 @@ else
     private Guid? _typeFilter;
 
     private string Subtitle => _dialogues is null
-        ? "Wird geladen …"
-        : $"{_dialogues.Count(d => d.Kind == DialogueKind.Conversation)} Gespräch(e), "
-          + $"{_dialogues.Count(d => d.Kind == DialogueKind.Bark)} Sprechblasen-Satz/-Sätze";
+        ? L["Loading"]
+        : L["SubtitleCount",
+            _dialogues.Count(d => d.Kind == DialogueKind.Conversation),
+            _dialogues.Count(d => d.Kind == DialogueKind.Bark)];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -226,10 +226,10 @@ else
     private async Task DeleteAsync(DialogueListRow row)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Dialog löschen",
-            $"„{row.Name}“ wird mit seinen {row.LineCount} Zeile(n) und allen Antwortmöglichkeiten gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name, row.LineCount],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -237,7 +237,7 @@ else
         }
 
         await Dialogues.DeleteDialogueAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 }

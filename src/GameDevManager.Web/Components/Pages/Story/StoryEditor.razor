@@ -6,15 +6,16 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<StoryEditor> L
 
-<PageTitle>@PageHeading – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
 @if (_notFound)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">
-        Es gibt keinen Story-Abschnitt mit dieser GUID. Vielleicht wurde er gelöscht.
+        @L["NotFoundMessage"]
     </MudAlert>
-    <MudButton Variant="Variant.Outlined" Href="/modules/story">Zurück zum Zeitstreifen</MudButton>
+    <MudButton Variant="Variant.Outlined" Href="/modules/story">@L["BackToTimeline"]</MudButton>
 }
 else if (_context is null)
 {
@@ -24,13 +25,13 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Subtitle="@(_context.IsNew ? L["NotSavedYet"].Value : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
-                    Ungespeicherte Änderungen
+                    @L["UnsavedChanges"]
                 </MudChip>
             }
             @if (!_context.IsNew)
@@ -39,16 +40,16 @@ else
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
-                    Löschen
+                    @L["Delete"]
                 </MudButton>
             }
-            <MudButton Variant="Variant.Outlined" Href="/modules/story">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/story">@L["Cancel"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
                        OnClick="SaveAsync">
-                Speichern
+                @L["Save"]
             </MudButton>
         </Actions>
     </ModuleHeader>
@@ -59,31 +60,31 @@ else
 
                 @* ------------------------------------------------------------- Stammdaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["MasterDataSection"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudTextField Value="_context.Entity.Name"
                                       ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
                                       T="string"
-                                      Label="Name *"
+                                      Label="@L["NameLabel"]"
                                       Variant="Variant.Outlined"
                                       Immediate="true" />
 
                         <MudTextField Value="_context.Entity.Description"
                                       ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
                                       T="string"
-                                      Label="Kurzfassung"
-                                      HelperText="Erscheint im Zeitstreifen und in der Suche."
+                                      Label="@L["SummaryLabel"]"
+                                      HelperText="@L["SummaryHelper"]"
                                       Variant="Variant.Outlined"
                                       Lines="2" />
 
                         <MudSelect T="Guid?"
                                    Value="_context.Entity.ContentTypeId"
                                    ValueChanged="ChangeType"
-                                   Label="Abschnitts-Art"
+                                   Label="@L["TypeLabel"]"
                                    Variant="Variant.Outlined"
                                    Clearable="true"
-                                   HelperText="Über die Art kommen eigene Felder dazu, etwa Akt oder Kapitel.">
+                                   HelperText="@L["TypeHelper"]">
                             @foreach (var type in _context.AvailableTypes)
                             {
                                 <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
@@ -94,13 +95,13 @@ else
 
                 @* ------------------------------------------------------------- Story-Text *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Story-Text</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["BodySection"]</MudText>
 
                     <MudTextField Value="_context.Entity.Body"
                                   ValueChanged="@((string text) => Touch(() => _context.Entity.Body = text))"
                                   T="string"
-                                  Label="Text"
-                                  Placeholder="Hier wird die Story geschrieben …"
+                                  Label="@L["BodyLabel"]"
+                                  Placeholder="@L["BodyPlaceholder"]"
                                   Variant="Variant.Outlined"
                                   Lines="14" />
                 </MudPaper>
@@ -108,19 +109,18 @@ else
                 @* ------------------------------------------------------------- Beteiligte *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary">Beteiligte</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ParticipantsSection"]</MudText>
                         <MudButton StartIcon="@Icons.Material.Filled.Add"
                                    Size="Size.Small"
                                    OnClick="AddParticipant">
-                            Beteiligter
+                            @L["AddParticipant"]
                         </MudButton>
                     </MudStack>
 
                     @if (_context.Entity.Participants.Count == 0)
                     {
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            Noch niemand beteiligt. NPCs, Fraktionen und Karten-Orte werden
-                            per Referenz verknüpft und tauchen dann in deren Referenzansicht auf.
+                            @L["NoParticipants"]
                         </MudText>
                     }
                     else
@@ -134,7 +134,7 @@ else
                                             <MudSelect T="string"
                                                        Value="participant.TargetModuleKey"
                                                        ValueChanged="@((string key) => Touch(() => ChangeParticipantModule(participant, key)))"
-                                                       Label="Modul"
+                                                       Label="@L["ModuleLabel"]"
                                                        Variant="Variant.Outlined"
                                                        Margin="Margin.Dense">
                                                 @foreach (var module in ParticipantModules)
@@ -150,7 +150,7 @@ else
                                                              ValueChanged="@((EntitySummary? e) => Touch(() => participant.TargetEntityId = e?.Id ?? Guid.Empty))"
                                                              SearchFunc="@((s, ct) => SearchEntitiesAsync(participant.TargetModuleKey, s, ct))"
                                                              ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                                             Label="Entität"
+                                                             Label="@L["EntityLabel"]"
                                                              Variant="Variant.Outlined"
                                                              Margin="Margin.Dense"
                                                              Clearable="true"
@@ -160,11 +160,11 @@ else
                                         </MudItem>
 
                                         <MudItem xs="12" sm="2" Class="d-flex align-center justify-end">
-                                            <MudTooltip Text="Beteiligten entfernen">
+                                            <MudTooltip Text="@L["RemoveParticipant"]">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                                Size="Size.Small"
                                                                OnClick="@(() => RemoveParticipant(participant))"
-                                                               aria-label="Beteiligten entfernen" />
+                                                               aria-label="@L["RemoveParticipant"]" />
                                             </MudTooltip>
                                         </MudItem>
                                     </MudGrid>
@@ -185,7 +185,7 @@ else
                                         Context="_context"
                                         ModuleKey="@ModuleKeys.Story"
                                         TypesRoute="/modules/story/arten"
-                                        IndividualHint="Für Angaben, die nur dieser eine Abschnitt braucht."
+                                        IndividualHint="@L["IndividualHint"]"
                                         OnValueChanged="MarkDirty"
                                         OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
                 </div>
@@ -195,24 +195,24 @@ else
         <MudItem xs="12" md="4">
             <MudStack Spacing="4">
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["ReferenceSection"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidLabel"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     <MudDivider Class="my-3" />
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">Position im Zeitstreifen</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["TimelinePosition"]</MudText>
                     <MudText Typo="Typo.body2">@(_context.Entity.SortOrder + 1)</MudText>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">
-                        Umsortiert wird direkt im Zeitstreifen.
+                        @L["TimelineReorderHint"]
                     </MudText>
 
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CreatedLabel"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@L["UpdatedLabel"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
                     }
                 </MudPaper>
@@ -251,10 +251,10 @@ else
 
     private string PageHeading => _context switch
     {
-        null => "Story-Abschnitt",
-        { IsNew: true } => "Neuer Abschnitt",
+        null => L["HeadingDefault"],
+        { IsNew: true } => L["HeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "Abschnitt ohne Namen"
+        _ => L["HeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -358,7 +358,7 @@ else
             await Story.SaveEntryAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -389,10 +389,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Story-Abschnitt löschen",
-            $"„{_context.Entity.Name}“ wird mit Text, Beteiligten, Feldwerten, individuellen Feldern und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -400,7 +400,7 @@ else
         }
 
         await Story.DeleteEntryAsync(_context.Entity.Id);
-        Snackbar.Add("Story-Abschnitt gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/story");
     }
 

@@ -3,17 +3,18 @@
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<AssetLibrary> L
 
-<PageTitle>Assets – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Label"
                    OnClick="ManageTagsAsync">
-            Stichwörter
+            @L["TagsButton"]
         </MudButton>
-        <AssetUpload OnUploaded="LoadAsync" Text="Dateien hochladen" />
+        <AssetUpload OnUploaded="LoadAsync" Text="@L["UploadText"]" />
     </Actions>
 </ModuleHeader>
 
@@ -25,12 +26,11 @@ else if (_entries.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.PhotoLibrary" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Assets</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Sprites lassen sich hier hochladen oder direkt in der Maske einer Entität. Auch
-            Dateien, die nur das Tool selbst braucht — etwa Marker für Karten — gehören hierher.
+            @L["EmptyHint"]
         </MudText>
-        <AssetUpload OnUploaded="LoadAsync" Text="Erste Dateien hochladen" />
+        <AssetUpload OnUploaded="LoadAsync" Text="@L["FirstUploadText"]" />
     </div>
 }
 else
@@ -38,7 +38,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Dateiname, Entität oder Beschreibung suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -49,12 +49,12 @@ else
 
             <MudSelect T="string"
                        @bind-Value="_moduleFilter"
-                       Label="Modul"
+                       Label="@L["ModuleFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
                        Style="max-width:220px;">
-                <MudSelectItem T="string" Value="@ToolGroupKey">Werkzeug-Assets</MudSelectItem>
+                <MudSelectItem T="string" Value="@ToolGroupKey">@L["ToolAssetsOption"]</MudSelectItem>
                 @foreach (var moduleKey in UsedModuleKeys)
                 {
                     <MudSelectItem T="string" Value="@moduleKey">@ModuleName(moduleKey)</MudSelectItem>
@@ -66,7 +66,7 @@ else
                        SelectedValues="_tagFilter"
                        SelectedValuesChanged="ids => _tagFilter = [.. ids]"
                        MultiSelectionTextFunc="@(_ => DescribeTagFilter())"
-                       Label="Stichwörter"
+                       Label="@L["TagFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Disabled="@(_tags.Count == 0)"
@@ -78,14 +78,14 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_entries.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _entries.Count]</MudText>
         </MudStack>
     </MudPaper>
 
     @if (Filtered.Count == 0)
     {
         <div class="gdm-empty">
-            <MudText Typo="Typo.body2" Color="Color.Secondary">Kein Asset passt zu den Filtern.</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoRecords"]</MudText>
         </div>
     }
     else
@@ -131,7 +131,7 @@ else
                                             @if (entry.Asset.IsPrimary)
                                             {
                                                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">
-                                                    Icon
+                                                    @L["PrimaryChip"]
                                                 </MudChip>
                                             }
                                             @foreach (var tagName in TagNames(entry.Asset))
@@ -142,24 +142,24 @@ else
                                     </div>
 
                                     <MudStack Row="true" Spacing="0" Justify="Justify.Center" Class="gdm-sprite-actions">
-                                        <MudTooltip Text="In neuem Tab öffnen">
+                                        <MudTooltip Text="@L["OpenInNewTab"]">
                                             <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
                                                            Size="Size.Small"
                                                            Href="@($"/assets/{entry.Asset.Id}")"
                                                            Target="_blank"
-                                                           aria-label="In neuem Tab öffnen" />
+                                                           aria-label="@L["OpenInNewTab"]" />
                                         </MudTooltip>
-                                        <MudTooltip Text="Angaben bearbeiten">
+                                        <MudTooltip Text="@L["EditTooltip"]">
                                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                            Size="Size.Small"
                                                            OnClick="@(() => EditAsync(entry.Asset))"
-                                                           aria-label="Angaben bearbeiten" />
+                                                           aria-label="@L["EditTooltip"]" />
                                         </MudTooltip>
-                                        <MudTooltip Text="Löschen">
+                                        <MudTooltip Text="@L["DeleteTooltip"]">
                                             <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                            Size="Size.Small"
                                                            OnClick="@(() => DeleteAsync(entry.Asset))"
-                                                           aria-label="Asset löschen" />
+                                                           aria-label="@L["DeleteAria"]" />
                                         </MudTooltip>
                                     </MudStack>
                                 </div>

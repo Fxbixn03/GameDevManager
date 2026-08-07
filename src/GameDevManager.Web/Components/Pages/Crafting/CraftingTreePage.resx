@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Crafting-Baum – GameDevManager</value>
+  </data>
+  <data name="TitleFormat" xml:space="preserve">
+    <value>Crafting-Baum: {0}</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Woraus dieses Item hergestellt wird — und woraus dessen Zutaten wiederum.</value>
+  </data>
+  <data name="OtherItemLabel" xml:space="preserve">
+    <value>Anderes Item</value>
+  </data>
+  <data name="ToRecipes" xml:space="preserve">
+    <value>Zu den Rezepten</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Es gibt kein Item mit dieser GUID. Vielleicht wurde es gelöscht.</value>
+  </data>
+  <data name="SectionTotals" xml:space="preserve">
+    <value>Gesamtbedarf</value>
+  </data>
+  <data name="BaseItemHint" xml:space="preserve">
+    <value>Dieses Item wird von keinem Rezept hergestellt — es ist ein Grundstoff.</value>
+  </data>
+  <data name="TotalsHint" xml:space="preserve">
+    <value>Was zusammenkommen muss, um ein Stück herzustellen. Rezeptausbeuten sind verrechnet und je Stufe aufgerundet — Reste bleiben übrig.</value>
+  </data>
+  <data name="QuantityFormat" xml:space="preserve">
+    <value>{0}×</value>
+  </data>
+  <data name="BreadcrumbTree" xml:space="preserve">
+    <value>Baum</value>
+  </data>
+</root>

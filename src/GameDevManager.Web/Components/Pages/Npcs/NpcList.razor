@@ -5,21 +5,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<NpcList> L
 
-<PageTitle>NPCs – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/npcs/arten">
-            NPC-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/npcs/neu">
-            Neuer NPC
+            @L["NewNpc"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -32,12 +33,11 @@ else if (_npcs.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine NPCs</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            NPCs und Mobs liegen zusammen und lassen sich gegeneinander filtern. Ein NPC kann
-            Händler sein, Quests vergeben, beides oder nichts davon.
+            @L["EmptyHint"]
         </MudText>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/npcs/neu">Ersten NPC anlegen</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/npcs/neu">@L["FirstNpc"]</MudButton>
     </div>
 }
 else
@@ -45,7 +45,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -57,30 +57,30 @@ else
             @* Der Konzept-Wunsch: NPCs und Mobs zusammen, aber filterbar. *@
             <MudSelect T="NpcKind?"
                        @bind-Value="_kindFilter"
-                       Label="Typ"
+                       Label="@L["KindFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
                        Style="max-width:150px;">
-                <MudSelectItem T="NpcKind?" Value="@(NpcKind.Npc)">NPCs</MudSelectItem>
-                <MudSelectItem T="NpcKind?" Value="@(NpcKind.Mob)">Mobs</MudSelectItem>
+                <MudSelectItem T="NpcKind?" Value="@(NpcKind.Npc)">@L["KindFilterNpcs"]</MudSelectItem>
+                <MudSelectItem T="NpcKind?" Value="@(NpcKind.Mob)">@L["KindFilterMobs"]</MudSelectItem>
             </MudSelect>
 
             <MudSelect T="RoleFilter"
                        @bind-Value="_roleFilter"
-                       Label="Rolle"
+                       Label="@L["RoleFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Style="max-width:180px;">
-                <MudSelectItem T="RoleFilter" Value="RoleFilter.Any">Alle Rollen</MudSelectItem>
-                <MudSelectItem T="RoleFilter" Value="RoleFilter.Trader">Händler</MudSelectItem>
-                <MudSelectItem T="RoleFilter" Value="RoleFilter.QuestGiver">Questgeber</MudSelectItem>
-                <MudSelectItem T="RoleFilter" Value="RoleFilter.None">Ohne Rolle</MudSelectItem>
+                <MudSelectItem T="RoleFilter" Value="RoleFilter.Any">@L["RoleAny"]</MudSelectItem>
+                <MudSelectItem T="RoleFilter" Value="RoleFilter.Trader">@L["RoleTrader"]</MudSelectItem>
+                <MudSelectItem T="RoleFilter" Value="RoleFilter.QuestGiver">@L["RoleQuestGiver"]</MudSelectItem>
+                <MudSelectItem T="RoleFilter" Value="RoleFilter.None">@L["RoleNone"]</MudSelectItem>
             </MudSelect>
 
             <MudSelect T="Guid?"
                        @bind-Value="_typeFilter"
-                       Label="Art"
+                       Label="@L["TypeFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
@@ -92,7 +92,7 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_npcs.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _npcs.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -106,32 +106,32 @@ else
               RowClass="cursor-pointer">
         <HeaderContent>
             <MudTh Style="width:56px;"></MudTh>
-            <MudTh>Name</MudTh>
-            <MudTh>Typ</MudTh>
-            <MudTh>Rollen</MudTh>
-            <MudTh>Art</MudTh>
-            <MudTh>Beschreibung</MudTh>
+            <MudTh>@L["HeaderName"]</MudTh>
+            <MudTh>@L["HeaderKind"]</MudTh>
+            <MudTh>@L["HeaderRoles"]</MudTh>
+            <MudTh>@L["HeaderType"]</MudTh>
+            <MudTh>@L["HeaderDescription"]</MudTh>
             <MudTh Style="width:56px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Sprite">
+            <MudTd DataLabel="@L["HeaderSprite"]">
                 <AssetThumbnail AssetId="context.PrimaryAssetId"
                                 Size="Size.Small"
                                 Alt="@context.Name"
                                 FallbackIcon="@(context.Kind == NpcKind.Mob ? Icons.Material.Filled.Pets : Icons.Material.Filled.Person)" />
             </MudTd>
-            <MudTd DataLabel="Name">
+            <MudTd DataLabel="@L["HeaderName"]">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>
-            <MudTd DataLabel="Typ">
+            <MudTd DataLabel="@L["HeaderKind"]">
                 <MudChip T="string"
                          Size="Size.Small"
                          Variant="Variant.Outlined"
                          Color="@(context.Kind == NpcKind.Mob ? Color.Error : Color.Default)">
-                    @(context.Kind == NpcKind.Mob ? "Mob" : "NPC")
+                    @(context.Kind == NpcKind.Mob ? L["KindMob"] : L["KindNpc"])
                 </MudChip>
             </MudTd>
-            <MudTd DataLabel="Rollen">
+            <MudTd DataLabel="@L["HeaderRoles"]">
                 @if (!context.IsTrader && !context.IsQuestGiver)
                 {
                     <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
@@ -142,41 +142,41 @@ else
                         @if (context.IsTrader)
                         {
                             <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
-                                Händler (@context.OfferCount)
+                                @L["TraderChip", context.OfferCount]
                             </MudChip>
                         }
                         @if (context.IsQuestGiver)
                         {
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">Quest</MudChip>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["QuestChip"]</MudChip>
                         }
                     </MudStack>
                 }
             </MudTd>
-            <MudTd DataLabel="Art">
+            <MudTd DataLabel="@L["HeaderType"]">
                 @if (context.TypeName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                 }
                 else
                 {
                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
                 }
             </MudTd>
-            <MudTd DataLabel="Beschreibung">
+            <MudTd DataLabel="@L["HeaderDescription"]">
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@Shorten(context.Description)</MudText>
             </MudTd>
             <MudTd>
-                <MudTooltip Text="Löschen">
+                <MudTooltip Text="@L["DeleteTooltip"]">
                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                    Size="Size.Small"
                                    OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@($"{context.Name} löschen")" />
+                                   aria-label="@L["DeleteAria", context.Name]" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                Kein NPC passt zu den Filtern.
+                @L["NoRecords"]
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -207,13 +207,13 @@ else
         {
             if (_npcs is null)
             {
-                return "Wird geladen …";
+                return L["Loading"];
             }
 
             var mobs = _npcs.Count(row => row.Kind == NpcKind.Mob);
             var traders = _npcs.Count(row => row.IsTrader);
 
-            return $"{_npcs.Count - mobs} NPC(s), {mobs} Mob(s), davon {traders} Händler";
+            return L["SubtitleCount", _npcs.Count - mobs, mobs, traders];
         }
     }
 
@@ -273,13 +273,13 @@ else
     {
         var warning = row.OfferCount == 0
             ? string.Empty
-            : $" Das Warenangebot mit {row.OfferCount} Posten wird mitgelöscht.";
+            : L["DeleteOfferWarning", row.OfferCount];
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "NPC löschen",
-            $"„{row.Name}“ wird mit allen Feldwerten und Sprites gelöscht.{warning}",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name, warning],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -287,7 +287,7 @@ else
         }
 
         await Npcs.DeleteNpcAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 

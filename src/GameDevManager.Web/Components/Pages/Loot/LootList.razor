@@ -5,21 +5,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<LootList> L
 
-<PageTitle>Loot-Tables – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/loot/arten">
-            Loot-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/loot/neu">
-            Neue Loot-Table
+            @L["NewTable"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -32,13 +33,12 @@ else if (_tables.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Casino" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Loot-Tables</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Eine Loot-Table legt fest, welche Items zu welcher Wahrscheinlichkeit in welcher
-            Menge fallen. NPCs und Mobs verweisen dann darauf.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/loot/neu">
-            Erste Loot-Table
+            @L["FirstTable"]
         </MudButton>
     </div>
 }
@@ -47,16 +47,15 @@ else
     @if (_overfull.Count > 0)
     {
         <MudAlert Severity="Severity.Warning" Class="mb-4">
-            <MudText Typo="Typo.body2"><b>Wahrscheinlichkeiten über 100 %</b></MudText>
+            <MudText Typo="Typo.body2"><b>@L["OverfullTitle"]</b></MudText>
             <MudText Typo="Typo.body2">
-                Bei diesen Tabellen wird ein einzelner Wurf verteilt, die Einträge kommen
-                zusammen aber über 100 % — die hinteren wären damit unerreichbar:
+                @L["OverfullText"]
             </MudText>
             @foreach (var table in _overfull)
             {
                 <MudText Typo="Typo.body2">
                     <MudLink Href="@($"/modules/loot/{table.Id}")">@table.Name</MudLink>
-                    <span class="gdm-mono">(@table.TotalChance.ToString("0.##") %)</span>
+                    <span class="gdm-mono">@L["OverfullChanceFormat", table.TotalChance.ToString("0.##")]</span>
                 </MudText>
             }
         </MudAlert>
@@ -65,7 +64,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -76,7 +75,7 @@ else
 
             <MudSelect T="Guid?"
                        @bind-Value="_typeFilter"
-                       Label="Art"
+                       Label="@L["TypeFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
@@ -88,7 +87,7 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_tables.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _tables.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -101,47 +100,47 @@ else
               OnRowClick="OpenRow"
               RowClass="cursor-pointer">
         <HeaderContent>
-            <MudTh>Name</MudTh>
-            <MudTh>Wurf</MudTh>
-            <MudTh>Einträge</MudTh>
-            <MudTh>Summe</MudTh>
-            <MudTh>Verwendet von</MudTh>
-            <MudTh>Art</MudTh>
+            <MudTh>@L["HeaderName"]</MudTh>
+            <MudTh>@L["HeaderRoll"]</MudTh>
+            <MudTh>@L["HeaderEntries"]</MudTh>
+            <MudTh>@L["HeaderSum"]</MudTh>
+            <MudTh>@L["HeaderUsedBy"]</MudTh>
+            <MudTh>@L["HeaderType"]</MudTh>
             <MudTh Style="width:56px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Name">
+            <MudTd DataLabel="@L["HeaderName"]">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>
-            <MudTd DataLabel="Wurf">
+            <MudTd DataLabel="@L["HeaderRoll"]">
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
-                    @(context.RollMode == LootRollMode.SinglePick ? "Einzelwurf" : "Unabhängig")
+                    @(context.RollMode == LootRollMode.SinglePick ? L["RollSinglePick"] : L["RollIndependent"])
                 </MudChip>
             </MudTd>
-            <MudTd DataLabel="Einträge">
+            <MudTd DataLabel="@L["HeaderEntries"]">
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@context.EntryCount</MudText>
             </MudTd>
-            <MudTd DataLabel="Summe">
+            <MudTd DataLabel="@L["HeaderSum"]">
                 <MudText Typo="Typo.body2"
                          Class="gdm-mono"
                          Color="@(IsOverfull(context) ? Color.Warning : Color.Default)">
-                    @context.TotalChance.ToString("0.##") %
+                    @L["SumFormat", context.TotalChance.ToString("0.##")]
                 </MudText>
             </MudTd>
-            <MudTd DataLabel="Verwendet von">
+            <MudTd DataLabel="@L["HeaderUsedBy"]">
                 @if (context.UsedByNpcCount == 0)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">niemandem</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["UsedByNone"]</MudText>
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2">@context.UsedByNpcCount NPC(s)</MudText>
+                    <MudText Typo="Typo.body2">@L["UsedByCount", context.UsedByNpcCount]</MudText>
                 }
             </MudTd>
-            <MudTd DataLabel="Art">
+            <MudTd DataLabel="@L["HeaderType"]">
                 @if (context.TypeName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                 }
                 else
                 {
@@ -149,17 +148,17 @@ else
                 }
             </MudTd>
             <MudTd>
-                <MudTooltip Text="Löschen">
+                <MudTooltip Text="@L["DeleteTooltip"]">
                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                    Size="Size.Small"
                                    OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@($"{context.Name} löschen")" />
+                                   aria-label="@L["DeleteAria", context.Name]" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                Keine Loot-Table passt zur Suche.
+                @L["NoRecords"]
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -175,8 +174,8 @@ else
     private Guid? _typeFilter;
 
     private string Subtitle => _tables is null
-        ? "Wird geladen …"
-        : $"{_tables.Count} Tabelle(n), {_tables.Sum(row => row.EntryCount)} Eintrag/Einträge";
+        ? L["Loading"]
+        : L["SubtitleCount", _tables.Count, _tables.Sum(row => row.EntryCount)];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -224,13 +223,13 @@ else
     {
         var warning = row.UsedByNpcCount == 0
             ? string.Empty
-            : $" {row.UsedByNpcCount} NPC(s) verlieren dadurch ihre Loot-Zuordnung.";
+            : L["DeleteNpcWarning", row.UsedByNpcCount];
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Loot-Table löschen",
-            $"„{row.Name}“ wird mit ihren {row.EntryCount} Eintrag/Einträgen gelöscht.{warning}",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name, row.EntryCount, warning],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -238,7 +237,7 @@ else
         }
 
         await Loot.DeleteTableAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 }

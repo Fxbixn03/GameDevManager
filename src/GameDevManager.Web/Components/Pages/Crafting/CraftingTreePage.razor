@@ -2,12 +2,13 @@
 @inject CraftingService Crafting
 @inject ReferenceService References
 @inject ProjectContext Project
+@inject IStringLocalizer<CraftingTreePage> L
 
-<PageTitle>Crafting-Baum – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="@($"Crafting-Baum: {_tree?.ItemName ?? "…"}")"
-              Subtitle="Woraus dieses Item hergestellt wird — und woraus dessen Zutaten wiederum."
+              Title="@L["TitleFormat", _tree?.ItemName ?? "…"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
         <div style="min-width:260px;">
@@ -16,14 +17,14 @@
                              ValueChanged="SelectItemAsync"
                              SearchFunc="SearchItemsAsync"
                              ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
-                             Label="Anderes Item"
+                             Label="@L["OtherItemLabel"]"
                              Variant="Variant.Outlined"
                              Margin="Margin.Dense"
                              ResetValueOnEmptyText="true"
                              CoerceValue="false"
                              MaxItems="50" />
         </div>
-        <MudButton Variant="Variant.Outlined" Href="/modules/crafting">Zu den Rezepten</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/crafting">@L["ToRecipes"]</MudButton>
     </Actions>
 </ModuleHeader>
 
@@ -34,7 +35,7 @@
 else if (_tree is null)
 {
     <MudAlert Severity="Severity.Error">
-        Es gibt kein Item mit dieser GUID. Vielleicht wurde es gelöscht.
+        @L["NotFound"]
     </MudAlert>
 }
 else
@@ -48,19 +49,18 @@ else
 
         <MudItem xs="12" md="4">
             <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Gesamtbedarf</MudText>
+                <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionTotals"]</MudText>
 
                 @if (_totals.Count == 0)
                 {
                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Dieses Item wird von keinem Rezept hergestellt — es ist ein Grundstoff.
+                        @L["BaseItemHint"]
                     </MudText>
                 }
                 else
                 {
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
-                        Was zusammenkommen muss, um ein Stück herzustellen. Rezeptausbeuten sind
-                        verrechnet und je Stufe aufgerundet — Reste bleiben übrig.
+                        @L["TotalsHint"]
                     </MudText>
 
                     @foreach (var requirement in _totals)
@@ -76,7 +76,7 @@ else
                                     @requirement.Name
                                 </MudLink>
                             </MudStack>
-                            <MudText Typo="Typo.body2" Class="gdm-mono">@requirement.Quantity×</MudText>
+                            <MudText Typo="Typo.body2" Class="gdm-mono">@L["QuantityFormat", requirement.Quantity]</MudText>
                         </MudStack>
                     }
                 }
@@ -100,7 +100,7 @@ else
 
     private List<BreadcrumbItem> Breadcrumbs =>
     [
-        new("Baum", null, disabled: true)
+        new(L["BreadcrumbTree"], null, disabled: true)
     ];
 
     protected override async Task OnParametersSetAsync()

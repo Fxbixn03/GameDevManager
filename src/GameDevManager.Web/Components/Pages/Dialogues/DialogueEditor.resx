@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Es gibt keinen Dialog mit dieser GUID. Vielleicht wurde er gelöscht.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="SubtitleNew" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="KindConversation" xml:space="preserve">
+    <value>Gespräch</value>
+  </data>
+  <data name="KindBark" xml:space="preserve">
+    <value>Sprechblasen</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Dialog-Art</value>
+  </data>
+  <data name="IncludesPlayerLabel" xml:space="preserve">
+    <value>Spieler beteiligt</value>
+  </data>
+  <data name="SectionParticipants" xml:space="preserve">
+    <value>Beteiligte NPCs</value>
+  </data>
+  <data name="AddNpc" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="NoNpcsPrefix" xml:space="preserve">
+    <value>Es gibt noch keine NPCs —</value>
+  </data>
+  <data name="NoNpcsLink" xml:space="preserve">
+    <value>jetzt welche anlegen</value>
+  </data>
+  <data name="NoParticipants" xml:space="preserve">
+    <value>Noch niemand. Ein Dialog kann zwischen einem NPC und dem Spieler laufen, zwischen mehreren NPCs oder zwischen mehreren NPCs und dem Spieler.</value>
+  </data>
+  <data name="NpcLabel" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="RemoveTooltip" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="RemoveParticipantAria" xml:space="preserve">
+    <value>Beteiligten entfernen</value>
+  </data>
+  <data name="SectionBarks" xml:space="preserve">
+    <value>Sprechblasen</value>
+  </data>
+  <data name="SectionFlow" xml:space="preserve">
+    <value>Verlauf</value>
+  </data>
+  <data name="AddLine" xml:space="preserve">
+    <value>Zeile</value>
+  </data>
+  <data name="NeedSpeaker" xml:space="preserve">
+    <value>Es braucht mindestens einen Beteiligten oder den Spieler, damit jemand sprechen kann.</value>
+  </data>
+  <data name="NoLinesBark" xml:space="preserve">
+    <value>Noch keine Sprechblase. Die Zeilen stehen unabhängig nebeneinander und erscheinen zufällig.</value>
+  </data>
+  <data name="NoLinesConversation" xml:space="preserve">
+    <value>Noch keine Zeile. Die erste ist der Einstieg ins Gespräch; von dort führen Antworten weiter.</value>
+  </data>
+  <data name="EntryChip" xml:space="preserve">
+    <value>Einstieg</value>
+  </data>
+  <data name="SpeakerLabel" xml:space="preserve">
+    <value>Sprecher</value>
+  </data>
+  <data name="SpeakerPlayer" xml:space="preserve">
+    <value>Spieler</value>
+  </data>
+  <data name="UnknownNpc" xml:space="preserve">
+    <value>(unbekannt)</value>
+  </data>
+  <data name="MoveUpTooltip" xml:space="preserve">
+    <value>Nach oben</value>
+  </data>
+  <data name="MoveUpAria" xml:space="preserve">
+    <value>Zeile nach oben</value>
+  </data>
+  <data name="MoveDownTooltip" xml:space="preserve">
+    <value>Nach unten</value>
+  </data>
+  <data name="MoveDownAria" xml:space="preserve">
+    <value>Zeile nach unten</value>
+  </data>
+  <data name="RemoveLine" xml:space="preserve">
+    <value>Zeile entfernen</value>
+  </data>
+  <data name="TextLabel" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="ChoiceLabel" xml:space="preserve">
+    <value>Antwort</value>
+  </data>
+  <data name="NextLineLabel" xml:space="preserve">
+    <value>Weiter zu</value>
+  </data>
+  <data name="ConversationEnds" xml:space="preserve">
+    <value>Gespräch endet</value>
+  </data>
+  <data name="RemoveChoice" xml:space="preserve">
+    <value>Antwort entfernen</value>
+  </data>
+  <data name="AddChoice" xml:space="preserve">
+    <value>Antwort</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für Angaben, die nur dieser eine Dialog braucht.</value>
+  </data>
+  <data name="SectionAvailability" xml:space="preserve">
+    <value>Verfügbarkeit</value>
+  </data>
+  <data name="AvailabilityEmptyHint" xml:space="preserve">
+    <value>Ohne Bedingung ist der Dialog immer verfügbar.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="GuidLabel" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="LastModified" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="KindHintBark" xml:space="preserve">
+    <value>Zeilen stehen unabhängig nebeneinander und erscheinen zufällig.</value>
+  </data>
+  <data name="KindHintConversation" xml:space="preserve">
+    <value>Zeilen bilden einen Verlauf; Antworten führen weiter.</value>
+  </data>
+  <data name="HeadingDefault" xml:space="preserve">
+    <value>Dialog</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neuer Dialog</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Dialog ohne Namen</value>
+  </data>
+  <data name="NoText" xml:space="preserve">
+    <value>(ohne Text)</value>
+  </data>
+  <data name="LineLabelFormat" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Dialog löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit allen Zeilen, Antwortmöglichkeiten und Bedingungen gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Dialog gelöscht.</value>
+  </data>
+</root>

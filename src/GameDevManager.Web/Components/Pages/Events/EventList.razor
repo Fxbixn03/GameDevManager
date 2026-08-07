@@ -5,21 +5,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<EventList> L
 
-<PageTitle>Events – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/events/arten">
-            Event-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/events/neu">
-            Neues Event
+            @L["NewEvent"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -32,13 +33,12 @@ else if (_events.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Events</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Zufalls-Events legen fest, welche Mobs spawnen, welcher Loot-Table belohnt und
-            wie wahrscheinlich das Event ist. Orte werden im Karten-Modul markiert.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/events/neu">
-            Erstes Event
+            @L["FirstEvent"]
         </MudButton>
     </div>
 }
@@ -47,7 +47,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -58,7 +58,7 @@ else
 
             <MudSelect T="Guid?"
                        @bind-Value="_typeFilter"
-                       Label="Art"
+                       Label="@L["TypeFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
@@ -70,7 +70,7 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_events.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _events.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -84,43 +84,43 @@ else
               RowClass="cursor-pointer">
         <HeaderContent>
             <MudTh Style="width:56px;"></MudTh>
-            <MudTh>Name</MudTh>
-            <MudTh>Wahrscheinlichkeit</MudTh>
-            <MudTh>Spawns</MudTh>
-            <MudTh>Belohnung</MudTh>
-            <MudTh>Art</MudTh>
+            <MudTh>@L["HeaderName"]</MudTh>
+            <MudTh>@L["HeaderChance"]</MudTh>
+            <MudTh>@L["HeaderSpawns"]</MudTh>
+            <MudTh>@L["HeaderReward"]</MudTh>
+            <MudTh>@L["HeaderType"]</MudTh>
             <MudTh Style="width:56px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Sprite">
+            <MudTd DataLabel="@L["HeaderSprite"]">
                 <AssetThumbnail AssetId="context.PrimaryAssetId"
                                 Size="Size.Small"
                                 Alt="@context.Name"
                                 FallbackIcon="@Icons.Material.Filled.Event" />
             </MudTd>
-            <MudTd DataLabel="Name">
+            <MudTd DataLabel="@L["HeaderName"]">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>
-            <MudTd DataLabel="Wahrscheinlichkeit">
+            <MudTd DataLabel="@L["HeaderChance"]">
                 <MudText Typo="Typo.body2" Class="gdm-mono">@context.Chance %</MudText>
             </MudTd>
-            <MudTd DataLabel="Spawns">
+            <MudTd DataLabel="@L["HeaderSpawns"]">
                 <MudText Typo="Typo.body2">@context.SpawnCount</MudText>
             </MudTd>
-            <MudTd DataLabel="Belohnung">
+            <MudTd DataLabel="@L["HeaderReward"]">
                 @if (context.RewardLootTableId is null)
                 {
                     <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2">@(context.RewardLootTableName ?? "(gelöschter Loot-Table)")</MudText>
+                    <MudText Typo="Typo.body2">@(context.RewardLootTableName ?? L["DeletedLootTable"].Value)</MudText>
                 }
             </MudTd>
-            <MudTd DataLabel="Art">
+            <MudTd DataLabel="@L["HeaderType"]">
                 @if (context.TypeName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                 }
                 else
                 {
@@ -128,17 +128,17 @@ else
                 }
             </MudTd>
             <MudTd>
-                <MudTooltip Text="Löschen">
+                <MudTooltip Text="@L["DeleteTooltip"]">
                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                    Size="Size.Small"
                                    OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@($"{context.Name} löschen")" />
+                                   aria-label="@L["DeleteAria", context.Name]" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                Kein Event passt zur Suche.
+                @L["NoRecords"]
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -153,8 +153,8 @@ else
     private Guid? _typeFilter;
 
     private string Subtitle => _events is null
-        ? "Wird geladen …"
-        : $"{_events.Count} Event(s)";
+        ? L["Loading"]
+        : L["SubtitleCount", _events.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -198,10 +198,10 @@ else
     private async Task DeleteAsync(EventListRow row)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Event löschen",
-            $"„{row.Name}“ wird mit Spawns, Feldwerten und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -209,7 +209,7 @@ else
         }
 
         await Events.DeleteEventAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 }

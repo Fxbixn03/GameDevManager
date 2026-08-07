@@ -1,32 +1,33 @@
 @page "/modules/npcs/arten"
+@inject IStringLocalizer<NpcTypes> L
 
-<PageTitle>NPC-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="NPC-Arten"
-              Subtitle="Typ, Rollen und Warenangebot stehen fest am NPC — alles Weitere definieren die Felder der Art."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/npcs">Zu den NPCs</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/npcs">@L["ToNpcs"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Npcs"
-                    EntityNoun="NPC"
-                    EmptyTitle="Noch keine NPC-Arten"
-                    EmptyHint="Eine Art bündelt die Felder, die alle Figuren dieser Kategorie gemeinsam haben — etwa „Wache“ mit Lebenspunkten, Stufe und Wachbereich." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Npcs);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 

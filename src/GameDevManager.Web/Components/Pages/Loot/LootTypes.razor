@@ -1,32 +1,33 @@
 @page "/modules/loot/arten"
+@inject IStringLocalizer<LootTypes> L
 
-<PageTitle>Loot-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Loot-Arten"
-              Subtitle="Einträge und Wurfverfahren stehen fest an der Tabelle — alles Weitere definieren die Felder der Art."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/loot">Zu den Loot-Tables</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/loot">@L["ToLootTables"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Loot"
-                    EntityNoun="Loot-Table"
-                    EmptyTitle="Noch keine Loot-Arten"
-                    EmptyHint="Über Arten lassen sich Angaben ergänzen, die die Tabelle selbst nicht kennt — etwa eine Stufenanforderung oder ein Glücks-Modifikator." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Loot);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 

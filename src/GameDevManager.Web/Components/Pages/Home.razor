@@ -1,11 +1,12 @@
 @page "/"
 @inject IDbContextFactory<GameDevManager.Data.GameDevManagerDbContext> DbFactory
 @inject GameDevManager.Data.DatabaseOptions DbOptions
+@inject IStringLocalizer<Home> L
 @using Microsoft.EntityFrameworkCore
 
-<PageTitle>Dashboard – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true">Dashboard</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">@L["Heading"]</MudText>
 
 <MudGrid Spacing="3">
 
@@ -17,17 +18,16 @@
                     <MudIcon Icon="@Icons.Material.Filled.ImportExport" Color="Color.Primary" />
                 </CardHeaderAvatar>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Import / Export</MudText>
+                    <MudText Typo="Typo.h6">@L["ImportExportTitle"]</MudText>
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
                 <MudText Typo="Typo.body2">
-                    Export als JSON/ZIP inkl. Assets, später direkter Export nach Unity, Unreal Engine und Godot.
-                    Versioniert und diffbar.
+                    @L["ImportExportDescription"]
                 </MudText>
             </MudCardContent>
             <MudCardActions>
-                <MudButton Disabled="true" StartIcon="@Icons.Material.Filled.FileDownload">In Entwicklung</MudButton>
+                <MudButton Disabled="true" StartIcon="@Icons.Material.Filled.FileDownload">@L["InDevelopment"]</MudButton>
             </MudCardActions>
         </MudCard>
     </MudItem>
@@ -40,15 +40,15 @@
                     <MudIcon Icon="@Icons.Material.Filled.Storage" Color="@(_dbError is null ? Color.Success : Color.Error)" />
                 </CardHeaderAvatar>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Datenbank</MudText>
+                    <MudText Typo="Typo.h6">@L["DatabaseTitle"]</MudText>
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudText Typo="Typo.body2">Provider: <b>@DbOptions.Provider</b></MudText>
+                <MudText Typo="Typo.body2">@L["ProviderLabel"] <b>@DbOptions.Provider</b></MudText>
                 @if (_dbError is null)
                 {
-                    <MudText Typo="Typo.body2" Color="Color.Success">Verbindung OK</MudText>
-                    <MudText Typo="Typo.body2">Angelegte Spielprojekte: @(_projectCount?.ToString() ?? "…")</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Success">@L["ConnectionOk"]</MudText>
+                    <MudText Typo="Typo.body2">@L["ProjectCountLabel"] @(_projectCount?.ToString() ?? "…")</MudText>
                 }
                 else
                 {
@@ -75,7 +75,7 @@
                     <MudText Typo="Typo.body2">@module.Description</MudText>
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton Href="@module.Route" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">Öffnen</MudButton>
+                    <MudButton Href="@module.Route" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">@L["OpenButton"]</MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
@@ -95,7 +95,7 @@
         }
         catch (Exception ex)
         {
-            _dbError = $"Keine Verbindung: {ex.Message}";
+            _dbError = L["NoConnection", ex.Message];
         }
     }
 }

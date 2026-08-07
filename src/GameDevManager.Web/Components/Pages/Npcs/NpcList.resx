@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>NPCs – GameDevManager</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>NPC-Arten</value>
+  </data>
+  <data name="NewNpc" xml:space="preserve">
+    <value>Neuer NPC</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine NPCs</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>NPCs und Mobs liegen zusammen und lassen sich gegeneinander filtern. Ein NPC kann Händler sein, Quests vergeben, beides oder nichts davon.</value>
+  </data>
+  <data name="FirstNpc" xml:space="preserve">
+    <value>Ersten NPC anlegen</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Nach Name oder Beschreibung suchen</value>
+  </data>
+  <data name="KindFilterLabel" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="KindFilterNpcs" xml:space="preserve">
+    <value>NPCs</value>
+  </data>
+  <data name="KindFilterMobs" xml:space="preserve">
+    <value>Mobs</value>
+  </data>
+  <data name="RoleFilterLabel" xml:space="preserve">
+    <value>Rolle</value>
+  </data>
+  <data name="RoleAny" xml:space="preserve">
+    <value>Alle Rollen</value>
+  </data>
+  <data name="RoleTrader" xml:space="preserve">
+    <value>Händler</value>
+  </data>
+  <data name="RoleQuestGiver" xml:space="preserve">
+    <value>Questgeber</value>
+  </data>
+  <data name="RoleNone" xml:space="preserve">
+    <value>Ohne Rolle</value>
+  </data>
+  <data name="TypeFilterLabel" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="HeaderName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="HeaderKind" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="HeaderRoles" xml:space="preserve">
+    <value>Rollen</value>
+  </data>
+  <data name="HeaderType" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="HeaderDescription" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="HeaderSprite" xml:space="preserve">
+    <value>Sprite</value>
+  </data>
+  <data name="KindMob" xml:space="preserve">
+    <value>Mob</value>
+  </data>
+  <data name="KindNpc" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="TraderChip" xml:space="preserve">
+    <value>Händler ({0})</value>
+  </data>
+  <data name="QuestChip" xml:space="preserve">
+    <value>Quest</value>
+  </data>
+  <data name="NoType" xml:space="preserve">
+    <value>ohne Art</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>{0} löschen</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>Kein NPC passt zu den Filtern.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} NPC(s), {1} Mob(s), davon {2} Händler</value>
+  </data>
+  <data name="DeleteOfferWarning" xml:space="preserve">
+    <value> Das Warenangebot mit {0} Posten wird mitgelöscht.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>NPC löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit allen Feldwerten und Sprites gelöscht.{1}</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gelöscht.</value>
+  </data>
+</root>

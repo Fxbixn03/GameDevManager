@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>Es gibt keinen NPC mit dieser GUID. Vielleicht wurde er gelöscht.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="MasterDataSection" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="KindNpc" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="KindMob" xml:space="preserve">
+    <value>Mob (Gegner)</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>NPC-Art</value>
+  </data>
+  <data name="RolesLabel" xml:space="preserve">
+    <value>Rollen</value>
+  </data>
+  <data name="TraderLabel" xml:space="preserve">
+    <value>Händler</value>
+  </data>
+  <data name="QuestGiverLabel" xml:space="preserve">
+    <value>Questgeber</value>
+  </data>
+  <data name="LootTableLabel" xml:space="preserve">
+    <value>Loot-Table</value>
+  </data>
+  <data name="NoLootTablesHint" xml:space="preserve">
+    <value>Noch keine Loot-Tables angelegt.</value>
+  </data>
+  <data name="LootTableHint" xml:space="preserve">
+    <value>Was beim Besiegen fällt.</value>
+  </data>
+  <data name="ClassLabel" xml:space="preserve">
+    <value>Klasse</value>
+  </data>
+  <data name="NoClassesHint" xml:space="preserve">
+    <value>Noch keine Klassen angelegt.</value>
+  </data>
+  <data name="ClassHint" xml:space="preserve">
+    <value>Die Klasse aus dem Klassen-Modul.</value>
+  </data>
+  <data name="OpenLootTable" xml:space="preserve">
+    <value>Loot-Table öffnen</value>
+  </data>
+  <data name="OffersSection" xml:space="preserve">
+    <value>Warenangebot</value>
+  </data>
+  <data name="AddOffer" xml:space="preserve">
+    <value>Posten</value>
+  </data>
+  <data name="ShopAvailability" xml:space="preserve">
+    <value>Verfügbarkeit des Shops</value>
+  </data>
+  <data name="ShopAvailabilityCount" xml:space="preserve">
+    <value>Verfügbarkeit des Shops ({0})</value>
+  </data>
+  <data name="ShopConditionEmptyHint" xml:space="preserve">
+    <value>Ohne Bedingung ist der Shop immer offen.</value>
+  </data>
+  <data name="NoItemsToTrade" xml:space="preserve">
+    <value>Es gibt noch keine Items zum Handeln —</value>
+  </data>
+  <data name="CreateItemsNow" xml:space="preserve">
+    <value>jetzt welche anlegen</value>
+  </data>
+  <data name="NoOffersHint" xml:space="preserve">
+    <value>Noch kein Posten. Je Posten lassen sich Verkaufs- und Ankaufspreis, Währung, Lagerbestand und Auffüllzeit festlegen.</value>
+  </data>
+  <data name="NoCurrenciesWarning" xml:space="preserve">
+    <value>Es gibt noch keine Währungen. Ohne Währung lässt sich kein Preis eintragen —</value>
+  </data>
+  <data name="CreateCurrencyNow" xml:space="preserve">
+    <value>jetzt eine anlegen</value>
+  </data>
+  <data name="ItemLabel" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="SellLabel" xml:space="preserve">
+    <value>Verkauf</value>
+  </data>
+  <data name="SellHelper" xml:space="preserve">
+    <value>an Spieler</value>
+  </data>
+  <data name="BuyLabel" xml:space="preserve">
+    <value>Ankauf</value>
+  </data>
+  <data name="BuyHelper" xml:space="preserve">
+    <value>vom Spieler</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>Währung</value>
+  </data>
+  <data name="StockLabel" xml:space="preserve">
+    <value>Bestand</value>
+  </data>
+  <data name="StockHelper" xml:space="preserve">
+    <value>leer = unbegrenzt</value>
+  </data>
+  <data name="RestockLabel" xml:space="preserve">
+    <value>Auffüllzeit</value>
+  </data>
+  <data name="OfferConditionsTooltip" xml:space="preserve">
+    <value>Bedingungen für diesen Posten</value>
+  </data>
+  <data name="ConditionsButton" xml:space="preserve">
+    <value>Bedingungen</value>
+  </data>
+  <data name="ConditionsButtonCount" xml:space="preserve">
+    <value>Bedingungen ({0})</value>
+  </data>
+  <data name="RemoveOffer" xml:space="preserve">
+    <value>Posten entfernen</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für einzigartige Werte, die kein anderer NPC dieser Art hat.</value>
+  </data>
+  <data name="ReferenceSection" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="GuidLabel" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedLabel" xml:space="preserve">
+    <value>Angelegt</value>
+  </data>
+  <data name="UpdatedLabel" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="DialoguesSection" xml:space="preserve">
+    <value>Dialoge</value>
+  </data>
+  <data name="NewButton" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="NoDialogues" xml:space="preserve">
+    <value>An keinem Dialog beteiligt.</value>
+  </data>
+  <data name="Barks" xml:space="preserve">
+    <value>Sprechblasen</value>
+  </data>
+  <data name="LineCount" xml:space="preserve">
+    <value>{0} Zeile(n)</value>
+  </data>
+  <data name="FactionsSection" xml:space="preserve">
+    <value>Fraktionen</value>
+  </data>
+  <data name="NoFactions" xml:space="preserve">
+    <value>In keiner Fraktion Mitglied. Mitglieder werden im Fraktions-Modul zugeordnet.</value>
+  </data>
+  <data name="MemberFallback" xml:space="preserve">
+    <value>Mitglied</value>
+  </data>
+  <data name="SpawnSection" xml:space="preserve">
+    <value>Spawn-Orte</value>
+  </data>
+  <data name="NoSpawns" xml:space="preserve">
+    <value>Auf keiner Karte markiert. Setze dazu im Karten-Modul eine Markierung, die auf diesen NPC zeigt.</value>
+  </data>
+  <data name="Area" xml:space="preserve">
+    <value>Bereich</value>
+  </data>
+  <data name="Point" xml:space="preserve">
+    <value>Punkt</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neuer NPC</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>NPC ohne Namen</value>
+  </data>
+  <data name="OfferFallbackName" xml:space="preserve">
+    <value>Posten</value>
+  </data>
+  <data name="ConditionSubject" xml:space="preserve">
+    <value>{0} bei {1}</value>
+  </data>
+  <data name="OfferConditionEmptyHint" xml:space="preserve">
+    <value>Ohne Bedingung ist dieser Posten immer im Angebot.</value>
+  </data>
+  <data name="ConditionsDialogTitle" xml:space="preserve">
+    <value>Bedingungen</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>NPC löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit Warenangebot, Feldwerten, individuellen Feldern und Sprites gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>NPC gelöscht.</value>
+  </data>
+</root>

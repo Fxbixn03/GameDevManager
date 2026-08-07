@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Es gibt keine Währung mit dieser GUID. Vielleicht wurde sie gelöscht.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SectionBasics" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="SymbolLabel" xml:space="preserve">
+    <value>Zeichen</value>
+  </data>
+  <data name="SymbolHelperText" xml:space="preserve">
+    <value>Für Preisangaben</value>
+  </data>
+  <data name="PricePreviewIntro" xml:space="preserve">
+    <value>Preise erscheinen später als</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Währungs-Art</value>
+  </data>
+  <data name="TypeHelperText" xml:space="preserve">
+    <value>Über die Art kommen eigene Felder dazu, etwa ein Wechselkurs.</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für Angaben, die nur diese eine Währung braucht.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Angelegt</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>Währung</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neue Währung</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Währung ohne Namen</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Währung löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit allen Feldwerten, individuellen Feldern und Sprites gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Währung gelöscht.</value>
+  </data>
+</root>

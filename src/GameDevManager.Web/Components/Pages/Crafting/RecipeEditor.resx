@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Es gibt kein Rezept mit dieser GUID. Vielleicht wurde es gelöscht.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="NoItemsHint" xml:space="preserve">
+    <value>Es gibt noch keine Items. Ein Rezept braucht welche —</value>
+  </data>
+  <data name="NoItemsLink" xml:space="preserve">
+    <value>jetzt Items anlegen</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Rezept-Art</value>
+  </data>
+  <data name="TypeHelper" xml:space="preserve">
+    <value>Über die Art kommen eigene Felder dazu, etwa Dauer oder Werkbank.</value>
+  </data>
+  <data name="SectionOutput" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="QuantityLabel" xml:space="preserve">
+    <value>Menge</value>
+  </data>
+  <data name="OutputItemLabel" xml:space="preserve">
+    <value>Hergestelltes Item</value>
+  </data>
+  <data name="SectionIngredients" xml:space="preserve">
+    <value>Zutaten</value>
+  </data>
+  <data name="AddIngredient" xml:space="preserve">
+    <value>Zutat</value>
+  </data>
+  <data name="NoIngredients" xml:space="preserve">
+    <value>Noch keine Zutaten. Ein Rezept ohne Zutaten ist zulässig — etwa für Dinge, die ohne Material entstehen.</value>
+  </data>
+  <data name="IngredientItemLabel" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="RemoveIngredient" xml:space="preserve">
+    <value>Zutat entfernen</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für Angaben, die nur dieses eine Rezept braucht.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Angelegt</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="SectionTree" xml:space="preserve">
+    <value>Crafting-Baum</value>
+  </data>
+  <data name="OpenTreeAria" xml:space="preserve">
+    <value>Baum auf eigener Seite öffnen</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="PageHeadingDefault" xml:space="preserve">
+    <value>Rezept</value>
+  </data>
+  <data name="PageHeadingNew" xml:space="preserve">
+    <value>Neues Rezept</value>
+  </data>
+  <data name="PageHeadingUnnamed" xml:space="preserve">
+    <value>Rezept ohne Namen</value>
+  </data>
+  <data name="NameSuggestion" xml:space="preserve">
+    <value>Vorschlag: „{0}“</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Rezept löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit seinen Zutaten und Feldwerten gelöscht. Die beteiligten Items bleiben.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Rezept gelöscht.</value>
+  </data>
+</root>

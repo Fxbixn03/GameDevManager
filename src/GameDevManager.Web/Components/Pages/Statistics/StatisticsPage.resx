@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Statistik – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Kennzahlen über alle Module und die Health Checks des Konzepts an einer Stelle.</value>
+  </data>
+  <data name="MetricsHeading" xml:space="preserve">
+    <value>Kennzahlen</value>
+  </data>
+  <data name="NpcBreakdownIntro" xml:space="preserve">
+    <value>Davon NPCs:</value>
+  </data>
+  <data name="NpcBreakdownPeaceful" xml:space="preserve">
+    <value>{0} friedlich</value>
+  </data>
+  <data name="NpcBreakdownHostile" xml:space="preserve">
+    <value>{0} feindlich (Mobs)</value>
+  </data>
+  <data name="NpcBreakdownRoles" xml:space="preserve">
+    <value>— {0} Händler, {1} Questgeber.</value>
+  </data>
+  <data name="HealthChecksHeading" xml:space="preserve">
+    <value>Health Checks</value>
+  </data>
+  <data name="CyclesTitle" xml:space="preserve">
+    <value>Zyklische Rezepte</value>
+  </data>
+  <data name="ToCrafting" xml:space="preserve">
+    <value>Zum Crafting</value>
+  </data>
+  <data name="DeadItemsTitle" xml:space="preserve">
+    <value>Items ohne Bezugsquelle</value>
+  </data>
+  <data name="ToItems" xml:space="preserve">
+    <value>Zu den Items</value>
+  </data>
+  <data name="DeadItemsHint" xml:space="preserve">
+    <value>Kein Rezept stellt sie her, kein Händler führt sie, keine Loot-Table lässt sie fallen — toter Content.</value>
+  </data>
+  <data name="QuestsTitle" xml:space="preserve">
+    <value>Quests ohne Abschlussbedingung</value>
+  </data>
+  <data name="ToQuests" xml:space="preserve">
+    <value>Zu den Quests</value>
+  </data>
+  <data name="DialoguesTitle" xml:space="preserve">
+    <value>Dialog-Sackgassen</value>
+  </data>
+  <data name="ToDialogues" xml:space="preserve">
+    <value>Zu den Dialogen</value>
+  </data>
+  <data name="LootTitle" xml:space="preserve">
+    <value>Loot-Wahrscheinlichkeiten über 100 %</value>
+  </data>
+  <data name="ToLoot" xml:space="preserve">
+    <value>Zu den Loot-Tables</value>
+  </data>
+  <data name="OrphansTitle" xml:space="preserve">
+    <value>Verwaiste Sprites</value>
+  </data>
+  <data name="ToAssets" xml:space="preserve">
+    <value>Zur Asset-Bibliothek</value>
+  </data>
+  <data name="ConditionsTitle" xml:space="preserve">
+    <value>Unerfüllbare Bedingungen</value>
+  </data>
+  <data name="NoFindings" xml:space="preserve">
+    <value>keine Funde</value>
+  </data>
+  <data name="FindingsCount" xml:space="preserve">
+    <value>{0} Fund(e)</value>
+  </data>
+</root>

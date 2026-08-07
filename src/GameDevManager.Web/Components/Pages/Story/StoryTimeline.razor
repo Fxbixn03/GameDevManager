@@ -4,21 +4,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<StoryTimeline> L
 
-<PageTitle>Story – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/story/arten">
-            Abschnitts-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/story/neu">
-            Neuer Abschnitt
+            @L["NewEntry"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -31,13 +32,12 @@ else if (_entries.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.AutoStories" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Story</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Die Story wird in Abschnitten geschrieben und hier als Zeitstreifen angezeigt.
-            Beteiligte NPCs, Fraktionen und Orte werden per Referenz verknüpft.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/story/neu">
-            Erster Abschnitt
+            @L["FirstEntry"]
         </MudButton>
     </div>
 }
@@ -67,28 +67,28 @@ else
                             <MudSpacer />
 
                             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                @(entry.ParticipantCount) Beteiligte
+                                @L["ParticipantCount", entry.ParticipantCount]
                             </MudText>
 
-                            <MudTooltip Text="Nach oben">
+                            <MudTooltip Text="@L["MoveUpTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
                                                Size="Size.Small"
                                                Disabled="@(entry == _entries.First())"
                                                OnClick="@(() => MoveAsync(entry, up: true))"
-                                               aria-label="@($"{entry.Name} nach oben")" />
+                                               aria-label="@L["MoveUpAria", entry.Name]" />
                             </MudTooltip>
-                            <MudTooltip Text="Nach unten">
+                            <MudTooltip Text="@L["MoveDownTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward"
                                                Size="Size.Small"
                                                Disabled="@(entry == _entries.Last())"
                                                OnClick="@(() => MoveAsync(entry, up: false))"
-                                               aria-label="@($"{entry.Name} nach unten")" />
+                                               aria-label="@L["MoveDownAria", entry.Name]" />
                             </MudTooltip>
-                            <MudTooltip Text="Löschen">
+                            <MudTooltip Text="@L["DeleteTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                Size="Size.Small"
                                                OnClick="@(() => DeleteAsync(entry))"
-                                               aria-label="@($"{entry.Name} löschen")" />
+                                               aria-label="@L["DeleteAria", entry.Name]" />
                             </MudTooltip>
                         </MudStack>
 
@@ -102,7 +102,7 @@ else
                         @if (!entry.HasBody)
                         {
                             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                                Noch kein Story-Text geschrieben.
+                                @L["NoBodyYet"]
                             </MudText>
                         }
                     </MudPaper>
@@ -118,8 +118,8 @@ else
     private List<StoryListRow>? _entries;
 
     private string Subtitle => _entries is null
-        ? "Wird geladen …"
-        : $"{_entries.Count} Abschnitt(e) im Zeitstreifen";
+        ? L["Loading"]
+        : L["SubtitleCount", _entries.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -139,10 +139,10 @@ else
     private async Task DeleteAsync(StoryListRow entry)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Story-Abschnitt löschen",
-            $"„{entry.Name}“ wird mit Text, Beteiligten, Feldwerten und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", entry.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -150,7 +150,7 @@ else
         }
 
         await Story.DeleteEntryAsync(entry.Id);
-        Snackbar.Add($"„{entry.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", entry.Name], Severity.Success);
         await LoadAsync();
     }
 

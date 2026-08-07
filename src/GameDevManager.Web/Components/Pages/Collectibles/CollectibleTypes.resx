@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Sammelobjekt-Arten – GameDevManager</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Sammelobjekt-Arten</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Das Konzept verlangt hier ausdrücklich eigene Felder — sie kommen über die Arten.</value>
+  </data>
+  <data name="ToCollectibles" xml:space="preserve">
+    <value>Zu den Sammelobjekten</value>
+  </data>
+  <data name="NewType" xml:space="preserve">
+    <value>Neue Art</value>
+  </data>
+  <data name="EntityNoun" xml:space="preserve">
+    <value>Sammelobjekt</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Sammelobjekt-Arten</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Über Arten lassen sich Sammelobjekte einteilen — etwa Statue, Notiz oder Relikt — und um eigene Felder wie Fundregion oder Belohnungsstufe ergänzen.</value>
+  </data>
+  <data name="BreadcrumbTypes" xml:space="preserve">
+    <value>Arten</value>
+  </data>
+</root>

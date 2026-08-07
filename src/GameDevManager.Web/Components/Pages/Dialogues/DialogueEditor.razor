@@ -6,15 +6,16 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<DialogueEditor> L
 
-<PageTitle>@PageHeading – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
 @if (_notFound)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">
-        Es gibt keinen Dialog mit dieser GUID. Vielleicht wurde er gelöscht.
+        @L["NotFound"]
     </MudAlert>
-    <MudButton Variant="Variant.Outlined" Href="/modules/dialogs">Zurück zur Übersicht</MudButton>
+    <MudButton Variant="Variant.Outlined" Href="/modules/dialogs">@L["BackToList"]</MudButton>
 }
 else if (_context is null)
 {
@@ -24,13 +25,13 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Subtitle="@(_context.IsNew ? (string?)L["SubtitleNew"] : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
-                    Ungespeicherte Änderungen
+                    @L["UnsavedChanges"]
                 </MudChip>
             }
             @if (!_context.IsNew)
@@ -39,16 +40,16 @@ else
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
-                    Löschen
+                    @L["Delete"]
                 </MudButton>
             }
-            <MudButton Variant="Variant.Outlined" Href="/modules/dialogs">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/dialogs">@L["Cancel"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
                        OnClick="SaveAsync">
-                Speichern
+                @L["Save"]
             </MudButton>
         </Actions>
     </ModuleHeader>
@@ -59,20 +60,20 @@ else
 
                 @* ------------------------------------------------------------- Stammdaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionMasterData"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudTextField Value="_context.Entity.Name"
                                       ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
                                       T="string"
-                                      Label="Name *"
+                                      Label="@L["NameLabel"]"
                                       Variant="Variant.Outlined"
                                       Immediate="true" />
 
                         <MudTextField Value="_context.Entity.Description"
                                       ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
                                       T="string"
-                                      Label="Beschreibung"
+                                      Label="@L["DescriptionLabel"]"
                                       Variant="Variant.Outlined"
                                       Lines="2" />
 
@@ -80,18 +81,18 @@ else
                             <MudSelect T="DialogueKind"
                                        Value="_context.Entity.Kind"
                                        ValueChanged="ChangeKind"
-                                       Label="Form"
+                                       Label="@L["KindLabel"]"
                                        Variant="Variant.Outlined"
                                        HelperText="@KindHint"
                                        Style="max-width:260px;">
-                                <MudSelectItem T="DialogueKind" Value="@(DialogueKind.Conversation)">Gespräch</MudSelectItem>
-                                <MudSelectItem T="DialogueKind" Value="@(DialogueKind.Bark)">Sprechblasen</MudSelectItem>
+                                <MudSelectItem T="DialogueKind" Value="@(DialogueKind.Conversation)">@L["KindConversation"]</MudSelectItem>
+                                <MudSelectItem T="DialogueKind" Value="@(DialogueKind.Bark)">@L["KindBark"]</MudSelectItem>
                             </MudSelect>
 
                             <MudSelect T="Guid?"
                                        Value="_context.Entity.ContentTypeId"
                                        ValueChanged="@((Guid? id) => Touch(() => _context.Entity.ContentTypeId = id))"
-                                       Label="Dialog-Art"
+                                       Label="@L["TypeLabel"]"
                                        Variant="Variant.Outlined"
                                        Clearable="true"
                                        Style="max-width:240px;">
@@ -105,7 +106,7 @@ else
                                        Value="_context.Entity.IncludesPlayer"
                                        ValueChanged="TogglePlayer"
                                        Color="Color.Primary"
-                                       Label="Spieler beteiligt" />
+                                       Label="@L["IncludesPlayerLabel"]" />
                         </MudStack>
                     </MudStack>
                 </MudPaper>
@@ -113,27 +114,26 @@ else
                 @* ----------------------------------------------------------- Beteiligte *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary">Beteiligte NPCs</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionParticipants"]</MudText>
                         <MudButton StartIcon="@Icons.Material.Filled.Add"
                                    Size="Size.Small"
                                    Disabled="@(_npcs.Count == 0)"
                                    OnClick="AddParticipant">
-                            NPC
+                            @L["AddNpc"]
                         </MudButton>
                     </MudStack>
 
                     @if (_npcs.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true">
-                            Es gibt noch keine NPCs —
-                            <MudLink Href="/modules/npcs" Color="Color.Primary">jetzt welche anlegen</MudLink>.
+                            @L["NoNpcsPrefix"]
+                            <MudLink Href="/modules/npcs" Color="Color.Primary">@L["NoNpcsLink"]</MudLink>.
                         </MudAlert>
                     }
                     else if (_context.Entity.Participants.Count == 0)
                     {
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            Noch niemand. Ein Dialog kann zwischen einem NPC und dem Spieler laufen,
-                            zwischen mehreren NPCs oder zwischen mehreren NPCs und dem Spieler.
+                            @L["NoParticipants"]
                         </MudText>
                     }
                     else
@@ -148,7 +148,7 @@ else
                                                          ValueChanged="@((EntitySummary? e) => SetParticipant(participant, e))"
                                                          SearchFunc="SearchNpcsAsync"
                                                          ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                                         Label="NPC"
+                                                         Label="@L["NpcLabel"]"
                                                          Variant="Variant.Outlined"
                                                          Margin="Margin.Dense"
                                                          Clearable="true"
@@ -156,11 +156,11 @@ else
                                                          CoerceValue="false"
                                                          MaxItems="50" />
                                     </div>
-                                    <MudTooltip Text="Entfernen">
+                                    <MudTooltip Text="@L["RemoveTooltip"]">
                                         <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                        Size="Size.Small"
                                                        OnClick="@(() => RemoveParticipant(participant))"
-                                                       aria-label="Beteiligten entfernen" />
+                                                       aria-label="@L["RemoveParticipantAria"]" />
                                     </MudTooltip>
                                 </MudStack>
                             }
@@ -172,29 +172,28 @@ else
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
                         <MudText Typo="Typo.overline" Color="Color.Secondary">
-                            @(IsBark ? "Sprechblasen" : "Verlauf")
+                            @(IsBark ? L["SectionBarks"] : L["SectionFlow"])
                         </MudText>
                         <MudButton StartIcon="@Icons.Material.Filled.Add"
                                    Size="Size.Small"
                                    Disabled="@(!CanSpeak)"
                                    OnClick="AddLine">
-                            Zeile
+                            @L["AddLine"]
                         </MudButton>
                     </MudStack>
 
                     @if (!CanSpeak)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true">
-                            Es braucht mindestens einen Beteiligten oder den Spieler, damit jemand
-                            sprechen kann.
+                            @L["NeedSpeaker"]
                         </MudAlert>
                     }
                     else if (_context.Entity.Lines.Count == 0)
                     {
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
                             @(IsBark
-                                ? "Noch keine Sprechblase. Die Zeilen stehen unabhängig nebeneinander und erscheinen zufällig."
-                                : "Noch keine Zeile. Die erste ist der Einstieg ins Gespräch; von dort führen Antworten weiter.")
+                                ? L["NoLinesBark"]
+                                : L["NoLinesConversation"])
                         </MudText>
                     }
                     else
@@ -208,57 +207,57 @@ else
                                             @if (!IsBark && _context.Entity.Lines.IndexOf(line) == 0)
                                             {
                                                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">
-                                                    Einstieg
+                                                    @L["EntryChip"]
                                                 </MudChip>
                                             }
 
                                             <MudSelect T="Guid?"
                                                        Value="line.SpeakerNpcId"
                                                        ValueChanged="@((Guid? id) => Touch(() => line.SpeakerNpcId = id))"
-                                                       Label="Sprecher"
+                                                       Label="@L["SpeakerLabel"]"
                                                        Variant="Variant.Outlined"
                                                        Margin="Margin.Dense"
                                                        Style="max-width:220px;">
                                                 @if (_context.Entity.IncludesPlayer)
                                                 {
-                                                    <MudSelectItem T="Guid?" Value="@(null as Guid?)">Spieler</MudSelectItem>
+                                                    <MudSelectItem T="Guid?" Value="@(null as Guid?)">@L["SpeakerPlayer"]</MudSelectItem>
                                                 }
                                                 @foreach (var participant in _context.Entity.Participants)
                                                 {
                                                     <MudSelectItem T="Guid?" Value="@participant.NpcId">
-                                                        @(NpcFor(participant.NpcId)?.Name ?? "(unbekannt)")
+                                                        @(NpcFor(participant.NpcId)?.Name ?? L["UnknownNpc"])
                                                     </MudSelectItem>
                                                 }
                                             </MudSelect>
 
                                             <MudSpacer />
 
-                                            <MudTooltip Text="Nach oben">
+                                            <MudTooltip Text="@L["MoveUpTooltip"]">
                                                 <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp"
                                                                Size="Size.Small"
                                                                Disabled="@(_context.Entity.Lines.IndexOf(line) == 0)"
                                                                OnClick="@(() => MoveLine(line, -1))"
-                                                               aria-label="Zeile nach oben" />
+                                                               aria-label="@L["MoveUpAria"]" />
                                             </MudTooltip>
-                                            <MudTooltip Text="Nach unten">
+                                            <MudTooltip Text="@L["MoveDownTooltip"]">
                                                 <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown"
                                                                Size="Size.Small"
                                                                Disabled="@(_context.Entity.Lines.IndexOf(line) == _context.Entity.Lines.Count - 1)"
                                                                OnClick="@(() => MoveLine(line, 1))"
-                                                               aria-label="Zeile nach unten" />
+                                                               aria-label="@L["MoveDownAria"]" />
                                             </MudTooltip>
-                                            <MudTooltip Text="Zeile entfernen">
+                                            <MudTooltip Text="@L["RemoveLine"]">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                                Size="Size.Small"
                                                                OnClick="@(() => RemoveLine(line))"
-                                                               aria-label="Zeile entfernen" />
+                                                               aria-label="@L["RemoveLine"]" />
                                             </MudTooltip>
                                         </MudStack>
 
                                         <MudTextField T="string"
                                                       Value="line.Text"
                                                       ValueChanged="@((string v) => Touch(() => line.Text = v))"
-                                                      Label="Text"
+                                                      Label="@L["TextLabel"]"
                                                       Variant="Variant.Outlined"
                                                       Margin="Margin.Dense"
                                                       Lines="2" />
@@ -276,7 +275,7 @@ else
                                                         <MudTextField T="string"
                                                                       Value="choice.Text"
                                                                       ValueChanged="@((string v) => Touch(() => choice.Text = v))"
-                                                                      Label="Antwort"
+                                                                      Label="@L["ChoiceLabel"]"
                                                                       Variant="Variant.Outlined"
                                                                       Margin="Margin.Dense" />
                                                     </div>
@@ -284,11 +283,11 @@ else
                                                     <MudSelect T="Guid?"
                                                                Value="choice.NextLineId"
                                                                ValueChanged="@((Guid? id) => Touch(() => choice.NextLineId = id))"
-                                                               Label="Weiter zu"
+                                                               Label="@L["NextLineLabel"]"
                                                                Variant="Variant.Outlined"
                                                                Margin="Margin.Dense"
                                                                Style="max-width:260px;">
-                                                        <MudSelectItem T="Guid?" Value="@(null as Guid?)">Gespräch endet</MudSelectItem>
+                                                        <MudSelectItem T="Guid?" Value="@(null as Guid?)">@L["ConversationEnds"]</MudSelectItem>
                                                         @foreach (var target in _context.Entity.Lines.Where(l => l.Id != line.Id))
                                                         {
                                                             <MudSelectItem T="Guid?" Value="@target.Id">
@@ -297,11 +296,11 @@ else
                                                         }
                                                     </MudSelect>
 
-                                                    <MudTooltip Text="Antwort entfernen">
+                                                    <MudTooltip Text="@L["RemoveChoice"]">
                                                         <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                                        Size="Size.Small"
                                                                        OnClick="@(() => RemoveChoice(line, choice))"
-                                                                       aria-label="Antwort entfernen" />
+                                                                       aria-label="@L["RemoveChoice"]" />
                                                     </MudTooltip>
                                                 </MudStack>
                                             }
@@ -310,7 +309,7 @@ else
                                                        Size="Size.Small"
                                                        Class="ml-6"
                                                        OnClick="@(() => AddChoice(line))">
-                                                Antwort
+                                                @L["AddChoice"]
                                             </MudButton>
                                         }
                                     </MudStack>
@@ -326,7 +325,7 @@ else
                                         Context="_context"
                                         ModuleKey="@ModuleKeys.Dialogs"
                                         TypesRoute="/modules/dialogs/arten"
-                                        IndividualHint="Für Angaben, die nur dieser eine Dialog braucht."
+                                        IndividualHint="@L["IndividualHint"]"
                                         OnValueChanged="MarkDirty"
                                         OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
                 </div>
@@ -341,25 +340,25 @@ else
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
                         <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">
-                            Verfügbarkeit
+                            @L["SectionAvailability"]
                         </MudText>
                         <ConditionEditor OwnerId="_context.Entity.Id"
                                          OwnerModuleKey="@ModuleKeys.Dialogs"
                                          Slot="@ConditionSlots.Availability"
-                                         EmptyHint="Ohne Bedingung ist der Dialog immer verfügbar." />
+                                         EmptyHint="@L["AvailabilityEmptyHint"]" />
                     </MudPaper>
                 }
 
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidLabel"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["LastModified"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
                     }
                 </MudPaper>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Tags – GameDevManager</value>
+  </data>
+  <data name="NewTag" xml:space="preserve">
+    <value>Neues Tag</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Tags</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Tags sind modulübergreifende Labels. Je Tag lässt sich einstellen, in welchen Modulen es verfügbar ist — ohne Auswahl gilt es überall. Zugewiesen wird es direkt in den Bearbeitungsmasken.</value>
+  </data>
+  <data name="FirstTag" xml:space="preserve">
+    <value>Erstes Tag</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="ColorLabel" xml:space="preserve">
+    <value>Farbe (Hex)</value>
+  </data>
+  <data name="ModulesLabel" xml:space="preserve">
+    <value>Verfügbar in</value>
+  </data>
+  <data name="ModulesHelper" xml:space="preserve">
+    <value>Leer = überall</value>
+  </data>
+  <data name="SaveTooltip" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SaveAria" xml:space="preserve">
+    <value>Tag speichern</value>
+  </data>
+  <data name="DiscardTooltip" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="DiscardAria" xml:space="preserve">
+    <value>Tag verwerfen</value>
+  </data>
+  <data name="HeaderTag" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="HeaderDescription" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="HeaderModules" xml:space="preserve">
+    <value>Verfügbar in</value>
+  </data>
+  <data name="HeaderUsages" xml:space="preserve">
+    <value>Verwendungen</value>
+  </data>
+  <data name="Everywhere" xml:space="preserve">
+    <value>überall</value>
+  </data>
+  <data name="EditTooltip" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="EditAria" xml:space="preserve">
+    <value>{0} bearbeiten</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>{0} löschen</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Tag(s)</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Tag löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit allen {1} Zuweisung(en) gelöscht. Die Entitäten bleiben erhalten.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gelöscht.</value>
+  </data>
+</root>

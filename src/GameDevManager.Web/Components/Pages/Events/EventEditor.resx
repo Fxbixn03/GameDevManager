@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>Es gibt kein Event mit dieser GUID. Vielleicht wurde es gelöscht.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="DeleteButton" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="CancelButton" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="SaveButton" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SectionBasics" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="LabelName" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="LabelDescription" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="LabelChance" xml:space="preserve">
+    <value>Wahrscheinlichkeit</value>
+  </data>
+  <data name="LabelType" xml:space="preserve">
+    <value>Event-Art</value>
+  </data>
+  <data name="LabelRewardLootTable" xml:space="preserve">
+    <value>Belohnung (Loot-Table)</value>
+  </data>
+  <data name="NoLootTablesHint" xml:space="preserve">
+    <value>Noch keine Loot-Tables angelegt.</value>
+  </data>
+  <data name="RewardHint" xml:space="preserve">
+    <value>Was das Event als Belohnung ausschüttet.</value>
+  </data>
+  <data name="SectionSpawns" xml:space="preserve">
+    <value>Mob-Spawns</value>
+  </data>
+  <data name="AddSpawn" xml:space="preserve">
+    <value>Spawn</value>
+  </data>
+  <data name="NoNpcsPrefix" xml:space="preserve">
+    <value>Es gibt noch keine NPCs/Mobs —</value>
+  </data>
+  <data name="NoNpcsLink" xml:space="preserve">
+    <value>jetzt welche anlegen</value>
+  </data>
+  <data name="NoSpawnsHint" xml:space="preserve">
+    <value>Noch kein Spawn. Je Eintrag: welcher Mob und wie viele davon erscheinen.</value>
+  </data>
+  <data name="LabelNpc" xml:space="preserve">
+    <value>NPC / Mob</value>
+  </data>
+  <data name="LabelCount" xml:space="preserve">
+    <value>Anzahl</value>
+  </data>
+  <data name="RemoveSpawnTooltip" xml:space="preserve">
+    <value>Spawn entfernen</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für Angaben, die nur dieses eine Event braucht.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="LabelGuid" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedLabel" xml:space="preserve">
+    <value>Angelegt</value>
+  </data>
+  <data name="UpdatedLabel" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="SectionPlaces" xml:space="preserve">
+    <value>Orte</value>
+  </data>
+  <data name="NoPlacements" xml:space="preserve">
+    <value>Auf keiner Karte markiert. Setze dazu im Karten-Modul eine Markierung oder einen Bereich, der auf dieses Event zeigt — etwa „nur in Höhlen“.</value>
+  </data>
+  <data name="PlacementArea" xml:space="preserve">
+    <value>Bereich</value>
+  </data>
+  <data name="PlacementPoint" xml:space="preserve">
+    <value>Punkt</value>
+  </data>
+  <data name="HeadingDefault" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neues Event</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Event ohne Namen</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Event löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit Spawns, Feldwerten, individuellen Feldern und Sprites gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Event gelöscht.</value>
+  </data>
+</root>

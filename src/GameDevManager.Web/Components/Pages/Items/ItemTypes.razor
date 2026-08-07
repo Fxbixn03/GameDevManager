@@ -1,32 +1,33 @@
 @page "/modules/items/arten"
+@inject IStringLocalizer<ItemTypes> L
 
-<PageTitle>Item-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Item-Arten"
-              Subtitle="Arten und ihre Felder bestimmen, was an einem Item erfasst werden kann."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/items">Zu den Items</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/items">@L["ToItems"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Items"
-                    EntityNoun="Item"
-                    EmptyTitle="Noch keine Item-Arten"
-                    EmptyHint="Eine Art bündelt die Felder, die alle Items dieser Kategorie gemeinsam haben — etwa „Waffe“ mit Schaden, Reichweite und Angriffsgeschwindigkeit." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Items);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 

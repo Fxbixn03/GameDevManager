@@ -7,15 +7,16 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<MapEditor> L
 
-<PageTitle>@PageHeading – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
 @if (_notFound)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">
-        Es gibt keine Karte mit dieser GUID. Vielleicht wurde sie gelöscht.
+        @L["NotFoundMessage"]
     </MudAlert>
-    <MudButton Variant="Variant.Outlined" Href="/modules/maps">Zurück zur Übersicht</MudButton>
+    <MudButton Variant="Variant.Outlined" Href="/modules/maps">@L["BackToOverview"]</MudButton>
 }
 else if (_context is null)
 {
@@ -25,13 +26,13 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Subtitle="@(_context.IsNew ? L["NotSavedYet"] : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
-                    Ungespeicherte Änderungen
+                    @L["UnsavedChanges"]
                 </MudChip>
             }
             @if (!_context.IsNew)
@@ -40,16 +41,16 @@ else
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
-                    Löschen
+                    @L["Delete"]
                 </MudButton>
             }
-            <MudButton Variant="Variant.Outlined" Href="/modules/maps">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/maps">@L["Cancel"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
                        OnClick="SaveAsync">
-                Speichern
+                @L["Save"]
             </MudButton>
         </Actions>
     </ModuleHeader>
@@ -61,7 +62,7 @@ else
                 @* ---------------------------------------------------------------- Karte *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary">Karte</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionMap"]</MudText>
 
                         @if (!_context.IsNew)
                         {
@@ -70,8 +71,8 @@ else
                                 {
                                     <MudText Typo="Typo.caption" Color="Color.Primary">
                                         @(_mode == PlaceMode.Add
-                                            ? "Auf die Karte klicken, um zu setzen"
-                                            : "Auf die Karte klicken, um zu verschieben")
+                                            ? L["ClickToPlace"]
+                                            : L["ClickToMove"])
                                     </MudText>
                                 }
                                 <MudButton Size="Size.Small"
@@ -80,7 +81,7 @@ else
                                            StartIcon="@Icons.Material.Filled.AddLocationAlt"
                                            Disabled="@(_imageAssetId is null)"
                                            OnClick="ToggleAdd">
-                                    @(_mode == PlaceMode.Add ? "Fertig" : "Markierung setzen")
+                                    @(_mode == PlaceMode.Add ? L["PlacingDone"] : L["SetMarker"])
                                 </MudButton>
                             </MudStack>
                         }
@@ -89,8 +90,7 @@ else
                     @if (_context.IsNew)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true">
-                            Kartenbild und Markierungen hängen an der GUID der Karte — beides lässt
-                            sich anlegen, sobald sie einmal gespeichert wurde.
+                            @L["NewMapHint"]
                         </MudAlert>
                     }
                     else
@@ -98,7 +98,7 @@ else
                         @if (_imageAssetId is null)
                         {
                             <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
-                                Lade unten ein Bild hoch — das erste wird automatisch zum Kartenbild.
+                                @L["UploadImageHint"]
                             </MudAlert>
                         }
 
@@ -114,27 +114,27 @@ else
 
                 @* --------------------------------------------------------- Stammdaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionMasterData"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudTextField Value="_context.Entity.Name"
                                       ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
                                       T="string"
-                                      Label="Name *"
+                                      Label="@L["NameLabel"]"
                                       Variant="Variant.Outlined"
                                       Immediate="true" />
 
                         <MudTextField Value="_context.Entity.Description"
                                       ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
                                       T="string"
-                                      Label="Beschreibung"
+                                      Label="@L["DescriptionLabel"]"
                                       Variant="Variant.Outlined"
                                       Lines="2" />
 
                         <MudSelect T="Guid?"
                                    Value="_context.Entity.ContentTypeId"
                                    ValueChanged="@((Guid? id) => Touch(() => _context.Entity.ContentTypeId = id))"
-                                   Label="Karten-Art"
+                                   Label="@L["TypeLabel"]"
                                    Variant="Variant.Outlined"
                                    Clearable="true">
                             @foreach (var type in _context.AvailableTypes)
@@ -157,7 +157,7 @@ else
                                         Context="_context"
                                         ModuleKey="@ModuleKeys.Maps"
                                         TypesRoute="/modules/maps/arten"
-                                        IndividualHint="Für Angaben, die nur diese eine Karte braucht."
+                                        IndividualHint="@L["IndividualHint"]"
                                         OnValueChanged="MarkDirty"
                                         OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
                 </div>
@@ -172,20 +172,20 @@ else
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                            <MudText Typo="Typo.overline" Color="Color.Secondary">Markierung</MudText>
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionMarker"]</MudText>
                             <MudStack Row="true" Spacing="0">
-                                <MudTooltip Text="Auf der Karte verschieben">
+                                <MudTooltip Text="@L["MoveTooltip"]">
                                     <MudIconButton Icon="@Icons.Material.Filled.OpenWith"
                                                    Size="Size.Small"
                                                    Color="@(_mode == PlaceMode.Move ? Color.Primary : Color.Default)"
                                                    OnClick="ToggleMove"
-                                                   aria-label="Verschieben" />
+                                                   aria-label="@L["MoveAria"]" />
                                 </MudTooltip>
-                                <MudTooltip Text="Entfernen">
+                                <MudTooltip Text="@L["RemoveTooltip"]">
                                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                    Size="Size.Small"
                                                    OnClick="@(() => RemoveMarker(marker))"
-                                                   aria-label="Markierung entfernen" />
+                                                   aria-label="@L["RemoveAria"]" />
                                 </MudTooltip>
                             </MudStack>
                         </MudStack>
@@ -194,7 +194,7 @@ else
                             <MudTextField Value="marker.Label"
                                           ValueChanged="@((string v) => Touch(() => marker.Label = v))"
                                           T="string"
-                                          Label="Beschriftung"
+                                          Label="@L["MarkerLabelLabel"]"
                                           Variant="Variant.Outlined"
                                           Margin="Margin.Dense"
                                           Immediate="true" />
@@ -202,10 +202,10 @@ else
                             <MudSelect T="string"
                                        Value="marker.TargetModuleKey"
                                        ValueChanged="ChangeTargetModuleAsync"
-                                       Label="Zeigt auf"
+                                       Label="@L["TargetModuleLabel"]"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense">
-                                <MudSelectItem T="string" Value="@(null as string)">Nichts (reine Notiz)</MudSelectItem>
+                                <MudSelectItem T="string" Value="@(null as string)">@L["TargetNone"]</MudSelectItem>
                                 @foreach (var module in ModuleRegistry.All.Where(m => m.Implemented))
                                 {
                                     <MudSelectItem T="string" Value="@module.Id">@module.Name</MudSelectItem>
@@ -217,7 +217,7 @@ else
                                 @if (TargetOptions(targetModule).Count == 0)
                                 {
                                     <MudAlert Severity="Severity.Info" Dense="true">
-                                        In diesem Modul gibt es noch nichts, worauf die Markierung zeigen könnte.
+                                        @L["NoTargetsHint"]
                                     </MudAlert>
                                 }
                                 else
@@ -227,7 +227,7 @@ else
                                                      ValueChanged="@((EntitySummary? e) => Touch(() => marker.TargetEntityId = e?.Id))"
                                                      SearchFunc="@((string? s, CancellationToken ct) => SearchTargetsAsync(targetModule, s))"
                                                      ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                                     Label="Ziel"
+                                                     Label="@L["TargetLabel"]"
                                                      Variant="Variant.Outlined"
                                                      Margin="Margin.Dense"
                                                      Clearable="true"
@@ -242,7 +242,7 @@ else
                                                Variant="Variant.Outlined"
                                                StartIcon="@Icons.Material.Filled.Map"
                                                Href="@($"/modules/maps/{linkedMap}")">
-                                        Verknüpfte Karte öffnen
+                                        @L["OpenLinkedMap"]
                                     </MudButton>
                                 }
                             }
@@ -251,7 +251,7 @@ else
                                        Value="marker.IsArea"
                                        ValueChanged="ToggleArea"
                                        Color="Color.Primary"
-                                       Label="Bereich statt Punkt" />
+                                       Label="@L["AreaSwitchLabel"]" />
 
                             @if (marker.IsArea)
                             {
@@ -262,20 +262,20 @@ else
                                            Max="50"
                                            Step="0.5"
                                            Color="Color.Primary">
-                                    Radius: @(((marker.Radius ?? 0) * 100).ToString("0.#")) % der Breite
+                                    @L["RadiusLabel", ((marker.Radius ?? 0) * 100).ToString("0.#")]
                                 </MudSlider>
                             }
 
                             <MudSelect T="Guid?"
                                        Value="marker.IconAssetId"
                                        ValueChanged="@((Guid? id) => Touch(() => marker.IconAssetId = id))"
-                                       Label="Symbol"
+                                       Label="@L["IconLabel"]"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        Clearable="true"
                                        Disabled="@(_markerIcons.Count == 0)"
                                        HelperText="@(_markerIcons.Count == 0
-                                           ? "Werkzeug-Assets ohne Entität stehen hier zur Auswahl."
+                                           ? L["IconHelperText"]
                                            : null)">
                                 @foreach (var icon in _markerIcons)
                                 {
@@ -287,7 +287,7 @@ else
                                 <MudNumericField T="double"
                                                  Value="@(marker.X * 100)"
                                                  ValueChanged="@((double v) => Touch(() => marker.X = v / 100))"
-                                                 Label="X"
+                                                 Label="@L["XLabel"]"
                                                  Adornment="Adornment.End"
                                                  AdornmentText="%"
                                                  Variant="Variant.Outlined"
@@ -296,7 +296,7 @@ else
                                 <MudNumericField T="double"
                                                  Value="@(marker.Y * 100)"
                                                  ValueChanged="@((double v) => Touch(() => marker.Y = v / 100))"
-                                                 Label="Y"
+                                                 Label="@L["YLabel"]"
                                                  Adornment="Adornment.End"
                                                  AdornmentText="%"
                                                  Variant="Variant.Outlined"
@@ -312,13 +312,13 @@ else
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
                         <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">
-                            Markierungen (@_context.Entity.Markers.Count)
+                            @L["SectionMarkers", _context.Entity.Markers.Count]
                         </MudText>
 
                         @if (_context.Entity.Markers.Count == 0)
                         {
                             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                Noch keine. Über „Markierung setzen“ und einen Klick auf die Karte entsteht die erste.
+                                @L["NoMarkersHint"]
                             </MudText>
                         }
                         else
@@ -344,15 +344,15 @@ else
                 }
 
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidLabel"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["LastModified"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
                     }
                 </MudPaper>
@@ -395,10 +395,10 @@ else
 
     private string PageHeading => _context switch
     {
-        null => "Karte",
-        { IsNew: true } => "Neue Karte",
+        null => L["HeadingFallback"],
+        { IsNew: true } => L["HeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "Karte ohne Namen"
+        _ => L["HeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -603,7 +603,7 @@ else
             }
         }
 
-        return marker.IsArea ? "Bereich" : "Markierung";
+        return marker.IsArea ? L["MarkerFallbackArea"] : L["MarkerFallback"];
     }
 
     // ------------------------------------------------------------------------ Speichern
@@ -631,7 +631,7 @@ else
             await Maps.SaveMapAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -662,11 +662,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Karte löschen",
-            $"„{_context.Entity.Name}“ wird mit Markierungen, Bildern und Feldwerten gelöscht. "
-            + "Verknüpfungen anderer Karten hierher verlieren ihr Ziel.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -674,7 +673,7 @@ else
         }
 
         await Maps.DeleteMapAsync(_context.Entity.Id);
-        Snackbar.Add("Karte gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/maps");
     }
 

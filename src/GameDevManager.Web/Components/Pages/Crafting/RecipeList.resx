@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Crafting – GameDevManager</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>Rezept-Arten</value>
+  </data>
+  <data name="NewRecipe" xml:space="preserve">
+    <value>Neues Rezept</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Rezepte</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Ein Rezept führt Items zu einem neuen zusammen — „3× Holz + 5× Kohle = Fackel“.</value>
+  </data>
+  <data name="EmptyNeedsItems" xml:space="preserve">
+    <value>Dafür braucht es zuerst Items.</value>
+  </data>
+  <data name="ToItems" xml:space="preserve">
+    <value>Zu den Items</value>
+  </data>
+  <data name="FirstRecipe" xml:space="preserve">
+    <value>Erstes Rezept</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Nach Rezept- oder Ergebnisname suchen</value>
+  </data>
+  <data name="ItemFilterLabel" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="RoleFilterLabel" xml:space="preserve">
+    <value>Rolle</value>
+  </data>
+  <data name="RoleAny" xml:space="preserve">
+    <value>Ergebnis oder Zutat</value>
+  </data>
+  <data name="RoleOutput" xml:space="preserve">
+    <value>Nur als Ergebnis</value>
+  </data>
+  <data name="RoleIngredient" xml:space="preserve">
+    <value>Nur als Zutat</value>
+  </data>
+  <data name="TypeFilterLabel" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="HeaderSprite" xml:space="preserve">
+    <value>Sprite</value>
+  </data>
+  <data name="HeaderRecipe" xml:space="preserve">
+    <value>Rezept</value>
+  </data>
+  <data name="HeaderOutput" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="HeaderIngredients" xml:space="preserve">
+    <value>Zutaten</value>
+  </data>
+  <data name="HeaderType" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="NoOutput" xml:space="preserve">
+    <value>kein Ergebnis gesetzt</value>
+  </data>
+  <data name="OutputFormat" xml:space="preserve">
+    <value>{0}× {1}</value>
+  </data>
+  <data name="NoType" xml:space="preserve">
+    <value>ohne Art</value>
+  </data>
+  <data name="TreeTooltip" xml:space="preserve">
+    <value>Crafting-Baum</value>
+  </data>
+  <data name="TreeAria" xml:space="preserve">
+    <value>Crafting-Baum anzeigen</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>{0} löschen</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>Kein Rezept passt zu den Filtern.</value>
+  </data>
+  <data name="CyclesTitle" xml:space="preserve">
+    <value>Zyklische Rezepte gefunden</value>
+  </data>
+  <data name="CyclesHint" xml:space="preserve">
+    <value>Diese Items werden mittelbar aus sich selbst hergestellt — im Spiel ließen sie sich damit nie von Grund auf herstellen:</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Rezept(e)</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Rezept löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit seinen Zutaten und Feldwerten gelöscht. Die beteiligten Items bleiben.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gelöscht.</value>
+  </data>
+</root>

@@ -73,7 +73,11 @@
       "PowerShell(git add -A)",
       "PowerShell($p = Start-Process dotnet -ArgumentList \"run --project src/GameDevManager.Web --no-build\" -PassThru -RedirectStandardOutput \"$env:TEMP\\\\gdm-run.log\" -RedirectStandardError \"$env:TEMP\\\\gdm-err.log\"; Start-Sleep -Seconds 15; $started = Select-String -Path \"$env:TEMP\\\\gdm-run.log\" -Pattern \"Now listening\" -Quiet; try { Stop-Process -Id $p.Id -Force -ErrorAction Stop } catch {}; Get-Content \"$env:TEMP\\\\gdm-run.log\" -Tail 5; Get-Content \"$env:TEMP\\\\gdm-err.log\" -Tail 10; if \\($started\\) { \"SMOKE-TEST OK\" } else { \"SMOKE-TEST FEHLGESCHLAGEN\" })",
       "PowerShell($p = Start-Process dotnet -ArgumentList \"run --project src/GameDevManager.Web --no-build\" -PassThru -RedirectStandardOutput \"$env:TEMP\\\\gdm-run2.log\" -RedirectStandardError \"$env:TEMP\\\\gdm-err2.log\"; Start-Sleep -Seconds 40; $started = Select-String -Path \"$env:TEMP\\\\gdm-run2.log\" -Pattern \"Now listening\" -Quiet; try { Stop-Process -Id $p.Id -Force -ErrorAction Stop } catch {}; \"--- STDOUT ---\"; Get-Content \"$env:TEMP\\\\gdm-run2.log\"; \"--- STDERR ---\"; Get-Content \"$env:TEMP\\\\gdm-err2.log\"; if \\($started\\) { \"SMOKE-TEST OK\" } else { \"SMOKE-TEST FEHLGESCHLAGEN\" })",
-      "PowerShell(git rm -q \"src/GameDevManager.Web/Components/Pages/Counter.razor\" \"src/GameDevManager.Web/Components/Pages/Weather.razor\")"
+      "PowerShell(git rm -q \"src/GameDevManager.Web/Components/Pages/Counter.razor\" \"src/GameDevManager.Web/Components/Pages/Weather.razor\")",
+      "PowerShell(dotnet build src/GameDevManager.Web/GameDevManager.Web.csproj)",
+      "PowerShell(Get-Process -Id 34852)",
+      "PowerShell(Stop-Process -Id 34852 -Force -Confirm:$false)",
+      "PowerShell([System.Reflection.Assembly]::LoadFile\\(\"C:\\\\Users\\\\FabianStangl\\\\source\\\\repos\\\\GameDevManager\\\\src\\\\GameDevManager.Web\\\\bin\\\\Debug\\\\net10.0\\\\GameDevManager.Web.dll\"\\).GetManifestResourceNames\\(\\))"
     ],
     "deny": [
       "Bash(rm:*)",

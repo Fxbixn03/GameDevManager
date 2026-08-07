@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Dashboard – GameDevManager</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="ImportExportTitle" xml:space="preserve">
+    <value>Import / Export</value>
+  </data>
+  <data name="ImportExportDescription" xml:space="preserve">
+    <value>Export als JSON/ZIP inkl. Assets, später direkter Export nach Unity, Unreal Engine und Godot. Versioniert und diffbar.</value>
+  </data>
+  <data name="InDevelopment" xml:space="preserve">
+    <value>In Entwicklung</value>
+  </data>
+  <data name="DatabaseTitle" xml:space="preserve">
+    <value>Datenbank</value>
+  </data>
+  <data name="ProviderLabel" xml:space="preserve">
+    <value>Provider:</value>
+  </data>
+  <data name="ConnectionOk" xml:space="preserve">
+    <value>Verbindung OK</value>
+  </data>
+  <data name="ProjectCountLabel" xml:space="preserve">
+    <value>Angelegte Spielprojekte:</value>
+  </data>
+  <data name="OpenButton" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="NoConnection" xml:space="preserve">
+    <value>Keine Verbindung: {0}</value>
+  </data>
+</root>

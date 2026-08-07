@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>Es gibt keine Karte mit dieser GUID. Vielleicht wurde sie gelöscht.</value>
+  </data>
+  <data name="BackToOverview" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SectionMap" xml:space="preserve">
+    <value>Karte</value>
+  </data>
+  <data name="ClickToPlace" xml:space="preserve">
+    <value>Auf die Karte klicken, um zu setzen</value>
+  </data>
+  <data name="ClickToMove" xml:space="preserve">
+    <value>Auf die Karte klicken, um zu verschieben</value>
+  </data>
+  <data name="PlacingDone" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+  <data name="SetMarker" xml:space="preserve">
+    <value>Markierung setzen</value>
+  </data>
+  <data name="NewMapHint" xml:space="preserve">
+    <value>Kartenbild und Markierungen hängen an der GUID der Karte — beides lässt sich anlegen, sobald sie einmal gespeichert wurde.</value>
+  </data>
+  <data name="UploadImageHint" xml:space="preserve">
+    <value>Lade unten ein Bild hoch — das erste wird automatisch zum Kartenbild.</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Karten-Art</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für Angaben, die nur diese eine Karte braucht.</value>
+  </data>
+  <data name="SectionMarker" xml:space="preserve">
+    <value>Markierung</value>
+  </data>
+  <data name="MoveTooltip" xml:space="preserve">
+    <value>Auf der Karte verschieben</value>
+  </data>
+  <data name="MoveAria" xml:space="preserve">
+    <value>Verschieben</value>
+  </data>
+  <data name="RemoveTooltip" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="RemoveAria" xml:space="preserve">
+    <value>Markierung entfernen</value>
+  </data>
+  <data name="MarkerLabelLabel" xml:space="preserve">
+    <value>Beschriftung</value>
+  </data>
+  <data name="TargetModuleLabel" xml:space="preserve">
+    <value>Zeigt auf</value>
+  </data>
+  <data name="TargetNone" xml:space="preserve">
+    <value>Nichts (reine Notiz)</value>
+  </data>
+  <data name="NoTargetsHint" xml:space="preserve">
+    <value>In diesem Modul gibt es noch nichts, worauf die Markierung zeigen könnte.</value>
+  </data>
+  <data name="TargetLabel" xml:space="preserve">
+    <value>Ziel</value>
+  </data>
+  <data name="OpenLinkedMap" xml:space="preserve">
+    <value>Verknüpfte Karte öffnen</value>
+  </data>
+  <data name="AreaSwitchLabel" xml:space="preserve">
+    <value>Bereich statt Punkt</value>
+  </data>
+  <data name="RadiusLabel" xml:space="preserve">
+    <value>Radius: {0} % der Breite</value>
+  </data>
+  <data name="IconLabel" xml:space="preserve">
+    <value>Symbol</value>
+  </data>
+  <data name="IconHelperText" xml:space="preserve">
+    <value>Werkzeug-Assets ohne Entität stehen hier zur Auswahl.</value>
+  </data>
+  <data name="XLabel" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="YLabel" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="SectionMarkers" xml:space="preserve">
+    <value>Markierungen ({0})</value>
+  </data>
+  <data name="NoMarkersHint" xml:space="preserve">
+    <value>Noch keine. Über „Markierung setzen“ und einen Klick auf die Karte entsteht die erste.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="GuidLabel" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="LastModified" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>Karte</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neue Karte</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Karte ohne Namen</value>
+  </data>
+  <data name="MarkerFallbackArea" xml:space="preserve">
+    <value>Bereich</value>
+  </data>
+  <data name="MarkerFallback" xml:space="preserve">
+    <value>Markierung</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Karte löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit Markierungen, Bildern und Feldwerten gelöscht. Verknüpfungen anderer Karten hierher verlieren ihr Ziel.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Karte gelöscht.</value>
+  </data>
+</root>

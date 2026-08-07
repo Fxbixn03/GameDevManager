@@ -5,21 +5,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<QuestList> L
 
-<PageTitle>Quests – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/quests/arten">
-            Quest-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/quests/neu">
-            Neue Quest
+            @L["NewQuest"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -33,15 +34,14 @@ else
     @if (_withoutCompletion.Count > 0)
     {
         <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">
-            <b>@_withoutCompletion.Count Quest(s) ohne Abschlussbedingung</b> — das Spiel wüsste nie,
-            wann sie erledigt sind:
+            <b>@L["WithoutCompletionCount", _withoutCompletion.Count]</b> @L["WithoutCompletionHint"]
             @foreach (var quest in _withoutCompletion.Take(5))
             {
                 <MudLink Href="@($"/modules/quests/{quest.Id}")" Class="ml-1">@quest.Name</MudLink>
             }
             @if (_withoutCompletion.Count > 5)
             {
-                <span class="ml-1">… und @(_withoutCompletion.Count - 5) weitere</span>
+                <span class="ml-1">@L["AndMore", _withoutCompletion.Count - 5]</span>
             }
         </MudAlert>
     }
@@ -50,13 +50,12 @@ else
     {
         <div class="gdm-empty">
             <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-            <MudText Typo="Typo.h6">Noch keine Quests</MudText>
+            <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-                Haupt- und Nebenmissionen sowie Events — verknüpfbar mit Story-Abschnitten,
-                Questgeber-NPCs und Dialogen, mit Bedingungen für Verfügbarkeit und Abschluss.
+                @L["EmptyHint"]
             </MudText>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/quests/neu">
-                Erste Quest
+                @L["FirstQuest"]
             </MudButton>
         </div>
     }
@@ -65,7 +64,7 @@ else
         <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
             <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
                 <MudTextField @bind-Value="_search"
-                              Placeholder="Nach Name, Questgeber oder Story suchen"
+                              Placeholder="@L["SearchPlaceholder"]"
                               Variant="Variant.Outlined"
                               Margin="Margin.Dense"
                               Immediate="true"
@@ -76,7 +75,7 @@ else
 
                 <MudSelect T="QuestKind?"
                            @bind-Value="_kindFilter"
-                           Label="Form"
+                           Label="@L["KindFilterLabel"]"
                            Variant="Variant.Outlined"
                            Margin="Margin.Dense"
                            Clearable="true"
@@ -89,7 +88,7 @@ else
 
                 <MudSelect T="Guid?"
                            @bind-Value="_typeFilter"
-                           Label="Art"
+                           Label="@L["TypeFilterLabel"]"
                            Variant="Variant.Outlined"
                            Margin="Margin.Dense"
                            Clearable="true"
@@ -101,7 +100,7 @@ else
                 </MudSelect>
 
                 <MudSpacer />
-                <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_quests.Count</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _quests.Count]</MudText>
             </MudStack>
         </MudPaper>
 
@@ -115,53 +114,53 @@ else
                   RowClass="cursor-pointer">
             <HeaderContent>
                 <MudTh Style="width:56px;"></MudTh>
-                <MudTh>Name</MudTh>
-                <MudTh>Form</MudTh>
-                <MudTh>Questgeber</MudTh>
-                <MudTh>Story</MudTh>
-                <MudTh>Art</MudTh>
+                <MudTh>@L["HeaderName"]</MudTh>
+                <MudTh>@L["HeaderKind"]</MudTh>
+                <MudTh>@L["HeaderGiver"]</MudTh>
+                <MudTh>@L["HeaderStory"]</MudTh>
+                <MudTh>@L["HeaderType"]</MudTh>
                 <MudTh Style="width:56px;"></MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Sprite">
+                <MudTd DataLabel="@L["HeaderSprite"]">
                     <AssetThumbnail AssetId="context.PrimaryAssetId"
                                     Size="Size.Small"
                                     Alt="@context.Name"
                                     FallbackIcon="@Icons.Material.Filled.Assignment" />
                 </MudTd>
-                <MudTd DataLabel="Name">
+                <MudTd DataLabel="@L["HeaderName"]">
                     <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
                 </MudTd>
-                <MudTd DataLabel="Form">
+                <MudTd DataLabel="@L["HeaderKind"]">
                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
                              Color="@(context.Kind == QuestKind.MainMission ? Color.Primary : Color.Default)">
                         @QuestService.KindLabel(context.Kind)
                     </MudChip>
                 </MudTd>
-                <MudTd DataLabel="Questgeber">
+                <MudTd DataLabel="@L["HeaderGiver"]">
                     @if (context.GiverNpcId is null)
                     {
                         <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
                     }
                     else
                     {
-                        <MudText Typo="Typo.body2">@(context.GiverNpcName ?? "(gelöschter NPC)")</MudText>
+                        <MudText Typo="Typo.body2">@(context.GiverNpcName ?? L["DeletedNpc"])</MudText>
                     }
                 </MudTd>
-                <MudTd DataLabel="Story">
+                <MudTd DataLabel="@L["HeaderStory"]">
                     @if (context.StoryEntryId is null)
                     {
                         <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
                     }
                     else
                     {
-                        <MudText Typo="Typo.body2">@(context.StoryEntryName ?? "(gelöschter Abschnitt)")</MudText>
+                        <MudText Typo="Typo.body2">@(context.StoryEntryName ?? L["DeletedStoryEntry"])</MudText>
                     }
                 </MudTd>
-                <MudTd DataLabel="Art">
+                <MudTd DataLabel="@L["HeaderType"]">
                     @if (context.TypeName is null)
                     {
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                     }
                     else
                     {
@@ -169,17 +168,17 @@ else
                     }
                 </MudTd>
                 <MudTd>
-                    <MudTooltip Text="Löschen">
+                    <MudTooltip Text="@L["DeleteTooltip"]">
                         <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                        Size="Size.Small"
                                        OnClick="@(() => DeleteAsync(context))"
-                                       aria-label="@($"{context.Name} löschen")" />
+                                       aria-label="@L["DeleteAria", context.Name]" />
                     </MudTooltip>
                 </MudTd>
             </RowTemplate>
             <NoRecordsContent>
                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                    Keine Quest passt zur Suche.
+                    @L["NoRecords"]
                 </MudText>
             </NoRecordsContent>
         </MudTable>
@@ -197,8 +196,8 @@ else
     private Guid? _typeFilter;
 
     private string Subtitle => _quests is null
-        ? "Wird geladen …"
-        : $"{_quests.Count} Quest(s)";
+        ? L["Loading"]
+        : L["SubtitleCount", _quests.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -250,10 +249,10 @@ else
     private async Task DeleteAsync(QuestListRow row)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Quest löschen",
-            $"„{row.Name}“ wird mit Feldwerten, Bedingungen und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -261,7 +260,7 @@ else
         }
 
         await Quests.DeleteQuestAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 }

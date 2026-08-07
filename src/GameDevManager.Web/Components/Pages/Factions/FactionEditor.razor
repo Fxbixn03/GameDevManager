@@ -6,15 +6,16 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<FactionEditor> L
 
-<PageTitle>@PageHeading – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
 @if (_notFound)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">
-        Es gibt keine Fraktion mit dieser GUID. Vielleicht wurde sie gelöscht.
+        @L["NotFoundMessage"]
     </MudAlert>
-    <MudButton Variant="Variant.Outlined" Href="/modules/factions">Zurück zur Übersicht</MudButton>
+    <MudButton Variant="Variant.Outlined" Href="/modules/factions">@L["BackToList"]</MudButton>
 }
 else if (_context is null)
 {
@@ -24,13 +25,13 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Subtitle="@(_context.IsNew ? L["SubtitleNotSaved"] : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
-                    Ungespeicherte Änderungen
+                    @L["UnsavedChanges"]
                 </MudChip>
             }
             @if (!_context.IsNew)
@@ -39,16 +40,16 @@ else
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
-                    Löschen
+                    @L["Delete"]
                 </MudButton>
             }
-            <MudButton Variant="Variant.Outlined" Href="/modules/factions">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/factions">@L["Cancel"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
                        OnClick="SaveAsync">
-                Speichern
+                @L["Save"]
             </MudButton>
         </Actions>
     </ModuleHeader>
@@ -59,30 +60,30 @@ else
 
                 @* ------------------------------------------------------------- Stammdaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionMasterData"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudTextField Value="_context.Entity.Name"
                                       ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
                                       T="string"
-                                      Label="Name *"
+                                      Label="@L["NameLabel"]"
                                       Variant="Variant.Outlined"
                                       Immediate="true" />
 
                         <MudTextField Value="_context.Entity.Description"
                                       ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
                                       T="string"
-                                      Label="Beschreibung"
+                                      Label="@L["DescriptionLabel"]"
                                       Variant="Variant.Outlined"
                                       Lines="3" />
 
                         <MudSelect T="Guid?"
                                    Value="_context.Entity.ContentTypeId"
                                    ValueChanged="ChangeType"
-                                   Label="Fraktions-Art"
+                                   Label="@L["TypeLabel"]"
                                    Variant="Variant.Outlined"
                                    Clearable="true"
-                                   HelperText="Über die Art kommen eigene Felder dazu, etwa Gesinnung oder Hauptsitz.">
+                                   HelperText="@L["TypeHelperText"]">
                             @foreach (var type in _context.AvailableTypes)
                             {
                                 <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
@@ -94,27 +95,26 @@ else
                 @* ------------------------------------------------------------ Mitglieder *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary">Mitglieder</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionMembers"]</MudText>
                         <MudButton StartIcon="@Icons.Material.Filled.Add"
                                    Size="Size.Small"
                                    Disabled="@(_npcs.Count == 0)"
                                    OnClick="AddMember">
-                            Mitglied
+                            @L["AddMemberButton"]
                         </MudButton>
                     </MudStack>
 
                     @if (_npcs.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true">
-                            Es gibt noch keine NPCs —
-                            <MudLink Href="/modules/npcs" Color="Color.Primary">jetzt welche anlegen</MudLink>.
+                            @L["NoNpcsAlert"]
+                            <MudLink Href="/modules/npcs" Color="Color.Primary">@L["NoNpcsLink"]</MudLink>.
                         </MudAlert>
                     }
                     else if (_context.Entity.Members.Count == 0)
                     {
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            Noch kein Mitglied. Je Mitglied lässt sich eine Rolle bzw. ein Rang
-                            in der Fraktion festlegen — etwa „Anführerin“ oder „Rekrut“.
+                            @L["NoMembersHint"]
                         </MudText>
                     }
                     else
@@ -130,7 +130,7 @@ else
                                                              ValueChanged="@((EntitySummary? e) => Touch(() => member.NpcId = e?.Id ?? Guid.Empty))"
                                                              SearchFunc="SearchNpcsAsync"
                                                              ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                                             Label="NPC"
+                                                             Label="@L["NpcLabel"]"
                                                              Variant="Variant.Outlined"
                                                              Margin="Margin.Dense"
                                                              Clearable="true"
@@ -143,18 +143,18 @@ else
                                             <MudTextField T="string"
                                                           Value="member.Role"
                                                           ValueChanged="@((string role) => Touch(() => member.Role = role))"
-                                                          Label="Rolle / Rang"
+                                                          Label="@L["RoleLabel"]"
                                                           Variant="Variant.Outlined"
                                                           Margin="Margin.Dense"
                                                           MaxLength="200" />
                                         </MudItem>
 
                                         <MudItem xs="12" sm="2" Class="d-flex align-center justify-end">
-                                            <MudTooltip Text="Mitglied entfernen">
+                                            <MudTooltip Text="@L["RemoveMemberTooltip"]">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                                Size="Size.Small"
                                                                OnClick="@(() => RemoveMember(member))"
-                                                               aria-label="Mitglied entfernen" />
+                                                               aria-label="@L["RemoveMemberTooltip"]" />
                                             </MudTooltip>
                                         </MudItem>
                                     </MudGrid>
@@ -175,7 +175,7 @@ else
                                         Context="_context"
                                         ModuleKey="@ModuleKeys.Factions"
                                         TypesRoute="/modules/factions/arten"
-                                        IndividualHint="Für Angaben, die nur diese eine Fraktion braucht."
+                                        IndividualHint="@L["IndividualHint"]"
                                         OnValueChanged="MarkDirty"
                                         OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
                 </div>
@@ -185,17 +185,17 @@ else
         <MudItem xs="12" md="4">
             <MudStack Spacing="4">
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidLabel"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CreatedLabel"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@L["UpdatedLabel"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
                     }
                 </MudPaper>
@@ -227,10 +227,10 @@ else
 
     private string PageHeading => _context switch
     {
-        null => "Fraktion",
-        { IsNew: true } => "Neue Fraktion",
+        null => L["HeadingFallback"],
+        { IsNew: true } => L["HeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "Fraktion ohne Namen"
+        _ => L["HeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -313,7 +313,7 @@ else
             await Factions.SaveFactionAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -344,10 +344,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Fraktion löschen",
-            $"„{_context.Entity.Name}“ wird mit Mitgliederliste, Feldwerten, individuellen Feldern und Sprites gelöscht. Die NPCs selbst bleiben erhalten.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -355,7 +355,7 @@ else
         }
 
         await Factions.DeleteFactionAsync(_context.Entity.Id);
-        Snackbar.Add("Fraktion gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/factions");
     }
 

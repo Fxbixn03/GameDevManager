@@ -10,6 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Die neutralen .resx-Dateien liegen direkt neben ihrer Seite (kein ResourcesPath) und
+// tragen die deutschen Texte; weitere Sprachen kommen später als Satelliten-Dateien dazu.
+builder.Services.AddLocalization();
 builder.Services.AddMudServices();
 builder.Services.AddGameDevManagerDatabase(builder.Configuration);
 builder.Services.AddGameDevManagerAssetStorage(builder.Configuration, builder.Environment.ContentRootPath);

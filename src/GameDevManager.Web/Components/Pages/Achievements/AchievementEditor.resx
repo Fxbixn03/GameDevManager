@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>Es gibt kein Achievement mit dieser GUID. Vielleicht wurde es gelöscht.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SectionBasics" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="DescriptionHelper" xml:space="preserve">
+    <value>Was der Spieler tun muss — oder die Umschreibung, wenn es versteckt ist.</value>
+  </data>
+  <data name="SecretSwitch" xml:space="preserve">
+    <value>Verstecktes Achievement</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Achievement-Art</value>
+  </data>
+  <data name="SectionUnlock" xml:space="preserve">
+    <value>Freischaltung</value>
+  </data>
+  <data name="SectionUnlockCount" xml:space="preserve">
+    <value>Freischaltung ({0})</value>
+  </data>
+  <data name="UnlockEmptyHint" xml:space="preserve">
+    <value>Ohne Bedingung weiß das Spiel nicht, wann das Achievement freigeschaltet wird.</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für Angaben, die nur dieses eine Achievement braucht.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="GuidLabel" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedLabel" xml:space="preserve">
+    <value>Angelegt</value>
+  </data>
+  <data name="UpdatedLabel" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>Achievement</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neues Achievement</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Achievement ohne Namen</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Achievement löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit Feldwerten, individuellen Feldern, Bedingungen und Sprites gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Achievement gelöscht.</value>
+  </data>
+</root>

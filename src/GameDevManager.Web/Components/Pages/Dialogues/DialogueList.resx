@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Dialoge – GameDevManager</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>Dialog-Arten</value>
+  </data>
+  <data name="NewDialogue" xml:space="preserve">
+    <value>Neuer Dialog</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Dialoge</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Sprechblasen erscheinen zufällig in der Open World, Gespräche haben einen Verlauf mit Antwortmöglichkeiten. Beteiligt sein können NPCs untereinander, mit dem Spieler oder beides.</value>
+  </data>
+  <data name="FirstDialogue" xml:space="preserve">
+    <value>Ersten Dialog anlegen</value>
+  </data>
+  <data name="ProblemsTitle" xml:space="preserve">
+    <value>Dialog-Sackgassen</value>
+  </data>
+  <data name="ProblemsHint" xml:space="preserve">
+    <value>Diese Zeilen sind von keiner Antwort aus erreichbar — der Spieler bekommt sie nie zu sehen:</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Nach Name oder Beschreibung suchen</value>
+  </data>
+  <data name="KindFilterLabel" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="FilterConversations" xml:space="preserve">
+    <value>Gespräche</value>
+  </data>
+  <data name="FilterBarks" xml:space="preserve">
+    <value>Sprechblasen</value>
+  </data>
+  <data name="TypeFilterLabel" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="HeaderName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="HeaderKind" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="HeaderParticipants" xml:space="preserve">
+    <value>Beteiligte</value>
+  </data>
+  <data name="HeaderLines" xml:space="preserve">
+    <value>Zeilen</value>
+  </data>
+  <data name="HeaderType" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="KindConversation" xml:space="preserve">
+    <value>Gespräch</value>
+  </data>
+  <data name="KindBark" xml:space="preserve">
+    <value>Sprechblasen</value>
+  </data>
+  <data name="ParticipantsNpcOnly" xml:space="preserve">
+    <value>{0} NPC(s)</value>
+  </data>
+  <data name="ParticipantsWithPlayer" xml:space="preserve">
+    <value>{0} NPC(s) + Spieler</value>
+  </data>
+  <data name="NoType" xml:space="preserve">
+    <value>ohne Art</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>{0} löschen</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>Kein Dialog passt zu den Filtern.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Gespräch(e), {1} Sprechblasen-Satz/-Sätze</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Dialog löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit seinen {1} Zeile(n) und allen Antwortmöglichkeiten gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gelöscht.</value>
+  </data>
+</root>

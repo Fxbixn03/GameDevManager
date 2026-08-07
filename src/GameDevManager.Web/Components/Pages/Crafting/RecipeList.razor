@@ -6,21 +6,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<RecipeList> L
 
-<PageTitle>Crafting – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/crafting/arten">
-            Rezept-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/crafting/neu">
-            Neues Rezept
+            @L["NewRecipe"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -33,21 +34,21 @@ else if (_recipes.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Construction" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Rezepte</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Ein Rezept führt Items zu einem neuen zusammen — „3× Holz + 5× Kohle = Fackel“.
+            @L["EmptyHint"]
             @if (_itemCount == 0)
             {
-                <text>Dafür braucht es zuerst Items.</text>
+                <text>@L["EmptyNeedsItems"]</text>
             }
         </MudText>
         @if (_itemCount == 0)
         {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/items">Zu den Items</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/items">@L["ToItems"]</MudButton>
         }
         else
         {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/crafting/neu">Erstes Rezept</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/crafting/neu">@L["FirstRecipe"]</MudButton>
         }
     </div>
 }
@@ -56,7 +57,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Rezept- oder Ergebnisname suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -71,7 +72,7 @@ else
                              ValueChanged="SetItemFilter"
                              SearchFunc="SearchItemsAsync"
                              ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
-                             Label="Item"
+                             Label="@L["ItemFilterLabel"]"
                              Variant="Variant.Outlined"
                              Margin="Margin.Dense"
                              Clearable="true"
@@ -83,19 +84,19 @@ else
             {
                 <MudSelect T="ItemRole"
                            @bind-Value="_itemRole"
-                           Label="Rolle"
+                           Label="@L["RoleFilterLabel"]"
                            Variant="Variant.Outlined"
                            Margin="Margin.Dense"
                            Style="max-width:180px;">
-                    <MudSelectItem T="ItemRole" Value="ItemRole.Any">Ergebnis oder Zutat</MudSelectItem>
-                    <MudSelectItem T="ItemRole" Value="ItemRole.Output">Nur als Ergebnis</MudSelectItem>
-                    <MudSelectItem T="ItemRole" Value="ItemRole.Ingredient">Nur als Zutat</MudSelectItem>
+                    <MudSelectItem T="ItemRole" Value="ItemRole.Any">@L["RoleAny"]</MudSelectItem>
+                    <MudSelectItem T="ItemRole" Value="ItemRole.Output">@L["RoleOutput"]</MudSelectItem>
+                    <MudSelectItem T="ItemRole" Value="ItemRole.Ingredient">@L["RoleIngredient"]</MudSelectItem>
                 </MudSelect>
             }
 
             <MudSelect T="Guid?"
                        @bind-Value="_typeFilter"
-                       Label="Art"
+                       Label="@L["TypeFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
@@ -107,7 +108,7 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_recipes.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _recipes.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -121,39 +122,39 @@ else
               RowClass="cursor-pointer">
         <HeaderContent>
             <MudTh Style="width:56px;"></MudTh>
-            <MudTh>Rezept</MudTh>
-            <MudTh>Ergebnis</MudTh>
-            <MudTh>Zutaten</MudTh>
-            <MudTh>Art</MudTh>
+            <MudTh>@L["HeaderRecipe"]</MudTh>
+            <MudTh>@L["HeaderOutput"]</MudTh>
+            <MudTh>@L["HeaderIngredients"]</MudTh>
+            <MudTh>@L["HeaderType"]</MudTh>
             <MudTh Style="width:96px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Sprite">
+            <MudTd DataLabel="@L["HeaderSprite"]">
                 <AssetThumbnail AssetId="context.OutputAssetId"
                                 Size="Size.Small"
                                 Alt="@(context.OutputItemName ?? context.Name)"
                                 FallbackIcon="@Icons.Material.Filled.Construction" />
             </MudTd>
-            <MudTd DataLabel="Rezept">
+            <MudTd DataLabel="@L["HeaderRecipe"]">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>
-            <MudTd DataLabel="Ergebnis">
+            <MudTd DataLabel="@L["HeaderOutput"]">
                 @if (context.OutputItemName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Warning">kein Ergebnis gesetzt</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Warning">@L["NoOutput"]</MudText>
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2">@context.OutputQuantity× @context.OutputItemName</MudText>
+                    <MudText Typo="Typo.body2">@L["OutputFormat", context.OutputQuantity, context.OutputItemName]</MudText>
                 }
             </MudTd>
-            <MudTd DataLabel="Zutaten">
+            <MudTd DataLabel="@L["HeaderIngredients"]">
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@context.IngredientCount</MudText>
             </MudTd>
-            <MudTd DataLabel="Art">
+            <MudTd DataLabel="@L["HeaderType"]">
                 @if (context.TypeName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                 }
                 else
                 {
@@ -164,25 +165,25 @@ else
                 <MudStack Row="true" Spacing="0">
                     @if (context.OutputItemId is { } outputId)
                     {
-                        <MudTooltip Text="Crafting-Baum">
+                        <MudTooltip Text="@L["TreeTooltip"]">
                             <MudIconButton Icon="@Icons.Material.Filled.AccountTree"
                                            Size="Size.Small"
                                            Href="@($"/modules/crafting/baum/{outputId}")"
-                                           aria-label="Crafting-Baum anzeigen" />
+                                           aria-label="@L["TreeAria"]" />
                         </MudTooltip>
                     }
-                    <MudTooltip Text="Löschen">
+                    <MudTooltip Text="@L["DeleteTooltip"]">
                         <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                        Size="Size.Small"
                                        OnClick="@(() => DeleteAsync(context))"
-                                       aria-label="@($"{context.Name} löschen")" />
+                                       aria-label="@L["DeleteAria", context.Name]" />
                     </MudTooltip>
                 </MudStack>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                Kein Rezept passt zu den Filtern.
+                @L["NoRecords"]
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -190,10 +191,9 @@ else
     @if (_cycles.Count > 0)
     {
         <MudAlert Severity="Severity.Warning" Class="mt-4">
-            <MudText Typo="Typo.body2"><b>Zyklische Rezepte gefunden</b></MudText>
+            <MudText Typo="Typo.body2"><b>@L["CyclesTitle"]</b></MudText>
             <MudText Typo="Typo.body2">
-                Diese Items werden mittelbar aus sich selbst hergestellt — im Spiel ließen sie
-                sich damit nie von Grund auf herstellen:
+                @L["CyclesHint"]
             </MudText>
             @foreach (var cycle in _cycles)
             {
@@ -226,8 +226,8 @@ else
     private ItemRole _itemRole = ItemRole.Any;
 
     private string Subtitle => _recipes is null
-        ? "Wird geladen …"
-        : $"{_recipes.Count} Rezept(e)";
+        ? L["Loading"]
+        : L["SubtitleCount", _recipes.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -309,10 +309,10 @@ else
     private async Task DeleteAsync(RecipeListRow row)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Rezept löschen",
-            $"„{row.Name}“ wird mit seinen Zutaten und Feldwerten gelöscht. Die beteiligten Items bleiben.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -320,7 +320,7 @@ else
         }
 
         await Crafting.DeleteRecipeAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 }

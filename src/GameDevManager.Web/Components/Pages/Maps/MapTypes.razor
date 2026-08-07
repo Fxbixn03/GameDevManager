@@ -1,32 +1,33 @@
 @page "/modules/maps/arten"
+@inject IStringLocalizer<MapTypes> L
 
-<PageTitle>Karten-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Karten-Arten"
-              Subtitle="Bild und Markierungen stehen fest an der Karte — alles Weitere definieren die Felder der Art."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/maps">Zu den Karten</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/maps">@L["ToMaps"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Maps"
-                    EntityNoun="Karte"
-                    EmptyTitle="Noch keine Karten-Arten"
-                    EmptyHint="Eine Art bündelt die Felder, die alle Karten dieser Kategorie gemeinsam haben — etwa „Höhle“ mit Tiefe, Lichtverhältnissen und Biom." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Maps);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 

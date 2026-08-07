@@ -1,13 +1,14 @@
 @page "/modules/{ModuleId}"
+@inject IStringLocalizer<ModulePage> L
 
 @if (_module is null)
 {
-    <PageTitle>Unbekanntes Modul – GameDevManager</PageTitle>
-    <MudAlert Severity="Severity.Error">Es gibt kein Modul mit der ID „@ModuleId".</MudAlert>
+    <PageTitle>@L["UnknownPageTitle"]</PageTitle>
+    <MudAlert Severity="Severity.Error">@L["UnknownModuleMessage", ModuleId]</MudAlert>
 }
 else
 {
-    <PageTitle>@_module.Name – GameDevManager</PageTitle>
+    <PageTitle>@L["PageTitleFormat", _module.Name]</PageTitle>
 
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-4">
         <MudIcon Icon="@_module.Icon" Size="Size.Large" />
@@ -17,8 +18,7 @@ else
     <MudText Typo="Typo.body1" Class="mb-6">@_module.Description</MudText>
 
     <MudAlert Severity="Severity.Info">
-        Dieses Modul ist noch in Entwicklung. Die Grundstruktur (Navigation, Datenbank, Layout) steht bereits —
-        die Fachlichkeit folgt Modul für Modul.
+        @L["InDevelopmentHint"]
     </MudAlert>
 }
 

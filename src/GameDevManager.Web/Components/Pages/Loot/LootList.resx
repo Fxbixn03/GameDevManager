@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Loot-Tables – GameDevManager</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>Loot-Arten</value>
+  </data>
+  <data name="NewTable" xml:space="preserve">
+    <value>Neue Loot-Table</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Loot-Tables</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Eine Loot-Table legt fest, welche Items zu welcher Wahrscheinlichkeit in welcher Menge fallen. NPCs und Mobs verweisen dann darauf.</value>
+  </data>
+  <data name="FirstTable" xml:space="preserve">
+    <value>Erste Loot-Table</value>
+  </data>
+  <data name="OverfullTitle" xml:space="preserve">
+    <value>Wahrscheinlichkeiten über 100 %</value>
+  </data>
+  <data name="OverfullText" xml:space="preserve">
+    <value>Bei diesen Tabellen wird ein einzelner Wurf verteilt, die Einträge kommen zusammen aber über 100 % — die hinteren wären damit unerreichbar:</value>
+  </data>
+  <data name="OverfullChanceFormat" xml:space="preserve">
+    <value>({0} %)</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Nach Name oder Beschreibung suchen</value>
+  </data>
+  <data name="TypeFilterLabel" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="HeaderName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="HeaderRoll" xml:space="preserve">
+    <value>Wurf</value>
+  </data>
+  <data name="HeaderEntries" xml:space="preserve">
+    <value>Einträge</value>
+  </data>
+  <data name="HeaderSum" xml:space="preserve">
+    <value>Summe</value>
+  </data>
+  <data name="HeaderUsedBy" xml:space="preserve">
+    <value>Verwendet von</value>
+  </data>
+  <data name="HeaderType" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="RollSinglePick" xml:space="preserve">
+    <value>Einzelwurf</value>
+  </data>
+  <data name="RollIndependent" xml:space="preserve">
+    <value>Unabhängig</value>
+  </data>
+  <data name="SumFormat" xml:space="preserve">
+    <value>{0} %</value>
+  </data>
+  <data name="UsedByNone" xml:space="preserve">
+    <value>niemandem</value>
+  </data>
+  <data name="UsedByCount" xml:space="preserve">
+    <value>{0} NPC(s)</value>
+  </data>
+  <data name="NoType" xml:space="preserve">
+    <value>ohne Art</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>{0} löschen</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>Keine Loot-Table passt zur Suche.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Tabelle(n), {1} Eintrag/Einträge</value>
+  </data>
+  <data name="DeleteNpcWarning" xml:space="preserve">
+    <value> {0} NPC(s) verlieren dadurch ihre Loot-Zuordnung.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Loot-Table löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit ihren {1} Eintrag/Einträgen gelöscht.{2}</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gelöscht.</value>
+  </data>
+</root>

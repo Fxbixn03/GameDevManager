@@ -5,21 +5,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<AchievementList> L
 
-<PageTitle>Achievements – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/achievements/arten">
-            Achievement-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/achievements/neu">
-            Neues Achievement
+            @L["NewAchievement"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -32,13 +33,12 @@ else if (_achievements.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Achievements</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Erfolge wie bei Steam: Icon, Beschreibung, optional versteckt — und die
-            Freischaltung als Bedingung aus dem zentralen Bedingungssystem.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/achievements/neu">
-            Erstes Achievement
+            @L["FirstAchievement"]
         </MudButton>
     </div>
 }
@@ -47,7 +47,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -58,7 +58,7 @@ else
 
             <MudSelect T="Guid?"
                        @bind-Value="_typeFilter"
-                       Label="Art"
+                       Label="@L["TypeFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
@@ -70,7 +70,7 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_achievements.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _achievements.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -84,52 +84,52 @@ else
               RowClass="cursor-pointer">
         <HeaderContent>
             <MudTh Style="width:56px;"></MudTh>
-            <MudTh>Name</MudTh>
-            <MudTh>Beschreibung</MudTh>
-            <MudTh>Versteckt</MudTh>
-            <MudTh>Freischaltung</MudTh>
-            <MudTh>Art</MudTh>
+            <MudTh>@L["HeaderName"]</MudTh>
+            <MudTh>@L["HeaderDescription"]</MudTh>
+            <MudTh>@L["HeaderSecret"]</MudTh>
+            <MudTh>@L["HeaderUnlock"]</MudTh>
+            <MudTh>@L["HeaderType"]</MudTh>
             <MudTh Style="width:56px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Icon">
+            <MudTd DataLabel="@L["HeaderIcon"]">
                 <AssetThumbnail AssetId="context.PrimaryAssetId"
                                 Size="Size.Small"
                                 Alt="@context.Name"
                                 FallbackIcon="@Icons.Material.Filled.EmojiEvents" />
             </MudTd>
-            <MudTd DataLabel="Name">
+            <MudTd DataLabel="@L["HeaderName"]">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>
-            <MudTd DataLabel="Beschreibung">
+            <MudTd DataLabel="@L["HeaderDescription"]">
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@Shorten(context.Description)</MudText>
             </MudTd>
-            <MudTd DataLabel="Versteckt">
+            <MudTd DataLabel="@L["HeaderSecret"]">
                 @if (context.IsSecret)
                 {
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">versteckt</MudChip>
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["SecretChip"]</MudChip>
                 }
                 else
                 {
                     <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
                 }
             </MudTd>
-            <MudTd DataLabel="Freischaltung">
+            <MudTd DataLabel="@L["HeaderUnlock"]">
                 @if (context.HasUnlockCondition)
                 {
                     <MudIcon Icon="@Icons.Material.Filled.Rule" Size="Size.Small" Color="Color.Success" />
                 }
                 else
                 {
-                    <MudTooltip Text="Noch keine Freischalt-Bedingung hinterlegt">
+                    <MudTooltip Text="@L["NoUnlockTooltip"]">
                         <MudIcon Icon="@Icons.Material.Filled.QuestionMark" Size="Size.Small" Color="Color.Warning" />
                     </MudTooltip>
                 }
             </MudTd>
-            <MudTd DataLabel="Art">
+            <MudTd DataLabel="@L["HeaderType"]">
                 @if (context.TypeName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                 }
                 else
                 {
@@ -137,17 +137,17 @@ else
                 }
             </MudTd>
             <MudTd>
-                <MudTooltip Text="Löschen">
+                <MudTooltip Text="@L["DeleteTooltip"]">
                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                    Size="Size.Small"
                                    OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@($"{context.Name} löschen")" />
+                                   aria-label="@L["DeleteAria", context.Name]" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                Kein Achievement passt zur Suche.
+                @L["NoRecords"]
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -162,8 +162,8 @@ else
     private Guid? _typeFilter;
 
     private string Subtitle => _achievements is null
-        ? "Wird geladen …"
-        : $"{_achievements.Count} Achievement(s)";
+        ? L["Loading"]
+        : L["SubtitleCount", _achievements.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -207,10 +207,10 @@ else
     private async Task DeleteAsync(AchievementListRow row)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Achievement löschen",
-            $"„{row.Name}“ wird mit Feldwerten, Bedingungen und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -218,7 +218,7 @@ else
         }
 
         await Achievements.DeleteAchievementAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Es gibt keinen Sound mit dieser GUID. Vielleicht wurde er gelöscht.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="LabelName" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="LabelDescription" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="LabelType" xml:space="preserve">
+    <value>Audio-Art</value>
+  </data>
+  <data name="TypeHelperText" xml:space="preserve">
+    <value>Über die Art kommen eigene Felder dazu, etwa Lautstärke oder Loop.</value>
+  </data>
+  <data name="SectionListen" xml:space="preserve">
+    <value>Anhören</value>
+  </data>
+  <data name="NoAudioFilesHint" xml:space="preserve">
+    <value>Noch keine Audiodatei. MP3, OGG oder WAV werden unten im Dateien-Abschnitt hochgeladen.</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für Angaben, die nur dieser eine Sound braucht.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="LabelGuid" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Angelegt</value>
+  </data>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>Sound</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neuer Sound</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Sound ohne Namen</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Sound löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit Feldwerten, individuellen Feldern und allen Audiodateien gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Sound gelöscht.</value>
+  </data>
+</root>

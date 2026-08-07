@@ -5,21 +5,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<FactionList> L
 
-<PageTitle>Fraktionen – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/factions/arten">
-            Fraktions-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/factions/neu">
-            Neue Fraktion
+            @L["NewFaction"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -32,13 +33,12 @@ else if (_factions.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Flag" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Fraktionen</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Fraktionen bauen auf den NPCs auf: Mitglieder kommen aus dem NPC-Modul und können
-            je Fraktion einen Rang bekommen. Gebiete entstehen später im Karten-Modul.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/factions/neu">
-            Erste Fraktion
+            @L["FirstFaction"]
         </MudButton>
     </div>
 }
@@ -47,7 +47,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -58,7 +58,7 @@ else
 
             <MudSelect T="Guid?"
                        @bind-Value="_typeFilter"
-                       Label="Art"
+                       Label="@L["TypeFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
@@ -70,7 +70,7 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_factions.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _factions.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -84,32 +84,32 @@ else
               RowClass="cursor-pointer">
         <HeaderContent>
             <MudTh Style="width:56px;"></MudTh>
-            <MudTh>Name</MudTh>
-            <MudTh>Beschreibung</MudTh>
-            <MudTh>Mitglieder</MudTh>
-            <MudTh>Art</MudTh>
+            <MudTh>@L["HeaderName"]</MudTh>
+            <MudTh>@L["HeaderDescription"]</MudTh>
+            <MudTh>@L["HeaderMembers"]</MudTh>
+            <MudTh>@L["HeaderType"]</MudTh>
             <MudTh Style="width:56px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Sprite">
+            <MudTd DataLabel="@L["HeaderSprite"]">
                 <AssetThumbnail AssetId="context.PrimaryAssetId"
                                 Size="Size.Small"
                                 Alt="@context.Name"
                                 FallbackIcon="@Icons.Material.Filled.Flag" />
             </MudTd>
-            <MudTd DataLabel="Name">
+            <MudTd DataLabel="@L["HeaderName"]">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>
-            <MudTd DataLabel="Beschreibung">
+            <MudTd DataLabel="@L["HeaderDescription"]">
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@Shorten(context.Description)</MudText>
             </MudTd>
-            <MudTd DataLabel="Mitglieder">
+            <MudTd DataLabel="@L["HeaderMembers"]">
                 <MudText Typo="Typo.body2">@context.MemberCount</MudText>
             </MudTd>
-            <MudTd DataLabel="Art">
+            <MudTd DataLabel="@L["HeaderType"]">
                 @if (context.TypeName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                 }
                 else
                 {
@@ -117,17 +117,17 @@ else
                 }
             </MudTd>
             <MudTd>
-                <MudTooltip Text="Löschen">
+                <MudTooltip Text="@L["DeleteTooltip"]">
                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                    Size="Size.Small"
                                    OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@($"{context.Name} löschen")" />
+                                   aria-label="@L["DeleteAria", context.Name]" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                Keine Fraktion passt zur Suche.
+                @L["NoRecords"]
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -142,8 +142,8 @@ else
     private Guid? _typeFilter;
 
     private string Subtitle => _factions is null
-        ? "Wird geladen …"
-        : $"{_factions.Count} Fraktion(en)";
+        ? L["Loading"]
+        : L["SubtitleCount", _factions.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -187,10 +187,10 @@ else
     private async Task DeleteAsync(FactionListRow row)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Fraktion löschen",
-            $"„{row.Name}“ wird mit Mitgliederliste, Feldwerten und Sprites gelöscht. Die NPCs selbst bleiben erhalten.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -198,7 +198,7 @@ else
         }
 
         await Factions.DeleteFactionAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 

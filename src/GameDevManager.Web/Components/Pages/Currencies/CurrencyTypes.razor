@@ -1,32 +1,33 @@
 @page "/modules/currencies/arten"
+@inject IStringLocalizer<CurrencyTypes> L
 
-<PageTitle>Währungs-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Währungs-Arten"
-              Subtitle="Name und Zeichen stehen fest an der Währung — alles Weitere definieren die Felder der Art."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/currencies">Zu den Währungen</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/currencies">@L["ToCurrencies"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Currencies"
-                    EntityNoun="Währung"
-                    EmptyTitle="Noch keine Währungs-Arten"
-                    EmptyHint="Über Arten lassen sich Angaben ergänzen, die die Währung selbst nicht kennt — etwa ein Wechselkurs zur Leitwährung oder die Fraktion, die sie ausgibt." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Currencies);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 

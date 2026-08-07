@@ -6,15 +6,16 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<RecipeEditor> L
 
-<PageTitle>@PageHeading – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
 @if (_notFound)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">
-        Es gibt kein Rezept mit dieser GUID. Vielleicht wurde es gelöscht.
+        @L["NotFound"]
     </MudAlert>
-    <MudButton Variant="Variant.Outlined" Href="/modules/crafting">Zurück zur Übersicht</MudButton>
+    <MudButton Variant="Variant.Outlined" Href="/modules/crafting">@L["BackToList"]</MudButton>
 }
 else if (_context is null)
 {
@@ -24,13 +25,13 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Subtitle="@(_context.IsNew ? L["NotSavedYet"] : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
-                    Ungespeicherte Änderungen
+                    @L["UnsavedChanges"]
                 </MudChip>
             }
             @if (!_context.IsNew)
@@ -39,16 +40,16 @@ else
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
-                    Löschen
+                    @L["Delete"]
                 </MudButton>
             }
-            <MudButton Variant="Variant.Outlined" Href="/modules/crafting">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/crafting">@L["Cancel"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
                        OnClick="SaveAsync">
-                Speichern
+                @L["Save"]
             </MudButton>
         </Actions>
     </ModuleHeader>
@@ -56,8 +57,8 @@ else
     @if (_items.Count == 0)
     {
         <MudAlert Severity="Severity.Info" Class="mb-4">
-            Es gibt noch keine Items. Ein Rezept braucht welche —
-            <MudLink Href="/modules/items" Color="Color.Primary">jetzt Items anlegen</MudLink>.
+            @L["NoItemsHint"]
+            <MudLink Href="/modules/items" Color="Color.Primary">@L["NoItemsLink"]</MudLink>.
         </MudAlert>
     }
 
@@ -67,13 +68,13 @@ else
 
                 @* ------------------------------------------------------------- Stammdaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionMasterData"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudTextField Value="_context.Entity.Name"
                                       ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
                                       T="string"
-                                      Label="Name *"
+                                      Label="@L["NameLabel"]"
                                       Variant="Variant.Outlined"
                                       Immediate="true"
                                       HelperText="@NameHint" />
@@ -81,17 +82,17 @@ else
                         <MudTextField Value="_context.Entity.Description"
                                       ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
                                       T="string"
-                                      Label="Beschreibung"
+                                      Label="@L["DescriptionLabel"]"
                                       Variant="Variant.Outlined"
                                       Lines="2" />
 
                         <MudSelect T="Guid?"
                                    Value="_context.Entity.ContentTypeId"
                                    ValueChanged="ChangeType"
-                                   Label="Rezept-Art"
+                                   Label="@L["TypeLabel"]"
                                    Variant="Variant.Outlined"
                                    Clearable="true"
-                                   HelperText="Über die Art kommen eigene Felder dazu, etwa Dauer oder Werkbank.">
+                                   HelperText="@L["TypeHelper"]">
                             @foreach (var type in _context.AvailableTypes)
                             {
                                 <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
@@ -102,13 +103,13 @@ else
 
                 @* ---------------------------------------------------------------- Ergebnis *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Ergebnis</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionOutput"]</MudText>
 
                     <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
                         <MudNumericField T="int"
                                          Value="_context.Entity.OutputQuantity"
                                          ValueChanged="@((int quantity) => Touch(() => _context.Entity.OutputQuantity = quantity))"
-                                         Label="Menge"
+                                         Label="@L["QuantityLabel"]"
                                          Variant="Variant.Outlined"
                                          Min="1"
                                          Style="max-width:110px;" />
@@ -119,7 +120,7 @@ else
                                              ValueChanged="SetOutputItem"
                                              SearchFunc="SearchItemsAsync"
                                              ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
-                                             Label="Hergestelltes Item"
+                                             Label="@L["OutputItemLabel"]"
                                              Variant="Variant.Outlined"
                                              Clearable="true"
                                              ResetValueOnEmptyText="true"
@@ -137,20 +138,19 @@ else
                 @* ---------------------------------------------------------------- Zutaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary">Zutaten</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionIngredients"]</MudText>
                         <MudButton StartIcon="@Icons.Material.Filled.Add"
                                    Size="Size.Small"
                                    Disabled="@(_items.Count == 0)"
                                    OnClick="AddIngredient">
-                            Zutat
+                            @L["AddIngredient"]
                         </MudButton>
                     </MudStack>
 
                     @if (_context.Entity.Ingredients.Count == 0)
                     {
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            Noch keine Zutaten. Ein Rezept ohne Zutaten ist zulässig — etwa für Dinge,
-                            die ohne Material entstehen.
+                            @L["NoIngredients"]
                         </MudText>
                     }
                     else
@@ -162,7 +162,7 @@ else
                                     <MudNumericField T="int"
                                                      Value="ingredient.Quantity"
                                                      ValueChanged="@((int quantity) => Touch(() => ingredient.Quantity = quantity))"
-                                                     Label="Menge"
+                                                     Label="@L["QuantityLabel"]"
                                                      Variant="Variant.Outlined"
                                                      Margin="Margin.Dense"
                                                      Min="1"
@@ -174,7 +174,7 @@ else
                                                          ValueChanged="@((EntitySummary? entity) => SetIngredientItem(ingredient, entity))"
                                                          SearchFunc="SearchItemsAsync"
                                                          ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
-                                                         Label="Item"
+                                                         Label="@L["IngredientItemLabel"]"
                                                          Variant="Variant.Outlined"
                                                          Margin="Margin.Dense"
                                                          Clearable="true"
@@ -183,11 +183,11 @@ else
                                                          MaxItems="50" />
                                     </div>
 
-                                    <MudTooltip Text="Zutat entfernen">
+                                    <MudTooltip Text="@L["RemoveIngredient"]">
                                         <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                        Size="Size.Small"
                                                        OnClick="@(() => RemoveIngredient(ingredient))"
-                                                       aria-label="Zutat entfernen" />
+                                                       aria-label="@L["RemoveIngredient"]" />
                                     </MudTooltip>
                                 </MudStack>
                             }
@@ -206,7 +206,7 @@ else
                                         Context="_context"
                                         ModuleKey="@ModuleKeys.Crafting"
                                         TypesRoute="/modules/crafting/arten"
-                                        IndividualHint="Für Angaben, die nur dieses eine Rezept braucht."
+                                        IndividualHint="@L["IndividualHint"]"
                                         OnValueChanged="MarkDirty"
                                         OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
                 </div>
@@ -216,17 +216,17 @@ else
         <MudItem xs="12" md="4">
             <MudStack Spacing="4">
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidCaption"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CreatedCaption"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@L["UpdatedCaption"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
                     }
                 </MudPaper>
@@ -235,16 +235,16 @@ else
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
-                            <MudText Typo="Typo.overline" Color="Color.Secondary">Crafting-Baum</MudText>
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionTree"]</MudText>
                             <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
                                            Size="Size.Small"
                                            Href="@($"/modules/crafting/baum/{outputId}")"
-                                           aria-label="Baum auf eigener Seite öffnen" />
+                                           aria-label="@L["OpenTreeAria"]" />
                         </MudStack>
 
                         @if (_tree is null)
                         {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">Wird geladen …</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Loading"]</MudText>
                         }
                         else
                         {
@@ -281,10 +281,10 @@ else
 
     private string PageHeading => _context switch
     {
-        null => "Rezept",
-        { IsNew: true } => "Neues Rezept",
+        null => L["PageHeadingDefault"],
+        { IsNew: true } => L["PageHeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "Rezept ohne Namen"
+        _ => L["PageHeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -294,7 +294,7 @@ else
 
     private string? NameHint =>
         _context is { IsNew: true } && OutputItem is { } item && string.IsNullOrWhiteSpace(_context.Entity.Name)
-            ? $"Vorschlag: „{item.Name}“"
+            ? L["NameSuggestion", item.Name]
             : null;
 
     protected override async Task OnParametersSetAsync()
@@ -418,7 +418,7 @@ else
             await Crafting.SaveRecipeAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -451,10 +451,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Rezept löschen",
-            $"„{_context.Entity.Name}“ wird mit seinen Zutaten und Feldwerten gelöscht. Die beteiligten Items bleiben.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -462,7 +462,7 @@ else
         }
 
         await Crafting.DeleteRecipeAsync(_context.Entity.Id);
-        Snackbar.Add("Rezept gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/crafting");
     }
 

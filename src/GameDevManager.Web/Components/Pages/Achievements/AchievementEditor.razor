@@ -6,15 +6,16 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<AchievementEditor> L
 
-<PageTitle>@PageHeading – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
 @if (_notFound)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">
-        Es gibt kein Achievement mit dieser GUID. Vielleicht wurde es gelöscht.
+        @L["NotFoundMessage"]
     </MudAlert>
-    <MudButton Variant="Variant.Outlined" Href="/modules/achievements">Zurück zur Übersicht</MudButton>
+    <MudButton Variant="Variant.Outlined" Href="/modules/achievements">@L["BackToList"]</MudButton>
 }
 else if (_context is null)
 {
@@ -24,13 +25,13 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Subtitle="@(_context.IsNew ? L["NotSavedYet"] : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
-                    Ungespeicherte Änderungen
+                    @L["UnsavedChanges"]
                 </MudChip>
             }
             @if (!_context.IsNew)
@@ -39,16 +40,16 @@ else
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
-                    Löschen
+                    @L["Delete"]
                 </MudButton>
             }
-            <MudButton Variant="Variant.Outlined" Href="/modules/achievements">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/achievements">@L["Cancel"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
                        OnClick="SaveAsync">
-                Speichern
+                @L["Save"]
             </MudButton>
         </Actions>
     </ModuleHeader>
@@ -59,21 +60,21 @@ else
 
                 @* ------------------------------------------------------------- Stammdaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionBasics"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudTextField Value="_context.Entity.Name"
                                       ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
                                       T="string"
-                                      Label="Name *"
+                                      Label="@L["NameLabel"]"
                                       Variant="Variant.Outlined"
                                       Immediate="true" />
 
                         <MudTextField Value="_context.Entity.Description"
                                       ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
                                       T="string"
-                                      Label="Beschreibung"
-                                      HelperText="Was der Spieler tun muss — oder die Umschreibung, wenn es versteckt ist."
+                                      Label="@L["DescriptionLabel"]"
+                                      HelperText="@L["DescriptionHelper"]"
                                       Variant="Variant.Outlined"
                                       Lines="3" />
 
@@ -82,12 +83,12 @@ else
                                        Value="_context.Entity.IsSecret"
                                        ValueChanged="@((bool on) => Touch(() => _context.Entity.IsSecret = on))"
                                        Color="Color.Primary"
-                                       Label="Verstecktes Achievement" />
+                                       Label="@L["SecretSwitch"]" />
 
                             <MudSelect T="Guid?"
                                        Value="_context.Entity.ContentTypeId"
                                        ValueChanged="ChangeType"
-                                       Label="Achievement-Art"
+                                       Label="@L["TypeLabel"]"
                                        Variant="Variant.Outlined"
                                        Clearable="true"
                                        Style="max-width:240px;">
@@ -105,13 +106,13 @@ else
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
                         <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">
-                            Freischaltung@(_unlockCount > 0 ? $" ({_unlockCount})" : "")
+                            @(_unlockCount > 0 ? L["SectionUnlockCount", _unlockCount] : L["SectionUnlock"])
                         </MudText>
 
                         <ConditionEditor OwnerId="_context.Entity.Id"
                                          OwnerModuleKey="@ModuleKeys.Achievements"
                                          Slot="@ConditionSlots.Unlock"
-                                         EmptyHint="Ohne Bedingung weiß das Spiel nicht, wann das Achievement freigeschaltet wird."
+                                         EmptyHint="@L["UnlockEmptyHint"]"
                                          OnSaved="@((int count) => _unlockCount = count)" />
                     </MudPaper>
                 }
@@ -127,7 +128,7 @@ else
                                         Context="_context"
                                         ModuleKey="@ModuleKeys.Achievements"
                                         TypesRoute="/modules/achievements/arten"
-                                        IndividualHint="Für Angaben, die nur dieses eine Achievement braucht."
+                                        IndividualHint="@L["IndividualHint"]"
                                         OnValueChanged="MarkDirty"
                                         OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
                 </div>
@@ -137,17 +138,17 @@ else
         <MudItem xs="12" md="4">
             <MudStack Spacing="4">
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidLabel"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CreatedLabel"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@L["UpdatedLabel"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
                     }
                 </MudPaper>
@@ -178,10 +179,10 @@ else
 
     private string PageHeading => _context switch
     {
-        null => "Achievement",
-        { IsNew: true } => "Neues Achievement",
+        null => L["HeadingFallback"],
+        { IsNew: true } => L["HeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "Achievement ohne Namen"
+        _ => L["HeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -245,7 +246,7 @@ else
             await Achievements.SaveAchievementAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -276,10 +277,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Achievement löschen",
-            $"„{_context.Entity.Name}“ wird mit Feldwerten, individuellen Feldern, Bedingungen und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -287,7 +288,7 @@ else
         }
 
         await Achievements.DeleteAchievementAsync(_context.Entity.Id);
-        Snackbar.Add("Achievement gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/achievements");
     }
 
