@@ -21,6 +21,9 @@ public class AssetStorageOptions
     /// </summary>
     public List<string> AllowedMimeTypes { get; set; } =
     [
+        "audio/mpeg",
+        "audio/ogg",
+        "audio/wav",
         "image/png",
         "image/jpeg",
         "image/gif",

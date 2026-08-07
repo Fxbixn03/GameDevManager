@@ -16,6 +16,9 @@ public static class AssetMimeTypes
             ".webp" => "image/webp",
             ".bmp" => "image/bmp",
             ".svg" => "image/svg+xml",
+            ".mp3" => "audio/mpeg",
+            ".ogg" => "audio/ogg",
+            ".wav" => "audio/wav",
             _ => null
         };
 }

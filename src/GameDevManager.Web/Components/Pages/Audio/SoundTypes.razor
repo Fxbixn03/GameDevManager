@@ -1,0 +1,34 @@
+@page "/modules/audio/arten"
+
+<PageTitle>Audio-Arten – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="Audio-Arten"
+              Subtitle="Die Dateien hängen als Assets am Sound — alles Weitere definieren die Felder der Art."
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/audio">Zu den Sounds</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddAsync">
+            Neue Art
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+<ContentTypeManager @ref="_manager"
+                    ModuleKey="@ModuleKeys.Audio"
+                    EntityNoun="Sound"
+                    EmptyTitle="Noch keine Audio-Arten"
+                    EmptyHint="Über Arten lassen sich Sounds einteilen — etwa Musik, Ambiente oder UI — und um eigene Felder wie Lautstärke oder Loop ergänzen." />
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Audio);
+
+    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+
+    private ContentTypeManager? _manager;
+
+    private Task AddAsync() => _manager?.AddTypeAsync() ?? Task.CompletedTask;
+}

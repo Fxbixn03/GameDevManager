@@ -43,7 +43,7 @@ public static class ModuleRegistry
         new(ModuleKeys.Collectibles, "Sammelobjekte", Icons.Material.Filled.Collections, "Statuen, Notizen und andere Sammelobjekte", Implemented: true),
         new(ModuleKeys.Events, "Events", Icons.Material.Filled.Event, "Zufalls-Events mit Spawns, Loot und Orten", Implemented: true),
         new(ModuleKeys.Tags, "Tags", Icons.Material.Filled.Label, "Tags/Labels, modulübergreifend einsetzbar", Implemented: true),
-        new(ModuleKeys.Audio, "SFX/Audio", Icons.Material.Filled.MusicNote, "Sounds und Audio (noch offen)"),
+        new(ModuleKeys.Audio, "SFX/Audio", Icons.Material.Filled.MusicNote, "Sounds und Musik mit Audiodateien", Implemented: true),
         new(ModuleKeys.Cutscenes, "Cutscenes", Icons.Material.Filled.Movie, "Cutscenes (noch offen)"),
         new(ModuleKeys.Statistics, "Statistik", Icons.Material.Filled.BarChart, "Kennzahlen und Health Checks über alle Module")
     ];

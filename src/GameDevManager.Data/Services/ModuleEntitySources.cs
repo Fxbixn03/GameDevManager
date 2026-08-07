@@ -550,6 +550,26 @@ public sealed class CollectibleEntitySource : ModuleEntitySource<Collectible>
 }
 
 /// <summary>
+/// Sounds für die modulübergreifenden Dienste.
+/// </summary>
+public sealed class SoundEffectEntitySource : ModuleEntitySource<SoundEffect>
+{
+    public override string ModuleKey => ModuleKeys.Audio;
+
+    protected override DbSet<SoundEffect> Set(GameDevManagerDbContext db) => db.SoundEffects;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<SoundEffect> query) =>
+        query.Select(sound => new SearchHit(
+            sound.Id,
+            ModuleKeys.Audio,
+            SearchHitKind.Entity,
+            sound.Name,
+            db.Assets.Count(a => a.OwnerEntityId == sound.Id && a.MimeType.StartsWith("audio/")) + " Datei(en)",
+            db.Assets.Where(a => a.OwnerEntityId == sound.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

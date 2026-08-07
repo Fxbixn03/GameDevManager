@@ -352,6 +352,18 @@ public sealed record ContentTagRow(
     IReadOnlyList<string> ModuleKeys,
     int AssignmentCount);
 
+/// <summary>Eine Zeile der Audio-Übersicht.</summary>
+/// <param name="AudioFileCount">Wie viele Audiodateien als Assets an dem Sound hängen.</param>
+public sealed record SoundEffectListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    int AudioFileCount,
+    Guid? ContentTypeId,
+    string? TypeName,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,
