@@ -37,6 +37,10 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<DiplomaticRelation> DiplomaticRelations => Set<DiplomaticRelation>();
 
+    public DbSet<StoryEntry> StoryEntries => Set<StoryEntry>();
+
+    public DbSet<StoryParticipant> StoryParticipants => Set<StoryParticipant>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -300,6 +304,27 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             // Trägt die Frage „in welchen Beziehungen steckt diese Fraktion?“ — für beide Seiten.
             entity.HasIndex(r => r.FactionAId);
             entity.HasIndex(r => r.FactionBId);
+        });
+
+        ConfigureContentEntity<StoryEntry>(modelBuilder);
+
+        modelBuilder.Entity<StoryEntry>(entity =>
+        {
+            // Der Zeitstreifen lädt immer projektweise in dieser Reihenfolge.
+            entity.HasIndex(s => new { s.GameProjectId, s.SortOrder });
+        });
+
+        modelBuilder.Entity<StoryParticipant>(entity =>
+        {
+            entity.Property(p => p.TargetModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+
+            entity.HasOne(p => p.StoryEntry)
+                .WithMany(s => s.Participants)
+                .HasForeignKey(p => p.StoryEntryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „an welchen Story-Abschnitten ist diese Entität beteiligt?“.
+            entity.HasIndex(p => p.TargetEntityId);
         });
 
         ConfigureContentEntity<LootTable>(modelBuilder);

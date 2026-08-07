@@ -286,6 +286,39 @@ public sealed class DiplomaticRelationEntitySource : ModuleEntitySource<Diplomat
 }
 
 /// <summary>
+/// Story-Abschnitte für die modulübergreifenden Dienste. Ihre Beteiligten verweisen über
+/// eigene Spalten auf beliebige andere Entitäten.
+/// </summary>
+public sealed class StoryEntrySource : ModuleEntitySource<StoryEntry>
+{
+    public override string ModuleKey => ModuleKeys.Story;
+
+    protected override DbSet<StoryEntry> Set(GameDevManagerDbContext db) => db.StoryEntries;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<StoryEntry> query) =>
+        query.Select(entry => new SearchHit(
+            entry.Id,
+            ModuleKeys.Story,
+            SearchHitKind.Entity,
+            entry.Name,
+            "Abschnitt " + (entry.SortOrder + 1),
+            db.Assets.Where(a => a.OwnerEntityId == entry.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+
+    public override Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct) =>
+        db.StoryParticipants
+            .AsNoTracking()
+            .Where(participant => participant.TargetEntityId == entityId)
+            .Select(participant => new EntityReferenceHit(
+                participant.StoryEntryId,
+                ModuleKeys.Story,
+                participant.StoryEntry!.Name,
+                "Beteiligt an der Story"))
+            .ToListAsync(ct);
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

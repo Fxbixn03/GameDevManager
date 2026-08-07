@@ -226,6 +226,19 @@ public sealed record DiplomacyGraph(
     IReadOnlyList<DiplomacyGraphNode> Nodes,
     IReadOnlyList<DiplomacyGraphEdge> Edges);
 
+/// <summary>Eine Zeile bzw. Station des Story-Zeitstreifens.</summary>
+public sealed record StoryListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    int SortOrder,
+    bool HasBody,
+    Guid? ContentTypeId,
+    string? TypeName,
+    int ParticipantCount,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,

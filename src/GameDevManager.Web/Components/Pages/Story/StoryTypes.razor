@@ -1,0 +1,34 @@
+@page "/modules/story/arten"
+
+<PageTitle>Abschnitts-Arten – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="Abschnitts-Arten"
+              Subtitle="Text, Reihenfolge und Beteiligte stehen fest am Abschnitt — alles Weitere definieren die Felder der Art."
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/story">Zum Zeitstreifen</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddAsync">
+            Neue Art
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+<ContentTypeManager @ref="_manager"
+                    ModuleKey="@ModuleKeys.Story"
+                    EntityNoun="Story-Abschnitt"
+                    EmptyTitle="Noch keine Abschnitts-Arten"
+                    EmptyHint="Über Arten lassen sich Abschnitte unterscheiden — etwa Akt, Kapitel oder Rückblende — und um eigene Felder ergänzen." />
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Story);
+
+    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+
+    private ContentTypeManager? _manager;
+
+    private Task AddAsync() => _manager?.AddTypeAsync() ?? Task.CompletedTask;
+}

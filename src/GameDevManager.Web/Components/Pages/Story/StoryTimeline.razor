@@ -1,0 +1,161 @@
+@page "/modules/story"
+@inject StoryService Story
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Story – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/story/arten">
+            Abschnitts-Arten
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/story/neu">
+            Neuer Abschnitt
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_entries is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_entries.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.AutoStories" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">Noch keine Story</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Die Story wird in Abschnitten geschrieben und hier als Zeitstreifen angezeigt.
+            Beteiligte NPCs, Fraktionen und Orte werden per Referenz verknüpft.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/story/neu">
+            Erster Abschnitt
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudTimeline TimelinePosition="TimelinePosition.Start" Class="ml-2">
+        @foreach (var entry in _entries)
+        {
+            <MudTimelineItem Color="Color.Primary" Size="Size.Small" Elevation="0">
+                <ItemContent>
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-2">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+                            <AssetThumbnail AssetId="entry.PrimaryAssetId"
+                                            Size="Size.Small"
+                                            Alt="@entry.Name"
+                                            FallbackIcon="@Icons.Material.Filled.AutoStories" />
+
+                            <MudLink Href="@($"/modules/story/{entry.Id}")" Typo="Typo.h6">
+                                @entry.Name
+                            </MudLink>
+
+                            @if (entry.TypeName is not null)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@entry.TypeName</MudChip>
+                            }
+
+                            <MudSpacer />
+
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @(entry.ParticipantCount) Beteiligte
+                            </MudText>
+
+                            <MudTooltip Text="Nach oben">
+                                <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
+                                               Size="Size.Small"
+                                               Disabled="@(entry == _entries.First())"
+                                               OnClick="@(() => MoveAsync(entry, up: true))"
+                                               aria-label="@($"{entry.Name} nach oben")" />
+                            </MudTooltip>
+                            <MudTooltip Text="Nach unten">
+                                <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward"
+                                               Size="Size.Small"
+                                               Disabled="@(entry == _entries.Last())"
+                                               OnClick="@(() => MoveAsync(entry, up: false))"
+                                               aria-label="@($"{entry.Name} nach unten")" />
+                            </MudTooltip>
+                            <MudTooltip Text="Löschen">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteAsync(entry))"
+                                               aria-label="@($"{entry.Name} löschen")" />
+                            </MudTooltip>
+                        </MudStack>
+
+                        @if (!string.IsNullOrWhiteSpace(entry.Description))
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+                                @Shorten(entry.Description)
+                            </MudText>
+                        }
+
+                        @if (!entry.HasBody)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                Noch kein Story-Text geschrieben.
+                            </MudText>
+                        }
+                    </MudPaper>
+                </ItemContent>
+            </MudTimelineItem>
+        }
+    </MudTimeline>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Story);
+
+    private List<StoryListRow>? _entries;
+
+    private string Subtitle => _entries is null
+        ? "Wird geladen …"
+        : $"{_entries.Count} Abschnitt(e) im Zeitstreifen";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _entries = await Story.GetEntriesAsync(projectId);
+    }
+
+    private async Task MoveAsync(StoryListRow entry, bool up)
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        await Story.MoveAsync(projectId, entry.Id, up);
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(StoryListRow entry)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Story-Abschnitt löschen",
+            $"„{entry.Name}“ wird mit Text, Beteiligten, Feldwerten und Sprites gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Story.DeleteEntryAsync(entry.Id);
+        Snackbar.Add($"„{entry.Name}“ wurde gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+
+    private static string Shorten(string? text) =>
+        string.IsNullOrWhiteSpace(text)
+            ? "—"
+            : text.Length <= 200 ? text : string.Concat(text.AsSpan(0, 200), "…");
+}

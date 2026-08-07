@@ -1,0 +1,440 @@
+@page "/modules/story/neu"
+@page "/modules/story/{Id:guid}"
+@inject StoryService Story
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@PageHeading – GameDevManager</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        Es gibt keinen Story-Abschnitt mit dieser GUID. Vielleicht wurde er gelöscht.
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/story">Zurück zum Zeitstreifen</MudButton>
+}
+else if (_context is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@PageHeading"
+                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            @if (_dirty)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                    Ungespeicherte Änderungen
+                </MudChip>
+            }
+            @if (!_context.IsNew)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="DeleteAsync">
+                    Löschen
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Href="/modules/story">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_saving"
+                       OnClick="SaveAsync">
+                Speichern
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+
+                @* ------------------------------------------------------------- Stammdaten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudTextField Value="_context.Entity.Name"
+                                      ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
+                                      T="string"
+                                      Label="Name *"
+                                      Variant="Variant.Outlined"
+                                      Immediate="true" />
+
+                        <MudTextField Value="_context.Entity.Description"
+                                      ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
+                                      T="string"
+                                      Label="Kurzfassung"
+                                      HelperText="Erscheint im Zeitstreifen und in der Suche."
+                                      Variant="Variant.Outlined"
+                                      Lines="2" />
+
+                        <MudSelect T="Guid?"
+                                   Value="_context.Entity.ContentTypeId"
+                                   ValueChanged="ChangeType"
+                                   Label="Abschnitts-Art"
+                                   Variant="Variant.Outlined"
+                                   Clearable="true"
+                                   HelperText="Über die Art kommen eigene Felder dazu, etwa Akt oder Kapitel.">
+                            @foreach (var type in _context.AvailableTypes)
+                            {
+                                <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudStack>
+                </MudPaper>
+
+                @* ------------------------------------------------------------- Story-Text *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Story-Text</MudText>
+
+                    <MudTextField Value="_context.Entity.Body"
+                                  ValueChanged="@((string text) => Touch(() => _context.Entity.Body = text))"
+                                  T="string"
+                                  Label="Text"
+                                  Placeholder="Hier wird die Story geschrieben …"
+                                  Variant="Variant.Outlined"
+                                  Lines="14" />
+                </MudPaper>
+
+                @* ------------------------------------------------------------- Beteiligte *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">Beteiligte</MudText>
+                        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                   Size="Size.Small"
+                                   OnClick="AddParticipant">
+                            Beteiligter
+                        </MudButton>
+                    </MudStack>
+
+                    @if (_context.Entity.Participants.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Noch niemand beteiligt. NPCs, Fraktionen und Karten-Orte werden
+                            per Referenz verknüpft und tauchen dann in deren Referenzansicht auf.
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudStack Spacing="0">
+                            @foreach (var participant in _context.Entity.Participants)
+                            {
+                                <div class="pa-2 gdm-field-row">
+                                    <MudGrid Spacing="2">
+                                        <MudItem xs="12" sm="4">
+                                            <MudSelect T="string"
+                                                       Value="participant.TargetModuleKey"
+                                                       ValueChanged="@((string key) => Touch(() => ChangeParticipantModule(participant, key)))"
+                                                       Label="Modul"
+                                                       Variant="Variant.Outlined"
+                                                       Margin="Margin.Dense">
+                                                @foreach (var module in ParticipantModules)
+                                                {
+                                                    <MudSelectItem T="string" Value="@module.Id">@module.Name</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </MudItem>
+
+                                        <MudItem xs="12" sm="6">
+                                            <MudAutocomplete T="EntitySummary"
+                                                             Value="@EntityFor(participant)"
+                                                             ValueChanged="@((EntitySummary? e) => Touch(() => participant.TargetEntityId = e?.Id ?? Guid.Empty))"
+                                                             SearchFunc="@((s, ct) => SearchEntitiesAsync(participant.TargetModuleKey, s, ct))"
+                                                             ToStringFunc="@(e => e?.Name ?? string.Empty)"
+                                                             Label="Entität"
+                                                             Variant="Variant.Outlined"
+                                                             Margin="Margin.Dense"
+                                                             Clearable="true"
+                                                             ResetValueOnEmptyText="true"
+                                                             CoerceValue="false"
+                                                             MaxItems="50" />
+                                        </MudItem>
+
+                                        <MudItem xs="12" sm="2" Class="d-flex align-center justify-end">
+                                            <MudTooltip Text="Beteiligten entfernen">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => RemoveParticipant(participant))"
+                                                               aria-label="Beteiligten entfernen" />
+                                            </MudTooltip>
+                                        </MudItem>
+                                    </MudGrid>
+                                </div>
+                            }
+                        </MudStack>
+                    }
+                </MudPaper>
+
+                @* ------------------------------------------------------------------ Sprites *@
+                <AssetSpritePanel ModuleKey="@ModuleKeys.Story"
+                                  EntityId="_context.Entity.Id"
+                                  Disabled="_context.IsNew" />
+
+                @* ------------------------------------------------------------------- Felder *@
+                <div>
+                    <ContentFieldsPanel TEntity="StoryEntry"
+                                        Context="_context"
+                                        ModuleKey="@ModuleKeys.Story"
+                                        TypesRoute="/modules/story/arten"
+                                        IndividualHint="Für Angaben, die nur dieser eine Abschnitt braucht."
+                                        OnValueChanged="MarkDirty"
+                                        OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
+                </div>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <EntityIdChip Id="_context.Entity.Id" />
+
+                    <MudDivider Class="my-3" />
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Position im Zeitstreifen</MudText>
+                    <MudText Typo="Typo.body2">@(_context.Entity.SortOrder + 1)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        Umsortiert wird direkt im Zeitstreifen.
+                    </MudText>
+
+                    @if (!_context.IsNew)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                    }
+                </MudPaper>
+
+                @if (!_context.IsNew)
+                {
+                    <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Story);
+
+    /// <summary>Die Module, deren Entitäten laut Konzept an der Story beteiligt sind.</summary>
+    private static readonly ModuleDefinition[] ParticipantModules =
+    [
+        ModuleRegistry.Get(ModuleKeys.Npcs),
+        ModuleRegistry.Get(ModuleKeys.Factions),
+        ModuleRegistry.Get(ModuleKeys.Maps)
+    ];
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private ContentEditContext<StoryEntry>? _context;
+    private ReferencesPanel? _referencesPanel;
+    private readonly Dictionary<string, List<EntitySummary>> _entitiesByModule = [];
+    private Guid? _loadedId;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+
+    private string PageHeading => _context switch
+    {
+        null => "Story-Abschnitt",
+        { IsNew: true } => "Neuer Abschnitt",
+        { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
+        _ => "Abschnitt ohne Namen"
+    };
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_context is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _notFound = false;
+        _dirty = false;
+        _context = null;
+
+        var projectId = await Project.GetCurrentIdAsync();
+
+        _entitiesByModule.Clear();
+        foreach (var module in ParticipantModules)
+        {
+            _entitiesByModule[module.Id] = await References.GetEntitiesAsync(projectId, module.Id);
+        }
+
+        _context = await Story.LoadForEditAsync(projectId, Id);
+
+        if (_context is null)
+        {
+            _notFound = true;
+        }
+    }
+
+    private List<EntitySummary> EntitiesOf(string moduleKey) =>
+        _entitiesByModule.GetValueOrDefault(moduleKey) ?? [];
+
+    private EntitySummary? EntityFor(StoryParticipant participant) =>
+        EntitiesOf(participant.TargetModuleKey).FirstOrDefault(e => e.Id == participant.TargetEntityId);
+
+    private Task<IEnumerable<EntitySummary>> SearchEntitiesAsync(
+        string moduleKey, string? search, CancellationToken ct)
+    {
+        var pool = EntitiesOf(moduleKey);
+
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? pool
+            : pool.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private void ChangeParticipantModule(StoryParticipant participant, string moduleKey)
+    {
+        participant.TargetModuleKey = moduleKey;
+        // Die alte Auswahl gehört zu einem anderen Modul und wäre jetzt irreführend.
+        participant.TargetEntityId = Guid.Empty;
+    }
+
+    private void AddParticipant() =>
+        Touch(() => _context!.Entity.Participants.Add(new StoryParticipant
+        {
+            StoryEntryId = _context.Entity.Id,
+            TargetModuleKey = ModuleKeys.Npcs,
+            TargetEntityId = Guid.Empty,
+            SortOrder = _context.Entity.Participants.Count
+        }));
+
+    private void RemoveParticipant(StoryParticipant participant) =>
+        Touch(() => _context!.Entity.Participants.Remove(participant));
+
+    private void ChangeType(Guid? contentTypeId) =>
+        Touch(() => _context!.Entity.ContentTypeId = contentTypeId);
+
+    private void Touch(Action change)
+    {
+        change();
+        MarkDirty();
+    }
+
+    private void MarkDirty() => _dirty = true;
+
+    private async Task SaveAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        // Leere Eingabezeilen sind ein Bedienschritt, kein Inhalt.
+        _context.Entity.Participants.RemoveAll(p => p.TargetEntityId == Guid.Empty);
+
+        _saving = true;
+
+        try
+        {
+            var wasNew = _context.IsNew;
+            await Story.SaveEntryAsync(_context);
+            _dirty = false;
+
+            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+
+            if (wasNew)
+            {
+                Navigation.NavigateTo($"/modules/story/{_context.Entity.Id}");
+                return;
+            }
+
+            if (_referencesPanel is not null)
+            {
+                await _referencesPanel.RefreshAsync();
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Story-Abschnitt löschen",
+            $"„{_context.Entity.Name}“ wird mit Text, Beteiligten, Feldwerten, individuellen Feldern und Sprites gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Story.DeleteEntryAsync(_context.Entity.Id);
+        Snackbar.Add("Story-Abschnitt gelöscht.", Severity.Success);
+        Navigation.NavigateTo("/modules/story");
+    }
+
+    /// <summary>
+    /// Lädt nach einer Änderung an den Felddefinitionen neu und behält dabei, was in der Maske
+    /// noch nicht gespeichert ist.
+    /// </summary>
+    private async Task ReloadKeepingChangesAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var entity = _context.Entity;
+        var wasDirty = _dirty;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var reloaded = await Story.LoadForEditAsync(projectId, entity.Id);
+
+        if (reloaded is null)
+        {
+            _notFound = true;
+            _context = null;
+            return;
+        }
+
+        reloaded.Entity.Name = entity.Name;
+        reloaded.Entity.Description = entity.Description;
+        reloaded.Entity.ContentTypeId = entity.ContentTypeId;
+        reloaded.Entity.Body = entity.Body;
+        reloaded.Entity.SortOrder = entity.SortOrder;
+        reloaded.Entity.Participants = entity.Participants;
+
+        _context = reloaded;
+        _dirty = wasDirty;
+    }
+}

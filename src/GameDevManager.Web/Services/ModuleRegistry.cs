@@ -32,7 +32,7 @@ public static class ModuleRegistry
         new(ModuleKeys.Diplomacy, "Diplomatie", Icons.Material.Filled.Handshake, "Allianzen und Feindschaften als Graph", Implemented: true),
         new(ModuleKeys.Maps, "Karten", Icons.Material.Filled.Map, "Welt- und Detailkarten mit Markern und Gebieten", Implemented: true),
         new(ModuleKeys.Dialogs, "Dialoge", Icons.Material.Filled.Chat, "Dialoge, Sprechblasen und Antwortmöglichkeiten", Implemented: true),
-        new(ModuleKeys.Story, "Story", Icons.Material.Filled.AutoStories, "Storyline im Zeitstreifen mit Verknüpfungen"),
+        new(ModuleKeys.Story, "Story", Icons.Material.Filled.AutoStories, "Storyline im Zeitstreifen mit Verknüpfungen", Implemented: true),
         new(ModuleKeys.Quests, "Quests", Icons.Material.Filled.Assignment, "Haupt-/Nebenmissionen und Events mit Bedingungen"),
         new(ModuleKeys.Assets, "Assets", Icons.Material.Filled.PhotoLibrary, "Sprite-Bibliothek über alle Entitäten", Implemented: true),
         new(ModuleKeys.Player, "Spieler", Icons.Material.Filled.Person, "Spielerfigur und Skilltrees"),

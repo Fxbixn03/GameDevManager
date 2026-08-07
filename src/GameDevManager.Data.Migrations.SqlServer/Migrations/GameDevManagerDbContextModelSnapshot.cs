@@ -1005,6 +1005,81 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("RecipeIngredients");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.StoryEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Body")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "SortOrder");
+
+                    b.ToTable("StoryEntries");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.StoryParticipant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StoryEntryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TargetEntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TargetModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoryEntryId");
+
+                    b.HasIndex("TargetEntityId");
+
+                    b.ToTable("StoryParticipants");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.TraderOffer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1391,6 +1466,35 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("Recipe");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.StoryEntry", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.StoryParticipant", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.StoryEntry", "StoryEntry")
+                        .WithMany("Participants")
+                        .HasForeignKey("StoryEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StoryEntry");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.TraderOffer", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.Npc", "Npc")
@@ -1462,6 +1566,11 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.Recipe", b =>
                 {
                     b.Navigation("Ingredients");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.StoryEntry", b =>
+                {
+                    b.Navigation("Participants");
                 });
 #pragma warning restore 612, 618
         }

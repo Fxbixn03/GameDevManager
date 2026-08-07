@@ -46,6 +46,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<NpcService>();
         services.AddScoped<FactionService>();
         services.AddScoped<DiplomacyService>();
+        services.AddScoped<StoryService>();
         services.AddScoped<LootService>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
@@ -62,6 +63,7 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<IModuleEntitySource, NpcEntitySource>();
         services.AddSingleton<IModuleEntitySource, FactionEntitySource>();
         services.AddSingleton<IModuleEntitySource, DiplomaticRelationEntitySource>();
+        services.AddSingleton<IModuleEntitySource, StoryEntrySource>();
         services.AddSingleton<IModuleEntitySource, LootTableEntitySource>();
         services.AddSingleton<IModuleEntitySource, MapEntitySource>();
         services.AddSingleton<IModuleEntitySource, DialogueEntitySource>();
