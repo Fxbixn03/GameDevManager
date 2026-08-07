@@ -21,19 +21,9 @@ Ein Verwaltungstool für die Spieleentwicklung. Damit baust du vor und während 
 
 GameDevManager richtet sich an Indie-Entwickler, die den fachlichen Teil ihres Spiels planen wollen: Items, NPCs, Quests, Dialoge, Karten, Fraktionen. Alles liegt an einem Ort und ist miteinander verknüpft, statt über verstreute Dokumente und Tabellen verteilt zu sein. Technische Dinge wie Code oder Engine-Konfiguration gehören bewusst nicht dazu.
 
-## Kernideen
+## Die Idee
 
-Ein paar Prinzipien ziehen sich durch alle Module.
-
-Das Dashboard zeigt die Module als Cards. Welche Cards zu sehen sind und wie sie angeordnet werden, stellt der Nutzer selbst ein. Eine Topbar listet alle Module und hebt das gerade aktive hervor.
-
-In fast jedem Modul kann der Nutzer eigene Arten anlegen, etwa die Item-Art "Waffe", und selbst festlegen, welche Felder dazu ausgefüllt werden. Einzelne Entitäten können darüber hinaus eigene Felder bekommen, zum Beispiel ein exotisches Item mit einer einzigartigen Funktion.
-
-Entitäten referenzieren einander über GUIDs. Zu jeder Entität gibt es eine Referenzansicht, die zeigt, wo sie überall verwendet wird: bei Händlern, in Quests, in Crafting-Rezepten, in Loot-Tables. Das funktioniert wie "Find All References" in Visual Studio.
-
-Bedingungen, etwa für Quests, Dialoge oder Shop-Angebote, laufen über ein gemeinsames System, das in allen Modulen gleich funktioniert.
-
-Exporte sind versioniert und diffbar. So bleibt nachvollziehbar, was ein Content-Update verändert hat. Änderungen im Tool selbst werden pro angemeldetem Benutzer protokolliert.
+Man legt seine Daten strukturiert während Planungsphasen an und kann diese später und im laufe der Entwicklung Versioniert in seine Gameengine importieren und fertige Game Objekte erhalten, welche nur noch benutzt werden müssen.
 
 ## Geplante Module
 
@@ -59,8 +49,8 @@ Exporte sind versioniert und diffbar. So bleibt nachvollziehbar, was ein Content
 | Tags | Zentrale Tag-Verwaltung, pro Modul konfigurierbar |
 | Asset-Bibliothek | Alle Sprites nach Modul gruppiert, mit Primär-Sprite pro Entität, Tags und Upload-Verwaltung |
 | Statistik | Kennzahlen wie Anzahl der Items oder NPCs, dazu Health Checks: zyklische Rezepte, toter Content, Quests ohne Abschluss, Dialog-Sackgassen, Loot-Wahrscheinlichkeiten über 100 %, verwaiste Sprites, unerfüllbare Bedingungen |
-| SFX / Audio | noch nicht ausgearbeitet |
-| Cutscenes | noch nicht ausgearbeitet |
+| SFX / Audio | Ansammlung an Audio Files |
+| Cutscenes | Sammlung von Video Files |
 
 ## Export in die Game Engine
 
@@ -71,12 +61,14 @@ Auf dem Dashboard wird es eine Import/Export-Card geben. Darüber sind zwei Wege
 
 ## Roadmap
 
-1. Konzept ausarbeiten - Done ✔️
-2. Kern-Architektur: Entitätenmodell, eigene Arten und Felder, GUID-Referenzen, Bedingungssystem - Done ✔️
-3. Erste Module: Dashboard, Items, Asset-Bibliothek - Done ✔️
-4. Darauf aufbauend: Crafting, NPCs, Loot-Tables, Karten
-5. Story-Ebene: Dialoge, Story, Quests, Events
-6. Import/Export mit Engine-Anbindung
+1. Konzept ausarbeiten - Ham wa drin 👌
+2. Kern-Architektur: Entitätenmodell, eigene Arten und Felder, GUID-Referenzen, Bedingungssystem - Ham wa drin 👌
+3. Erste Module: Dashboard, Items, Asset-Bibliothek - Ham wa drin 👌
+4. Darauf aufbauend: Crafting, NPCs, Loot-Tables, Karten - Ham wa drin 👌
+5. Story-Ebene: Dialoge, Story, Quests, Events - Ham wa drin 👌
+6. Erweiterung und Härtung bestehende Module
+7. Import/Export in JSON mit Sprites/Assets als ZIP
+8. Import/Export mit Engine-Anbindung
 
 ## Lizenz
 
