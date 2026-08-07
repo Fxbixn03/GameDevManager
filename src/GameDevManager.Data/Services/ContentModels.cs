@@ -342,6 +342,16 @@ public sealed record CollectibleListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>Ein modulübergreifendes Tag samt Freigaben und Verwendungszahl.</summary>
+/// <param name="ModuleKeys">Freigegebene Module; leer heißt „überall verfügbar“.</param>
+public sealed record ContentTagRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    string? Color,
+    IReadOnlyList<string> ModuleKeys,
+    int AssignmentCount);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,

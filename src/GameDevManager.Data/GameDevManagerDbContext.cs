@@ -63,6 +63,13 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Collectible> Collectibles => Set<Collectible>();
 
+    /// <summary>Modulübergreifende Tags; die Asset-Stichwörter bleiben davon getrennt.</summary>
+    public DbSet<ContentTag> ContentTags => Set<ContentTag>();
+
+    public DbSet<ContentTagScope> ContentTagScopes => Set<ContentTagScope>();
+
+    public DbSet<ContentTagAssignment> ContentTagAssignments => Set<ContentTagAssignment>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -443,6 +450,45 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         ConfigureContentEntity<Achievement>(modelBuilder);
 
         ConfigureContentEntity<Collectible>(modelBuilder);
+
+        modelBuilder.Entity<ContentTag>(entity =>
+        {
+            entity.Property(t => t.Name).HasMaxLength(100).IsRequired();
+            entity.Property(t => t.Description).HasMaxLength(2000);
+            entity.Property(t => t.Color).HasMaxLength(20);
+
+            entity.HasOne(t => t.GameProject)
+                .WithMany()
+                .HasForeignKey(t => t.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Ein Tag gibt es je Projekt nur einmal; der TagService prüft das vorher und
+            // meldet es verständlich, dieser Index ist die Absicherung dahinter.
+            entity.HasIndex(t => new { t.GameProjectId, t.Name }).IsUnique();
+        });
+
+        modelBuilder.Entity<ContentTagScope>(entity =>
+        {
+            entity.Property(s => s.ModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+
+            entity.HasOne(s => s.ContentTag)
+                .WithMany(t => t.Scopes)
+                .HasForeignKey(s => s.ContentTagId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ContentTagAssignment>(entity =>
+        {
+            entity.Property(a => a.TargetModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+
+            entity.HasOne(a => a.ContentTag)
+                .WithMany(t => t.Assignments)
+                .HasForeignKey(a => a.ContentTagId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „welche Tags hat diese Entität?“; je Entität und Tag höchstens einmal.
+            entity.HasIndex(a => new { a.TargetEntityId, a.ContentTagId }).IsUnique();
+        });
 
         ConfigureContentEntity<LootTable>(modelBuilder);
         ConfigureContentEntity<GameMap>(modelBuilder);

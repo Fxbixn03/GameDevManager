@@ -466,6 +466,7 @@ else
 
                 @if (!_context.IsNew)
                 {
+                    <EntityTagsPanel ModuleKey="@ModuleKeys.Npcs" EntityId="_context.Entity.Id" />
                     <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
                 }
             </MudStack>

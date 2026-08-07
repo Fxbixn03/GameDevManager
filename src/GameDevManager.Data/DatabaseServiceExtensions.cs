@@ -54,6 +54,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<EffectService>();
         services.AddScoped<AchievementService>();
         services.AddScoped<CollectibleService>();
+        services.AddScoped<TagService>();
         services.AddScoped<LootService>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();

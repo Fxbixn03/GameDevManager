@@ -319,6 +319,84 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("ConditionSets");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("ContentTags");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTagAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ContentTagId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("TargetEntityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TargetModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTagId");
+
+                    b.HasIndex("TargetEntityId", "ContentTagId")
+                        .IsUnique();
+
+                    b.ToTable("ContentTagAssignments");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTagScope", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ContentTagId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTagId");
+
+                    b.ToTable("ContentTagScopes");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1668,6 +1746,39 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTag", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTagAssignment", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentTag", "ContentTag")
+                        .WithMany("Assignments")
+                        .HasForeignKey("ContentTagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentTag");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTagScope", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentTag", "ContentTag")
+                        .WithMany("Scopes")
+                        .HasForeignKey("ContentTagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentTag");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -2119,6 +2230,13 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.ConditionSet", b =>
                 {
                     b.Navigation("Conditions");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTag", b =>
+                {
+                    b.Navigation("Assignments");
+
+                    b.Navigation("Scopes");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>

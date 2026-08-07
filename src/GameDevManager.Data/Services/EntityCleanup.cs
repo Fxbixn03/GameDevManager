@@ -40,6 +40,11 @@ public static class EntityCleanup
             .Where(value => entityIds.Contains(value.OwnerEntityId))
             .ExecuteDeleteAsync(ct);
 
+        // Tag-Zuweisungen hängen ebenfalls nur über die GUID an der Entität.
+        await db.ContentTagAssignments
+            .Where(assignment => entityIds.Contains(assignment.TargetEntityId))
+            .ExecuteDeleteAsync(ct);
+
         await ConditionService.DeleteForOwnersAsync(db, entityIds, ct);
     }
 }

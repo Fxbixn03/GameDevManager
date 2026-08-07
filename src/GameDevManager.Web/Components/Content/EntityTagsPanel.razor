@@ -1,0 +1,111 @@
+@inject TagService Tags
+@inject ProjectContext Project
+
+@* ---------------------------------------------------------------------------------
+   Die Tags einer Entität — in jeder Bearbeitungsmaske einbindbar:
+   <EntityTagsPanel ModuleKey="…" EntityId="…" />
+   Welche Tags hier wählbar sind, bestimmt deren Freigabe im Tag-Modul.
+   --------------------------------------------------------------------------------- *@
+
+<MudPaper Elevation="0" Class="gdm-panel pa-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+        <MudText Typo="Typo.overline" Color="Color.Secondary">Tags</MudText>
+
+        <MudMenu Icon="@Icons.Material.Filled.Add"
+                 Size="Size.Small"
+                 Dense="true"
+                 AriaLabel="Tag zuweisen">
+            @if (Addable.Count == 0)
+            {
+                <MudMenuItem Disabled="true">
+                    @(_assignable.Count == 0 ? "Keine Tags für dieses Modul freigegeben." : "Alle Tags bereits zugewiesen.")
+                </MudMenuItem>
+            }
+            else
+            {
+                @foreach (var tag in Addable)
+                {
+                    <MudMenuItem OnClick="@(() => AssignAsync(tag))">
+                        <span style="@DotStyle(tag)"></span>@tag.Name
+                    </MudMenuItem>
+                }
+            }
+        </MudMenu>
+    </MudStack>
+
+    @if (_assigned.Count == 0)
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            Noch keine Tags. Definiert werden sie im
+            <MudLink Href="/modules/tags" Color="Color.Primary">Tag-Modul</MudLink>.
+        </MudText>
+    }
+    else
+    {
+        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+            @foreach (var tag in _assigned)
+            {
+                <MudChip T="string"
+                         Size="Size.Small"
+                         Variant="Variant.Outlined"
+                         OnClose="@(() => UnassignAsync(tag))"
+                         CloseIcon="@Icons.Material.Filled.Close"
+                         Style="@ChipStyle(tag)">
+                    @tag.Name
+                </MudChip>
+            }
+        </MudStack>
+    }
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string ModuleKey { get; set; }
+
+    [Parameter, EditorRequired]
+    public Guid EntityId { get; set; }
+
+    private List<ContentTagRow> _assigned = [];
+    private List<ContentTagRow> _assignable = [];
+    private Guid _loadedEntityId;
+
+    private List<ContentTagRow> Addable =>
+        _assignable.Where(tag => _assigned.All(a => a.Id != tag.Id)).ToList();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedEntityId == EntityId)
+        {
+            return;
+        }
+
+        _loadedEntityId = EntityId;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _assignable = await Tags.GetAssignableTagsAsync(projectId, ModuleKey);
+        _assigned = await Tags.GetTagsForEntityAsync(EntityId);
+    }
+
+    private async Task AssignAsync(ContentTagRow tag)
+    {
+        await Tags.AssignAsync(tag.Id, ModuleKey, EntityId);
+        await LoadAsync();
+    }
+
+    private async Task UnassignAsync(ContentTagRow tag)
+    {
+        await Tags.UnassignAsync(tag.Id, EntityId);
+        await LoadAsync();
+    }
+
+    private static string ChipStyle(ContentTagRow tag) =>
+        string.IsNullOrWhiteSpace(tag.Color) ? string.Empty : $"border-color:{tag.Color};";
+
+    private static string DotStyle(ContentTagRow tag) =>
+        "display:inline-block;width:10px;height:10px;margin-right:8px;" +
+        $"background:{(string.IsNullOrWhiteSpace(tag.Color) ? "var(--mud-palette-lines-default)" : tag.Color)};";
+}

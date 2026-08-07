@@ -203,6 +203,7 @@ else
                 @* Gebiete zeichnet das Karten-Modul; hier steht, wo die Fraktion markiert ist. *@
                 @if (!_context.IsNew)
                 {
+                    <EntityTagsPanel ModuleKey="@ModuleKeys.Factions" EntityId="_context.Entity.Id" />
                     <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
                 }
             </MudStack>
