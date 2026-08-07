@@ -44,6 +44,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<CraftingService>();
         services.AddScoped<CurrencyService>();
         services.AddScoped<NpcService>();
+        services.AddScoped<FactionService>();
         services.AddScoped<LootService>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
@@ -58,6 +59,7 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<IModuleEntitySource, RecipeEntitySource>();
         services.AddSingleton<IModuleEntitySource, CurrencyEntitySource>();
         services.AddSingleton<IModuleEntitySource, NpcEntitySource>();
+        services.AddSingleton<IModuleEntitySource, FactionEntitySource>();
         services.AddSingleton<IModuleEntitySource, LootTableEntitySource>();
         services.AddSingleton<IModuleEntitySource, MapEntitySource>();
         services.AddSingleton<IModuleEntitySource, DialogueEntitySource>();

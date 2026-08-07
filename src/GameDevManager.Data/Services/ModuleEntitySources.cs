@@ -216,6 +216,39 @@ public sealed class LootTableEntitySource : ModuleEntitySource<LootTable>
 }
 
 /// <summary>
+/// Fraktionen für die modulübergreifenden Dienste. Ihre Mitgliederliste verweist über
+/// eigene Spalten auf NPCs.
+/// </summary>
+public sealed class FactionEntitySource : ModuleEntitySource<Faction>
+{
+    public override string ModuleKey => ModuleKeys.Factions;
+
+    protected override DbSet<Faction> Set(GameDevManagerDbContext db) => db.Factions;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<Faction> query) =>
+        query.Select(faction => new SearchHit(
+            faction.Id,
+            ModuleKeys.Factions,
+            SearchHitKind.Entity,
+            faction.Name,
+            faction.Members.Count + " Mitglied(er)",
+            db.Assets.Where(a => a.OwnerEntityId == faction.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+
+    public override Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct) =>
+        db.FactionMembers
+            .AsNoTracking()
+            .Where(member => member.NpcId == entityId)
+            .Select(member => new EntityReferenceHit(
+                member.FactionId,
+                ModuleKeys.Factions,
+                member.Faction!.Name,
+                member.Role ?? "Mitglied"))
+            .ToListAsync(ct);
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

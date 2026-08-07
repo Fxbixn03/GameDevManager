@@ -415,6 +415,72 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("DialogueParticipants");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Factions");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.FactionMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("FactionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("NpcId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Role")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FactionId");
+
+                    b.HasIndex("NpcId");
+
+                    b.ToTable("FactionMembers");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1072,6 +1138,35 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("Dialogue");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.FactionMember", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Faction", "Faction")
+                        .WithMany("Members")
+                        .HasForeignKey("FactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Faction");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -1268,6 +1363,11 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.DialogueLine", b =>
                 {
                     b.Navigation("Choices");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>

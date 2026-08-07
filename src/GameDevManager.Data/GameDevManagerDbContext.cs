@@ -31,6 +31,10 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<TraderOffer> TraderOffers => Set<TraderOffer>();
 
+    public DbSet<Faction> Factions => Set<Faction>();
+
+    public DbSet<FactionMember> FactionMembers => Set<FactionMember>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -270,6 +274,21 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             // ein solcher liefe im Kreis zurück auf dieselbe Tabelle, und die Löschregeln
             // wären über die Provider hinweg nicht einheitlich zu bekommen.
             entity.HasIndex(c => c.NextLineId);
+        });
+
+        ConfigureContentEntity<Faction>(modelBuilder);
+
+        modelBuilder.Entity<FactionMember>(entity =>
+        {
+            entity.Property(m => m.Role).HasMaxLength(200);
+
+            entity.HasOne(m => m.Faction)
+                .WithMany(f => f.Members)
+                .HasForeignKey(m => m.FactionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „in welchen Fraktionen ist dieser NPC Mitglied?“.
+            entity.HasIndex(m => m.NpcId);
         });
 
         ConfigureContentEntity<LootTable>(modelBuilder);

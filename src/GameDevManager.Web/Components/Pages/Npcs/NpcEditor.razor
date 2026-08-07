@@ -1,6 +1,7 @@
 @page "/modules/npcs/neu"
 @page "/modules/npcs/{Id:guid}"
 @inject NpcService Npcs
+@inject FactionService Factions
 @inject MapService Maps
 @inject ConditionService Conditions
 @inject DialogueService Dialogues
@@ -383,6 +384,37 @@ else
                     </MudPaper>
                 }
 
+                @* --------------------------------------------------------- Fraktionen *@
+                @* Im Konzept: „Dies wird dann auch zu einem NPC in dem NPC-Modul angezeigt.“ *@
+                @if (!_context.IsNew)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Fraktionen</MudText>
+
+                        @if (_factions.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                In keiner Fraktion Mitglied. Mitglieder werden im Fraktions-Modul zugeordnet.
+                            </MudText>
+                        }
+                        else
+                        {
+                            @foreach (var faction in _factions)
+                            {
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween"
+                                          Class="gdm-field-row py-1">
+                                    <MudLink Href="@($"/modules/factions/{faction.FactionId}")" Typo="Typo.body2">
+                                        @faction.FactionName
+                                    </MudLink>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @(faction.Role ?? "Mitglied")
+                                    </MudText>
+                                </MudStack>
+                            }
+                        }
+                    </MudPaper>
+                }
+
                 @* --------------------------------------------------------- Spawn-Orte *@
                 @if (!_context.IsNew)
                 {
@@ -436,6 +468,7 @@ else
     private List<EntitySummary> _currencies = [];
     private List<EntitySummary> _lootTables = [];
     private List<MapPlacement> _placements = [];
+    private List<FactionForNpc> _factions = [];
     private Dictionary<Guid, int> _offerConditionCounts = [];
     private int _shopConditionCount;
     private List<DialogueListRow> _dialogues = [];
@@ -486,6 +519,7 @@ else
         if (!_context.IsNew)
         {
             _placements = await Maps.GetPlacementsForEntityAsync(projectId, _context.Entity.Id);
+            _factions = await Factions.GetFactionsForNpcAsync(projectId, _context.Entity.Id);
             await RefreshConditionCountsAsync();
             _dialogues = await Dialogues.GetDialoguesForNpcAsync(projectId, _context.Entity.Id);
         }

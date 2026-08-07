@@ -1,0 +1,209 @@
+@page "/modules/factions"
+@inject FactionService Factions
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Fraktionen – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/factions/arten">
+            Fraktions-Arten
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/factions/neu">
+            Neue Fraktion
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_factions is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_factions.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Flag" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">Noch keine Fraktionen</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Fraktionen bauen auf den NPCs auf: Mitglieder kommen aus dem NPC-Modul und können
+            je Fraktion einen Rang bekommen. Gebiete entstehen später im Karten-Modul.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/factions/neu">
+            Erste Fraktion
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudTextField @bind-Value="_search"
+                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="max-width:360px;" />
+
+            <MudSelect T="Guid?"
+                       @bind-Value="_typeFilter"
+                       Label="Art"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Clearable="true"
+                       Style="max-width:220px;">
+                @foreach (var type in _types)
+                {
+                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSpacer />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_factions.Count</MudText>
+        </MudStack>
+    </MudPaper>
+
+    <MudTable T="FactionListRow"
+              Items="Filtered"
+              Elevation="0"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm"
+              OnRowClick="OpenRow"
+              RowClass="cursor-pointer">
+        <HeaderContent>
+            <MudTh Style="width:56px;"></MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>Beschreibung</MudTh>
+            <MudTh>Mitglieder</MudTh>
+            <MudTh>Art</MudTh>
+            <MudTh Style="width:56px;"></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Sprite">
+                <AssetThumbnail AssetId="context.PrimaryAssetId"
+                                Size="Size.Small"
+                                Alt="@context.Name"
+                                FallbackIcon="@Icons.Material.Filled.Flag" />
+            </MudTd>
+            <MudTd DataLabel="Name">
+                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
+            </MudTd>
+            <MudTd DataLabel="Beschreibung">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@Shorten(context.Description)</MudText>
+            </MudTd>
+            <MudTd DataLabel="Mitglieder">
+                <MudText Typo="Typo.body2">@context.MemberCount</MudText>
+            </MudTd>
+            <MudTd DataLabel="Art">
+                @if (context.TypeName is null)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
+                }
+            </MudTd>
+            <MudTd>
+                <MudTooltip Text="Löschen">
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                   Size="Size.Small"
+                                   OnClick="@(() => DeleteAsync(context))"
+                                   aria-label="@($"{context.Name} löschen")" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
+                Keine Fraktion passt zur Suche.
+            </MudText>
+        </NoRecordsContent>
+    </MudTable>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Factions);
+
+    private List<FactionListRow>? _factions;
+    private List<ContentType> _types = [];
+    private string? _search;
+    private Guid? _typeFilter;
+
+    private string Subtitle => _factions is null
+        ? "Wird geladen …"
+        : $"{_factions.Count} Fraktion(en)";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _types = await ContentTypes.GetTypesAsync(projectId, ModuleKeys.Factions);
+        _factions = await Factions.GetFactionsAsync(projectId);
+    }
+
+    private List<FactionListRow> Filtered
+    {
+        get
+        {
+            IEnumerable<FactionListRow> rows = _factions ?? [];
+
+            if (_typeFilter is { } typeId)
+            {
+                rows = rows.Where(row => row.ContentTypeId == typeId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_search))
+            {
+                rows = rows.Where(row =>
+                    row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                    || (row.Description?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            return [.. rows];
+        }
+    }
+
+    private void OpenRow(TableRowClickEventArgs<FactionListRow> args)
+    {
+        if (args.Item is { } row)
+        {
+            Navigation.NavigateTo($"/modules/factions/{row.Id}");
+        }
+    }
+
+    private async Task DeleteAsync(FactionListRow row)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Fraktion löschen",
+            $"„{row.Name}“ wird mit Mitgliederliste, Feldwerten und Sprites gelöscht. Die NPCs selbst bleiben erhalten.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Factions.DeleteFactionAsync(row.Id);
+        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+
+    private static string Shorten(string? text) =>
+        string.IsNullOrWhiteSpace(text)
+            ? "—"
+            : text.Length <= 90 ? text : string.Concat(text.AsSpan(0, 90), "…");
+}

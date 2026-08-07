@@ -182,6 +182,20 @@ public sealed record TraderForItem(
     double? BuyPrice,
     string? CurrencyLabel);
 
+/// <summary>Eine Zeile der Fraktions-Übersicht.</summary>
+public sealed record FactionListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    Guid? ContentTypeId,
+    string? TypeName,
+    int MemberCount,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
+/// <summary>Eine Fraktion, in der ein bestimmter NPC Mitglied ist — für die NPC-Maske.</summary>
+public sealed record FactionForNpc(Guid FactionId, string FactionName, string? Role);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,
