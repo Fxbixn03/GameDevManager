@@ -32,6 +32,19 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "Clean",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "clean",
+                "${input:buildTarget}",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "Run",
             "type": "process",
             "command": "dotnet",
