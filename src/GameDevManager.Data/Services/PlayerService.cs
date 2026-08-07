@@ -1,0 +1,341 @@
+using GameDevManager.Domain;
+using GameDevManager.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace GameDevManager.Data.Services;
+
+/// <summary>
+/// Das Spieler-Modul: Spielerfiguren, Skilltrees und Skills samt benutzerdefinierten
+/// Feldwerten der Skills.
+/// </summary>
+public class PlayerService(
+    IDbContextFactory<GameDevManagerDbContext> factory,
+    ContentTypeService contentTypes,
+    AssetService assets)
+{
+    // ------------------------------------------------------------- Spielerfiguren
+
+    public async Task<List<PlayerCharacter>> GetCharactersAsync(Guid projectId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        return await db.PlayerCharacters
+            .AsNoTracking()
+            .Where(p => p.GameProjectId == projectId)
+            .OrderBy(p => p.Name)
+            .ToListAsync(ct);
+    }
+
+    public async Task SaveCharacterAsync(PlayerCharacter character, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(character.Name))
+        {
+            throw new ContentValidationException("Die Spielerfigur braucht einen Namen.");
+        }
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var now = DateTime.UtcNow;
+        var stored = await db.PlayerCharacters.FirstOrDefaultAsync(p => p.Id == character.Id, ct);
+
+        if (stored is null)
+        {
+            stored = new PlayerCharacter
+            {
+                Id = character.Id,
+                GameProjectId = character.GameProjectId,
+                Name = character.Name.Trim(),
+                CreatedAtUtc = now
+            };
+
+            db.PlayerCharacters.Add(stored);
+        }
+
+        stored.Name = character.Name.Trim();
+        stored.Description = string.IsNullOrWhiteSpace(character.Description) ? null : character.Description.Trim();
+        stored.UpdatedAtUtc = now;
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteCharacterAsync(Guid characterId, CancellationToken ct = default)
+    {
+        await assets.DeleteForOwnerAsync(characterId, ct);
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+
+        await EntityCleanup.DeleteForEntityAsync(db, characterId, ct);
+
+        await db.PlayerCharacters
+            .Where(p => p.Id == characterId)
+            .ExecuteDeleteAsync(ct);
+
+        await transaction.CommitAsync(ct);
+    }
+
+    // ----------------------------------------------------------------- Skilltrees
+
+    public async Task<List<SkillTreeRow>> GetTreesAsync(Guid projectId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        return await db.SkillTrees
+            .AsNoTracking()
+            .Where(t => t.GameProjectId == projectId)
+            .OrderBy(t => t.Name)
+            .Select(t => new SkillTreeRow(
+                t.Id,
+                t.Name,
+                t.Description,
+                db.Skills.Count(s => s.SkillTreeId == t.Id)))
+            .ToListAsync(ct);
+    }
+
+    public async Task SaveTreeAsync(SkillTree tree, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(tree.Name))
+        {
+            throw new ContentValidationException("Der Skilltree braucht einen Namen.");
+        }
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var stored = await db.SkillTrees.FirstOrDefaultAsync(t => t.Id == tree.Id, ct);
+
+        if (stored is null)
+        {
+            stored = new SkillTree
+            {
+                Id = tree.Id,
+                GameProjectId = tree.GameProjectId,
+                Name = tree.Name.Trim()
+            };
+
+            db.SkillTrees.Add(stored);
+        }
+
+        stored.Name = tree.Name.Trim();
+        stored.Description = string.IsNullOrWhiteSpace(tree.Description) ? null : tree.Description.Trim();
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>Löscht einen Skilltree. Seine Skills bleiben erhalten und werden „ohne Baum“.</summary>
+    public async Task DeleteTreeAsync(Guid treeId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+
+        // Kein Fremdschlüssel über die GUID — die Verweise müssen von Hand gelöst werden,
+        // sonst zeigten Skills auf einen Baum, den es nicht mehr gibt.
+        await db.Skills
+            .Where(s => s.SkillTreeId == treeId)
+            .ExecuteUpdateAsync(update => update.SetProperty(s => s.SkillTreeId, (Guid?)null), ct);
+
+        await db.SkillTrees
+            .Where(t => t.Id == treeId)
+            .ExecuteDeleteAsync(ct);
+
+        await transaction.CommitAsync(ct);
+    }
+
+    // --------------------------------------------------------------------- Skills
+
+    public async Task<List<SkillListRow>> GetSkillsAsync(Guid projectId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        return await db.Skills
+            .AsNoTracking()
+            .Where(s => s.GameProjectId == projectId)
+            .OrderBy(s => s.Name)
+            .Select(s => new SkillListRow(
+                s.Id,
+                s.Name,
+                s.Description,
+                s.SkillTreeId,
+                db.SkillTrees.Where(t => t.Id == s.SkillTreeId).Select(t => t.Name).FirstOrDefault(),
+                s.ParentSkillId,
+                db.Skills.Where(p => p.Id == s.ParentSkillId).Select(p => p.Name).FirstOrDefault(),
+                s.CostPoints,
+                s.CostItemId,
+                db.Items.Where(i => i.Id == s.CostItemId).Select(i => i.Name).FirstOrDefault(),
+                s.CostItemAmount,
+                s.ContentTypeId,
+                s.ContentType!.Name,
+                s.UpdatedAtUtc,
+                db.Assets
+                    .Where(a => a.OwnerEntityId == s.Id && a.IsPrimary)
+                    .Select(a => (Guid?)a.Id)
+                    .FirstOrDefault()))
+            .ToListAsync(ct);
+    }
+
+    public async Task<ContentEditContext<Skill>?> LoadSkillForEditAsync(
+        Guid projectId, Guid? skillId, CancellationToken ct = default)
+    {
+        var types = await contentTypes.GetTypesAsync(projectId, ModuleKeys.Player, ct);
+
+        if (skillId is null)
+        {
+            return new ContentEditContext<Skill>
+            {
+                Entity = new Skill { GameProjectId = projectId, Name = string.Empty },
+                IsNew = true,
+                AvailableTypes = types,
+                IndividualFields = [],
+                Values = []
+            };
+        }
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var skill = await db.Skills
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == skillId && s.GameProjectId == projectId, ct);
+
+        if (skill is null)
+        {
+            return null;
+        }
+
+        return new ContentEditContext<Skill>
+        {
+            Entity = skill,
+            IsNew = false,
+            AvailableTypes = types,
+            IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, skill.Id, ct),
+            Values = await ContentFields.LoadValuesAsync(db, skill.Id, ct)
+        };
+    }
+
+    public async Task SaveSkillAsync(ContentEditContext<Skill> context, CancellationToken ct = default)
+    {
+        var skill = context.Entity;
+
+        if (string.IsNullOrWhiteSpace(skill.Name))
+        {
+            throw new ContentValidationException("Der Skill braucht einen Namen.");
+        }
+
+        if (skill.CostPoints is < 0)
+        {
+            throw new ContentValidationException("Skill-Punkte dürfen nicht negativ sein.");
+        }
+
+        if (skill.CostItemAmount is < 1 && skill.CostItemId is not null)
+        {
+            throw new ContentValidationException("Die Ressourcen-Menge muss mindestens 1 sein.");
+        }
+
+        if (skill.CostItemId is null)
+        {
+            // Eine Menge ohne Item wäre nicht zu deuten.
+            skill.CostItemAmount = null;
+        }
+
+        if (skill.ParentSkillId == skill.Id)
+        {
+            throw new ContentValidationException("Ein Skill kann nicht sich selbst voraussetzen.");
+        }
+
+        ContentFields.ValidateRequired(context);
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        if (skill.ParentSkillId is { } parentId)
+        {
+            var parent = await db.Skills
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == parentId && p.GameProjectId == skill.GameProjectId, ct);
+
+            if (parent is null)
+            {
+                throw new ContentValidationException("Der vorausgesetzte Skill existiert nicht mehr.");
+            }
+
+            if (parent.SkillTreeId != skill.SkillTreeId)
+            {
+                throw new ContentValidationException(
+                    "Der vorausgesetzte Skill liegt in einem anderen Baum. Voraussetzungen gelten je Skilltree.");
+            }
+
+            // Die Elternkette darf nicht zurück zu diesem Skill führen — sonst wäre der
+            // Baum ein Kreis und kein Skill davon je erreichbar.
+            var byId = await db.Skills
+                .AsNoTracking()
+                .Where(s => s.GameProjectId == skill.GameProjectId)
+                .Select(s => new { s.Id, s.ParentSkillId })
+                .ToDictionaryAsync(s => s.Id, s => s.ParentSkillId, ct);
+
+            var cursor = (Guid?)parentId;
+            while (cursor is { } currentId && byId.TryGetValue(currentId, out var next))
+            {
+                if (currentId == skill.Id)
+                {
+                    throw new ContentValidationException(
+                        "Diese Voraussetzung ergäbe einen Kreis — der Skill setzt sich indirekt selbst voraus.");
+                }
+
+                cursor = next;
+            }
+        }
+
+        var now = DateTime.UtcNow;
+        var stored = await db.Skills.FirstOrDefaultAsync(s => s.Id == skill.Id, ct);
+
+        if (stored is null)
+        {
+            stored = new Skill
+            {
+                Id = skill.Id,
+                GameProjectId = skill.GameProjectId,
+                Name = skill.Name.Trim(),
+                CreatedAtUtc = now
+            };
+
+            db.Skills.Add(stored);
+        }
+
+        stored.ContentTypeId = skill.ContentTypeId;
+        stored.Name = skill.Name.Trim();
+        stored.Description = string.IsNullOrWhiteSpace(skill.Description) ? null : skill.Description.Trim();
+        stored.SkillTreeId = skill.SkillTreeId;
+        stored.ParentSkillId = skill.ParentSkillId;
+        stored.CostPoints = skill.CostPoints;
+        stored.CostItemId = skill.CostItemId;
+        stored.CostItemAmount = skill.CostItemAmount;
+        stored.UpdatedAtUtc = now;
+
+        await ContentFields.StageValuesAsync(db, context, ct);
+        await db.SaveChangesAsync(ct);
+
+        skill.CreatedAtUtc = stored.CreatedAtUtc;
+        skill.UpdatedAtUtc = stored.UpdatedAtUtc;
+        skill.Name = stored.Name;
+        skill.Description = stored.Description;
+    }
+
+    /// <summary>Löscht einen Skill mit Feldwerten, individuellen Feldern und Sprites.</summary>
+    public async Task DeleteSkillAsync(Guid skillId, CancellationToken ct = default)
+    {
+        await assets.DeleteForOwnerAsync(skillId, ct);
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+
+        await EntityCleanup.DeleteForEntityAsync(db, skillId, ct);
+
+        // Kinder verlieren ihre Voraussetzung, statt auf einen gelöschten Skill zu zeigen.
+        await db.Skills
+            .Where(s => s.ParentSkillId == skillId)
+            .ExecuteUpdateAsync(update => update.SetProperty(s => s.ParentSkillId, (Guid?)null), ct);
+
+        await db.Skills
+            .Where(s => s.Id == skillId)
+            .ExecuteDeleteAsync(ct);
+
+        await transaction.CommitAsync(ct);
+    }
+}

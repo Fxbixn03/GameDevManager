@@ -268,6 +268,27 @@ public sealed record EventListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>Ein Skilltree mit der Anzahl seiner Skills.</summary>
+public sealed record SkillTreeRow(Guid Id, string Name, string? Description, int SkillCount);
+
+/// <summary>Eine Zeile der Skill-Übersicht. Baum-, Eltern- und Kosten-Item-Namen sind aufgelöst.</summary>
+public sealed record SkillListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    Guid? SkillTreeId,
+    string? SkillTreeName,
+    Guid? ParentSkillId,
+    string? ParentSkillName,
+    double? CostPoints,
+    Guid? CostItemId,
+    string? CostItemName,
+    int? CostItemAmount,
+    Guid? ContentTypeId,
+    string? TypeName,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,

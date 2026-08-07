@@ -1,0 +1,378 @@
+@page "/modules/player"
+@inject PlayerService Player
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Spieler – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/player/arten">
+            Skill-Arten
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/player/skills/neu">
+            Neuer Skill
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_characters is null || _trees is null || _skills is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="5">
+            @* ---------------------------------------------------------- Spielerfiguren *@
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">Spielerfigur(en)</MudText>
+                    <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="AddCharacter">
+                        Figur
+                    </MudButton>
+                </MudStack>
+
+                @if (_characters.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Noch keine Spielerfigur. Spiele mit wählbaren Charakteren legen je Figur
+                        einen Eintrag an.
+                    </MudText>
+                }
+                else
+                {
+                    <MudStack Spacing="3">
+                        @foreach (var character in _characters)
+                        {
+                            <div class="pa-3 gdm-field-row">
+                                <MudStack Spacing="2">
+                                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                                        <MudTextField T="string"
+                                                      @bind-Value="character.Name"
+                                                      Label="Name *"
+                                                      Variant="Variant.Outlined"
+                                                      Margin="Margin.Dense" />
+                                        <MudTooltip Text="Speichern">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Save"
+                                                           Size="Size.Small"
+                                                           Color="Color.Primary"
+                                                           OnClick="@(() => SaveCharacterAsync(character))"
+                                                           aria-label="Spielerfigur speichern" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Löschen">
+                                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => DeleteCharacterAsync(character))"
+                                                           aria-label="Spielerfigur löschen" />
+                                        </MudTooltip>
+                                    </MudStack>
+
+                                    <MudTextField T="string"
+                                                  @bind-Value="character.Description"
+                                                  Label="Beschreibung"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Lines="2" />
+
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                                        <EntityIdChip Id="character.Id" />
+                                    </MudStack>
+
+                                    @* Sprites hängen nur an der GUID — das funktioniert auch ohne ContentEntity. *@
+                                    <AssetSpritePanel ModuleKey="@ModuleKeys.Player"
+                                                      EntityId="character.Id"
+                                                      Disabled="@(!_savedCharacterIds.Contains(character.Id))" />
+                                </MudStack>
+                            </div>
+                        }
+                    </MudStack>
+                }
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="7">
+            @* -------------------------------------------------------------- Skilltrees *@
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">Skilltrees</MudText>
+                    <MudStack Row="true" Spacing="2">
+                        <MudButton Size="Size.Small"
+                                   Variant="Variant.Text"
+                                   Href="/modules/player/skills">
+                            Alle Skills (@_skills.Count)
+                        </MudButton>
+                        <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="AddTree">
+                            Skilltree
+                        </MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_trees.Count == 0 && _editingTrees.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Noch kein Skilltree. Bäume gruppieren Skills — etwa „Kampf“ oder „Magie“;
+                        die Struktur entsteht über die Voraussetzung am einzelnen Skill.
+                    </MudText>
+                }
+                else
+                {
+                    <MudStack Spacing="3">
+                        @foreach (var tree in _editingTrees)
+                        {
+                            <div class="pa-3 gdm-field-row">
+                                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                                    <MudTextField T="string"
+                                                  @bind-Value="tree.Name"
+                                                  Label="Name *"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense" />
+                                    <MudTextField T="string"
+                                                  @bind-Value="tree.Description"
+                                                  Label="Beschreibung"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense" />
+                                    <MudTooltip Text="Speichern">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Save"
+                                                       Size="Size.Small"
+                                                       Color="Color.Primary"
+                                                       OnClick="@(() => SaveTreeAsync(tree))"
+                                                       aria-label="Skilltree speichern" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Verwerfen">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => _editingTrees.Remove(tree))"
+                                                       aria-label="Skilltree verwerfen" />
+                                    </MudTooltip>
+                                </MudStack>
+                            </div>
+                        }
+
+                        @foreach (var tree in _trees)
+                        {
+                            <div class="pa-3 gdm-field-row">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-1">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccountTree" Size="Size.Small" />
+                                    <MudText Typo="Typo.subtitle1"><b>@tree.Name</b></MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@tree.SkillCount Skill(s)</MudText>
+                                    <MudSpacer />
+                                    <MudTooltip Text="Löschen (Skills bleiben erhalten)">
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeleteTreeAsync(tree))"
+                                                       aria-label="@($"{tree.Name} löschen")" />
+                                    </MudTooltip>
+                                </MudStack>
+
+                                @if (!string.IsNullOrWhiteSpace(tree.Description))
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">@tree.Description</MudText>
+                                }
+
+                                @foreach (var (skill, depth) in FlattenTree(tree.Id))
+                                {
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2"
+                                              Class="py-1" Style="@($"margin-left:{depth * 24}px;")">
+                                        <MudIcon Icon="@(depth == 0 ? Icons.Material.Filled.Star : Icons.Material.Filled.SubdirectoryArrowRight)"
+                                                 Size="Size.Small"
+                                                 Color="Color.Secondary" />
+                                        <MudLink Href="@($"/modules/player/skills/{skill.Id}")" Typo="Typo.body2">
+                                            @skill.Name
+                                        </MudLink>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                                            @CostLabel(skill)
+                                        </MudText>
+                                    </MudStack>
+                                }
+                            </div>
+                        }
+
+                        @{ var withoutTree = _skills.Where(s => s.SkillTreeId is null).ToList(); }
+                        @if (withoutTree.Count > 0)
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true">
+                                @withoutTree.Count Skill(s) ohne Baum —
+                                <MudLink Href="/modules/player/skills" Color="Color.Primary">in der Skill-Liste zuordnen</MudLink>.
+                            </MudAlert>
+                        }
+                    </MudStack>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Player);
+
+    private List<PlayerCharacter>? _characters;
+    private List<SkillTreeRow>? _trees;
+    private List<SkillListRow>? _skills;
+    private readonly List<SkillTree> _editingTrees = [];
+    private readonly HashSet<Guid> _savedCharacterIds = [];
+    private Guid _projectId;
+
+    private string Subtitle => _skills is null
+        ? "Wird geladen …"
+        : $"{_characters!.Count} Figur(en), {_trees!.Count} Skilltree(s), {_skills.Count} Skill(s)";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _projectId = await Project.GetCurrentIdAsync();
+        _characters = await Player.GetCharactersAsync(_projectId);
+        _trees = await Player.GetTreesAsync(_projectId);
+        _skills = await Player.GetSkillsAsync(_projectId);
+
+        _savedCharacterIds.Clear();
+        foreach (var character in _characters)
+        {
+            _savedCharacterIds.Add(character.Id);
+        }
+    }
+
+    /// <summary>Skills eines Baums als eingerückte Liste — Wurzeln zuerst, Kinder darunter.</summary>
+    private IEnumerable<(SkillListRow Skill, int Depth)> FlattenTree(Guid treeId)
+    {
+        var inTree = (_skills ?? []).Where(s => s.SkillTreeId == treeId).ToList();
+        var byParent = inTree.ToLookup(s => s.ParentSkillId);
+        var visited = new HashSet<Guid>();
+
+        IEnumerable<(SkillListRow, int)> Walk(Guid? parentId, int depth)
+        {
+            foreach (var skill in byParent[parentId].OrderBy(s => s.Name))
+            {
+                if (!visited.Add(skill.Id))
+                {
+                    continue;
+                }
+
+                yield return (skill, depth);
+
+                foreach (var child in Walk(skill.Id, depth + 1))
+                {
+                    yield return child;
+                }
+            }
+        }
+
+        // Auch Skills, deren Voraussetzung gelöscht wurde, sollen sichtbar bleiben.
+        foreach (var entry in Walk(null, 0))
+        {
+            yield return entry;
+        }
+
+        foreach (var orphan in inTree.Where(s => !visited.Contains(s.Id)).OrderBy(s => s.Name))
+        {
+            yield return (orphan, 0);
+        }
+    }
+
+    private static string CostLabel(SkillListRow skill)
+    {
+        var parts = new List<string>();
+
+        if (skill.CostPoints is { } points)
+        {
+            parts.Add($"{points:0.##} Punkte");
+        }
+
+        if (skill.CostItemId is not null)
+        {
+            parts.Add($"{skill.CostItemAmount ?? 1}× {skill.CostItemName ?? "(gelöschtes Item)"}");
+        }
+
+        return parts.Count == 0 ? "kostenlos" : string.Join(" + ", parts);
+    }
+
+    // ---------------------------------------------------------------- Spielerfiguren
+
+    private void AddCharacter() =>
+        _characters!.Insert(0, new PlayerCharacter { GameProjectId = _projectId, Name = string.Empty });
+
+    private async Task SaveCharacterAsync(PlayerCharacter character)
+    {
+        try
+        {
+            await Player.SaveCharacterAsync(character);
+            _savedCharacterIds.Add(character.Id);
+            Snackbar.Add($"„{character.Name}“ wurde gespeichert.", Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteCharacterAsync(PlayerCharacter character)
+    {
+        if (!_savedCharacterIds.Contains(character.Id))
+        {
+            _characters!.Remove(character);
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Spielerfigur löschen",
+            $"„{character.Name}“ wird mit ihren Sprites gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Player.DeleteCharacterAsync(character.Id);
+        Snackbar.Add("Spielerfigur gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+
+    // -------------------------------------------------------------------- Skilltrees
+
+    private void AddTree() =>
+        _editingTrees.Add(new SkillTree { GameProjectId = _projectId, Name = string.Empty });
+
+    private async Task SaveTreeAsync(SkillTree tree)
+    {
+        try
+        {
+            await Player.SaveTreeAsync(tree);
+            _editingTrees.Remove(tree);
+            Snackbar.Add($"„{tree.Name}“ wurde gespeichert.", Severity.Success);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteTreeAsync(SkillTreeRow tree)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Skilltree löschen",
+            $"„{tree.Name}“ wird gelöscht. Die {tree.SkillCount} Skill(s) bleiben erhalten und werden „ohne Baum“.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Player.DeleteTreeAsync(tree.Id);
+        Snackbar.Add("Skilltree gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+}

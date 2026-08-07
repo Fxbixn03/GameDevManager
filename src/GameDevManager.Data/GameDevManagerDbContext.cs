@@ -47,6 +47,12 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<EventSpawn> EventSpawns => Set<EventSpawn>();
 
+    public DbSet<PlayerCharacter> PlayerCharacters => Set<PlayerCharacter>();
+
+    public DbSet<SkillTree> SkillTrees => Set<SkillTree>();
+
+    public DbSet<Skill> Skills => Set<Skill>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -363,6 +369,44 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Frage „bei welchen Events spawnt dieser Mob?“.
             entity.HasIndex(s => s.NpcId);
+        });
+
+        modelBuilder.Entity<PlayerCharacter>(entity =>
+        {
+            entity.Property(p => p.Name).HasMaxLength(200).IsRequired();
+            entity.Property(p => p.Description).HasMaxLength(4000);
+
+            entity.HasOne(p => p.GameProject)
+                .WithMany()
+                .HasForeignKey(p => p.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(p => p.GameProjectId);
+        });
+
+        modelBuilder.Entity<SkillTree>(entity =>
+        {
+            entity.Property(t => t.Name).HasMaxLength(200).IsRequired();
+            entity.Property(t => t.Description).HasMaxLength(4000);
+
+            entity.HasOne(t => t.GameProject)
+                .WithMany()
+                .HasForeignKey(t => t.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(t => t.GameProjectId);
+        });
+
+        ConfigureContentEntity<Skill>(modelBuilder);
+
+        modelBuilder.Entity<Skill>(entity =>
+        {
+            // Die Baum-Ansicht lädt Skills je Baum; die Struktur hängt am Eltern-Skill.
+            entity.HasIndex(s => s.SkillTreeId);
+            entity.HasIndex(s => s.ParentSkillId);
+
+            // Trägt die Frage „welche Skills kosten dieses Item?“.
+            entity.HasIndex(s => s.CostItemId);
         });
 
         ConfigureContentEntity<LootTable>(modelBuilder);

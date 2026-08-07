@@ -1,0 +1,403 @@
+@page "/modules/player/skills/neu"
+@page "/modules/player/skills/{Id:guid}"
+@inject PlayerService Player
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@PageHeading – GameDevManager</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        Es gibt keinen Skill mit dieser GUID. Vielleicht wurde er gelöscht.
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/player/skills">Zurück zur Skill-Liste</MudButton>
+}
+else if (_context is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@PageHeading"
+                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            @if (_dirty)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                    Ungespeicherte Änderungen
+                </MudChip>
+            }
+            @if (!_context.IsNew)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="DeleteAsync">
+                    Löschen
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Href="/modules/player/skills">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_saving"
+                       OnClick="SaveAsync">
+                Speichern
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+
+                @* ------------------------------------------------------------- Stammdaten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudTextField Value="_context.Entity.Name"
+                                      ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
+                                      T="string"
+                                      Label="Name *"
+                                      Variant="Variant.Outlined"
+                                      Immediate="true" />
+
+                        <MudTextField Value="_context.Entity.Description"
+                                      ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
+                                      T="string"
+                                      Label="Was macht der Skill?"
+                                      Variant="Variant.Outlined"
+                                      Lines="3" />
+
+                        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudSelect T="Guid?"
+                                       Value="_context.Entity.SkillTreeId"
+                                       ValueChanged="ChangeTree"
+                                       Label="Skilltree"
+                                       Variant="Variant.Outlined"
+                                       Clearable="true"
+                                       Style="min-width:240px;"
+                                       HelperText="@(_trees.Count == 0 ? "Bäume werden in der Übersicht angelegt." : null)">
+                                @foreach (var tree in _trees)
+                                {
+                                    <MudSelectItem T="Guid?" Value="@tree.Id">@tree.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <MudSelect T="Guid?"
+                                       Value="_context.Entity.ContentTypeId"
+                                       ValueChanged="ChangeType"
+                                       Label="Skill-Art"
+                                       Variant="Variant.Outlined"
+                                       Clearable="true"
+                                       Style="min-width:240px;">
+                                @foreach (var type in _context.AvailableTypes)
+                                {
+                                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudStack>
+
+                        <MudSelect T="Guid?"
+                                   Value="_context.Entity.ParentSkillId"
+                                   ValueChanged="@((Guid? id) => Touch(() => _context.Entity.ParentSkillId = id))"
+                                   Label="Voraussetzung"
+                                   Variant="Variant.Outlined"
+                                   Clearable="true"
+                                   Disabled="@(PossibleParents.Count == 0)"
+                                   HelperText="@(PossibleParents.Count == 0
+                                       ? "Im gewählten Baum gibt es noch keine anderen Skills."
+                                       : "Der Skill, der vorher freigeschaltet sein muss — daraus entsteht der Baum.")">
+                            @foreach (var parent in PossibleParents)
+                            {
+                                <MudSelectItem T="Guid?" Value="@parent.Id">@parent.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudStack>
+                </MudPaper>
+
+                @* ---------------------------------------------------------------- Kosten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Freischaltung</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Wie der Skill erreicht wird — über Punkte, Ressourcen oder beides.
+                    </MudText>
+
+                    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start" Wrap="Wrap.Wrap">
+                        <MudNumericField T="double?"
+                                         Value="_context.Entity.CostPoints"
+                                         ValueChanged="@((double? v) => Touch(() => _context.Entity.CostPoints = v))"
+                                         Label="Skill-Punkte"
+                                         Variant="Variant.Outlined"
+                                         Min="0"
+                                         Clearable="true"
+                                         Style="max-width:200px;" />
+
+                        <MudAutocomplete T="EntitySummary"
+                                         Value="@ItemFor(_context.Entity.CostItemId)"
+                                         ValueChanged="@((EntitySummary? e) => Touch(() => _context.Entity.CostItemId = e?.Id))"
+                                         SearchFunc="SearchItemsAsync"
+                                         ToStringFunc="@(e => e?.Name ?? string.Empty)"
+                                         Label="Ressource (Item)"
+                                         Variant="Variant.Outlined"
+                                         Clearable="true"
+                                         ResetValueOnEmptyText="true"
+                                         CoerceValue="false"
+                                         MaxItems="50"
+                                         Style="min-width:260px;" />
+
+                        <MudNumericField T="int?"
+                                         Value="_context.Entity.CostItemAmount"
+                                         ValueChanged="@((int? v) => Touch(() => _context.Entity.CostItemAmount = v))"
+                                         Label="Menge"
+                                         Variant="Variant.Outlined"
+                                         Min="1"
+                                         Clearable="true"
+                                         Disabled="@(_context.Entity.CostItemId is null)"
+                                         Style="max-width:140px;" />
+                    </MudStack>
+                </MudPaper>
+
+                @* ------------------------------------------------------------------ Sprites *@
+                <AssetSpritePanel ModuleKey="@ModuleKeys.Player"
+                                  EntityId="_context.Entity.Id"
+                                  Disabled="_context.IsNew" />
+
+                @* ------------------------------------------------------------------- Felder *@
+                <div>
+                    <ContentFieldsPanel TEntity="Skill"
+                                        Context="_context"
+                                        ModuleKey="@ModuleKeys.Player"
+                                        TypesRoute="/modules/player/arten"
+                                        IndividualHint="Für Angaben, die nur dieser eine Skill braucht."
+                                        OnValueChanged="MarkDirty"
+                                        OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
+                </div>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <EntityIdChip Id="_context.Entity.Id" />
+
+                    @if (!_context.IsNew)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                    }
+                </MudPaper>
+
+                @if (!_context.IsNew)
+                {
+                    <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Player);
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private ContentEditContext<Skill>? _context;
+    private ReferencesPanel? _referencesPanel;
+    private List<SkillTreeRow> _trees = [];
+    private List<SkillListRow> _allSkills = [];
+    private List<EntitySummary> _items = [];
+    private Guid? _loadedId;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+
+    private string PageHeading => _context switch
+    {
+        null => "Skill",
+        { IsNew: true } => "Neuer Skill",
+        { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
+        _ => "Skill ohne Namen"
+    };
+
+    private List<BreadcrumbItem> Breadcrumbs =>
+        [new("Skills", "/modules/player/skills"), new(PageHeading, null, disabled: true)];
+
+    /// <summary>Nur Skills desselben Baums kommen als Voraussetzung infrage — und nie der Skill selbst.</summary>
+    private List<SkillListRow> PossibleParents =>
+        _allSkills
+            .Where(s => s.SkillTreeId == _context!.Entity.SkillTreeId && s.Id != _context.Entity.Id)
+            .ToList();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_context is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _notFound = false;
+        _dirty = false;
+        _context = null;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _trees = await Player.GetTreesAsync(projectId);
+        _allSkills = await Player.GetSkillsAsync(projectId);
+        _items = await References.GetEntitiesAsync(projectId, ModuleKeys.Items);
+        _context = await Player.LoadSkillForEditAsync(projectId, Id);
+
+        if (_context is null)
+        {
+            _notFound = true;
+        }
+    }
+
+    private EntitySummary? ItemFor(Guid? itemId) =>
+        itemId is null ? null : _items.FirstOrDefault(entity => entity.Id == itemId);
+
+    private Task<IEnumerable<EntitySummary>> SearchItemsAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? _items
+            : _items.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private void ChangeTree(Guid? treeId) =>
+        Touch(() =>
+        {
+            _context!.Entity.SkillTreeId = treeId;
+            // Die Voraussetzung gehört zum alten Baum und wäre jetzt irreführend.
+            _context.Entity.ParentSkillId = null;
+        });
+
+    private void ChangeType(Guid? contentTypeId) =>
+        Touch(() => _context!.Entity.ContentTypeId = contentTypeId);
+
+    private void Touch(Action change)
+    {
+        change();
+        MarkDirty();
+    }
+
+    private void MarkDirty() => _dirty = true;
+
+    private async Task SaveAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            var wasNew = _context.IsNew;
+            await Player.SaveSkillAsync(_context);
+            _dirty = false;
+
+            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+
+            if (wasNew)
+            {
+                Navigation.NavigateTo($"/modules/player/skills/{_context.Entity.Id}");
+                return;
+            }
+
+            if (_referencesPanel is not null)
+            {
+                await _referencesPanel.RefreshAsync();
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Skill löschen",
+            $"„{_context.Entity.Name}“ wird mit Feldwerten, individuellen Feldern und Sprites gelöscht. Skills, die ihn voraussetzen, verlieren die Voraussetzung.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Player.DeleteSkillAsync(_context.Entity.Id);
+        Snackbar.Add("Skill gelöscht.", Severity.Success);
+        Navigation.NavigateTo("/modules/player/skills");
+    }
+
+    /// <summary>
+    /// Lädt nach einer Änderung an den Felddefinitionen neu und behält dabei, was in der Maske
+    /// noch nicht gespeichert ist.
+    /// </summary>
+    private async Task ReloadKeepingChangesAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var entity = _context.Entity;
+        var wasDirty = _dirty;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var reloaded = await Player.LoadSkillForEditAsync(projectId, entity.Id);
+
+        if (reloaded is null)
+        {
+            _notFound = true;
+            _context = null;
+            return;
+        }
+
+        reloaded.Entity.Name = entity.Name;
+        reloaded.Entity.Description = entity.Description;
+        reloaded.Entity.ContentTypeId = entity.ContentTypeId;
+        reloaded.Entity.SkillTreeId = entity.SkillTreeId;
+        reloaded.Entity.ParentSkillId = entity.ParentSkillId;
+        reloaded.Entity.CostPoints = entity.CostPoints;
+        reloaded.Entity.CostItemId = entity.CostItemId;
+        reloaded.Entity.CostItemAmount = entity.CostItemAmount;
+
+        _context = reloaded;
+        _dirty = wasDirty;
+    }
+}

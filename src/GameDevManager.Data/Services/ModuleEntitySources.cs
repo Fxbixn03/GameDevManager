@@ -407,6 +407,45 @@ public sealed class GameEventEntitySource : ModuleEntitySource<GameEvent>
 }
 
 /// <summary>
+/// Skills für die modulübergreifenden Dienste. Kosten-Item und Voraussetzung verweisen über
+/// eigene Spalten auf Items bzw. andere Skills.
+/// </summary>
+public sealed class SkillEntitySource : ModuleEntitySource<Skill>
+{
+    public override string ModuleKey => ModuleKeys.Player;
+
+    protected override DbSet<Skill> Set(GameDevManagerDbContext db) => db.Skills;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<Skill> query) =>
+        query.Select(skill => new SearchHit(
+            skill.Id,
+            ModuleKeys.Player,
+            SearchHitKind.Entity,
+            skill.Name,
+            db.SkillTrees.Where(t => t.Id == skill.SkillTreeId).Select(t => t.Name).FirstOrDefault() ?? "Skill",
+            db.Assets.Where(a => a.OwnerEntityId == skill.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+
+    public override async Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
+    {
+        var hits = await db.Skills
+            .AsNoTracking()
+            .Where(skill => skill.CostItemId == entityId)
+            .Select(skill => new EntityReferenceHit(skill.Id, ModuleKeys.Player, skill.Name, "Skill-Kosten"))
+            .ToListAsync(ct);
+
+        hits.AddRange(await db.Skills
+            .AsNoTracking()
+            .Where(skill => skill.ParentSkillId == entityId)
+            .Select(skill => new EntityReferenceHit(skill.Id, ModuleKeys.Player, skill.Name, "Setzt diesen Skill voraus"))
+            .ToListAsync(ct));
+
+        return hits;
+    }
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>
