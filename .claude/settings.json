@@ -70,7 +70,9 @@
       "PowerShell(Test-Path src/GameDevManager.Web/gamedevmanager.db; $r2 = Invoke-WebRequest -Uri http://localhost:5599/modules/items -UseBasicParsing; \"Modulseite: $\\($r2.StatusCode\\)\")",
       "PowerShell(dotnet build --nologo -v q)",
       "PowerShell(\\(Get-Content \"src/GameDevManager.Web/Components/Pages/Diplomacy/DiplomacyGraphPage.razor\" -Raw\\) -replace 'viewBox=\"0 0 @Size @Size\"', 'viewBox=\"0 0 @CanvasSize @CanvasSize\"' -replace 'private const int Size = 640;', 'private const int CanvasSize = 640;' -replace 'Size / 2\\\\.0', 'CanvasSize / 2.0' -replace 'Math\\\\.Max\\\\\\(_graph\\\\.Nodes\\\\.Count, 1\\\\\\)', 'Math.Max\\(_graph.Nodes.Count, 1\\)' | Set-Content \"src/GameDevManager.Web/Components/Pages/Diplomacy/DiplomacyGraphPage.razor\" -Encoding utf8; dotnet build --nologo -v q)",
-      "PowerShell(git add -A)"
+      "PowerShell(git add -A)",
+      "PowerShell($p = Start-Process dotnet -ArgumentList \"run --project src/GameDevManager.Web --no-build\" -PassThru -RedirectStandardOutput \"$env:TEMP\\\\gdm-run.log\" -RedirectStandardError \"$env:TEMP\\\\gdm-err.log\"; Start-Sleep -Seconds 15; $started = Select-String -Path \"$env:TEMP\\\\gdm-run.log\" -Pattern \"Now listening\" -Quiet; try { Stop-Process -Id $p.Id -Force -ErrorAction Stop } catch {}; Get-Content \"$env:TEMP\\\\gdm-run.log\" -Tail 5; Get-Content \"$env:TEMP\\\\gdm-err.log\" -Tail 10; if \\($started\\) { \"SMOKE-TEST OK\" } else { \"SMOKE-TEST FEHLGESCHLAGEN\" })",
+      "PowerShell($p = Start-Process dotnet -ArgumentList \"run --project src/GameDevManager.Web --no-build\" -PassThru -RedirectStandardOutput \"$env:TEMP\\\\gdm-run2.log\" -RedirectStandardError \"$env:TEMP\\\\gdm-err2.log\"; Start-Sleep -Seconds 40; $started = Select-String -Path \"$env:TEMP\\\\gdm-run2.log\" -Pattern \"Now listening\" -Quiet; try { Stop-Process -Id $p.Id -Force -ErrorAction Stop } catch {}; \"--- STDOUT ---\"; Get-Content \"$env:TEMP\\\\gdm-run2.log\"; \"--- STDERR ---\"; Get-Content \"$env:TEMP\\\\gdm-err2.log\"; if \\($started\\) { \"SMOKE-TEST OK\" } else { \"SMOKE-TEST FEHLGESCHLAGEN\" })"
     ],
     "deny": [
       "Bash(rm:*)",

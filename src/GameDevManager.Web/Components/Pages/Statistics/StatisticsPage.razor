@@ -1,0 +1,235 @@
+@page "/modules/statistics"
+@inject StatisticsService Statistics
+@inject CraftingService Crafting
+@inject LootService Loot
+@inject DialogueService Dialogues
+@inject ConditionService Conditions
+@inject QuestService Quests
+@inject ProjectContext Project
+
+<PageTitle>Statistik – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Subtitle="Kennzahlen über alle Module und die Health Checks des Konzepts an einer Stelle." />
+
+@if (_counts is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    @* ------------------------------------------------------------------ Kennzahlen *@
+    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">Kennzahlen</MudText>
+    <MudGrid Spacing="2" Class="mb-2">
+        @foreach (var count in _counts)
+        {
+            var module = ModuleRegistry.Find(count.ModuleKey);
+            if (module is null)
+            {
+                continue;
+            }
+
+            <MudItem xs="6" sm="4" md="3" lg="2">
+                <MudPaper Elevation="0" Class="gdm-panel pa-3">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudIcon Icon="@module.Icon" Size="Size.Small" Color="Color.Secondary" />
+                        <div>
+                            <MudText Typo="Typo.h6" Class="gdm-mono">@count.Count</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@module.Name</MudText>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+
+    @if (_npcBreakdown is not null)
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-3 mb-6">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Davon NPCs: <b>@_npcBreakdown.NpcCount friedlich</b>, <b>@_npcBreakdown.MobCount feindlich (Mobs)</b>
+                — @_npcBreakdown.TraderCount Händler, @_npcBreakdown.QuestGiverCount Questgeber.
+            </MudText>
+        </MudPaper>
+    }
+
+    @* --------------------------------------------------------------- Health Checks *@
+    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">Health Checks</MudText>
+
+    <MudStack Spacing="3">
+        @* Zyklische Rezepte *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_cycles.Count)" Color="@StatusColor(_cycles.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>Zyklische Rezepte</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_cycles.Count)</MudText>
+                <MudSpacer />
+                <MudLink Href="/modules/crafting" Typo="Typo.caption">Zum Crafting</MudLink>
+            </MudStack>
+            @foreach (var cycle in _cycles)
+            {
+                <MudText Typo="Typo.body2" Class="gdm-mono py-1">@string.Join(" → ", cycle.ItemNames)</MudText>
+            }
+        </MudPaper>
+
+        @* Items ohne Bezugsquelle *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_deadItems.Count)" Color="@StatusColor(_deadItems.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>Items ohne Bezugsquelle</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_deadItems.Count)</MudText>
+                <MudSpacer />
+                <MudLink Href="/modules/items" Typo="Typo.caption">Zu den Items</MudLink>
+            </MudStack>
+            @if (_deadItems.Count > 0)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                    Kein Rezept stellt sie her, kein Händler führt sie, keine Loot-Table lässt sie fallen —
+                    toter Content.
+                </MudText>
+                @foreach (var item in _deadItems)
+                {
+                    <MudLink Href="@($"/modules/items/{item.Id}")" Typo="Typo.body2" Class="d-block py-1">
+                        @item.Name
+                    </MudLink>
+                }
+            }
+        </MudPaper>
+
+        @* Quests ohne Abschlussbedingung *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_questsWithoutCompletion.Count)" Color="@StatusColor(_questsWithoutCompletion.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>Quests ohne Abschlussbedingung</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_questsWithoutCompletion.Count)</MudText>
+                <MudSpacer />
+                <MudLink Href="/modules/quests" Typo="Typo.caption">Zu den Quests</MudLink>
+            </MudStack>
+            @foreach (var quest in _questsWithoutCompletion)
+            {
+                <MudLink Href="@($"/modules/quests/{quest.Id}")" Typo="Typo.body2" Class="d-block py-1">
+                    @quest.Name
+                </MudLink>
+            }
+        </MudPaper>
+
+        @* Dialog-Sackgassen *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_dialogueProblems.Count)" Color="@StatusColor(_dialogueProblems.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>Dialog-Sackgassen</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_dialogueProblems.Count)</MudText>
+                <MudSpacer />
+                <MudLink Href="/modules/dialogs" Typo="Typo.caption">Zu den Dialogen</MudLink>
+            </MudStack>
+            @foreach (var problem in _dialogueProblems)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="py-1">
+                    <MudLink Href="@($"/modules/dialogs/{problem.DialogueId}")" Typo="Typo.body2">
+                        @problem.DialogueName
+                    </MudLink>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@problem.Message</MudText>
+                </MudStack>
+            }
+        </MudPaper>
+
+        @* Loot über 100 % *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_overfullTables.Count)" Color="@StatusColor(_overfullTables.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>Loot-Wahrscheinlichkeiten über 100 %</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_overfullTables.Count)</MudText>
+                <MudSpacer />
+                <MudLink Href="/modules/loot" Typo="Typo.caption">Zu den Loot-Tables</MudLink>
+            </MudStack>
+            @foreach (var table in _overfullTables)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="py-1">
+                    <MudLink Href="@($"/modules/loot/{table.Id}")" Typo="Typo.body2">@table.Name</MudLink>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                        @table.TotalChance.ToString("0.##") %
+                    </MudText>
+                </MudStack>
+            }
+        </MudPaper>
+
+        @* Verwaiste Sprites *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_orphanedAssets.Count)" Color="@StatusColor(_orphanedAssets.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>Verwaiste Sprites</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_orphanedAssets.Count)</MudText>
+                <MudSpacer />
+                <MudLink Href="/modules/assets" Typo="Typo.caption">Zur Asset-Bibliothek</MudLink>
+            </MudStack>
+            @foreach (var orphan in _orphanedAssets)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="py-1">
+                    <AssetThumbnail AssetId="orphan.AssetId" Size="Size.Small" Alt="@orphan.FileName" />
+                    <MudText Typo="Typo.body2">@orphan.FileName</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @(ModuleRegistry.Find(orphan.OwnerModuleKey ?? string.Empty)?.Name ?? orphan.OwnerModuleKey)
+                    </MudText>
+                </MudStack>
+            }
+        </MudPaper>
+
+        @* Unerfüllbare Bedingungen *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_conditionProblems.Count)" Color="@StatusColor(_conditionProblems.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>Unerfüllbare Bedingungen</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_conditionProblems.Count)</MudText>
+            </MudStack>
+            @foreach (var problem in _conditionProblems)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="py-1">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @(ModuleRegistry.Find(problem.OwnerModuleKey)?.Name ?? problem.OwnerModuleKey):
+                    </MudText>
+                    <MudText Typo="Typo.body2">@problem.Message</MudText>
+                </MudStack>
+            }
+        </MudPaper>
+    </MudStack>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Statistics);
+
+    private List<ModuleCount>? _counts;
+    private NpcBreakdown? _npcBreakdown;
+    private List<CraftingCycle> _cycles = [];
+    private List<EntitySummary> _deadItems = [];
+    private List<EntitySummary> _questsWithoutCompletion = [];
+    private List<DialogueProblem> _dialogueProblems = [];
+    private List<LootTableListRow> _overfullTables = [];
+    private List<OrphanedAsset> _orphanedAssets = [];
+    private List<ConditionProblem> _conditionProblems = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+
+        _npcBreakdown = await Statistics.GetNpcBreakdownAsync(projectId);
+        _cycles = await Crafting.FindCyclesAsync(projectId);
+        _deadItems = await Statistics.FindDeadItemsAsync(projectId);
+        _questsWithoutCompletion = await Quests.FindQuestsWithoutCompletionAsync(projectId);
+        _dialogueProblems = await Dialogues.FindProblemsAsync(projectId);
+        _overfullTables = await Loot.FindOverfullTablesAsync(projectId);
+        _orphanedAssets = await Statistics.FindOrphanedAssetsAsync(projectId);
+        _conditionProblems = await Conditions.FindProblemsAsync(projectId);
+
+        // Zuletzt, weil die Anzeige darauf wartet — so erscheinen die Checks gemeinsam.
+        _counts = await Statistics.GetCountsAsync(projectId);
+    }
+
+    private static string StatusIcon(int findings) =>
+        findings == 0 ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.ReportProblem;
+
+    private static Color StatusColor(int findings) =>
+        findings == 0 ? Color.Success : Color.Warning;
+
+    private static string FundLabel(int findings) =>
+        findings == 0 ? "keine Funde" : $"{findings} Fund(e)";
+}

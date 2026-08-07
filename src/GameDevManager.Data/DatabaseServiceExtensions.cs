@@ -57,6 +57,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<TagService>();
         services.AddScoped<AudioService>();
         services.AddScoped<CutsceneService>();
+        services.AddScoped<StatisticsService>();
         services.AddScoped<LootService>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
