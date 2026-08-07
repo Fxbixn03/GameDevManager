@@ -510,6 +510,26 @@ public sealed class GameEffectEntitySource : ModuleEntitySource<GameEffect>
 }
 
 /// <summary>
+/// Achievements für die modulübergreifenden Dienste.
+/// </summary>
+public sealed class AchievementEntitySource : ModuleEntitySource<Achievement>
+{
+    public override string ModuleKey => ModuleKeys.Achievements;
+
+    protected override DbSet<Achievement> Set(GameDevManagerDbContext db) => db.Achievements;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<Achievement> query) =>
+        query.Select(achievement => new SearchHit(
+            achievement.Id,
+            ModuleKeys.Achievements,
+            SearchHitKind.Entity,
+            achievement.Name,
+            achievement.IsSecret ? "Versteckt" : achievement.ContentType!.Name,
+            db.Assets.Where(a => a.OwnerEntityId == achievement.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

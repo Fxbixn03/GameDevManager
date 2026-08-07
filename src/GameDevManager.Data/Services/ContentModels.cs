@@ -317,6 +317,19 @@ public sealed record EffectListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>Eine Zeile der Achievement-Übersicht.</summary>
+/// <param name="HasUnlockCondition">Ob eine Freischalt-Bedingung hinterlegt ist.</param>
+public sealed record AchievementListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    bool IsSecret,
+    bool HasUnlockCondition,
+    Guid? ContentTypeId,
+    string? TypeName,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,

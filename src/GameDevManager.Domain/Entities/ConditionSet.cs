@@ -62,4 +62,7 @@ public static class ConditionSlots
     /// Abschlussbedingung“ schaut genau auf diesen Slot.
     /// </summary>
     public const string Completion = "completion";
+
+    /// <summary>„Wird freigeschaltet, wenn …“ — für Achievements.</summary>
+    public const string Unlock = "unlock";
 }

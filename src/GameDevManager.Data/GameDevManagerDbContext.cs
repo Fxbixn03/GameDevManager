@@ -59,6 +59,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<EffectAssignment> EffectAssignments => Set<EffectAssignment>();
 
+    public DbSet<Achievement> Achievements => Set<Achievement>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -435,6 +437,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             // Trägt die Frage „welche Effekte hat dieses Item?“.
             entity.HasIndex(a => a.ItemId);
         });
+
+        ConfigureContentEntity<Achievement>(modelBuilder);
 
         ConfigureContentEntity<LootTable>(modelBuilder);
         ConfigureContentEntity<GameMap>(modelBuilder);

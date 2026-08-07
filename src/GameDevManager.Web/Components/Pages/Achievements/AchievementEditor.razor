@@ -1,0 +1,325 @@
+@page "/modules/achievements/neu"
+@page "/modules/achievements/{Id:guid}"
+@inject AchievementService Achievements
+@inject ConditionService Conditions
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@PageHeading – GameDevManager</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        Es gibt kein Achievement mit dieser GUID. Vielleicht wurde es gelöscht.
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/achievements">Zurück zur Übersicht</MudButton>
+}
+else if (_context is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@PageHeading"
+                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            @if (_dirty)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                    Ungespeicherte Änderungen
+                </MudChip>
+            }
+            @if (!_context.IsNew)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="DeleteAsync">
+                    Löschen
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Href="/modules/achievements">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_saving"
+                       OnClick="SaveAsync">
+                Speichern
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+
+                @* ------------------------------------------------------------- Stammdaten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudTextField Value="_context.Entity.Name"
+                                      ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
+                                      T="string"
+                                      Label="Name *"
+                                      Variant="Variant.Outlined"
+                                      Immediate="true" />
+
+                        <MudTextField Value="_context.Entity.Description"
+                                      ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
+                                      T="string"
+                                      Label="Beschreibung"
+                                      HelperText="Was der Spieler tun muss — oder die Umschreibung, wenn es versteckt ist."
+                                      Variant="Variant.Outlined"
+                                      Lines="3" />
+
+                        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudSwitch T="bool"
+                                       Value="_context.Entity.IsSecret"
+                                       ValueChanged="@((bool on) => Touch(() => _context.Entity.IsSecret = on))"
+                                       Color="Color.Primary"
+                                       Label="Verstecktes Achievement" />
+
+                            <MudSelect T="Guid?"
+                                       Value="_context.Entity.ContentTypeId"
+                                       ValueChanged="ChangeType"
+                                       Label="Achievement-Art"
+                                       Variant="Variant.Outlined"
+                                       Clearable="true"
+                                       Style="max-width:240px;">
+                                @foreach (var type in _context.AvailableTypes)
+                                {
+                                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+
+                @* ---------------------------------------------------------- Freischaltung *@
+                @if (!_context.IsNew)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">
+                            Freischaltung@(_unlockCount > 0 ? $" ({_unlockCount})" : "")
+                        </MudText>
+
+                        <ConditionEditor OwnerId="_context.Entity.Id"
+                                         OwnerModuleKey="@ModuleKeys.Achievements"
+                                         Slot="@ConditionSlots.Unlock"
+                                         EmptyHint="Ohne Bedingung weiß das Spiel nicht, wann das Achievement freigeschaltet wird."
+                                         OnSaved="@((int count) => _unlockCount = count)" />
+                    </MudPaper>
+                }
+
+                @* ------------------------------------------------------------------ Sprites *@
+                <AssetSpritePanel ModuleKey="@ModuleKeys.Achievements"
+                                  EntityId="_context.Entity.Id"
+                                  Disabled="_context.IsNew" />
+
+                @* ------------------------------------------------------------------- Felder *@
+                <div>
+                    <ContentFieldsPanel TEntity="Achievement"
+                                        Context="_context"
+                                        ModuleKey="@ModuleKeys.Achievements"
+                                        TypesRoute="/modules/achievements/arten"
+                                        IndividualHint="Für Angaben, die nur dieses eine Achievement braucht."
+                                        OnValueChanged="MarkDirty"
+                                        OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
+                </div>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <EntityIdChip Id="_context.Entity.Id" />
+
+                    @if (!_context.IsNew)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                    }
+                </MudPaper>
+
+                @if (!_context.IsNew)
+                {
+                    <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Achievements);
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private ContentEditContext<Achievement>? _context;
+    private ReferencesPanel? _referencesPanel;
+    private int _unlockCount;
+    private Guid? _loadedId;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+
+    private string PageHeading => _context switch
+    {
+        null => "Achievement",
+        { IsNew: true } => "Neues Achievement",
+        { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
+        _ => "Achievement ohne Namen"
+    };
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_context is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _notFound = false;
+        _dirty = false;
+        _context = null;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _context = await Achievements.LoadForEditAsync(projectId, Id);
+
+        if (_context is null)
+        {
+            _notFound = true;
+            return;
+        }
+
+        if (!_context.IsNew)
+        {
+            var counts = await Conditions.CountByOwnersAsync([_context.Entity.Id], ConditionSlots.Unlock);
+            _unlockCount = counts.GetValueOrDefault(_context.Entity.Id);
+        }
+    }
+
+    private void ChangeType(Guid? contentTypeId) =>
+        Touch(() => _context!.Entity.ContentTypeId = contentTypeId);
+
+    private void Touch(Action change)
+    {
+        change();
+        MarkDirty();
+    }
+
+    private void MarkDirty() => _dirty = true;
+
+    private async Task SaveAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            var wasNew = _context.IsNew;
+            await Achievements.SaveAchievementAsync(_context);
+            _dirty = false;
+
+            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+
+            if (wasNew)
+            {
+                Navigation.NavigateTo($"/modules/achievements/{_context.Entity.Id}");
+                return;
+            }
+
+            if (_referencesPanel is not null)
+            {
+                await _referencesPanel.RefreshAsync();
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Achievement löschen",
+            $"„{_context.Entity.Name}“ wird mit Feldwerten, individuellen Feldern, Bedingungen und Sprites gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Achievements.DeleteAchievementAsync(_context.Entity.Id);
+        Snackbar.Add("Achievement gelöscht.", Severity.Success);
+        Navigation.NavigateTo("/modules/achievements");
+    }
+
+    /// <summary>
+    /// Lädt nach einer Änderung an den Felddefinitionen neu und behält dabei, was in der Maske
+    /// noch nicht gespeichert ist.
+    /// </summary>
+    private async Task ReloadKeepingChangesAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var entity = _context.Entity;
+        var wasDirty = _dirty;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var reloaded = await Achievements.LoadForEditAsync(projectId, entity.Id);
+
+        if (reloaded is null)
+        {
+            _notFound = true;
+            _context = null;
+            return;
+        }
+
+        reloaded.Entity.Name = entity.Name;
+        reloaded.Entity.Description = entity.Description;
+        reloaded.Entity.ContentTypeId = entity.ContentTypeId;
+        reloaded.Entity.IsSecret = entity.IsSecret;
+
+        _context = reloaded;
+        _dirty = wasDirty;
+    }
+}
