@@ -61,6 +61,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Achievement> Achievements => Set<Achievement>();
 
+    public DbSet<Collectible> Collectibles => Set<Collectible>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -439,6 +441,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         });
 
         ConfigureContentEntity<Achievement>(modelBuilder);
+
+        ConfigureContentEntity<Collectible>(modelBuilder);
 
         ConfigureContentEntity<LootTable>(modelBuilder);
         ConfigureContentEntity<GameMap>(modelBuilder);

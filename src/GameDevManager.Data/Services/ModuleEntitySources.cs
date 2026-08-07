@@ -530,6 +530,26 @@ public sealed class AchievementEntitySource : ModuleEntitySource<Achievement>
 }
 
 /// <summary>
+/// Sammelobjekte für die modulübergreifenden Dienste.
+/// </summary>
+public sealed class CollectibleEntitySource : ModuleEntitySource<Collectible>
+{
+    public override string ModuleKey => ModuleKeys.Collectibles;
+
+    protected override DbSet<Collectible> Set(GameDevManagerDbContext db) => db.Collectibles;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<Collectible> query) =>
+        query.Select(collectible => new SearchHit(
+            collectible.Id,
+            ModuleKeys.Collectibles,
+            SearchHitKind.Entity,
+            collectible.Name,
+            collectible.ContentType!.Name,
+            db.Assets.Where(a => a.OwnerEntityId == collectible.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

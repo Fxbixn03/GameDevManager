@@ -330,6 +330,18 @@ public sealed record AchievementListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>Eine Zeile der Sammelobjekt-Übersicht.</summary>
+/// <param name="PlacementCount">Wie oft das Objekt auf Karten markiert ist — seine Fundorte.</param>
+public sealed record CollectibleListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    int PlacementCount,
+    Guid? ContentTypeId,
+    string? TypeName,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,

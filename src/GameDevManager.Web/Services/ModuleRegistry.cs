@@ -40,7 +40,7 @@ public static class ModuleRegistry
         new(ModuleKeys.Loot, "Loot-Tables", Icons.Material.Filled.Casino, "Drop-Wahrscheinlichkeiten und Mengen", Implemented: true),
         new(ModuleKeys.Effects, "Effekte", Icons.Material.Filled.AutoAwesome, "Effekte und deren Wirkung, z. B. Verbrennung", Implemented: true),
         new(ModuleKeys.Achievements, "Achievements", Icons.Material.Filled.EmojiEvents, "Erfolge, die der Spieler erreichen kann", Implemented: true),
-        new(ModuleKeys.Collectibles, "Sammelobjekte", Icons.Material.Filled.Collections, "Statuen, Notizen und andere Sammelobjekte"),
+        new(ModuleKeys.Collectibles, "Sammelobjekte", Icons.Material.Filled.Collections, "Statuen, Notizen und andere Sammelobjekte", Implemented: true),
         new(ModuleKeys.Events, "Events", Icons.Material.Filled.Event, "Zufalls-Events mit Spawns, Loot und Orten", Implemented: true),
         new(ModuleKeys.Tags, "Tags", Icons.Material.Filled.Label, "Tags/Labels, modulübergreifend einsetzbar"),
         new(ModuleKeys.Audio, "SFX/Audio", Icons.Material.Filled.MusicNote, "Sounds und Audio (noch offen)"),
