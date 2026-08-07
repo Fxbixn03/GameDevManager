@@ -38,7 +38,7 @@ public static class ModuleRegistry
         new(ModuleKeys.Player, "Spieler", Icons.Material.Filled.Person, "Spielerfigur und Skilltrees", Implemented: true),
         new(ModuleKeys.Classes, "Klassen", Icons.Material.Filled.School, "Klassen für Spieler und NPCs", Implemented: true),
         new(ModuleKeys.Loot, "Loot-Tables", Icons.Material.Filled.Casino, "Drop-Wahrscheinlichkeiten und Mengen", Implemented: true),
-        new(ModuleKeys.Effects, "Effekte", Icons.Material.Filled.AutoAwesome, "Effekte und deren Wirkung, z. B. Verbrennung"),
+        new(ModuleKeys.Effects, "Effekte", Icons.Material.Filled.AutoAwesome, "Effekte und deren Wirkung, z. B. Verbrennung", Implemented: true),
         new(ModuleKeys.Achievements, "Achievements", Icons.Material.Filled.EmojiEvents, "Erfolge, die der Spieler erreichen kann"),
         new(ModuleKeys.Collectibles, "Sammelobjekte", Icons.Material.Filled.Collections, "Statuen, Notizen und andere Sammelobjekte"),
         new(ModuleKeys.Events, "Events", Icons.Material.Filled.Event, "Zufalls-Events mit Spawns, Loot und Orten", Implemented: true),

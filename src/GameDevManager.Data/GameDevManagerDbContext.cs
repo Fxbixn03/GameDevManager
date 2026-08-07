@@ -55,6 +55,10 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<CharacterClass> CharacterClasses => Set<CharacterClass>();
 
+    public DbSet<GameEffect> GameEffects => Set<GameEffect>();
+
+    public DbSet<EffectAssignment> EffectAssignments => Set<EffectAssignment>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -418,6 +422,19 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         });
 
         ConfigureContentEntity<CharacterClass>(modelBuilder);
+
+        ConfigureContentEntity<GameEffect>(modelBuilder);
+
+        modelBuilder.Entity<EffectAssignment>(entity =>
+        {
+            entity.HasOne(a => a.GameEffect)
+                .WithMany(e => e.Assignments)
+                .HasForeignKey(a => a.GameEffectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „welche Effekte hat dieses Item?“.
+            entity.HasIndex(a => a.ItemId);
+        });
 
         ConfigureContentEntity<LootTable>(modelBuilder);
         ConfigureContentEntity<GameMap>(modelBuilder);

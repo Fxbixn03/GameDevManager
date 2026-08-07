@@ -501,6 +501,30 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.ToTable("DiplomaticRelations");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EffectAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("GameEffectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameEffectId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("EffectAssignments");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.EventSpawn", b =>
                 {
                     b.Property<Guid>("Id")
@@ -715,6 +739,44 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .IsUnique();
 
                     b.ToTable("FieldValues");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameEffect", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar(4000)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("GameEffects");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.GameEvent", b =>
@@ -1591,6 +1653,17 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EffectAssignment", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameEffect", "GameEffect")
+                        .WithMany("Assignments")
+                        .HasForeignKey("GameEffectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameEffect");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.EventSpawn", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameEvent", "GameEvent")
@@ -1661,6 +1734,24 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .IsRequired();
 
                     b.Navigation("FieldDefinition");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameEffect", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.GameEvent", b =>
@@ -1942,6 +2033,11 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>
                 {
                     b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameEffect", b =>
+                {
+                    b.Navigation("Assignments");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.GameEvent", b =>

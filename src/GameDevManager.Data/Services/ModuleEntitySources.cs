@@ -477,6 +477,39 @@ public sealed class CharacterClassEntitySource : ModuleEntitySource<CharacterCla
 }
 
 /// <summary>
+/// Effekte für die modulübergreifenden Dienste. Ihre Zuweisungen verweisen über eigene
+/// Spalten auf Items.
+/// </summary>
+public sealed class GameEffectEntitySource : ModuleEntitySource<GameEffect>
+{
+    public override string ModuleKey => ModuleKeys.Effects;
+
+    protected override DbSet<GameEffect> Set(GameDevManagerDbContext db) => db.GameEffects;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<GameEffect> query) =>
+        query.Select(effect => new SearchHit(
+            effect.Id,
+            ModuleKeys.Effects,
+            SearchHitKind.Entity,
+            effect.Name,
+            effect.Assignments.Count + " Item(s)",
+            db.Assets.Where(a => a.OwnerEntityId == effect.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+
+    public override Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct) =>
+        db.EffectAssignments
+            .AsNoTracking()
+            .Where(assignment => assignment.ItemId == entityId)
+            .Select(assignment => new EntityReferenceHit(
+                assignment.GameEffectId,
+                ModuleKeys.Effects,
+                assignment.GameEffect!.Name,
+                "Effekt am Item"))
+            .ToListAsync(ct);
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

@@ -51,6 +51,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<EventService>();
         services.AddScoped<PlayerService>();
         services.AddScoped<ClassService>();
+        services.AddScoped<EffectService>();
         services.AddScoped<LootService>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
@@ -72,6 +73,7 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<IModuleEntitySource, GameEventEntitySource>();
         services.AddSingleton<IModuleEntitySource, SkillEntitySource>();
         services.AddSingleton<IModuleEntitySource, CharacterClassEntitySource>();
+        services.AddSingleton<IModuleEntitySource, GameEffectEntitySource>();
         services.AddSingleton<IModuleEntitySource, LootTableEntitySource>();
         services.AddSingleton<IModuleEntitySource, MapEntitySource>();
         services.AddSingleton<IModuleEntitySource, DialogueEntitySource>();

@@ -306,6 +306,17 @@ public sealed record ClassUsage(
     IReadOnlyList<EntitySummary> Npcs,
     IReadOnlyList<EntitySummary> PlayerCharacters);
 
+/// <summary>Eine Zeile der Effekt-Übersicht.</summary>
+public sealed record EffectListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    int AssignedItemCount,
+    Guid? ContentTypeId,
+    string? TypeName,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,
