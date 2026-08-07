@@ -249,6 +249,43 @@ public sealed class FactionEntitySource : ModuleEntitySource<Faction>
 }
 
 /// <summary>
+/// Diplomatische Beziehungen für die modulübergreifenden Dienste. Beide Seiten der
+/// Beziehung verweisen über eigene Spalten auf Fraktionen.
+/// </summary>
+public sealed class DiplomaticRelationEntitySource : ModuleEntitySource<DiplomaticRelation>
+{
+    public override string ModuleKey => ModuleKeys.Diplomacy;
+
+    protected override DbSet<DiplomaticRelation> Set(GameDevManagerDbContext db) => db.DiplomaticRelations;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<DiplomaticRelation> query) =>
+        query.Select(relation => new SearchHit(
+            relation.Id,
+            ModuleKeys.Diplomacy,
+            SearchHitKind.Entity,
+            relation.Name,
+            relation.Stance == DiplomaticStance.Alliance ? "Allianz"
+                : relation.Stance == DiplomaticStance.Friendship ? "Freundschaft"
+                : relation.Stance == DiplomaticStance.Hostility ? "Feindschaft"
+                : relation.Stance == DiplomaticStance.War ? "Krieg"
+                : "Neutral",
+            null));
+
+    public override async Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
+    {
+        var hits = await db.DiplomaticRelations
+            .AsNoTracking()
+            .Where(relation => relation.FactionAId == entityId || relation.FactionBId == entityId)
+            .Select(relation => new EntityReferenceHit(
+                relation.Id, ModuleKeys.Diplomacy, relation.Name, "Diplomatische Beziehung"))
+            .ToListAsync(ct);
+
+        return hits;
+    }
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

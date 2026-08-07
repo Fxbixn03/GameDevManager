@@ -415,6 +415,57 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.ToTable("DialogueParticipants");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DiplomaticRelation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<Guid>("FactionAId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FactionBId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Stance")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("FactionAId");
+
+                    b.HasIndex("FactionBId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("DiplomaticRelations");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1136,6 +1187,24 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .IsRequired();
 
                     b.Navigation("Dialogue");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DiplomaticRelation", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>

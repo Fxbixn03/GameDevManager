@@ -196,6 +196,36 @@ public sealed record FactionListRow(
 /// <summary>Eine Fraktion, in der ein bestimmter NPC Mitglied ist — für die NPC-Maske.</summary>
 public sealed record FactionForNpc(Guid FactionId, string FactionName, string? Role);
 
+/// <summary>Eine Zeile der Diplomatie-Übersicht. Die Fraktionsnamen sind aufgelöst; <c>null</c> heißt gelöscht.</summary>
+public sealed record DiplomacyListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    DiplomaticStance Stance,
+    Guid FactionAId,
+    string? FactionAName,
+    Guid FactionBId,
+    string? FactionBName,
+    Guid? ContentTypeId,
+    string? TypeName,
+    DateTime UpdatedAtUtc);
+
+/// <summary>Ein Knoten des Diplomatie-Graphen — eine Fraktion.</summary>
+public sealed record DiplomacyGraphNode(Guid FactionId, string Name);
+
+/// <summary>Eine Kante des Diplomatie-Graphen — eine Beziehung samt Haltung.</summary>
+public sealed record DiplomacyGraphEdge(
+    Guid RelationId,
+    string Name,
+    Guid FactionAId,
+    Guid FactionBId,
+    DiplomaticStance Stance);
+
+/// <summary>Der komplette Diplomatie-Graph eines Projekts.</summary>
+public sealed record DiplomacyGraph(
+    IReadOnlyList<DiplomacyGraphNode> Nodes,
+    IReadOnlyList<DiplomacyGraphEdge> Edges);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,

@@ -1,0 +1,340 @@
+@page "/modules/diplomacy/neu"
+@page "/modules/diplomacy/{Id:guid}"
+@inject DiplomacyService Diplomacy
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@PageHeading – GameDevManager</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        Es gibt keine Beziehung mit dieser GUID. Vielleicht wurde sie gelöscht.
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/diplomacy">Zurück zur Übersicht</MudButton>
+}
+else if (_context is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@PageHeading"
+                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            @if (_dirty)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                    Ungespeicherte Änderungen
+                </MudChip>
+            }
+            @if (!_context.IsNew)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="DeleteAsync">
+                    Löschen
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Href="/modules/diplomacy">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_saving"
+                       OnClick="SaveAsync">
+                Speichern
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+
+                @* ------------------------------------------------------------- Stammdaten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudTextField Value="_context.Entity.Name"
+                                      ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
+                                      T="string"
+                                      Label="Name *"
+                                      HelperText="Etwa „Nichtangriffspakt“ oder „Grenzstreit um die Ostmark“."
+                                      Variant="Variant.Outlined"
+                                      Immediate="true" />
+
+                        @if (_factions.Count < 2)
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true">
+                                Für eine Beziehung braucht es mindestens zwei Fraktionen —
+                                <MudLink Href="/modules/factions" Color="Color.Primary">jetzt anlegen</MudLink>.
+                            </MudAlert>
+                        }
+
+                        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudSelect T="Guid"
+                                       Value="_context.Entity.FactionAId"
+                                       ValueChanged="@((Guid id) => Touch(() => _context.Entity.FactionAId = id))"
+                                       Label="Fraktion *"
+                                       Variant="Variant.Outlined"
+                                       Style="min-width:220px;">
+                                @foreach (var faction in _factions)
+                                {
+                                    <MudSelectItem T="Guid" Value="@faction.Id">@faction.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <MudIcon Icon="@Icons.Material.Filled.SyncAlt" />
+
+                            <MudSelect T="Guid"
+                                       Value="_context.Entity.FactionBId"
+                                       ValueChanged="@((Guid id) => Touch(() => _context.Entity.FactionBId = id))"
+                                       Label="Fraktion *"
+                                       Variant="Variant.Outlined"
+                                       Style="min-width:220px;">
+                                @foreach (var faction in _factions)
+                                {
+                                    <MudSelectItem T="Guid" Value="@faction.Id">@faction.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudStack>
+
+                        <MudSelect T="DiplomaticStance"
+                                   Value="_context.Entity.Stance"
+                                   ValueChanged="@((DiplomaticStance stance) => Touch(() => _context.Entity.Stance = stance))"
+                                   Label="Haltung"
+                                   Variant="Variant.Outlined"
+                                   Style="max-width:260px;">
+                            @foreach (var stance in Enum.GetValues<DiplomaticStance>())
+                            {
+                                <MudSelectItem T="DiplomaticStance" Value="@stance">@DiplomacyService.StanceLabel(stance)</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudTextField Value="_context.Entity.Description"
+                                      ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
+                                      T="string"
+                                      Label="Beschreibung"
+                                      Variant="Variant.Outlined"
+                                      Lines="3" />
+
+                        <MudSelect T="Guid?"
+                                   Value="_context.Entity.ContentTypeId"
+                                   ValueChanged="ChangeType"
+                                   Label="Beziehungs-Art"
+                                   Variant="Variant.Outlined"
+                                   Clearable="true"
+                                   HelperText="Über die Art kommen eigene Felder dazu, etwa eine Vertragsdauer.">
+                            @foreach (var type in _context.AvailableTypes)
+                            {
+                                <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudStack>
+                </MudPaper>
+
+                @* ------------------------------------------------------------------- Felder *@
+                <div>
+                    <ContentFieldsPanel TEntity="DiplomaticRelation"
+                                        Context="_context"
+                                        ModuleKey="@ModuleKeys.Diplomacy"
+                                        TypesRoute="/modules/diplomacy/arten"
+                                        IndividualHint="Für Angaben, die nur diese eine Beziehung braucht."
+                                        OnValueChanged="MarkDirty"
+                                        OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
+                </div>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <EntityIdChip Id="_context.Entity.Id" />
+
+                    @if (!_context.IsNew)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                    }
+                </MudPaper>
+
+                @if (!_context.IsNew)
+                {
+                    <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Diplomacy);
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private ContentEditContext<DiplomaticRelation>? _context;
+    private ReferencesPanel? _referencesPanel;
+    private List<EntitySummary> _factions = [];
+    private Guid? _loadedId;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+
+    private string PageHeading => _context switch
+    {
+        null => "Beziehung",
+        { IsNew: true } => "Neue Beziehung",
+        { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
+        _ => "Beziehung ohne Namen"
+    };
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_context is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _notFound = false;
+        _dirty = false;
+        _context = null;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _factions = await References.GetEntitiesAsync(projectId, ModuleKeys.Factions);
+        _context = await Diplomacy.LoadForEditAsync(projectId, Id);
+
+        if (_context is null)
+        {
+            _notFound = true;
+        }
+    }
+
+    private void ChangeType(Guid? contentTypeId) =>
+        Touch(() => _context!.Entity.ContentTypeId = contentTypeId);
+
+    private void Touch(Action change)
+    {
+        change();
+        MarkDirty();
+    }
+
+    private void MarkDirty() => _dirty = true;
+
+    private async Task SaveAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            var wasNew = _context.IsNew;
+            await Diplomacy.SaveRelationAsync(_context);
+            _dirty = false;
+
+            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+
+            if (wasNew)
+            {
+                Navigation.NavigateTo($"/modules/diplomacy/{_context.Entity.Id}");
+                return;
+            }
+
+            if (_referencesPanel is not null)
+            {
+                await _referencesPanel.RefreshAsync();
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Beziehung löschen",
+            $"„{_context.Entity.Name}“ wird mit allen Feldwerten gelöscht. Die Fraktionen bleiben erhalten.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Diplomacy.DeleteRelationAsync(_context.Entity.Id);
+        Snackbar.Add("Beziehung gelöscht.", Severity.Success);
+        Navigation.NavigateTo("/modules/diplomacy");
+    }
+
+    /// <summary>
+    /// Lädt nach einer Änderung an den Felddefinitionen neu und behält dabei, was in der Maske
+    /// noch nicht gespeichert ist.
+    /// </summary>
+    private async Task ReloadKeepingChangesAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var entity = _context.Entity;
+        var wasDirty = _dirty;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var reloaded = await Diplomacy.LoadForEditAsync(projectId, entity.Id);
+
+        if (reloaded is null)
+        {
+            _notFound = true;
+            _context = null;
+            return;
+        }
+
+        reloaded.Entity.Name = entity.Name;
+        reloaded.Entity.Description = entity.Description;
+        reloaded.Entity.ContentTypeId = entity.ContentTypeId;
+        reloaded.Entity.FactionAId = entity.FactionAId;
+        reloaded.Entity.FactionBId = entity.FactionBId;
+        reloaded.Entity.Stance = entity.Stance;
+
+        _context = reloaded;
+        _dirty = wasDirty;
+    }
+}

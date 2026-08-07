@@ -35,6 +35,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<FactionMember> FactionMembers => Set<FactionMember>();
 
+    public DbSet<DiplomaticRelation> DiplomaticRelations => Set<DiplomaticRelation>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -289,6 +291,15 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Frage „in welchen Fraktionen ist dieser NPC Mitglied?“.
             entity.HasIndex(m => m.NpcId);
+        });
+
+        ConfigureContentEntity<DiplomaticRelation>(modelBuilder);
+
+        modelBuilder.Entity<DiplomaticRelation>(entity =>
+        {
+            // Trägt die Frage „in welchen Beziehungen steckt diese Fraktion?“ — für beide Seiten.
+            entity.HasIndex(r => r.FactionAId);
+            entity.HasIndex(r => r.FactionBId);
         });
 
         ConfigureContentEntity<LootTable>(modelBuilder);

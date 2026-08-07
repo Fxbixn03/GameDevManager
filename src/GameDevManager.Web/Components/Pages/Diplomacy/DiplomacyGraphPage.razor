@@ -1,0 +1,167 @@
+@page "/modules/diplomacy/graph"
+@inject DiplomacyService Diplomacy
+@inject ProjectContext Project
+@inject NavigationManager Navigation
+
+<PageTitle>Diplomatie-Graph – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="Diplomatie-Graph"
+              Subtitle="Alle Fraktionen und ihre Beziehungen auf einen Blick — im Konzept: „als Graphen angezeigt“."
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/diplomacy">Zu den Beziehungen</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/diplomacy/neu">
+            Neue Beziehung
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_graph is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_graph.Nodes.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Hub" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">Noch keine Fraktionen</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Der Graph zeigt Fraktionen als Knoten und Beziehungen als Kanten.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/factions/neu">
+            Erste Fraktion
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            @foreach (var stance in Enum.GetValues<DiplomaticStance>())
+            {
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <span style="display:inline-block;width:24px;height:0;border-top:3px solid @EdgeColor(stance);"></span>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@DiplomacyService.StanceLabel(stance)</MudText>
+                </MudStack>
+            }
+            <MudSpacer />
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                Klick auf einen Knoten öffnet die Fraktion, Klick auf eine Kante die Beziehung.
+            </MudText>
+        </MudStack>
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="gdm-panel pa-4" Style="overflow-x:auto;">
+        <svg viewBox="0 0 @CanvasSize @CanvasSize"
+             width="100%"
+             style="max-width:820px;display:block;margin:0 auto;"
+             role="img"
+             aria-label="Diplomatie-Graph">
+
+            @* Kanten zuerst, damit die Knoten darüber liegen. *@
+            @foreach (var edge in _graph.Edges)
+            {
+                var a = PositionOf(edge.FactionAId);
+                var b = PositionOf(edge.FactionBId);
+
+                if (a is null || b is null)
+                {
+                    continue;
+                }
+
+                <line x1="@Fmt(a.Value.X)" y1="@Fmt(a.Value.Y)"
+                      x2="@Fmt(b.Value.X)" y2="@Fmt(b.Value.Y)"
+                      stroke="@EdgeColor(edge.Stance)"
+                      stroke-width="3"
+                      style="cursor:pointer;"
+                      @onclick="@(() => Navigation.NavigateTo($"/modules/diplomacy/{edge.RelationId}"))">
+                    <title>@edge.Name (@DiplomacyService.StanceLabel(edge.Stance))</title>
+                </line>
+            }
+
+            @foreach (var node in _graph.Nodes)
+            {
+                var position = PositionOf(node.FactionId)!.Value;
+
+                <g style="cursor:pointer;"
+                   @onclick="@(() => Navigation.NavigateTo($"/modules/factions/{node.FactionId}"))">
+                    <circle cx="@Fmt(position.X)" cy="@Fmt(position.Y)" r="14"
+                            fill="var(--mud-palette-primary)" />
+                    <title>@node.Name</title>
+                    <text x="@Fmt(position.LabelX)" y="@Fmt(position.LabelY)"
+                          text-anchor="@position.Anchor"
+                          fill="var(--mud-palette-text-primary)"
+                          style="font-size:13px;font-family:inherit;">
+                        @node.Name
+                    </text>
+                </g>
+            }
+        </svg>
+    </MudPaper>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Diplomacy);
+
+    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Graph", null, disabled: true)];
+
+    private const int CanvasSize = 640;
+
+    private DiplomacyGraph? _graph;
+    private Dictionary<Guid, int> _indexByFaction = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _graph = await Diplomacy.GetGraphAsync(projectId);
+        _indexByFaction = _graph.Nodes
+            .Select((node, index) => (node.FactionId, index))
+            .ToDictionary(pair => pair.FactionId, pair => pair.index);
+    }
+
+    /// <summary>
+    /// Kreis-Layout: alle Knoten gleichmäßig auf einem Ring. Für die Größenordnung eines
+    /// Spielprojekts reicht das und bleibt ohne JavaScript deterministisch.
+    /// </summary>
+    private (double X, double Y, double LabelX, double LabelY, string Anchor)? PositionOf(Guid factionId)
+    {
+        if (_graph is null || !_indexByFaction.TryGetValue(factionId, out var index))
+        {
+            return null;
+        }
+
+        var count = Math.Max(_graph.Nodes.Count, 1);
+        var angle = 2 * Math.PI * index / count - Math.PI / 2;
+        var radius = CanvasSize / 2.0 - 90;
+        var x = CanvasSize / 2.0 + radius * Math.Cos(angle);
+        var y = CanvasSize / 2.0 + radius * Math.Sin(angle);
+
+        // Beschriftung nach außen versetzt, damit sie nicht auf den Kanten liegt.
+        var labelX = CanvasSize / 2.0 + (radius + 26) * Math.Cos(angle);
+        var labelY = CanvasSize / 2.0 + (radius + 26) * Math.Sin(angle) + 4;
+        var anchor = Math.Cos(angle) switch
+        {
+            < -0.3 => "end",
+            > 0.3 => "start",
+            _ => "middle"
+        };
+
+        return (x, y, labelX, labelY, anchor);
+    }
+
+    private static string EdgeColor(DiplomaticStance stance) => stance switch
+    {
+        DiplomaticStance.Alliance => "var(--mud-palette-success)",
+        DiplomaticStance.Friendship => "var(--mud-palette-info)",
+        DiplomaticStance.Hostility => "var(--mud-palette-warning)",
+        DiplomaticStance.War => "var(--mud-palette-error)",
+        _ => "var(--mud-palette-lines-default)"
+    };
+
+    private static string Fmt(double value) =>
+        value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}

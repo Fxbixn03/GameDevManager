@@ -68,7 +68,8 @@
       "PowerShell(dotnet run --project src/GameDevManager.Web --no-build --urls http://localhost:5599)",
       "PowerShell($ok=$false; foreach \\($i in 1..20\\) { try { $r = Invoke-WebRequest -Uri http://localhost:5599 -UseBasicParsing -TimeoutSec 3; if \\($r.StatusCode -eq 200\\) { $ok=$true; break } } catch { Start-Sleep -Milliseconds 800 } }; if \\($ok\\) { \"HTTP 200 OK\"; \\($r.Content -match 'GameDevManager'\\) ; \\($r.Content.Substring\\(0, 300\\)\\) } else { \"App antwortet nicht\" })",
       "PowerShell(Test-Path src/GameDevManager.Web/gamedevmanager.db; $r2 = Invoke-WebRequest -Uri http://localhost:5599/modules/items -UseBasicParsing; \"Modulseite: $\\($r2.StatusCode\\)\")",
-      "PowerShell(dotnet build --nologo -v q)"
+      "PowerShell(dotnet build --nologo -v q)",
+      "PowerShell(\\(Get-Content \"src/GameDevManager.Web/Components/Pages/Diplomacy/DiplomacyGraphPage.razor\" -Raw\\) -replace 'viewBox=\"0 0 @Size @Size\"', 'viewBox=\"0 0 @CanvasSize @CanvasSize\"' -replace 'private const int Size = 640;', 'private const int CanvasSize = 640;' -replace 'Size / 2\\\\.0', 'CanvasSize / 2.0' -replace 'Math\\\\.Max\\\\\\(_graph\\\\.Nodes\\\\.Count, 1\\\\\\)', 'Math.Max\\(_graph.Nodes.Count, 1\\)' | Set-Content \"src/GameDevManager.Web/Components/Pages/Diplomacy/DiplomacyGraphPage.razor\" -Encoding utf8; dotnet build --nologo -v q)"
     ],
     "deny": [
       "Bash(rm:*)",
