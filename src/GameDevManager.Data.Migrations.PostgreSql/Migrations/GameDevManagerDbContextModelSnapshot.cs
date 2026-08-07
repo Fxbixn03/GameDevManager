@@ -128,6 +128,44 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.ToTable("AssetTagAssignments");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.CharacterClass", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("CharacterClasses");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Condition", b =>
                 {
                     b.Property<Guid>("Id")
@@ -955,6 +993,9 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CharacterClassId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uuid");
 
@@ -990,6 +1031,8 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CharacterClassId");
+
                     b.HasIndex("ContentTypeId");
 
                     b.HasIndex("GameProjectId");
@@ -1011,6 +1054,9 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CharacterClassId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -1030,6 +1076,8 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CharacterClassId");
 
                     b.HasIndex("GameProjectId");
 
@@ -1406,6 +1454,24 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.Navigation("Asset");
 
                     b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.CharacterClass", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Condition", b =>

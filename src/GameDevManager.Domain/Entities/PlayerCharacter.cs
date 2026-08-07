@@ -22,6 +22,9 @@ public class PlayerCharacter
 
     public string? Description { get; set; }
 
+    /// <summary>GUID-Referenz auf die Klasse der Figur — das Mapping aus dem Klassen-Modul.</summary>
+    public Guid? CharacterClassId { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;

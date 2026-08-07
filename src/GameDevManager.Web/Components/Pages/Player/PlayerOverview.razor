@@ -1,5 +1,6 @@
 @page "/modules/player"
 @inject PlayerService Player
+@inject ReferenceService References
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -81,6 +82,21 @@ else
                                                   Variant="Variant.Outlined"
                                                   Margin="Margin.Dense"
                                                   Lines="2" />
+
+                                    @* Im Konzept (Klassen-Modul): „auf die Spielerfigur … gemappt“. *@
+                                    <MudSelect T="Guid?"
+                                               @bind-Value="character.CharacterClassId"
+                                               Label="Klasse"
+                                               Variant="Variant.Outlined"
+                                               Margin="Margin.Dense"
+                                               Clearable="true"
+                                               Disabled="@(_classes.Count == 0)"
+                                               HelperText="@(_classes.Count == 0 ? "Noch keine Klassen angelegt." : null)">
+                                        @foreach (var characterClass in _classes)
+                                        {
+                                            <MudSelectItem T="Guid?" Value="@characterClass.Id">@characterClass.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
 
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                         <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
@@ -218,6 +234,7 @@ else
     private List<SkillTreeRow>? _trees;
     private List<SkillListRow>? _skills;
     private readonly List<SkillTree> _editingTrees = [];
+    private List<EntitySummary> _classes = [];
     private readonly HashSet<Guid> _savedCharacterIds = [];
     private Guid _projectId;
 
@@ -233,6 +250,7 @@ else
         _characters = await Player.GetCharactersAsync(_projectId);
         _trees = await Player.GetTreesAsync(_projectId);
         _skills = await Player.GetSkillsAsync(_projectId);
+        _classes = await References.GetEntitiesAsync(_projectId, ModuleKeys.Classes);
 
         _savedCharacterIds.Clear();
         foreach (var character in _characters)

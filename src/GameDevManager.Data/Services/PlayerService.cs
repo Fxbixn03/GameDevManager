@@ -53,6 +53,7 @@ public class PlayerService(
 
         stored.Name = character.Name.Trim();
         stored.Description = string.IsNullOrWhiteSpace(character.Description) ? null : character.Description.Trim();
+        stored.CharacterClassId = character.CharacterClassId;
         stored.UpdatedAtUtc = now;
 
         await db.SaveChangesAsync(ct);

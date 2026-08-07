@@ -44,5 +44,11 @@ public class Npc : ContentEntity
     /// </summary>
     public Guid? LootTableId { get; set; }
 
+    /// <summary>
+    /// GUID-Referenz auf die Klasse des NPCs — im Konzept: „Klassen …, welche dann auf die
+    /// Spielerfigur und die NPCs gemappt werden können.“
+    /// </summary>
+    public Guid? CharacterClassId { get; set; }
+
     public List<TraderOffer> Offers { get; set; } = [];
 }

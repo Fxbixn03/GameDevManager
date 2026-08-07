@@ -289,6 +289,23 @@ public sealed record SkillListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>Eine Zeile der Klassen-Übersicht.</summary>
+public sealed record ClassListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    Guid? ContentTypeId,
+    string? TypeName,
+    int NpcCount,
+    int PlayerCharacterCount,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
+/// <summary>Wer eine Klasse trägt — NPCs und Spielerfiguren getrennt, für die Klassen-Maske.</summary>
+public sealed record ClassUsage(
+    IReadOnlyList<EntitySummary> Npcs,
+    IReadOnlyList<EntitySummary> PlayerCharacters);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,

@@ -53,6 +53,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Skill> Skills => Set<Skill>();
 
+    public DbSet<CharacterClass> CharacterClasses => Set<CharacterClass>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -220,6 +222,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Frage „welche NPCs benutzen diese Loot-Table?“.
             entity.HasIndex(n => n.LootTableId);
+
+            // Trägt die Frage „welche NPCs haben diese Klasse?“.
+            entity.HasIndex(n => n.CharacterClassId);
         });
 
         modelBuilder.Entity<ConditionSet>(entity =>
@@ -382,6 +387,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(p => p.GameProjectId);
+
+            // Trägt die Frage „welche Spielerfiguren haben diese Klasse?“.
+            entity.HasIndex(p => p.CharacterClassId);
         });
 
         modelBuilder.Entity<SkillTree>(entity =>
@@ -408,6 +416,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             // Trägt die Frage „welche Skills kosten dieses Item?“.
             entity.HasIndex(s => s.CostItemId);
         });
+
+        ConfigureContentEntity<CharacterClass>(modelBuilder);
 
         ConfigureContentEntity<LootTable>(modelBuilder);
         ConfigureContentEntity<GameMap>(modelBuilder);

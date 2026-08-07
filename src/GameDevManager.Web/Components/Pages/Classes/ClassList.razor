@@ -1,0 +1,211 @@
+@page "/modules/classes"
+@inject ClassService Classes
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Klassen – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/classes/arten">
+            Klassen-Arten
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/classes/neu">
+            Neue Klasse
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_classes is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_classes.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">Noch keine Klassen</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Klassen werden auf die Spielerfigur und NPCs gemappt. Fähigkeiten, passive Boni
+            und Startwerte definieren die Felder der Klassen-Art.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/classes/neu">
+            Erste Klasse
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudTextField @bind-Value="_search"
+                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="max-width:360px;" />
+
+            <MudSelect T="Guid?"
+                       @bind-Value="_typeFilter"
+                       Label="Art"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Clearable="true"
+                       Style="max-width:220px;">
+                @foreach (var type in _types)
+                {
+                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSpacer />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_classes.Count</MudText>
+        </MudStack>
+    </MudPaper>
+
+    <MudTable T="ClassListRow"
+              Items="Filtered"
+              Elevation="0"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm"
+              OnRowClick="OpenRow"
+              RowClass="cursor-pointer">
+        <HeaderContent>
+            <MudTh Style="width:56px;"></MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>Beschreibung</MudTh>
+            <MudTh>Getragen von</MudTh>
+            <MudTh>Art</MudTh>
+            <MudTh Style="width:56px;"></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Sprite">
+                <AssetThumbnail AssetId="context.PrimaryAssetId"
+                                Size="Size.Small"
+                                Alt="@context.Name"
+                                FallbackIcon="@Icons.Material.Filled.School" />
+            </MudTd>
+            <MudTd DataLabel="Name">
+                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
+            </MudTd>
+            <MudTd DataLabel="Beschreibung">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@Shorten(context.Description)</MudText>
+            </MudTd>
+            <MudTd DataLabel="Getragen von">
+                <MudText Typo="Typo.body2">
+                    @context.NpcCount NPC(s), @context.PlayerCharacterCount Spielerfigur(en)
+                </MudText>
+            </MudTd>
+            <MudTd DataLabel="Art">
+                @if (context.TypeName is null)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
+                }
+            </MudTd>
+            <MudTd>
+                <MudTooltip Text="Löschen">
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                   Size="Size.Small"
+                                   OnClick="@(() => DeleteAsync(context))"
+                                   aria-label="@($"{context.Name} löschen")" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
+                Keine Klasse passt zur Suche.
+            </MudText>
+        </NoRecordsContent>
+    </MudTable>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Classes);
+
+    private List<ClassListRow>? _classes;
+    private List<ContentType> _types = [];
+    private string? _search;
+    private Guid? _typeFilter;
+
+    private string Subtitle => _classes is null
+        ? "Wird geladen …"
+        : $"{_classes.Count} Klasse(n)";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _types = await ContentTypes.GetTypesAsync(projectId, ModuleKeys.Classes);
+        _classes = await Classes.GetClassesAsync(projectId);
+    }
+
+    private List<ClassListRow> Filtered
+    {
+        get
+        {
+            IEnumerable<ClassListRow> rows = _classes ?? [];
+
+            if (_typeFilter is { } typeId)
+            {
+                rows = rows.Where(row => row.ContentTypeId == typeId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_search))
+            {
+                rows = rows.Where(row =>
+                    row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                    || (row.Description?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            return [.. rows];
+        }
+    }
+
+    private void OpenRow(TableRowClickEventArgs<ClassListRow> args)
+    {
+        if (args.Item is { } row)
+        {
+            Navigation.NavigateTo($"/modules/classes/{row.Id}");
+        }
+    }
+
+    private async Task DeleteAsync(ClassListRow row)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Klasse löschen",
+            $"„{row.Name}“ wird mit Feldwerten und Sprites gelöscht. NPCs und Spielerfiguren mit dieser Klasse werden klassenlos.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Classes.DeleteClassAsync(row.Id);
+        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+
+    private static string Shorten(string? text) =>
+        string.IsNullOrWhiteSpace(text)
+            ? "—"
+            : text.Length <= 90 ? text : string.Concat(text.AsSpan(0, 90), "…");
+}

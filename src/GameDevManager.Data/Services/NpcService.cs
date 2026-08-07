@@ -141,6 +141,7 @@ public class NpcService(
         stored.IsTrader = npc.IsTrader;
         stored.IsQuestGiver = npc.IsQuestGiver;
         stored.LootTableId = npc.LootTableId;
+        stored.CharacterClassId = npc.CharacterClassId;
         stored.UpdatedAtUtc = now;
 
         var removedOfferIds = new List<Guid>();

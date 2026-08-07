@@ -446,6 +446,37 @@ public sealed class SkillEntitySource : ModuleEntitySource<Skill>
 }
 
 /// <summary>
+/// Klassen für die modulübergreifenden Dienste. NPCs verweisen über ihre Klassen-Spalte
+/// hierher; das meldet die NPC-Quelle nicht, deshalb steht der Rückwärtsblick hier.
+/// </summary>
+public sealed class CharacterClassEntitySource : ModuleEntitySource<CharacterClass>
+{
+    public override string ModuleKey => ModuleKeys.Classes;
+
+    protected override DbSet<CharacterClass> Set(GameDevManagerDbContext db) => db.CharacterClasses;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<CharacterClass> query) =>
+        query.Select(characterClass => new SearchHit(
+            characterClass.Id,
+            ModuleKeys.Classes,
+            SearchHitKind.Entity,
+            characterClass.Name,
+            characterClass.ContentType!.Name,
+            db.Assets.Where(a => a.OwnerEntityId == characterClass.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+
+    public override Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct) =>
+        // Die Spielerfiguren-Seite hat keine Detailroute je Figur; ihre Klassenzuordnung
+        // zeigt die Klassen-Maske selbst, deshalb hier nur die NPCs.
+        db.Npcs
+            .AsNoTracking()
+            .Where(npc => npc.CharacterClassId == entityId)
+            .Select(npc => new EntityReferenceHit(npc.Id, ModuleKeys.Npcs, npc.Name, "Klasse"))
+            .ToListAsync(ct);
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

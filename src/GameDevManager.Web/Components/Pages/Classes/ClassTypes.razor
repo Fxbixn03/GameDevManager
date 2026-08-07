@@ -1,0 +1,34 @@
+@page "/modules/classes/arten"
+
+<PageTitle>Klassen-Arten – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="Klassen-Arten"
+              Subtitle="Das Mapping auf NPCs und Spielerfiguren steht fest — Fähigkeiten und Werte definieren die Felder der Art."
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/classes">Zu den Klassen</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddAsync">
+            Neue Art
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+<ContentTypeManager @ref="_manager"
+                    ModuleKey="@ModuleKeys.Classes"
+                    EntityNoun="Klasse"
+                    EmptyTitle="Noch keine Klassen-Arten"
+                    EmptyHint="Über Arten lassen sich Klassen einteilen — etwa Nahkampf/Fernkampf/Magie — und um eigene Felder wie besondere Fähigkeiten oder passive Boni ergänzen." />
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Classes);
+
+    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+
+    private ContentTypeManager? _manager;
+
+    private Task AddAsync() => _manager?.AddTypeAsync() ?? Task.CompletedTask;
+}
