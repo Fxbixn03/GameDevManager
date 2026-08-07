@@ -366,6 +366,47 @@ public sealed class QuestEntitySource : ModuleEntitySource<Quest>
 }
 
 /// <summary>
+/// Zufalls-Events für die modulübergreifenden Dienste. Spawns und Belohnung verweisen über
+/// eigene Spalten auf NPCs und Loot-Tables.
+/// </summary>
+public sealed class GameEventEntitySource : ModuleEntitySource<GameEvent>
+{
+    public override string ModuleKey => ModuleKeys.Events;
+
+    protected override DbSet<GameEvent> Set(GameDevManagerDbContext db) => db.GameEvents;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<GameEvent> query) =>
+        query.Select(gameEvent => new SearchHit(
+            gameEvent.Id,
+            ModuleKeys.Events,
+            SearchHitKind.Entity,
+            gameEvent.Name,
+            gameEvent.Chance + " %",
+            db.Assets.Where(a => a.OwnerEntityId == gameEvent.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+
+    public override async Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
+    {
+        var hits = await db.EventSpawns
+            .AsNoTracking()
+            .Where(spawn => spawn.NpcId == entityId)
+            .Select(spawn => new EntityReferenceHit(
+                spawn.GameEventId, ModuleKeys.Events, spawn.GameEvent!.Name, "Spawnt beim Event"))
+            .ToListAsync(ct);
+
+        hits.AddRange(await db.GameEvents
+            .AsNoTracking()
+            .Where(gameEvent => gameEvent.RewardLootTableId == entityId)
+            .Select(gameEvent => new EntityReferenceHit(
+                gameEvent.Id, ModuleKeys.Events, gameEvent.Name, "Event-Belohnung"))
+            .ToListAsync(ct));
+
+        return hits;
+    }
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>

@@ -1,0 +1,34 @@
+@page "/modules/events/arten"
+
+<PageTitle>Event-Arten – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="Event-Arten"
+              Subtitle="Spawns, Belohnung und Wahrscheinlichkeit stehen fest am Event — alles Weitere definieren die Felder der Art."
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/events">Zu den Events</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddAsync">
+            Neue Art
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+<ContentTypeManager @ref="_manager"
+                    ModuleKey="@ModuleKeys.Events"
+                    EntityNoun="Event"
+                    EmptyTitle="Noch keine Event-Arten"
+                    EmptyHint="Über Arten lassen sich Events einteilen — etwa Überfall, Wetter oder Fest — und um eigene Felder wie Dauer oder Tageszeit ergänzen." />
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Events);
+
+    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+
+    private ContentTypeManager? _manager;
+
+    private Task AddAsync() => _manager?.AddTypeAsync() ?? Task.CompletedTask;
+}

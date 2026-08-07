@@ -466,6 +466,33 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.ToTable("DiplomaticRelations");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EventSpawn", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("GameEventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("NpcId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameEventId");
+
+                    b.HasIndex("NpcId");
+
+                    b.ToTable("EventSpawns");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -653,6 +680,52 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .IsUnique();
 
                     b.ToTable("FieldValues");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("Chance")
+                        .HasColumnType("double precision");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("RewardLootTableId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("RewardLootTableId");
+
+                    b.ToTable("GameEvents");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.GameMap", b =>
@@ -1340,6 +1413,17 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EventSpawn", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameEvent", "GameEvent")
+                        .WithMany("Spawns")
+                        .HasForeignKey("GameEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameEvent");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -1399,6 +1483,24 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .IsRequired();
 
                     b.Navigation("FieldDefinition");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameEvent", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.GameMap", b =>
@@ -1622,6 +1724,11 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.FieldDefinition", b =>
                 {
                     b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.GameEvent", b =>
+                {
+                    b.Navigation("Spawns");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.GameMap", b =>

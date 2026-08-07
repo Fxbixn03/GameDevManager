@@ -1,0 +1,215 @@
+@page "/modules/events"
+@inject EventService Events
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Events – GameDevManager</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/events/arten">
+            Event-Arten
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/events/neu">
+            Neues Event
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_events is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_events.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">Noch keine Events</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Zufalls-Events legen fest, welche Mobs spawnen, welcher Loot-Table belohnt und
+            wie wahrscheinlich das Event ist. Orte werden im Karten-Modul markiert.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/events/neu">
+            Erstes Event
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudTextField @bind-Value="_search"
+                          Placeholder="Nach Name oder Beschreibung suchen"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="max-width:360px;" />
+
+            <MudSelect T="Guid?"
+                       @bind-Value="_typeFilter"
+                       Label="Art"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Clearable="true"
+                       Style="max-width:220px;">
+                @foreach (var type in _types)
+                {
+                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSpacer />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_events.Count</MudText>
+        </MudStack>
+    </MudPaper>
+
+    <MudTable T="EventListRow"
+              Items="Filtered"
+              Elevation="0"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm"
+              OnRowClick="OpenRow"
+              RowClass="cursor-pointer">
+        <HeaderContent>
+            <MudTh Style="width:56px;"></MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>Wahrscheinlichkeit</MudTh>
+            <MudTh>Spawns</MudTh>
+            <MudTh>Belohnung</MudTh>
+            <MudTh>Art</MudTh>
+            <MudTh Style="width:56px;"></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Sprite">
+                <AssetThumbnail AssetId="context.PrimaryAssetId"
+                                Size="Size.Small"
+                                Alt="@context.Name"
+                                FallbackIcon="@Icons.Material.Filled.Event" />
+            </MudTd>
+            <MudTd DataLabel="Name">
+                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
+            </MudTd>
+            <MudTd DataLabel="Wahrscheinlichkeit">
+                <MudText Typo="Typo.body2" Class="gdm-mono">@context.Chance %</MudText>
+            </MudTd>
+            <MudTd DataLabel="Spawns">
+                <MudText Typo="Typo.body2">@context.SpawnCount</MudText>
+            </MudTd>
+            <MudTd DataLabel="Belohnung">
+                @if (context.RewardLootTableId is null)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">@(context.RewardLootTableName ?? "(gelöschter Loot-Table)")</MudText>
+                }
+            </MudTd>
+            <MudTd DataLabel="Art">
+                @if (context.TypeName is null)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
+                }
+            </MudTd>
+            <MudTd>
+                <MudTooltip Text="Löschen">
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                   Size="Size.Small"
+                                   OnClick="@(() => DeleteAsync(context))"
+                                   aria-label="@($"{context.Name} löschen")" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
+                Kein Event passt zur Suche.
+            </MudText>
+        </NoRecordsContent>
+    </MudTable>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Events);
+
+    private List<EventListRow>? _events;
+    private List<ContentType> _types = [];
+    private string? _search;
+    private Guid? _typeFilter;
+
+    private string Subtitle => _events is null
+        ? "Wird geladen …"
+        : $"{_events.Count} Event(s)";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _types = await ContentTypes.GetTypesAsync(projectId, ModuleKeys.Events);
+        _events = await Events.GetEventsAsync(projectId);
+    }
+
+    private List<EventListRow> Filtered
+    {
+        get
+        {
+            IEnumerable<EventListRow> rows = _events ?? [];
+
+            if (_typeFilter is { } typeId)
+            {
+                rows = rows.Where(row => row.ContentTypeId == typeId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_search))
+            {
+                rows = rows.Where(row =>
+                    row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                    || (row.Description?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            return [.. rows];
+        }
+    }
+
+    private void OpenRow(TableRowClickEventArgs<EventListRow> args)
+    {
+        if (args.Item is { } row)
+        {
+            Navigation.NavigateTo($"/modules/events/{row.Id}");
+        }
+    }
+
+    private async Task DeleteAsync(EventListRow row)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Event löschen",
+            $"„{row.Name}“ wird mit Spawns, Feldwerten und Sprites gelöscht.",
+            yesText: "Löschen",
+            cancelText: "Abbrechen");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Events.DeleteEventAsync(row.Id);
+        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        await LoadAsync();
+    }
+}

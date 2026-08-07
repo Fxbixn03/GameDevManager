@@ -41,7 +41,7 @@ public static class ModuleRegistry
         new(ModuleKeys.Effects, "Effekte", Icons.Material.Filled.AutoAwesome, "Effekte und deren Wirkung, z. B. Verbrennung"),
         new(ModuleKeys.Achievements, "Achievements", Icons.Material.Filled.EmojiEvents, "Erfolge, die der Spieler erreichen kann"),
         new(ModuleKeys.Collectibles, "Sammelobjekte", Icons.Material.Filled.Collections, "Statuen, Notizen und andere Sammelobjekte"),
-        new(ModuleKeys.Events, "Events", Icons.Material.Filled.Event, "Zufalls-Events mit Spawns, Loot und Orten"),
+        new(ModuleKeys.Events, "Events", Icons.Material.Filled.Event, "Zufalls-Events mit Spawns, Loot und Orten", Implemented: true),
         new(ModuleKeys.Tags, "Tags", Icons.Material.Filled.Label, "Tags/Labels, modulübergreifend einsetzbar"),
         new(ModuleKeys.Audio, "SFX/Audio", Icons.Material.Filled.MusicNote, "Sounds und Audio (noch offen)"),
         new(ModuleKeys.Cutscenes, "Cutscenes", Icons.Material.Filled.Movie, "Cutscenes (noch offen)"),

@@ -254,6 +254,20 @@ public sealed record QuestListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>Eine Zeile der Event-Übersicht. Der Name des Belohnungs-Loot-Tables ist aufgelöst.</summary>
+public sealed record EventListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    double Chance,
+    int SpawnCount,
+    Guid? RewardLootTableId,
+    string? RewardLootTableName,
+    Guid? ContentTypeId,
+    string? TypeName,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,

@@ -43,6 +43,10 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Quest> Quests => Set<Quest>();
 
+    public DbSet<GameEvent> GameEvents => Set<GameEvent>();
+
+    public DbSet<EventSpawn> EventSpawns => Set<EventSpawn>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -340,6 +344,25 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.HasIndex(q => q.GiverNpcId);
             entity.HasIndex(q => q.StoryEntryId);
             entity.HasIndex(q => q.DialogueId);
+        });
+
+        ConfigureContentEntity<GameEvent>(modelBuilder);
+
+        modelBuilder.Entity<GameEvent>(entity =>
+        {
+            // Trägt die Frage „welche Events belohnen mit diesem Loot-Table?“.
+            entity.HasIndex(e => e.RewardLootTableId);
+        });
+
+        modelBuilder.Entity<EventSpawn>(entity =>
+        {
+            entity.HasOne(s => s.GameEvent)
+                .WithMany(e => e.Spawns)
+                .HasForeignKey(s => s.GameEventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „bei welchen Events spawnt dieser Mob?“.
+            entity.HasIndex(s => s.NpcId);
         });
 
         ConfigureContentEntity<LootTable>(modelBuilder);
