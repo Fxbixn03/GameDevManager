@@ -364,6 +364,19 @@ public sealed record SoundEffectListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>Eine Zeile der Cutscene-Übersicht. Der Name des Story-Abschnitts ist aufgelöst.</summary>
+public sealed record CutsceneListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    int ShotCount,
+    Guid? StoryEntryId,
+    string? StoryEntryName,
+    Guid? ContentTypeId,
+    string? TypeName,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Währungs-Übersicht.</summary>
 public sealed record CurrencyListRow(
     Guid Id,

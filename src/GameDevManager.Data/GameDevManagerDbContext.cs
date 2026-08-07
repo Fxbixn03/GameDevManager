@@ -72,6 +72,10 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<SoundEffect> SoundEffects => Set<SoundEffect>();
 
+    public DbSet<Cutscene> Cutscenes => Set<Cutscene>();
+
+    public DbSet<CutsceneShot> CutsceneShots => Set<CutsceneShot>();
+
     public DbSet<LootTable> LootTables => Set<LootTable>();
 
     public DbSet<LootEntry> LootEntries => Set<LootEntry>();
@@ -454,6 +458,25 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         ConfigureContentEntity<Collectible>(modelBuilder);
 
         ConfigureContentEntity<SoundEffect>(modelBuilder);
+
+        ConfigureContentEntity<Cutscene>(modelBuilder);
+
+        modelBuilder.Entity<Cutscene>(entity =>
+        {
+            // Tragen die Referenzansicht von Story-Abschnitten und Dialogen.
+            entity.HasIndex(c => c.StoryEntryId);
+            entity.HasIndex(c => c.DialogueId);
+        });
+
+        modelBuilder.Entity<CutsceneShot>(entity =>
+        {
+            entity.Property(s => s.Text).HasMaxLength(2000).IsRequired();
+
+            entity.HasOne(s => s.Cutscene)
+                .WithMany(c => c.Shots)
+                .HasForeignKey(s => s.CutsceneId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<ContentTag>(entity =>
         {

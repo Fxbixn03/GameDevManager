@@ -570,6 +570,47 @@ public sealed class SoundEffectEntitySource : ModuleEntitySource<SoundEffect>
 }
 
 /// <summary>
+/// Cutscenes für die modulübergreifenden Dienste. Story-Anbindung und Dialog verweisen über
+/// eigene Spalten auf fremde Entitäten.
+/// </summary>
+public sealed class CutsceneEntitySource : ModuleEntitySource<Cutscene>
+{
+    public override string ModuleKey => ModuleKeys.Cutscenes;
+
+    protected override DbSet<Cutscene> Set(GameDevManagerDbContext db) => db.Cutscenes;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<Cutscene> query) =>
+        query.Select(cutscene => new SearchHit(
+            cutscene.Id,
+            ModuleKeys.Cutscenes,
+            SearchHitKind.Entity,
+            cutscene.Name,
+            cutscene.Shots.Count + " Einstellung(en)",
+            db.Assets.Where(a => a.OwnerEntityId == cutscene.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+
+    public override async Task<List<EntityReferenceHit>> FindReferencesAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
+    {
+        var hits = await db.Cutscenes
+            .AsNoTracking()
+            .Where(cutscene => cutscene.StoryEntryId == entityId)
+            .Select(cutscene => new EntityReferenceHit(
+                cutscene.Id, ModuleKeys.Cutscenes, cutscene.Name, "Cutscene zur Story"))
+            .ToListAsync(ct);
+
+        hits.AddRange(await db.Cutscenes
+            .AsNoTracking()
+            .Where(cutscene => cutscene.DialogueId == entityId)
+            .Select(cutscene => new EntityReferenceHit(
+                cutscene.Id, ModuleKeys.Cutscenes, cutscene.Name, "Dialog in Cutscene"))
+            .ToListAsync(ct));
+
+        return hits;
+    }
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource : ModuleEntitySource<Currency>
