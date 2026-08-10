@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Spieler – GameDevManager</value>
+  </data>
+  <data name="SkillTypesButton" xml:space="preserve">
+    <value>Skill-Arten</value>
+  </data>
+  <data name="NewSkill" xml:space="preserve">
+    <value>Neuer Skill</value>
+  </data>
+  <data name="SectionCharacters" xml:space="preserve">
+    <value>Spielerfigur(en)</value>
+  </data>
+  <data name="AddCharacter" xml:space="preserve">
+    <value>Figur</value>
+  </data>
+  <data name="NoCharacters" xml:space="preserve">
+    <value>Noch keine Spielerfigur. Spiele mit wählbaren Charakteren legen je Figur einen Eintrag an.</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="SaveCharacterTooltip" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SaveCharacterAria" xml:space="preserve">
+    <value>Spielerfigur speichern</value>
+  </data>
+  <data name="DeleteCharacterTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCharacterAria" xml:space="preserve">
+    <value>Spielerfigur löschen</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="ClassLabel" xml:space="preserve">
+    <value>Klasse</value>
+  </data>
+  <data name="ClassHelperEmpty" xml:space="preserve">
+    <value>Noch keine Klassen angelegt.</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="SectionTrees" xml:space="preserve">
+    <value>Skilltrees</value>
+  </data>
+  <data name="AllSkills" xml:space="preserve">
+    <value>Alle Skills ({0})</value>
+  </data>
+  <data name="AddTree" xml:space="preserve">
+    <value>Skilltree</value>
+  </data>
+  <data name="NoTrees" xml:space="preserve">
+    <value>Noch kein Skilltree. Bäume gruppieren Skills — etwa „Kampf“ oder „Magie“; die Struktur entsteht über die Voraussetzung am einzelnen Skill.</value>
+  </data>
+  <data name="SaveTreeTooltip" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SaveTreeAria" xml:space="preserve">
+    <value>Skilltree speichern</value>
+  </data>
+  <data name="DiscardTreeTooltip" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="DiscardTreeAria" xml:space="preserve">
+    <value>Skilltree verwerfen</value>
+  </data>
+  <data name="TreeSkillCount" xml:space="preserve">
+    <value>{0} Skill(s)</value>
+  </data>
+  <data name="DeleteTreeTooltip" xml:space="preserve">
+    <value>Löschen (Skills bleiben erhalten)</value>
+  </data>
+  <data name="DeleteTreeAria" xml:space="preserve">
+    <value>{0} löschen</value>
+  </data>
+  <data name="SkillsWithoutTree" xml:space="preserve">
+    <value>{0} Skill(s) ohne Baum —</value>
+  </data>
+  <data name="SkillsWithoutTreeLink" xml:space="preserve">
+    <value>in der Skill-Liste zuordnen</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Figur(en), {1} Skilltree(s), {2} Skill(s)</value>
+  </data>
+  <data name="CostPoints" xml:space="preserve">
+    <value>{0} Punkte</value>
+  </data>
+  <data name="CostItem" xml:space="preserve">
+    <value>{0}× {1}</value>
+  </data>
+  <data name="DeletedItem" xml:space="preserve">
+    <value>(gelöschtes Item)</value>
+  </data>
+  <data name="CostFree" xml:space="preserve">
+    <value>kostenlos</value>
+  </data>
+  <data name="CharacterSavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteCharacterTitle" xml:space="preserve">
+    <value>Spielerfigur löschen</value>
+  </data>
+  <data name="DeleteCharacterMessage" xml:space="preserve">
+    <value>„{0}“ wird mit ihren Sprites gelöscht.</value>
+  </data>
+  <data name="CharacterDeletedMessage" xml:space="preserve">
+    <value>Spielerfigur gelöscht.</value>
+  </data>
+  <data name="TreeSavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteTreeTitle" xml:space="preserve">
+    <value>Skilltree löschen</value>
+  </data>
+  <data name="DeleteTreeMessage" xml:space="preserve">
+    <value>„{0}“ wird gelöscht. Die {1} Skill(s) bleiben erhalten und werden „ohne Baum“.</value>
+  </data>
+  <data name="TreeDeletedMessage" xml:space="preserve">
+    <value>Skilltree gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+</root>

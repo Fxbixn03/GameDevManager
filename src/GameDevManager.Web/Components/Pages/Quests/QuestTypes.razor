@@ -1,32 +1,33 @@
 @page "/modules/quests/arten"
+@inject IStringLocalizer<QuestTypes> L
 
-<PageTitle>Quest-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Quest-Arten"
-              Subtitle="Form, Questgeber und Verknüpfungen stehen fest an der Quest — alles Weitere definieren die Felder der Art."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/quests">Zu den Quests</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/quests">@L["ToQuests"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Quests"
-                    EntityNoun="Quest"
-                    EmptyTitle="Noch keine Quest-Arten"
-                    EmptyHint="Über Arten lassen sich Quests fachlich einteilen — etwa Botengang, Eskorte oder Sammelquest — und um eigene Felder wie Belohnung oder Zeitlimit ergänzen." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Quests);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 

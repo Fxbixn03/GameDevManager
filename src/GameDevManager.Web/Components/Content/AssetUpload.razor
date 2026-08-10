@@ -1,6 +1,7 @@
 @inject AssetService Library
 @inject ProjectContext Project
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<AssetUpload> L
 
 @*
     Auswahlknopf zum Hochladen. Ohne OwnerEntityId entstehen Werkzeug-Assets ohne Entität,
@@ -23,7 +24,7 @@
             {
                 <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
             }
-            @Text
+            @TextOrDefault
         </MudButton>
     </CustomContent>
 </MudFileUpload>
@@ -39,8 +40,14 @@
     [Parameter]
     public EventCallback OnUploaded { get; set; }
 
+    /// <summary>
+    /// Beschriftung des Knopfes. Leer bedeutet Standardtext aus der resx — deshalb nullable
+    /// statt Feldinitialisierer, der den Localizer noch nicht kennt.
+    /// </summary>
     [Parameter]
-    public string Text { get; set; } = "Hochladen";
+    public string? Text { get; set; }
+
+    private string TextOrDefault => string.IsNullOrWhiteSpace(Text) ? L["DefaultText"] : Text;
 
     [Parameter]
     public Variant Variant { get; set; } = Variant.Filled;
@@ -76,7 +83,7 @@
                 if (file.Size > Library.Options.MaxFileSizeBytes)
                 {
                     Snackbar.Add(
-                        $"„{file.Name}“ ist mit {Format(file.Size)} größer als das Limit von {Format(Library.Options.MaxFileSizeBytes)}.",
+                        L["TooLarge", file.Name, Format(file.Size), Format(Library.Options.MaxFileSizeBytes)],
                         Severity.Error);
                     continue;
                 }
@@ -104,11 +111,13 @@
 
         if (uploaded > 0)
         {
-            Snackbar.Add(uploaded == 1 ? "Datei hochgeladen." : $"{uploaded} Dateien hochgeladen.", Severity.Success);
+            Snackbar.Add(uploaded == 1 ? L["UploadedOne"] : L["UploadedMany", uploaded], Severity.Success);
             await OnUploaded.InvokeAsync();
         }
     }
 
-    private static string Format(long bytes) =>
-        bytes >= 1024 * 1024 ? $"{bytes / 1024d / 1024d:0.#} MB" : $"{bytes / 1024d:0.#} KB";
+    private string Format(long bytes) =>
+        bytes >= 1024 * 1024
+            ? L["Megabytes", (bytes / 1024d / 1024d).ToString("0.#")]
+            : L["Kilobytes", (bytes / 1024d).ToString("0.#")];
 }

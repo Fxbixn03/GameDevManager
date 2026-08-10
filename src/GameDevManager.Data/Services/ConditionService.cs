@@ -1,5 +1,6 @@
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 /// </summary>
 public class ConditionService(
     IDbContextFactory<GameDevManagerDbContext> factory,
-    IEnumerable<IModuleEntitySource> sources)
+    IEnumerable<IModuleEntitySource> sources,
+    IStringLocalizer<DataMessages> messages)
 {
     /// <summary>
     /// Lädt den Bedingungssatz eines Besitzers. Gibt es noch keinen, entsteht ein leerer —
@@ -145,29 +147,28 @@ public class ConditionService(
             .ExecuteDeleteAsync(ct);
     }
 
-    private static void Validate(ConditionSet set)
+    private void Validate(ConditionSet set)
     {
         foreach (var condition in set.Conditions)
         {
             if (condition.UsesTarget && condition.TargetEntityId is null)
             {
-                throw new ContentValidationException(
-                    "Diese Bedingung bezieht sich auf eine Entität — bitte eine auswählen.");
+                throw new ContentValidationException(messages["ConditionTargetRequired"]);
             }
 
             if (condition.UsesNumber && condition.NumberValue is null)
             {
-                throw new ContentValidationException("Diese Bedingung braucht eine Zahl.");
+                throw new ContentValidationException(messages["ConditionNumberRequired"]);
             }
 
             if (condition.Kind == ConditionKind.Flag && string.IsNullOrWhiteSpace(condition.TextValue))
             {
-                throw new ContentValidationException("Ein Schalter braucht einen Namen.");
+                throw new ContentValidationException(messages["ConditionFlagNameRequired"]);
             }
 
             if (condition.Kind == ConditionKind.Custom && string.IsNullOrWhiteSpace(condition.TextValue))
             {
-                throw new ContentValidationException("Eine freie Bedingung braucht eine Beschreibung.");
+                throw new ContentValidationException(messages["ConditionCustomTextRequired"]);
             }
         }
     }
@@ -237,7 +238,7 @@ public class ConditionService(
                         set.OwnerId,
                         set.OwnerModuleKey,
                         set.Slot,
-                        "Die Bedingung bezieht sich auf eine Entität, die es nicht mehr gibt."));
+                        messages["ConditionTargetGone"].Value));
                 }
             }
 
@@ -291,7 +292,7 @@ public class ConditionService(
     }
 
     /// <summary>Sucht Widersprüche innerhalb eines „alle müssen zutreffen“-Satzes.</summary>
-    private static IEnumerable<ConditionProblem> FindContradictions(ConditionSet set)
+    private IEnumerable<ConditionProblem> FindContradictions(ConditionSet set)
     {
         // Ja/Nein-Bedingungen auf dieselbe Sache mit gegenläufiger Erwartung.
         var boolGroups = set.Conditions
@@ -302,7 +303,7 @@ public class ConditionService(
         {
             yield return new ConditionProblem(
                 set.OwnerId, set.OwnerModuleKey, set.Slot,
-                $"„{DescribeKind(group.Key.Kind)}“ soll gleichzeitig zutreffen und nicht zutreffen.");
+                messages["ConditionContradictionBoolean", DescribeKind(group.Key.Kind)]);
         }
 
         // Mengenbedingungen auf dieselbe Sache, deren erlaubte Spannen sich nicht überschneiden.
@@ -336,21 +337,21 @@ public class ConditionService(
             {
                 yield return new ConditionProblem(
                     set.OwnerId, set.OwnerModuleKey, set.Slot,
-                    $"„{DescribeKind(group.Key.Kind)}“ soll gleichzeitig mindestens {lower:0.##} "
-                    + $"und höchstens {upper:0.##} sein.");
+                    messages["ConditionContradictionRange",
+                        DescribeKind(group.Key.Kind), lower.ToString("0.##"), upper.ToString("0.##")]);
             }
         }
     }
 
-    private static string DescribeKind(ConditionKind kind) => kind switch
+    private string DescribeKind(ConditionKind kind) => kind switch
     {
-        ConditionKind.HasItem => "Item im Besitz",
-        ConditionKind.HasCurrency => "Währung im Besitz",
-        ConditionKind.QuestState => "Quest-Zustand",
-        ConditionKind.NpcDefeated => "NPC besiegt",
-        ConditionKind.Flag => "Schalter",
-        ConditionKind.PlayerLevel => "Spielerstufe",
-        _ => "Bedingung"
+        ConditionKind.HasItem => messages["ConditionKind_HasItem"],
+        ConditionKind.HasCurrency => messages["ConditionKind_HasCurrency"],
+        ConditionKind.QuestState => messages["ConditionKind_QuestState"],
+        ConditionKind.NpcDefeated => messages["ConditionKind_NpcDefeated"],
+        ConditionKind.Flag => messages["ConditionKind_Flag"],
+        ConditionKind.PlayerLevel => messages["ConditionKind_PlayerLevel"],
+        _ => messages["ConditionKind_Default"]
     };
 }
 

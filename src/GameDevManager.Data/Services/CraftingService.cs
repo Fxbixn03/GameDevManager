@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class CraftingService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     /// <summary>
     /// Wie tief der Crafting-Baum aufgelöst wird. Reine Notbremse — echte Rezeptketten sind
@@ -113,17 +115,17 @@ public class CraftingService(
 
         if (string.IsNullOrWhiteSpace(recipe.Name))
         {
-            throw new ContentValidationException("Das Rezept braucht einen Namen.");
+            throw new ContentValidationException(messages["RecipeNameRequired"]);
         }
 
         if (recipe.OutputQuantity < 1)
         {
-            throw new ContentValidationException("Ein Rezept muss mindestens ein Stück herstellen.");
+            throw new ContentValidationException(messages["RecipeOutputAtLeastOne"]);
         }
 
         if (recipe.Ingredients.Any(ingredient => ingredient.Quantity < 1))
         {
-            throw new ContentValidationException("Jede Zutat braucht eine Menge von mindestens 1.");
+            throw new ContentValidationException(messages["RecipeIngredientQuantity"]);
         }
 
         var duplicate = recipe.Ingredients
@@ -132,11 +134,10 @@ public class CraftingService(
 
         if (duplicate is not null)
         {
-            throw new ContentValidationException(
-                "Dasselbe Item steht mehrfach in der Zutatenliste. Bitte die Mengen zusammenfassen.");
+            throw new ContentValidationException(messages["RecipeIngredientDuplicate"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -332,7 +333,9 @@ public class CraftingService(
 
         return new CraftingGraph(
             items.ToDictionary(i => i.Id, i => (i.Name, i.AssetId)),
-            recipes);
+            recipes,
+            messages["DeletedItem"],
+            messages["Deleted"]);
     }
 
     /// <summary>
@@ -340,9 +343,17 @@ public class CraftingService(
     /// </summary>
     private sealed class CraftingGraph(
         Dictionary<Guid, (string Name, Guid? AssetId)> items,
-        List<Recipe> recipes)
+        List<Recipe> recipes,
+        string deletedItemName,
+        string deletedName)
     {
         public Dictionary<Guid, (string Name, Guid? AssetId)> Items { get; } = items;
+
+        /// <summary>Platzhalter für Items, die es nicht mehr gibt — aus der resx hereingereicht,
+        /// weil die Klasse selbst keinen Localizer bekommt.</summary>
+        private string DeletedItemName { get; } = deletedItemName;
+
+        private string DeletedName { get; } = deletedName;
 
         /// <summary>Rezepte je hergestelltem Item — mehrere Wege zum selben Item sind erlaubt.</summary>
         private readonly Dictionary<Guid, List<Recipe>> _byOutput = recipes
@@ -351,7 +362,7 @@ public class CraftingService(
 
         public CraftingTreeNode Build(Guid itemId, int quantity, HashSet<Guid> path, int depth)
         {
-            var (name, assetId) = Items.GetValueOrDefault(itemId, ("(gelöschtes Item)", null));
+            var (name, assetId) = Items.GetValueOrDefault(itemId, (DeletedItemName, null));
 
             // Steht das Item schon im Pfad, würde weiteres Auflösen endlos laufen.
             if (path.Contains(itemId))
@@ -428,7 +439,7 @@ public class CraftingService(
                 if (reported.Add(string.Join(">", normalized)))
                 {
                     cycles.Add(new CraftingCycle(
-                        [.. normalized.Select(id => Items.GetValueOrDefault(id, ("(gelöscht)", null)).Name)]));
+                        [.. normalized.Select(id => Items.GetValueOrDefault(id, (DeletedName, null)).Name)]));
                 }
 
                 return;

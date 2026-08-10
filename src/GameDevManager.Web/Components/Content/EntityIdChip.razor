@@ -1,5 +1,6 @@
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<EntityIdChip> L
 
 @*
     Die GUID einer Entität — die einzige Referenz, über die andere Module sie ansprechen
@@ -8,12 +9,12 @@
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
     <span class="gdm-mono">@Id</span>
-    <MudTooltip Text="GUID kopieren">
+    <MudTooltip Text="@L["CopyTooltip"]">
         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
                        Size="Size.Small"
                        Color="Color.Default"
                        OnClick="CopyAsync"
-                       aria-label="GUID kopieren" />
+                       aria-label="@L["CopyTooltip"]" />
     </MudTooltip>
 </MudStack>
 
@@ -26,12 +27,12 @@
         try
         {
             await JS.InvokeVoidAsync("navigator.clipboard.writeText", Id.ToString());
-            Snackbar.Add("GUID kopiert.", Severity.Success);
+            Snackbar.Add(L["CopiedMessage"], Severity.Success);
         }
         catch (JSException)
         {
             // Ohne sicheren Kontext (HTTP auf einem fremden Host) gibt es keine Zwischenablage.
-            Snackbar.Add("Kopieren wurde vom Browser abgelehnt.", Severity.Warning);
+            Snackbar.Add(L["CopyRejectedMessage"], Severity.Warning);
         }
     }
 }

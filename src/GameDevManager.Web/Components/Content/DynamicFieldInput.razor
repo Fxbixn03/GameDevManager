@@ -1,3 +1,6 @@
+@inject IStringLocalizer<DynamicFieldInput> L
+@inject ModuleLabels Modules
+
 @*
     Das Eingabeelement zu einem benutzerdefinierten Feld. Welcher Typ gerendert wird, entscheidet
     die Felddefinition — hier laufen alle ContentFieldType-Ausprägungen zusammen. Neue Feldtypen brauchen
@@ -97,7 +100,7 @@
             <MudTextField T="string"
                           Value="@ReferenceModuleName"
                           Label="@Label"
-                          HelperText="@($"Im Modul „{ReferenceModuleName}“ gibt es noch nichts zum Verweisen.")"
+                          HelperText="@L["NothingToReference", ReferenceModuleName]"
                           Variant="Variant.Outlined"
                           Disabled="true" />
         }
@@ -157,16 +160,16 @@
     [Parameter]
     public EventCallback OnValueChanged { get; set; }
 
-    private string Label => Definition.IsRequired ? $"{Definition.Name} *" : Definition.Name;
+    private string Label => Definition.IsRequired ? L["RequiredLabel", Definition.Name] : Definition.Name;
 
     private string ReferenceModuleName =>
-        ModuleRegistry.Find(Definition.ReferenceModuleKey ?? string.Empty)?.Name
+        Modules.NameOrKey(Definition.ReferenceModuleKey)
         ?? Definition.ReferenceModuleKey
         ?? "—";
 
     private string ReferenceHelperText =>
         string.IsNullOrWhiteSpace(Definition.Description)
-            ? $"Verweist auf: {ReferenceModuleName}"
+            ? L["ReferenceHelper", ReferenceModuleName]
             : Definition.Description;
 
     private int? IntegerValue =>

@@ -1,32 +1,33 @@
 @page "/modules/player/arten"
+@inject IStringLocalizer<SkillTypes> L
 
-<PageTitle>Skill-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Skill-Arten"
-              Subtitle="Baum, Voraussetzung und Kosten stehen fest am Skill — alles Weitere definieren die Felder der Art."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/player">Zur Übersicht</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/player">@L["ToOverview"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Player"
-                    EntityNoun="Skill"
-                    EmptyTitle="Noch keine Skill-Arten"
-                    EmptyHint="Über Arten lassen sich Skills einteilen — etwa aktiv/passiv — und um eigene Felder wie Abklingzeit oder Schadensformel ergänzen." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Player);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 

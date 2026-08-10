@@ -2,6 +2,8 @@
 @inject ReferenceService References
 @inject ProjectContext Project
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<AssetDialog> L
+@inject ModuleLabels Modules
 
 @*
     Bearbeitet die Angaben zu einem Asset: Beschreibung, Zuordnung zu einer Entität und
@@ -22,20 +24,20 @@
     <DialogContent>
         <MudStack Spacing="4" Style="min-width:min(560px, 80vw);">
             <MudTextField @bind-Value="_description"
-                          Label="Beschreibung (optional)"
+                          Label="@L["DescriptionLabel"]"
                           Variant="Variant.Outlined"
                           Lines="2" />
 
             <MudSelect T="string"
                        Value="_ownerModuleKey"
                        ValueChanged="ChangeModuleAsync"
-                       Label="Gehört zu Modul"
+                       Label="@L["ModuleLabel"]"
                        Variant="Variant.Outlined"
-                       HelperText="Ohne Modul bleibt es ein Werkzeug-Asset, z. B. ein Karten-Marker.">
-                <MudSelectItem T="string" Value="@(null as string)">Werkzeug-Asset (keine Entität)</MudSelectItem>
+                       HelperText="@L["ModuleHelper"]">
+                <MudSelectItem T="string" Value="@(null as string)">@L["ToolAssetOption"]</MudSelectItem>
                 @foreach (var module in ModuleRegistry.All.Where(m => m.Implemented))
                 {
-                    <MudSelectItem T="string" Value="@module.Id">@module.Name</MudSelectItem>
+                    <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
                 }
             </MudSelect>
 
@@ -44,7 +46,7 @@
                 @if (_entities.Count == 0)
                 {
                     <MudAlert Severity="Severity.Info" Dense="true">
-                        In diesem Modul gibt es noch keine Entität, der sich das Asset zuordnen ließe.
+                        @L["NoEntitiesHint"]
                     </MudAlert>
                 }
                 else
@@ -54,7 +56,7 @@
                                      ValueChanged="SetEntity"
                                      SearchFunc="SearchEntitiesAsync"
                                      ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
-                                     Label="Entität"
+                                     Label="@L["EntityLabel"]"
                                      Variant="Variant.Outlined"
                                      Clearable="true"
                                      ResetValueOnEmptyText="true"
@@ -68,10 +70,10 @@
                        SelectedValues="_selectedTagIds"
                        SelectedValuesChanged="ids => _selectedTagIds = [.. ids]"
                        MultiSelectionTextFunc="@(_ => DescribeTags())"
-                       Label="Stichwörter"
+                       Label="@L["TagsLabel"]"
                        Variant="Variant.Outlined"
                        Disabled="@(_tags.Count == 0)"
-                       HelperText="@(_tags.Count == 0 ? "Noch keine Stichwörter angelegt — unten eines hinzufügen." : null)">
+                       HelperText="@(_tags.Count == 0 ? L["TagsHelperEmpty"].Value : null)">
                 @foreach (var tag in _tags)
                 {
                     <MudSelectItem T="Guid" Value="@tag.Id">@tag.Name</MudSelectItem>
@@ -80,7 +82,7 @@
 
             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
                 <MudTextField @bind-Value="_newTagName"
-                              Label="Neues Stichwort"
+                              Label="@L["NewTagLabel"]"
                               Variant="Variant.Outlined"
                               Margin="Margin.Dense"
                               Immediate="true"
@@ -89,15 +91,15 @@
                            Size="Size.Small"
                            Disabled="@string.IsNullOrWhiteSpace(_newTagName)"
                            OnClick="AddTagAsync">
-                    Anlegen
+                    @L["AddTag"]
                 </MudButton>
             </MudStack>
         </MudStack>
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="@(() => MudDialog.Cancel())">Abbrechen</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync">Speichern</MudButton>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync">@L["Save"]</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -220,7 +222,7 @@
 
         if (Asset.Width is { } width && Asset.Height is { } height)
         {
-            parts.Add($"{width} × {height}");
+            parts.Add(L["Dimensions", width, height]);
         }
 
         parts.Add(AssetFormat.Size(Asset.SizeBytes));

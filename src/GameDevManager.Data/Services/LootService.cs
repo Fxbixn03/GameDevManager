@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class LootService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<LootTableListRow>> GetTablesAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -120,11 +122,11 @@ public class LootService(
 
         if (string.IsNullOrWhiteSpace(table.Name))
         {
-            throw new ContentValidationException("Die Loot-Table braucht einen Namen.");
+            throw new ContentValidationException(messages["LootNameRequired"]);
         }
 
         Validate(table);
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -169,30 +171,28 @@ public class LootService(
     /// unter „nachschauen“ und nicht unter „verboten“. Sonst ließe sich eine Tabelle beim
     /// Umbauen zwischendurch nicht speichern.
     /// </summary>
-    private static void Validate(LootTable table)
+    private void Validate(LootTable table)
     {
         if (table.Entries.Any(entry => entry.ItemId == Guid.Empty))
         {
-            throw new ContentValidationException("Jeder Eintrag braucht ein Item.");
+            throw new ContentValidationException(messages["LootEntryItemRequired"]);
         }
 
         foreach (var entry in table.Entries)
         {
             if (entry.Chance is < 0 or > 100)
             {
-                throw new ContentValidationException(
-                    "Wahrscheinlichkeiten liegen zwischen 0 und 100 Prozent.");
+                throw new ContentValidationException(messages["LootChanceRange"]);
             }
 
             if (entry.MinQuantity < 1)
             {
-                throw new ContentValidationException("Die kleinste Menge ist 1.");
+                throw new ContentValidationException(messages["LootMinQuantity"]);
             }
 
             if (entry.MaxQuantity < entry.MinQuantity)
             {
-                throw new ContentValidationException(
-                    "Die obere Menge darf nicht kleiner als die untere sein.");
+                throw new ContentValidationException(messages["LootMaxBelowMin"]);
             }
         }
     }

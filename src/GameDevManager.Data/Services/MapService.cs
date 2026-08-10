@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class MapService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<MapListRow>> GetMapsAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -107,11 +109,11 @@ public class MapService(
 
         if (string.IsNullOrWhiteSpace(map.Name))
         {
-            throw new ContentValidationException("Die Karte braucht einen Namen.");
+            throw new ContentValidationException(messages["MapNameRequired"]);
         }
 
         Validate(map);
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -149,27 +151,24 @@ public class MapService(
         map.Description = stored.Description;
     }
 
-    private static void Validate(GameMap map)
+    private void Validate(GameMap map)
     {
         foreach (var marker in map.Markers)
         {
             if (marker.X is < 0 or > 1 || marker.Y is < 0 or > 1)
             {
-                throw new ContentValidationException(
-                    "Markierungen liegen relativ zum Bild zwischen 0 und 1.");
+                throw new ContentValidationException(messages["MapMarkerRange"]);
             }
 
             if (marker.Radius is < 0 or > 1)
             {
-                throw new ContentValidationException(
-                    "Der Radius eines Bereichs liegt zwischen 0 und 1 der Bildbreite.");
+                throw new ContentValidationException(messages["MapRadiusRange"]);
             }
 
             // Eine Karte, die auf sich selbst verweist, führt beim Klick nirgendwohin.
             if (marker.TargetModuleKey == ModuleKeys.Maps && marker.TargetEntityId == map.Id)
             {
-                throw new ContentValidationException(
-                    "Eine Karte kann nicht auf sich selbst verweisen.");
+                throw new ContentValidationException(messages["MapSelfLink"]);
             }
         }
     }

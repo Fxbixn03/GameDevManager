@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -14,7 +15,8 @@ namespace GameDevManager.Data.Services;
 /// </summary>
 public class ReferenceService(
     IDbContextFactory<GameDevManagerDbContext> factory,
-    IEnumerable<IModuleEntitySource> sources)
+    IEnumerable<IModuleEntitySource> sources,
+    IStringLocalizer<DataMessages> messages)
 {
     /// <summary>Alle Stellen, an denen die übergebene GUID verwendet wird.</summary>
     public async Task<List<EntityReferenceHit>> FindReferencesAsync(Guid entityId, CancellationToken ct = default)
@@ -43,7 +45,7 @@ public class ReferenceService(
             hits.AddRange(perModule.Select(entry => new EntityReferenceHit(
                 entry.OwnerEntityId,
                 entry.OwnerModuleKey,
-                names.GetValueOrDefault(entry.OwnerEntityId) ?? "(gelöschte Entität)",
+                names.GetValueOrDefault(entry.OwnerEntityId) ?? messages["DeletedEntity"].Value,
                 entry.FieldName)));
         }
 

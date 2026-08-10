@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class CutsceneService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<CutsceneListRow>> GetCutscenesAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -84,16 +86,16 @@ public class CutsceneService(
 
         if (string.IsNullOrWhiteSpace(cutscene.Name))
         {
-            throw new ContentValidationException("Die Cutscene braucht einen Namen.");
+            throw new ContentValidationException(messages["CutsceneNameRequired"]);
         }
 
         // Eine Einstellung ohne Text ist eine unfertige Eingabezeile; die Maske räumt sie vorher weg.
         if (cutscene.Shots.Any(shot => string.IsNullOrWhiteSpace(shot.Text)))
         {
-            throw new ContentValidationException("Jede Einstellung braucht einen Text.");
+            throw new ContentValidationException(messages["CutsceneShotTextRequired"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 

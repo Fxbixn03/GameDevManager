@@ -1,4 +1,5 @@
 @inject IJSRuntime JS
+@inject IStringLocalizer<MapCanvas> L
 
 @*
     Das Kartenbild mit seinen Markierungen. Die Markierungen liegen in Prozent über dem Bild,
@@ -19,7 +20,7 @@
     {
         <div class="gdm-map-missing">
             <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported" Size="Size.Large" Color="Color.Secondary" />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">Noch kein Kartenbild hochgeladen.</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoImage"]</MudText>
         </div>
     }
 
@@ -114,9 +115,9 @@
     private static string MarkerColor(MapMarker marker) =>
         string.IsNullOrWhiteSpace(marker.Color) ? "var(--mud-palette-primary)" : marker.Color;
 
-    private static string Describe(MapMarker marker) =>
+    private string Describe(MapMarker marker) =>
         string.IsNullOrWhiteSpace(marker.Label)
-            ? marker.IsArea ? "Bereich" : "Markierung"
+            ? marker.IsArea ? L["Area"].Value : L["Marker"].Value
             : marker.Label;
 
     /// <summary>Rückgabe der JS-Hilfe.</summary>

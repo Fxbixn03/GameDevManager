@@ -1,3 +1,7 @@
+@inject IStringLocalizer<FieldDefinitionDialog> L
+@inject FieldTypeLabels FieldTypes
+@inject ModuleLabels Modules
+
 @*
     Anlegen und Bearbeiten einer Felddefinition — gleich für Art-Felder und für individuelle
     Felder einer einzelnen Entität. Der Dialog arbeitet auf einer Kopie; gespeichert wird erst
@@ -8,40 +12,39 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.ViewList" />
-            <MudText Typo="Typo.h6">@(IsNew ? "Neues Feld" : "Feld bearbeiten")</MudText>
+            <MudText Typo="Typo.h6">@(IsNew ? L["TitleNew"] : L["TitleEdit"])</MudText>
         </MudStack>
     </TitleContent>
 
     <DialogContent>
         <MudStack Spacing="4" Style="min-width:min(560px, 80vw);">
             <MudTextField @bind-Value="Field.Name"
-                          Label="Name"
+                          Label="@L["NameLabel"]"
                           Variant="Variant.Outlined"
                           Immediate="true"
                           Required="true"
                           Error="@(_error is not null && string.IsNullOrWhiteSpace(Field.Name))" />
 
             <MudTextField @bind-Value="Field.Description"
-                          Label="Hilfetext (optional)"
+                          Label="@L["DescriptionLabel"]"
                           Variant="Variant.Outlined"
-                          HelperText="Steht in der Maske unter dem Eingabefeld." />
+                          HelperText="@L["DescriptionHelper"]" />
 
             <MudSelect T="ContentFieldType"
                        Value="Field.Type"
                        ValueChanged="ChangeType"
-                       Label="Datentyp"
+                       Label="@L["TypeLabel"]"
                        Variant="Variant.Outlined">
                 @foreach (var type in Enum.GetValues<ContentFieldType>())
                 {
-                    <MudSelectItem T="ContentFieldType" Value="@type">@FieldTypeLabels.Describe(type)</MudSelectItem>
+                    <MudSelectItem T="ContentFieldType" Value="@type">@FieldTypes.Describe(type)</MudSelectItem>
                 }
             </MudSelect>
 
             @if (!IsNew && _originalType != Field.Type)
             {
                 <MudAlert Severity="Severity.Warning" Dense="true">
-                    Beim Wechsel des Datentyps werden die bisher erfassten Werte dieses Feldes gelöscht —
-                    sie stehen in einer anderen Spalte und lassen sich nicht umdeuten.
+                    @L["TypeChangeWarning"]
                 </MudAlert>
             }
 
@@ -49,13 +52,13 @@
             {
                 <MudSelect T="string"
                            @bind-Value="Field.ReferenceModuleKey"
-                           Label="Zielmodul"
+                           Label="@L["ReferenceModuleLabel"]"
                            Variant="Variant.Outlined"
-                           HelperText="Auf Entitäten welches Moduls darf dieses Feld verweisen?">
+                           HelperText="@L["ReferenceModuleHelper"]">
                     @foreach (var module in ModuleRegistry.All)
                     {
                         <MudSelectItem T="string" Value="@module.Id">
-                            @module.Name @(module.Implemented ? string.Empty : "(noch nicht umgesetzt)")
+                            @Modules.Name(module) @(module.Implemented ? string.Empty : L["ModuleNotImplemented"].Value)
                         </MudSelectItem>
                     }
                 </MudSelect>
@@ -64,20 +67,20 @@
             @if (Field.Type == ContentFieldType.Select)
             {
                 <div>
-                    <MudText Typo="Typo.overline" Color="Color.Secondary">Auswahlmöglichkeiten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionOptions"]</MudText>
 
                     @foreach (var option in Field.Options)
                     {
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-2">
                             <MudTextField @bind-Value="option.Label"
-                                          Label="Bezeichnung"
+                                          Label="@L["OptionLabel"]"
                                           Variant="Variant.Outlined"
                                           Margin="Margin.Dense" />
-                            <MudTooltip Text="Entfernen">
+                            <MudTooltip Text="@L["RemoveOptionTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                Size="Size.Small"
                                                OnClick="@(() => Field.Options.Remove(option))"
-                                               aria-label="Auswahlmöglichkeit entfernen" />
+                                               aria-label="@L["RemoveOptionAria"]" />
                             </MudTooltip>
                         </MudStack>
                     }
@@ -86,7 +89,7 @@
                                Size="Size.Small"
                                Class="mt-2"
                                OnClick="AddOption">
-                        Auswahlmöglichkeit
+                        @L["AddOption"]
                     </MudButton>
                 </div>
             }
@@ -94,14 +97,14 @@
             @if (Field.Type is ContentFieldType.Integer or ContentFieldType.Decimal or ContentFieldType.Text)
             {
                 <MudTextField @bind-Value="Field.Unit"
-                              Label="Einheit (optional)"
+                              Label="@L["UnitLabel"]"
                               Variant="Variant.Outlined"
-                              HelperText="Reine Anzeige, z. B. „kg“, „s“ oder „%“." />
+                              HelperText="@L["UnitHelper"]" />
             }
 
             <MudSwitch @bind-Value="Field.IsRequired"
                        Color="Color.Primary"
-                       Label="Pflichtfeld" />
+                       Label="@L["RequiredLabel"]" />
 
             @if (_error is not null)
             {
@@ -111,8 +114,8 @@
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="@(() => MudDialog.Cancel())">Abbrechen</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Übernehmen</MudButton>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">@L["Submit"]</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -174,24 +177,24 @@
     {
         if (string.IsNullOrWhiteSpace(Field.Name))
         {
-            return "Bitte einen Namen angeben.";
+            return L["NameRequired"];
         }
 
         if (Field.Type == ContentFieldType.EntityReference && string.IsNullOrWhiteSpace(Field.ReferenceModuleKey))
         {
-            return "Bitte das Zielmodul der Referenz wählen.";
+            return L["ReferenceModuleRequired"];
         }
 
         if (Field.Type == ContentFieldType.Select)
         {
             if (Field.Options.Count == 0)
             {
-                return "Eine Auswahl braucht mindestens eine Möglichkeit.";
+                return L["OptionsRequired"];
             }
 
             if (Field.Options.Any(option => string.IsNullOrWhiteSpace(option.Label)))
             {
-                return "Auswahlmöglichkeiten dürfen nicht leer sein.";
+                return L["OptionLabelRequired"];
             }
         }
 

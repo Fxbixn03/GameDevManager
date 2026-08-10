@@ -1,3 +1,5 @@
+@inject ModuleLabels Modules
+
 @*
     Kopfzeile einer Modulseite: Brotkrumen, Titel mit Modul-Icon und rechts die Aktionen.
     Jede Modulseite verwendet sie, damit die Module gleich aufgebaut sind.
@@ -13,7 +15,7 @@
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
             <MudIcon Icon="@Module.Icon" Size="Size.Large" Color="Color.Primary" />
             <div>
-                <MudText Typo="Typo.h4">@(Title ?? Module.Name)</MudText>
+                <MudText Typo="Typo.h4">@(Title ?? Modules.Name(Module))</MudText>
                 @if (!string.IsNullOrWhiteSpace(Subtitle))
                 {
                     <MudText Typo="Typo.body2" Color="Color.Secondary">@Subtitle</MudText>
@@ -50,7 +52,7 @@
 
     private List<BreadcrumbItem> Trail =>
     [
-        new(Module.Name, Module.Route),
+        new(Modules.Name(Module), Module.Route),
         .. Breadcrumbs ?? []
     ];
 }

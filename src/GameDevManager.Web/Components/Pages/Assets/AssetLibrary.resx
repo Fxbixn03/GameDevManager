@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Assets – GameDevManager</value>
+  </data>
+  <data name="TagsButton" xml:space="preserve">
+    <value>Stichwörter</value>
+  </data>
+  <data name="UploadText" xml:space="preserve">
+    <value>Dateien hochladen</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Assets</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Lade Sprites und Bilder hoch — sie lassen sich anschließend Entitäten zuordnen oder als Werkzeug-Assets für Karten-Marker nutzen.</value>
+  </data>
+  <data name="FirstUploadText" xml:space="preserve">
+    <value>Erste Dateien hochladen</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Nach Dateiname, Besitzer oder Beschreibung suchen</value>
+  </data>
+  <data name="ModuleFilterLabel" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="ToolAssetsOption" xml:space="preserve">
+    <value>Werkzeug-Assets</value>
+  </data>
+  <data name="TagFilterLabel" xml:space="preserve">
+    <value>Stichwörter</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>Kein Asset passt zur Suche.</value>
+  </data>
+  <data name="PrimaryChip" xml:space="preserve">
+    <value>Icon</value>
+  </data>
+  <data name="OpenInNewTab" xml:space="preserve">
+    <value>In neuem Tab öffnen</value>
+  </data>
+  <data name="EditTooltip" xml:space="preserve">
+    <value>Angaben bearbeiten</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Asset löschen</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Datei(en), {1}</value>
+  </data>
+  <data name="ToolGroupName" xml:space="preserve">
+    <value>Werkzeug-Assets (ohne Entität)</value>
+  </data>
+  <data name="EditDialogTitle" xml:space="preserve">
+    <value>Asset bearbeiten</value>
+  </data>
+  <data name="TagsDialogTitle" xml:space="preserve">
+    <value>Stichwörter</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Asset löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird samt Datei gelöscht. Das lässt sich nicht rückgängig machen.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Asset gelöscht.</value>
+  </data>
+</root>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TitleNew" xml:space="preserve">
+    <value>Neue Art</value>
+  </data>
+  <data name="TitleEdit" xml:space="preserve">
+    <value>Art bearbeiten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NameHelper" xml:space="preserve">
+    <value>Zum Beispiel „Waffe“, „Rüstung“ oder „Verbrauchsgegenstand“.</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung (optional)</value>
+  </data>
+  <data name="IconLabel" xml:space="preserve">
+    <value>Icon (optional)</value>
+  </data>
+  <data name="SortOrderLabel" xml:space="preserve">
+    <value>Sortierung</value>
+  </data>
+  <data name="SortOrderHelper" xml:space="preserve">
+    <value>Kleinere Zahlen stehen in Listen weiter oben.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="NameRequired" xml:space="preserve">
+    <value>Bitte einen Namen angeben.</value>
+  </data>
+  <data name="IconGeneral" xml:space="preserve">
+    <value>Allgemein</value>
+  </data>
+  <data name="IconWeapon" xml:space="preserve">
+    <value>Waffe</value>
+  </data>
+  <data name="IconArmor" xml:space="preserve">
+    <value>Rüstung</value>
+  </data>
+  <data name="IconPotion" xml:space="preserve">
+    <value>Trank</value>
+  </data>
+  <data name="IconFood" xml:space="preserve">
+    <value>Nahrung</value>
+  </data>
+  <data name="IconResource" xml:space="preserve">
+    <value>Rohstoff</value>
+  </data>
+  <data name="IconTool" xml:space="preserve">
+    <value>Werkzeug</value>
+  </data>
+  <data name="IconJewelry" xml:space="preserve">
+    <value>Schmuck</value>
+  </data>
+  <data name="IconKey" xml:space="preserve">
+    <value>Schlüssel</value>
+  </data>
+  <data name="IconBook" xml:space="preserve">
+    <value>Buch</value>
+  </data>
+  <data name="IconCurrency" xml:space="preserve">
+    <value>Währung</value>
+  </data>
+  <data name="IconMagic" xml:space="preserve">
+    <value>Magie</value>
+  </data>
+  <data name="IconAmmunition" xml:space="preserve">
+    <value>Munition</value>
+  </data>
+  <data name="IconContainer" xml:space="preserve">
+    <value>Behälter</value>
+  </data>
+  <data name="IconQuest" xml:space="preserve">
+    <value>Quest</value>
+  </data>
+</root>

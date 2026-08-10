@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class CollectibleService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<CollectibleListRow>> GetCollectiblesAsync(
         Guid projectId, CancellationToken ct = default)
@@ -81,10 +83,10 @@ public class CollectibleService(
 
         if (string.IsNullOrWhiteSpace(collectible.Name))
         {
-            throw new ContentValidationException("Das Sammelobjekt braucht einen Namen.");
+            throw new ContentValidationException(messages["CollectibleNameRequired"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 

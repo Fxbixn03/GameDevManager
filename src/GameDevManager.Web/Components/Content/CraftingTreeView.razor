@@ -1,3 +1,5 @@
+@inject IStringLocalizer<CraftingTreeView> L
+
 @*
     Ein Knoten des Crafting-Baums, der sich selbst für seine Zutaten erneut aufruft. Die Tiefe
     wird über Einrückung und senkrechte Linien gezeigt statt über ein Graph-Layout — das bleibt
@@ -6,7 +8,7 @@
 
 <div class="gdm-tree-node">
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="gdm-tree-row">
-        <MudText Typo="Typo.body2" Class="gdm-tree-quantity">@Node.Quantity×</MudText>
+        <MudText Typo="Typo.body2" Class="gdm-tree-quantity">@L["Quantity", Node.Quantity]</MudText>
 
         <AssetThumbnail AssetId="Node.PrimaryAssetId"
                         Size="Size.Small"
@@ -19,29 +21,29 @@
             <div>
                 @if (Node.IsCycle)
                 {
-                    <MudTooltip Text="Dieses Item wird mittelbar aus sich selbst hergestellt — hier bricht der Baum ab.">
+                    <MudTooltip Text="@L["CycleTooltip"]">
                         <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error"
                                  Icon="@Icons.Material.Filled.ErrorOutline">
-                            Zyklus
+                            @L["CycleChip"]
                         </MudChip>
                     </MudTooltip>
                 }
                 else if (Node.RecipeId is { } recipeId)
                 {
                     <MudLink Href="@($"/modules/crafting/{recipeId}")" Typo="Typo.caption" Color="Color.Secondary">
-                        @Node.RecipeName@(Node.RecipeOutputQuantity > 1 ? $" (ergibt {Node.RecipeOutputQuantity}×)" : "")
+                        @Node.RecipeName@(Node.RecipeOutputQuantity > 1 ? L["RecipeYield", Node.RecipeOutputQuantity].Value : "")
                     </MudLink>
                 }
                 else
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">Grundstoff — kein Rezept</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoRecipe"]</MudText>
                 }
 
                 @if (Node.AlternativeRecipeCount > 0)
                 {
-                    <MudTooltip Text="Es gibt weitere Rezepte für dieses Item. Aufgeklappt wird das erste.">
+                    <MudTooltip Text="@L["AlternativesTooltip"]">
                         <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">
-                            +@Node.AlternativeRecipeCount weitere
+                            @L["AlternativesChip", Node.AlternativeRecipeCount]
                         </MudChip>
                     </MudTooltip>
                 }

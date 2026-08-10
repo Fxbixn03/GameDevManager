@@ -4,6 +4,7 @@
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<ContentFieldsPanelText> L
 
 @*
     Die beiden Feldabschnitte einer Bearbeitungsmaske: die Felder der gewählten Art und die
@@ -16,19 +17,19 @@
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
             <MudText Typo="Typo.overline" Color="Color.Secondary">
-                Felder der Art „@selectedType.Name“
+                @L["SectionTypeFields", selectedType.Name]
             </MudText>
-            <MudTooltip Text="Felder dieser Art bearbeiten">
+            <MudTooltip Text="@L["EditTypeFieldsTooltip"]">
                 <MudIconButton Icon="@Icons.Material.Filled.Tune"
                                Size="Size.Small"
                                Href="@TypesRoute"
-                               aria-label="Felder der Art bearbeiten" />
+                               aria-label="@L["EditTypeFieldsTooltip"]" />
             </MudTooltip>
         </MudStack>
 
         @if (Context.TypeFields.Count == 0)
         {
-            <MudText Typo="Typo.body2" Color="Color.Secondary">Diese Art hat noch keine Felder.</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["TypeWithoutFields"]</MudText>
         }
         else
         {
@@ -47,25 +48,24 @@
 
 <MudPaper Elevation="0" Class="gdm-panel pa-4">
     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-        <MudText Typo="Typo.overline" Color="Color.Secondary">Individuelle Felder</MudText>
+        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionIndividualFields"]</MudText>
         <MudButton StartIcon="@Icons.Material.Filled.Add"
                    Size="Size.Small"
                    Disabled="Context.IsNew"
                    OnClick="AddFieldAsync">
-            Feld hinzufügen
+            @L["AddField"]
         </MudButton>
     </MudStack>
 
     @if (Context.IsNew)
     {
         <MudText Typo="Typo.body2" Color="Color.Secondary">
-            Individuelle Felder gehören zu genau diesem Eintrag — sie lassen sich anlegen,
-            sobald er einmal gespeichert wurde.
+            @L["NewEntityHint"]
         </MudText>
     }
     else if (Context.IndividualFields.Count == 0)
     {
-        <MudText Typo="Typo.body2" Color="Color.Secondary">@IndividualHint</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@IndividualHintText</MudText>
     }
     else
     {
@@ -79,17 +79,17 @@
                                            ReferenceOptions="OptionsFor(field)"
                                            OnValueChanged="OnValueChanged" />
                     </div>
-                    <MudTooltip Text="Feld bearbeiten">
+                    <MudTooltip Text="@L["EditFieldTooltip"]">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Size="Size.Small"
                                        OnClick="@(() => EditFieldAsync(field))"
-                                       aria-label="@($"Feld {field.Name} bearbeiten")" />
+                                       aria-label="@L["EditFieldAria", field.Name]" />
                     </MudTooltip>
-                    <MudTooltip Text="Feld löschen">
+                    <MudTooltip Text="@L["DeleteFieldTooltip"]">
                         <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                        Size="Size.Small"
                                        OnClick="@(() => DeleteFieldAsync(field))"
-                                       aria-label="@($"Feld {field.Name} löschen")" />
+                                       aria-label="@L["DeleteFieldAria", field.Name]" />
                     </MudTooltip>
                 </MudStack>
             }
@@ -108,10 +108,15 @@
     [Parameter, EditorRequired]
     public required string TypesRoute { get; set; }
 
-    /// <summary>Erklärt, wofür individuelle Felder in diesem Modul gut sind.</summary>
+    /// <summary>
+    /// Erklärt, wofür individuelle Felder in diesem Modul gut sind. Leer bedeutet Standardtext
+    /// aus der resx — siehe <see cref="IndividualHintText"/>.
+    /// </summary>
     [Parameter]
-    public string IndividualHint { get; set; } =
-        "Für einzigartige Werte, die kein anderer Eintrag dieser Art hat.";
+    public string? IndividualHint { get; set; }
+
+    private string IndividualHintText =>
+        string.IsNullOrWhiteSpace(IndividualHint) ? L["DefaultIndividualHint"] : IndividualHint;
 
     /// <summary>Meldet der Seite eine Wertänderung — für „ungespeicherte Änderungen“.</summary>
     [Parameter]
@@ -179,7 +184,7 @@
         };
 
         var reference = await Dialogs.ShowAsync<FieldDefinitionDialog>(
-            isNew ? "Neues Feld" : "Feld bearbeiten",
+            isNew ? L["NewFieldDialogTitle"] : L["EditFieldDialogTitle"],
             parameters,
             new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
 
@@ -193,7 +198,7 @@
         {
             await ContentTypes.SaveFieldAsync(edited);
             await OnFieldDefinitionChanged.InvokeAsync();
-            Snackbar.Add($"Feld „{edited.Name}“ gespeichert.", Severity.Success);
+            Snackbar.Add(L["FieldSavedMessage", edited.Name], Severity.Success);
         }
         catch (ContentValidationException ex)
         {
@@ -204,10 +209,10 @@
     private async Task DeleteFieldAsync(FieldDefinition field)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Feld löschen",
-            $"Das Feld „{field.Name}“ und sein erfasster Wert werden gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", field.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -216,6 +221,6 @@
 
         await ContentTypes.DeleteFieldAsync(field.Id);
         await OnFieldDefinitionChanged.InvokeAsync();
-        Snackbar.Add("Feld gelöscht.", Severity.Success);
+        Snackbar.Add(L["FieldDeletedMessage"], Severity.Success);
     }
 }

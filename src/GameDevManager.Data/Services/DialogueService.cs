@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class DialogueService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<DialogueListRow>> GetDialoguesAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -108,11 +110,11 @@ public class DialogueService(
 
         if (string.IsNullOrWhiteSpace(dialogue.Name))
         {
-            throw new ContentValidationException("Der Dialog braucht einen Namen.");
+            throw new ContentValidationException(messages["DialogueNameRequired"]);
         }
 
         Validate(dialogue);
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -157,11 +159,11 @@ public class DialogueService(
         dialogue.Description = stored.Description;
     }
 
-    private static void Validate(Dialogue dialogue)
+    private void Validate(Dialogue dialogue)
     {
         if (dialogue.Participants.Any(p => p.NpcId == Guid.Empty))
         {
-            throw new ContentValidationException("Jeder Beteiligte braucht einen NPC.");
+            throw new ContentValidationException(messages["DialogueParticipantNpcRequired"]);
         }
 
         var duplicate = dialogue.Participants
@@ -170,12 +172,12 @@ public class DialogueService(
 
         if (duplicate is not null)
         {
-            throw new ContentValidationException("Derselbe NPC ist mehrfach beteiligt.");
+            throw new ContentValidationException(messages["DialogueParticipantDuplicate"]);
         }
 
         if (dialogue.Lines.Any(line => string.IsNullOrWhiteSpace(line.Text)))
         {
-            throw new ContentValidationException("Jede Zeile braucht einen Text.");
+            throw new ContentValidationException(messages["DialogueLineTextRequired"]);
         }
 
         var participantIds = dialogue.Participants.Select(p => p.NpcId).ToHashSet();
@@ -184,25 +186,22 @@ public class DialogueService(
         {
             if (line.SpeakerNpcId is { } speaker && !participantIds.Contains(speaker))
             {
-                throw new ContentValidationException(
-                    "Eine Zeile wird von einem NPC gesprochen, der gar nicht beteiligt ist.");
+                throw new ContentValidationException(messages["DialogueSpeakerNotParticipant"]);
             }
 
             if (line.SpeakerNpcId is null && !dialogue.IncludesPlayer)
             {
-                throw new ContentValidationException(
-                    "Eine Zeile spricht der Spieler, obwohl er nicht beteiligt ist.");
+                throw new ContentValidationException(messages["DialoguePlayerNotParticipant"]);
             }
 
             if (dialogue.Kind == DialogueKind.Bark && line.Choices.Count > 0)
             {
-                throw new ContentValidationException(
-                    "Sprechblasen haben keine Antwortmöglichkeiten.");
+                throw new ContentValidationException(messages["DialogueBarkHasNoChoices"]);
             }
 
             if (line.Choices.Any(choice => string.IsNullOrWhiteSpace(choice.Text)))
             {
-                throw new ContentValidationException("Jede Antwortmöglichkeit braucht einen Text.");
+                throw new ContentValidationException(messages["DialogueChoiceTextRequired"]);
             }
         }
 
@@ -212,8 +211,7 @@ public class DialogueService(
         {
             if (choice.NextLineId is { } next && !lineIds.Contains(next))
             {
-                throw new ContentValidationException(
-                    "Eine Antwortmöglichkeit führt zu einer Zeile, die es in diesem Dialog nicht gibt.");
+                throw new ContentValidationException(messages["DialogueChoiceTargetMissing"]);
             }
         }
     }
@@ -420,7 +418,7 @@ public class DialogueService(
                     dialogue.Id,
                     dialogue.Name,
                     unreachable.Id,
-                    $"Die Zeile „{Shorten(unreachable.Text)}“ ist von keiner Antwort aus erreichbar."));
+                    messages["DialogueLineUnreachable", Shorten(unreachable.Text)]));
             }
         }
 

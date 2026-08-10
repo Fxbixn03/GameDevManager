@@ -7,15 +7,16 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<QuestEditor> L
 
-<PageTitle>@PageHeading – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
 @if (_notFound)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">
-        Es gibt keine Quest mit dieser GUID. Vielleicht wurde sie gelöscht.
+        @L["NotFound"]
     </MudAlert>
-    <MudButton Variant="Variant.Outlined" Href="/modules/quests">Zurück zur Übersicht</MudButton>
+    <MudButton Variant="Variant.Outlined" Href="/modules/quests">@L["BackToList"]</MudButton>
 }
 else if (_context is null)
 {
@@ -25,13 +26,13 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Subtitle="@(_context.IsNew ? L["NotSavedYet"].Value : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
-                    Ungespeicherte Änderungen
+                    @L["UnsavedChanges"]
                 </MudChip>
             }
             @if (!_context.IsNew)
@@ -40,16 +41,16 @@ else
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
-                    Löschen
+                    @L["Delete"]
                 </MudButton>
             }
-            <MudButton Variant="Variant.Outlined" Href="/modules/quests">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/quests">@L["Cancel"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
                        OnClick="SaveAsync">
-                Speichern
+                @L["Save"]
             </MudButton>
         </Actions>
     </ModuleHeader>
@@ -60,20 +61,20 @@ else
 
                 @* ------------------------------------------------------------- Stammdaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionMasterData"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudTextField Value="_context.Entity.Name"
                                       ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
                                       T="string"
-                                      Label="Name *"
+                                      Label="@L["NameLabel"]"
                                       Variant="Variant.Outlined"
                                       Immediate="true" />
 
                         <MudTextField Value="_context.Entity.Description"
                                       ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
                                       T="string"
-                                      Label="Beschreibung"
+                                      Label="@L["DescriptionLabel"]"
                                       Variant="Variant.Outlined"
                                       Lines="3" />
 
@@ -81,19 +82,19 @@ else
                             <MudSelect T="QuestKind"
                                        Value="_context.Entity.Kind"
                                        ValueChanged="@((QuestKind kind) => Touch(() => _context.Entity.Kind = kind))"
-                                       Label="Form"
+                                       Label="@L["KindLabel"]"
                                        Variant="Variant.Outlined"
                                        Style="max-width:220px;">
                                 @foreach (var kind in Enum.GetValues<QuestKind>())
                                 {
-                                    <MudSelectItem T="QuestKind" Value="@kind">@QuestService.KindLabel(kind)</MudSelectItem>
+                                    <MudSelectItem T="QuestKind" Value="@kind">@Quests.KindLabel(kind)</MudSelectItem>
                                 }
                             </MudSelect>
 
                             <MudSelect T="Guid?"
                                        Value="_context.Entity.ContentTypeId"
                                        ValueChanged="ChangeType"
-                                       Label="Quest-Art"
+                                       Label="@L["TypeLabel"]"
                                        Variant="Variant.Outlined"
                                        Clearable="true"
                                        Style="max-width:240px;">
@@ -107,9 +108,9 @@ else
                         @if (_context.Entity.Kind == QuestKind.Event)
                         {
                             <MudAlert Severity="Severity.Info" Dense="true">
-                                Zufalls-Events mit Spawns, Loot und Orten bekommen im
-                                <MudLink Href="/modules/events" Color="Color.Primary">Event-Modul</MudLink>
-                                mehr Möglichkeiten.
+                                @L["EventHintBefore"]
+                                <MudLink Href="/modules/events" Color="Color.Primary">@L["EventHintLink"]</MudLink>
+                                @L["EventHintAfter"]
                             </MudAlert>
                         }
                     </MudStack>
@@ -117,7 +118,7 @@ else
 
                 @* ---------------------------------------------------------- Verknüpfungen *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Verknüpfungen</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionLinks"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudAutocomplete T="EntitySummary"
@@ -125,8 +126,8 @@ else
                                          ValueChanged="@((EntitySummary? e) => Touch(() => _context.Entity.GiverNpcId = e?.Id))"
                                          SearchFunc="@((s, ct) => SearchAsync(_npcs, s, ct))"
                                          ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                         Label="Questgeber (NPC)"
-                                         HelperText="Wer die Quest vergibt. Die Rolle „Questgeber“ wird am NPC geschaltet."
+                                         Label="@L["GiverLabel"]"
+                                         HelperText="@L["GiverHelper"]"
                                          Variant="Variant.Outlined"
                                          Clearable="true"
                                          ResetValueOnEmptyText="true"
@@ -138,8 +139,8 @@ else
                                          ValueChanged="@((EntitySummary? e) => Touch(() => _context.Entity.StoryEntryId = e?.Id))"
                                          SearchFunc="@((s, ct) => SearchAsync(_storyEntries, s, ct))"
                                          ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                         Label="Story-Abschnitt"
-                                         HelperText="An welchen Teil der Story die Quest angelehnt ist."
+                                         Label="@L["StoryEntryLabel"]"
+                                         HelperText="@L["StoryEntryHelper"]"
                                          Variant="Variant.Outlined"
                                          Clearable="true"
                                          ResetValueOnEmptyText="true"
@@ -151,8 +152,8 @@ else
                                          ValueChanged="@((EntitySummary? e) => Touch(() => _context.Entity.DialogueId = e?.Id))"
                                          SearchFunc="@((s, ct) => SearchAsync(_dialogues, s, ct))"
                                          ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                         Label="Dialog"
-                                         HelperText="Der Dialog, aus dem die Quest hervorgeht."
+                                         Label="@L["DialogueLabel"]"
+                                         HelperText="@L["DialogueHelper"]"
                                          Variant="Variant.Outlined"
                                          Clearable="true"
                                          ResetValueOnEmptyText="true"
@@ -165,24 +166,24 @@ else
                 @if (!_context.IsNew)
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Bedingungen</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionConditions"]</MudText>
 
                         <MudExpansionPanels Elevation="0" MultiExpansion="true">
                             @* „Manche Quests sind nur nach einer Bedingung verfügbar.“ *@
-                            <MudExpansionPanel Text="@($"Verfügbarkeit{(_availabilityCount > 0 ? $" ({_availabilityCount})" : "")}")">
+                            <MudExpansionPanel Text="@(_availabilityCount > 0 ? L["AvailabilityPanelCount", _availabilityCount] : L["AvailabilityPanel"])">
                                 <ConditionEditor OwnerId="_context.Entity.Id"
                                                  OwnerModuleKey="@ModuleKeys.Quests"
                                                  Slot="@ConditionSlots.Availability"
-                                                 EmptyHint="Ohne Bedingung ist die Quest von Anfang an verfügbar."
+                                                 EmptyHint="@L["AvailabilityHint"]"
                                                  OnSaved="@((int count) => _availabilityCount = count)" />
                             </MudExpansionPanel>
 
                             @* Der Health Check „Quests ohne Abschlussbedingung“ schaut auf diesen Slot. *@
-                            <MudExpansionPanel Text="@($"Abschluss{(_completionCount > 0 ? $" ({_completionCount})" : "")}")">
+                            <MudExpansionPanel Text="@(_completionCount > 0 ? L["CompletionPanelCount", _completionCount] : L["CompletionPanel"])">
                                 <ConditionEditor OwnerId="_context.Entity.Id"
                                                  OwnerModuleKey="@ModuleKeys.Quests"
                                                  Slot="@ConditionSlots.Completion"
-                                                 EmptyHint="Ohne Abschlussbedingung wüsste das Spiel nie, wann die Quest erledigt ist."
+                                                 EmptyHint="@L["CompletionHint"]"
                                                  OnSaved="@((int count) => _completionCount = count)" />
                             </MudExpansionPanel>
                         </MudExpansionPanels>
@@ -200,7 +201,7 @@ else
                                         Context="_context"
                                         ModuleKey="@ModuleKeys.Quests"
                                         TypesRoute="/modules/quests/arten"
-                                        IndividualHint="Für Angaben, die nur diese eine Quest braucht."
+                                        IndividualHint="@L["IndividualHint"]"
                                         OnValueChanged="MarkDirty"
                                         OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
                 </div>
@@ -210,17 +211,17 @@ else
         <MudItem xs="12" md="4">
             <MudStack Spacing="4">
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidCaption"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CreatedCaption"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@L["UpdatedCaption"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
                     }
                 </MudPaper>
@@ -255,10 +256,10 @@ else
 
     private string PageHeading => _context switch
     {
-        null => "Quest",
-        { IsNew: true } => "Neue Quest",
+        null => L["HeadingDefault"],
+        { IsNew: true } => L["HeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "Quest ohne Namen"
+        _ => L["HeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -341,7 +342,7 @@ else
             await Quests.SaveQuestAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -372,10 +373,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Quest löschen",
-            $"„{_context.Entity.Name}“ wird mit Feldwerten, individuellen Feldern, Bedingungen und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -383,7 +384,7 @@ else
         }
 
         await Quests.DeleteQuestAsync(_context.Entity.Id);
-        Snackbar.Add("Quest gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/quests");
     }
 

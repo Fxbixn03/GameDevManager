@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DefaultEmptyHint" xml:space="preserve">
+    <value>Ohne Bedingung ist es immer verfügbar.</value>
+  </data>
+  <data name="LogicLabel" xml:space="preserve">
+    <value>Verknüpfung</value>
+  </data>
+  <data name="LogicAll" xml:space="preserve">
+    <value>Alle müssen zutreffen</value>
+  </data>
+  <data name="LogicAny" xml:space="preserve">
+    <value>Mindestens eine muss zutreffen</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Bedingung</value>
+  </data>
+  <data name="TargetLabel" xml:space="preserve">
+    <value>Bezug</value>
+  </data>
+  <data name="TargetHelperEmpty" xml:space="preserve">
+    <value>Im Modul „{0}“ gibt es dazu noch nichts.</value>
+  </data>
+  <data name="OperatorLabel" xml:space="preserve">
+    <value>Vergleich</value>
+  </data>
+  <data name="NumberLabel" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="BooleanTrue" xml:space="preserve">
+    <value>trifft zu</value>
+  </data>
+  <data name="BooleanFalse" xml:space="preserve">
+    <value>trifft nicht zu</value>
+  </data>
+  <data name="TextLabelFlag" xml:space="preserve">
+    <value>Name des Schalters</value>
+  </data>
+  <data name="TextLabelQuestState" xml:space="preserve">
+    <value>Zustand</value>
+  </data>
+  <data name="TextLabelDefault" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="RemoveCondition" xml:space="preserve">
+    <value>Bedingung entfernen</value>
+  </data>
+  <data name="AddCondition" xml:space="preserve">
+    <value>Bedingung</value>
+  </data>
+  <data name="SaveConditions" xml:space="preserve">
+    <value>Bedingungen speichern</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="RemovedMessage" xml:space="preserve">
+    <value>Bedingungen entfernt.</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>Bedingungen gespeichert.</value>
+  </data>
+</root>

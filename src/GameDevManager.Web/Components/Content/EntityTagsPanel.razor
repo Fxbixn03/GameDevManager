@@ -1,5 +1,6 @@
 @inject TagService Tags
 @inject ProjectContext Project
+@inject IStringLocalizer<EntityTagsPanel> L
 
 @* ---------------------------------------------------------------------------------
    Die Tags einer Entität — in jeder Bearbeitungsmaske einbindbar:
@@ -9,16 +10,16 @@
 
 <MudPaper Elevation="0" Class="gdm-panel pa-4">
     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-        <MudText Typo="Typo.overline" Color="Color.Secondary">Tags</MudText>
+        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionTags"]</MudText>
 
         <MudMenu Icon="@Icons.Material.Filled.Add"
                  Size="Size.Small"
                  Dense="true"
-                 AriaLabel="Tag zuweisen">
+                 AriaLabel="@L["AssignAria"]">
             @if (Addable.Count == 0)
             {
                 <MudMenuItem Disabled="true">
-                    @(_assignable.Count == 0 ? "Keine Tags für dieses Modul freigegeben." : "Alle Tags bereits zugewiesen.")
+                    @(_assignable.Count == 0 ? L["NoneReleased"] : L["AllAssigned"])
                 </MudMenuItem>
             }
             else
@@ -36,8 +37,8 @@
     @if (_assigned.Count == 0)
     {
         <MudText Typo="Typo.body2" Color="Color.Secondary">
-            Noch keine Tags. Definiert werden sie im
-            <MudLink Href="/modules/tags" Color="Color.Primary">Tag-Modul</MudLink>.
+            @L["EmptyHint"]
+            <MudLink Href="/modules/tags" Color="Color.Primary">@L["EmptyHintLink"]</MudLink>.
         </MudText>
     }
     else

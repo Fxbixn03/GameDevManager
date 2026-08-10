@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -11,7 +12,8 @@ namespace GameDevManager.Data.Services;
 /// </summary>
 public class ContentTypeService(
     IDbContextFactory<GameDevManagerDbContext> factory,
-    IEnumerable<IModuleEntitySource> sources)
+    IEnumerable<IModuleEntitySource> sources,
+    IStringLocalizer<DataMessages> messages)
 {
     /// <summary>Alle Arten eines Moduls samt Feldern und Auswahlmöglichkeiten, fertig sortiert.</summary>
     public async Task<List<ContentType>> GetTypesAsync(Guid projectId, string moduleKey, CancellationToken ct = default)
@@ -46,7 +48,7 @@ public class ContentTypeService(
     {
         if (string.IsNullOrWhiteSpace(type.Name))
         {
-            throw new ContentValidationException("Die Art braucht einen Namen.");
+            throw new ContentValidationException(messages["TypeNameRequired"]);
         }
 
         await using var db = await factory.CreateDbContextAsync(ct);
@@ -85,14 +87,12 @@ public class ContentTypeService(
         await using var db = await factory.CreateDbContextAsync(ct);
 
         var stored = await db.ContentTypes.FirstOrDefaultAsync(t => t.Id == typeId, ct)
-            ?? throw new ContentValidationException("Die Art existiert nicht mehr.");
+            ?? throw new ContentValidationException(messages["TypeGone"]);
 
         var usages = await CountUsagesAsync(db, stored.ModuleKey, typeId, ct);
         if (usages > 0)
         {
-            throw new ContentValidationException(
-                $"„{stored.Name}“ wird noch von {usages} Eintrag/Einträgen verwendet. " +
-                "Bitte zuerst umtragen oder löschen.");
+            throw new ContentValidationException(messages["TypeInUse", stored.Name, usages]);
         }
 
         // Die Werte hängen an den Felddefinitionen, nicht an der Art — sie fallen über den
@@ -260,27 +260,26 @@ public class ContentTypeService(
         return source is null ? 0 : await source.CountByTypeAsync(db, typeId, ct);
     }
 
-    private static void Validate(FieldDefinition field)
+    private void Validate(FieldDefinition field)
     {
         if (string.IsNullOrWhiteSpace(field.Name))
         {
-            throw new ContentValidationException("Das Feld braucht einen Namen.");
+            throw new ContentValidationException(messages["FieldNameRequired"]);
         }
 
         if (field.ContentTypeId is null == field.OwnerEntityId is null)
         {
-            throw new ContentValidationException(
-                "Ein Feld gehört entweder zu einer Art oder zu genau einer Entität.");
+            throw new ContentValidationException(messages["FieldOwnerAmbiguous"]);
         }
 
         if (field.Type == ContentFieldType.EntityReference && string.IsNullOrWhiteSpace(field.ReferenceModuleKey))
         {
-            throw new ContentValidationException("Bei einer Referenz muss das Zielmodul angegeben sein.");
+            throw new ContentValidationException(messages["FieldReferenceModuleRequired"]);
         }
 
         if (field.Type == ContentFieldType.Select && field.Options.Any(o => string.IsNullOrWhiteSpace(o.Label)))
         {
-            throw new ContentValidationException("Auswahlmöglichkeiten dürfen nicht leer sein.");
+            throw new ContentValidationException(messages["FieldOptionsNotEmpty"]);
         }
     }
 

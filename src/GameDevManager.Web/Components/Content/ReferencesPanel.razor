@@ -1,4 +1,6 @@
 @inject ReferenceService References
+@inject IStringLocalizer<ReferencesPanel> L
+@inject ModuleLabels Modules
 
 @*
     Die Referenzansicht aus dem Konzept — „Find All References" für eine Entität: wer verweist
@@ -8,7 +10,7 @@
 
 <MudPaper Elevation="0" Class="gdm-panel pa-4">
     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-        <MudText Typo="Typo.overline" Color="Color.Secondary">Verwendet von</MudText>
+        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionUsedBy"]</MudText>
         @if (_hits is not null)
         {
             <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">@_hits.Count</MudChip>
@@ -22,7 +24,7 @@
     else if (_hits.Count == 0)
     {
         <MudText Typo="Typo.body2" Color="Color.Secondary">
-            Auf diese Entität verweist bisher nichts.
+            @L["EmptyHint"]
         </MudText>
     }
     else
@@ -33,7 +35,7 @@
                 <MudListItem T="string" Href="@RouteFor(hit)" Icon="@IconFor(hit)">
                     <MudText Typo="Typo.body2">@hit.SourceName</MudText>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">
-                        @ModuleName(hit.SourceModuleKey) · Feld „@hit.FieldName“
+                        @L["HitSubtitle", ModuleName(hit.SourceModuleKey), hit.FieldName]
                     </MudText>
                 </MudListItem>
             }
@@ -67,8 +69,7 @@
         StateHasChanged();
     }
 
-    private static string ModuleName(string moduleKey) =>
-        ModuleRegistry.Find(moduleKey)?.Name ?? moduleKey;
+    private string ModuleName(string moduleKey) => Modules.Name(moduleKey);
 
     private static string IconFor(EntityReferenceHit hit) =>
         ModuleRegistry.Find(hit.SourceModuleKey)?.Icon ?? Icons.Material.Filled.Link;

@@ -18,6 +18,13 @@ builder.Services.AddGameDevManagerDatabase(builder.Configuration);
 builder.Services.AddGameDevManagerAssetStorage(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddScoped<ProjectContext>();
 
+// Beschriftungen, die aus C# statt aus einer Razor-Datei kommen (Modulnamen, Feldtypen,
+// Bedingungen). Sie sind Dienste und keine statischen Klassen mehr, weil sie einen
+// IStringLocalizer brauchen.
+builder.Services.AddSingleton<ModuleLabels>();
+builder.Services.AddSingleton<ConditionLabels>();
+builder.Services.AddSingleton<FieldTypeLabels>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

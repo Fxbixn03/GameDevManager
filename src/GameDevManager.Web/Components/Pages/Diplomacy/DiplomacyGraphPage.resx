@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Diplomatie-Graph – GameDevManager</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Diplomatie-Graph</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Alle Fraktionen und ihre Beziehungen auf einen Blick — im Konzept: „als Graphen angezeigt“.</value>
+  </data>
+  <data name="ToRelations" xml:space="preserve">
+    <value>Zu den Beziehungen</value>
+  </data>
+  <data name="NewRelation" xml:space="preserve">
+    <value>Neue Beziehung</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Fraktionen</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Der Graph zeigt Fraktionen als Knoten und Beziehungen als Kanten.</value>
+  </data>
+  <data name="FirstFaction" xml:space="preserve">
+    <value>Erste Fraktion</value>
+  </data>
+  <data name="LegendHint" xml:space="preserve">
+    <value>Klick auf einen Knoten öffnet die Fraktion, Klick auf eine Kante die Beziehung.</value>
+  </data>
+  <data name="GraphAria" xml:space="preserve">
+    <value>Diplomatie-Graph</value>
+  </data>
+  <data name="EdgeTitle" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="BreadcrumbGraph" xml:space="preserve">
+    <value>Graph</value>
+  </data>
+</root>

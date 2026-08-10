@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class AchievementService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<AchievementListRow>> GetAchievementsAsync(
         Guid projectId, CancellationToken ct = default)
@@ -82,10 +84,10 @@ public class AchievementService(
 
         if (string.IsNullOrWhiteSpace(achievement.Name))
         {
-            throw new ContentValidationException("Das Achievement braucht einen Namen.");
+            throw new ContentValidationException(messages["AchievementNameRequired"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 

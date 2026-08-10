@@ -5,21 +5,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<CutsceneList> L
 
-<PageTitle>Cutscenes – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/cutscenes/arten">
-            Cutscene-Arten
+            @L["TypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/cutscenes/neu">
-            Neue Cutscene
+            @L["NewCutscene"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -32,13 +33,12 @@ else if (_cutscenes.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Movie" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Cutscenes</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Eine Cutscene ist hier ein Storyboard aus geordneten Einstellungen — verknüpfbar
-            mit einem Story-Abschnitt und dem gesprochenen Dialog.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/cutscenes/neu">
-            Erste Cutscene
+            @L["FirstCutscene"]
         </MudButton>
     </div>
 }
@@ -47,7 +47,7 @@ else
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
-                          Placeholder="Nach Name, Story oder Beschreibung suchen"
+                          Placeholder="@L["SearchPlaceholder"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Immediate="true"
@@ -58,7 +58,7 @@ else
 
             <MudSelect T="Guid?"
                        @bind-Value="_typeFilter"
-                       Label="Art"
+                       Label="@L["TypeFilterLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Clearable="true"
@@ -70,7 +70,7 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Filtered.Count von @_cutscenes.Count</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _cutscenes.Count]</MudText>
         </MudStack>
     </MudPaper>
 
@@ -84,39 +84,39 @@ else
               RowClass="cursor-pointer">
         <HeaderContent>
             <MudTh Style="width:56px;"></MudTh>
-            <MudTh>Name</MudTh>
-            <MudTh>Einstellungen</MudTh>
-            <MudTh>Story</MudTh>
-            <MudTh>Art</MudTh>
+            <MudTh>@L["HeaderName"]</MudTh>
+            <MudTh>@L["HeaderShots"]</MudTh>
+            <MudTh>@L["HeaderStory"]</MudTh>
+            <MudTh>@L["HeaderType"]</MudTh>
             <MudTh Style="width:56px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Sprite">
+            <MudTd DataLabel="@L["HeaderSprite"]">
                 <AssetThumbnail AssetId="context.PrimaryAssetId"
                                 Size="Size.Small"
                                 Alt="@context.Name"
                                 FallbackIcon="@Icons.Material.Filled.Movie" />
             </MudTd>
-            <MudTd DataLabel="Name">
+            <MudTd DataLabel="@L["HeaderName"]">
                 <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
             </MudTd>
-            <MudTd DataLabel="Einstellungen">
+            <MudTd DataLabel="@L["HeaderShots"]">
                 <MudText Typo="Typo.body2">@context.ShotCount</MudText>
             </MudTd>
-            <MudTd DataLabel="Story">
+            <MudTd DataLabel="@L["HeaderStory"]">
                 @if (context.StoryEntryId is null)
                 {
                     <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2">@(context.StoryEntryName ?? "(gelöschter Abschnitt)")</MudText>
+                    <MudText Typo="Typo.body2">@(context.StoryEntryName ?? L["DeletedStoryEntry"])</MudText>
                 }
             </MudTd>
-            <MudTd DataLabel="Art">
+            <MudTd DataLabel="@L["HeaderType"]">
                 @if (context.TypeName is null)
                 {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">ohne Art</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
                 }
                 else
                 {
@@ -124,17 +124,17 @@ else
                 }
             </MudTd>
             <MudTd>
-                <MudTooltip Text="Löschen">
+                <MudTooltip Text="@L["DeleteTooltip"]">
                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                    Size="Size.Small"
                                    OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@($"{context.Name} löschen")" />
+                                   aria-label="@L["DeleteAria", context.Name]" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                Keine Cutscene passt zur Suche.
+                @L["NoRecords"]
             </MudText>
         </NoRecordsContent>
     </MudTable>
@@ -149,8 +149,8 @@ else
     private Guid? _typeFilter;
 
     private string Subtitle => _cutscenes is null
-        ? "Wird geladen …"
-        : $"{_cutscenes.Count} Cutscene(s)";
+        ? L["Loading"]
+        : L["SubtitleCount", _cutscenes.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -195,10 +195,10 @@ else
     private async Task DeleteAsync(CutsceneListRow row)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Cutscene löschen",
-            $"„{row.Name}“ wird mit Storyboard, Feldwerten und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -206,7 +206,7 @@ else
         }
 
         await Cutscenes.DeleteCutsceneAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 }

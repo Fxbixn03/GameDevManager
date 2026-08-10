@@ -1,5 +1,6 @@
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -45,14 +46,15 @@ public static class ContentFields
     }
 
     /// <summary>Wirft, sobald ein Pflichtfeld leer geblieben ist.</summary>
-    public static void ValidateRequired<TEntity>(ContentEditContext<TEntity> context)
+    public static void ValidateRequired<TEntity>(
+        ContentEditContext<TEntity> context, IStringLocalizer<DataMessages> messages)
         where TEntity : ContentEntity
     {
         foreach (var field in context.ApplicableFields.Where(f => f.IsRequired))
         {
             if (context.ValueFor(field).IsEmpty)
             {
-                throw new ContentValidationException($"Das Pflichtfeld „{field.Name}“ ist nicht gefüllt.");
+                throw new ContentValidationException(messages["RequiredFieldEmpty", field.Name]);
             }
         }
     }

@@ -11,7 +11,11 @@ namespace GameDevManager.Web.Services;
 /// Das Modul hat eine eigene Oberfläche. Ist es <c>false</c>, landet der Aufruf auf der
 /// Platzhalterseite.
 /// </param>
-public record ModuleDefinition(string Id, string Name, string Icon, string Description, bool Implemented = false)
+/// <remarks>
+/// Name und Beschreibung stehen bewusst nicht hier, sondern in <see cref="ModuleLabels"/>:
+/// Die Registry ist statisch und kennt zur Feldinitialisierung noch keinen Localizer.
+/// </remarks>
+public record ModuleDefinition(string Id, string Icon, bool Implemented = false)
 {
     public string Route => $"/modules/{Id}";
 }
@@ -24,28 +28,28 @@ public static class ModuleRegistry
 {
     public static readonly IReadOnlyList<ModuleDefinition> All =
     [
-        new(ModuleKeys.Items, "Items", Icons.Material.Filled.Category, "Items und Item-Arten mit eigenen Feldern definieren", Implemented: true),
-        new(ModuleKeys.Crafting, "Crafting", Icons.Material.Filled.Construction, "Rezepte und Crafting-Trees auf Basis der Items", Implemented: true),
-        new(ModuleKeys.Currencies, "Währungen", Icons.Material.Filled.Paid, "Spielwährungen in beliebigen Variationen", Implemented: true),
-        new(ModuleKeys.Npcs, "NPCs", Icons.Material.Filled.People, "NPCs und Mobs, Händler, Spawns und Bedingungen", Implemented: true),
-        new(ModuleKeys.Factions, "Fraktionen", Icons.Material.Filled.Flag, "Fraktionen, Rollen und Ränge für NPCs", Implemented: true),
-        new(ModuleKeys.Diplomacy, "Diplomatie", Icons.Material.Filled.Handshake, "Allianzen und Feindschaften als Graph", Implemented: true),
-        new(ModuleKeys.Maps, "Karten", Icons.Material.Filled.Map, "Welt- und Detailkarten mit Markern und Gebieten", Implemented: true),
-        new(ModuleKeys.Dialogs, "Dialoge", Icons.Material.Filled.Chat, "Dialoge, Sprechblasen und Antwortmöglichkeiten", Implemented: true),
-        new(ModuleKeys.Story, "Story", Icons.Material.Filled.AutoStories, "Storyline im Zeitstreifen mit Verknüpfungen", Implemented: true),
-        new(ModuleKeys.Quests, "Quests", Icons.Material.Filled.Assignment, "Haupt-/Nebenmissionen und Events mit Bedingungen", Implemented: true),
-        new(ModuleKeys.Assets, "Assets", Icons.Material.Filled.PhotoLibrary, "Sprite-Bibliothek über alle Entitäten", Implemented: true),
-        new(ModuleKeys.Player, "Spieler", Icons.Material.Filled.Person, "Spielerfigur und Skilltrees", Implemented: true),
-        new(ModuleKeys.Classes, "Klassen", Icons.Material.Filled.School, "Klassen für Spieler und NPCs", Implemented: true),
-        new(ModuleKeys.Loot, "Loot-Tables", Icons.Material.Filled.Casino, "Drop-Wahrscheinlichkeiten und Mengen", Implemented: true),
-        new(ModuleKeys.Effects, "Effekte", Icons.Material.Filled.AutoAwesome, "Effekte und deren Wirkung, z. B. Verbrennung", Implemented: true),
-        new(ModuleKeys.Achievements, "Achievements", Icons.Material.Filled.EmojiEvents, "Erfolge, die der Spieler erreichen kann", Implemented: true),
-        new(ModuleKeys.Collectibles, "Sammelobjekte", Icons.Material.Filled.Collections, "Statuen, Notizen und andere Sammelobjekte", Implemented: true),
-        new(ModuleKeys.Events, "Events", Icons.Material.Filled.Event, "Zufalls-Events mit Spawns, Loot und Orten", Implemented: true),
-        new(ModuleKeys.Tags, "Tags", Icons.Material.Filled.Label, "Tags/Labels, modulübergreifend einsetzbar", Implemented: true),
-        new(ModuleKeys.Audio, "SFX/Audio", Icons.Material.Filled.MusicNote, "Sounds und Musik mit Audiodateien", Implemented: true),
-        new(ModuleKeys.Cutscenes, "Cutscenes", Icons.Material.Filled.Movie, "Cutscenes als Storyboard mit Verknüpfungen", Implemented: true),
-        new(ModuleKeys.Statistics, "Statistik", Icons.Material.Filled.BarChart, "Kennzahlen und Health Checks über alle Module", Implemented: true)
+        new(ModuleKeys.Items, Icons.Material.Filled.Category, Implemented: true),
+        new(ModuleKeys.Crafting, Icons.Material.Filled.Construction, Implemented: true),
+        new(ModuleKeys.Currencies, Icons.Material.Filled.Paid, Implemented: true),
+        new(ModuleKeys.Npcs, Icons.Material.Filled.People, Implemented: true),
+        new(ModuleKeys.Factions, Icons.Material.Filled.Flag, Implemented: true),
+        new(ModuleKeys.Diplomacy, Icons.Material.Filled.Handshake, Implemented: true),
+        new(ModuleKeys.Maps, Icons.Material.Filled.Map, Implemented: true),
+        new(ModuleKeys.Dialogs, Icons.Material.Filled.Chat, Implemented: true),
+        new(ModuleKeys.Story, Icons.Material.Filled.AutoStories, Implemented: true),
+        new(ModuleKeys.Quests, Icons.Material.Filled.Assignment, Implemented: true),
+        new(ModuleKeys.Assets, Icons.Material.Filled.PhotoLibrary, Implemented: true),
+        new(ModuleKeys.Player, Icons.Material.Filled.Person, Implemented: true),
+        new(ModuleKeys.Classes, Icons.Material.Filled.School, Implemented: true),
+        new(ModuleKeys.Loot, Icons.Material.Filled.Casino, Implemented: true),
+        new(ModuleKeys.Effects, Icons.Material.Filled.AutoAwesome, Implemented: true),
+        new(ModuleKeys.Achievements, Icons.Material.Filled.EmojiEvents, Implemented: true),
+        new(ModuleKeys.Collectibles, Icons.Material.Filled.Collections, Implemented: true),
+        new(ModuleKeys.Events, Icons.Material.Filled.Event, Implemented: true),
+        new(ModuleKeys.Tags, Icons.Material.Filled.Label, Implemented: true),
+        new(ModuleKeys.Audio, Icons.Material.Filled.MusicNote, Implemented: true),
+        new(ModuleKeys.Cutscenes, Icons.Material.Filled.Movie, Implemented: true),
+        new(ModuleKeys.Statistics, Icons.Material.Filled.BarChart, Implemented: true)
     ];
 
     public static ModuleDefinition? Find(string id) =>

@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -11,7 +12,8 @@ namespace GameDevManager.Data.Services;
 public class ItemService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     /// <summary>Übersicht aller Items eines Projekts, alphabetisch.</summary>
     public async Task<List<ItemListRow>> GetItemsAsync(Guid projectId, CancellationToken ct = default)
@@ -85,10 +87,10 @@ public class ItemService(
 
         if (string.IsNullOrWhiteSpace(item.Name))
         {
-            throw new ContentValidationException("Das Item braucht einen Namen.");
+            throw new ContentValidationException(messages["ItemNameRequired"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 

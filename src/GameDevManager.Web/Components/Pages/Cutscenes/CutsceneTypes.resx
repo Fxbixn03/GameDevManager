@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Cutscene-Arten – GameDevManager</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Cutscene-Arten</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Storyboard und Verknüpfungen stehen fest an der Cutscene — alles Weitere definieren die Felder der Art.</value>
+  </data>
+  <data name="ToCutscenes" xml:space="preserve">
+    <value>Zu den Cutscenes</value>
+  </data>
+  <data name="NewType" xml:space="preserve">
+    <value>Neue Art</value>
+  </data>
+  <data name="EntityNoun" xml:space="preserve">
+    <value>Cutscene</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Cutscene-Arten</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Über Arten lassen sich Cutscenes einteilen — etwa Intro, Zwischensequenz oder Abspann — und um eigene Felder wie Dauer oder Kameraführung ergänzen.</value>
+  </data>
+  <data name="BreadcrumbTypes" xml:space="preserve">
+    <value>Arten</value>
+  </data>
+</root>

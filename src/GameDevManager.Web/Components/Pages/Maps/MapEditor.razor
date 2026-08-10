@@ -8,6 +8,7 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject IStringLocalizer<MapEditor> L
+@inject ModuleLabels Modules
 
 <PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
@@ -208,7 +209,7 @@ else
                                 <MudSelectItem T="string" Value="@(null as string)">@L["TargetNone"]</MudSelectItem>
                                 @foreach (var module in ModuleRegistry.All.Where(m => m.Implemented))
                                 {
-                                    <MudSelectItem T="string" Value="@module.Id">@module.Name</MudSelectItem>
+                                    <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
                                 }
                             </MudSelect>
 

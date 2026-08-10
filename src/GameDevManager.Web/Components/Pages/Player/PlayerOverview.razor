@@ -5,21 +5,22 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<PlayerOverview> L
 
-<PageTitle>Spieler – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/player/arten">
-            Skill-Arten
+            @L["SkillTypesButton"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/player/skills/neu">
-            Neuer Skill
+            @L["NewSkill"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -35,17 +36,16 @@ else
             @* ---------------------------------------------------------- Spielerfiguren *@
             <MudPaper Elevation="0" Class="gdm-panel pa-4">
                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary">Spielerfigur(en)</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionCharacters"]</MudText>
                     <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="AddCharacter">
-                        Figur
+                        @L["AddCharacter"]
                     </MudButton>
                 </MudStack>
 
                 @if (_characters.Count == 0)
                 {
                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Noch keine Spielerfigur. Spiele mit wählbaren Charakteren legen je Figur
-                        einen Eintrag an.
+                        @L["NoCharacters"]
                     </MudText>
                 }
                 else
@@ -58,27 +58,27 @@ else
                                     <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
                                         <MudTextField T="string"
                                                       @bind-Value="character.Name"
-                                                      Label="Name *"
+                                                      Label="@L["NameLabel"]"
                                                       Variant="Variant.Outlined"
                                                       Margin="Margin.Dense" />
-                                        <MudTooltip Text="Speichern">
+                                        <MudTooltip Text="@L["SaveCharacterTooltip"]">
                                             <MudIconButton Icon="@Icons.Material.Filled.Save"
                                                            Size="Size.Small"
                                                            Color="Color.Primary"
                                                            OnClick="@(() => SaveCharacterAsync(character))"
-                                                           aria-label="Spielerfigur speichern" />
+                                                           aria-label="@L["SaveCharacterAria"]" />
                                         </MudTooltip>
-                                        <MudTooltip Text="Löschen">
+                                        <MudTooltip Text="@L["DeleteCharacterTooltip"]">
                                             <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                            Size="Size.Small"
                                                            OnClick="@(() => DeleteCharacterAsync(character))"
-                                                           aria-label="Spielerfigur löschen" />
+                                                           aria-label="@L["DeleteCharacterAria"]" />
                                         </MudTooltip>
                                     </MudStack>
 
                                     <MudTextField T="string"
                                                   @bind-Value="character.Description"
-                                                  Label="Beschreibung"
+                                                  Label="@L["DescriptionLabel"]"
                                                   Variant="Variant.Outlined"
                                                   Margin="Margin.Dense"
                                                   Lines="2" />
@@ -86,12 +86,12 @@ else
                                     @* Im Konzept (Klassen-Modul): „auf die Spielerfigur … gemappt“. *@
                                     <MudSelect T="Guid?"
                                                @bind-Value="character.CharacterClassId"
-                                               Label="Klasse"
+                                               Label="@L["ClassLabel"]"
                                                Variant="Variant.Outlined"
                                                Margin="Margin.Dense"
                                                Clearable="true"
                                                Disabled="@(_classes.Count == 0)"
-                                               HelperText="@(_classes.Count == 0 ? "Noch keine Klassen angelegt." : null)">
+                                               HelperText="@(_classes.Count == 0 ? L["ClassHelperEmpty"].Value : null)">
                                         @foreach (var characterClass in _classes)
                                         {
                                             <MudSelectItem T="Guid?" Value="@characterClass.Id">@characterClass.Name</MudSelectItem>
@@ -99,7 +99,7 @@ else
                                     </MudSelect>
 
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidCaption"]</MudText>
                                         <EntityIdChip Id="character.Id" />
                                     </MudStack>
 
@@ -119,15 +119,15 @@ else
             @* -------------------------------------------------------------- Skilltrees *@
             <MudPaper Elevation="0" Class="gdm-panel pa-4">
                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary">Skilltrees</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionTrees"]</MudText>
                     <MudStack Row="true" Spacing="2">
                         <MudButton Size="Size.Small"
                                    Variant="Variant.Text"
                                    Href="/modules/player/skills">
-                            Alle Skills (@_skills.Count)
+                            @L["AllSkills", _skills.Count]
                         </MudButton>
                         <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="AddTree">
-                            Skilltree
+                            @L["AddTree"]
                         </MudButton>
                     </MudStack>
                 </MudStack>
@@ -135,8 +135,7 @@ else
                 @if (_trees.Count == 0 && _editingTrees.Count == 0)
                 {
                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Noch kein Skilltree. Bäume gruppieren Skills — etwa „Kampf“ oder „Magie“;
-                        die Struktur entsteht über die Voraussetzung am einzelnen Skill.
+                        @L["NoTrees"]
                     </MudText>
                 }
                 else
@@ -148,26 +147,26 @@ else
                                 <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
                                     <MudTextField T="string"
                                                   @bind-Value="tree.Name"
-                                                  Label="Name *"
+                                                  Label="@L["NameLabel"]"
                                                   Variant="Variant.Outlined"
                                                   Margin="Margin.Dense" />
                                     <MudTextField T="string"
                                                   @bind-Value="tree.Description"
-                                                  Label="Beschreibung"
+                                                  Label="@L["DescriptionLabel"]"
                                                   Variant="Variant.Outlined"
                                                   Margin="Margin.Dense" />
-                                    <MudTooltip Text="Speichern">
+                                    <MudTooltip Text="@L["SaveTreeTooltip"]">
                                         <MudIconButton Icon="@Icons.Material.Filled.Save"
                                                        Size="Size.Small"
                                                        Color="Color.Primary"
                                                        OnClick="@(() => SaveTreeAsync(tree))"
-                                                       aria-label="Skilltree speichern" />
+                                                       aria-label="@L["SaveTreeAria"]" />
                                     </MudTooltip>
-                                    <MudTooltip Text="Verwerfen">
+                                    <MudTooltip Text="@L["DiscardTreeTooltip"]">
                                         <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                        Size="Size.Small"
                                                        OnClick="@(() => _editingTrees.Remove(tree))"
-                                                       aria-label="Skilltree verwerfen" />
+                                                       aria-label="@L["DiscardTreeAria"]" />
                                     </MudTooltip>
                                 </MudStack>
                             </div>
@@ -179,13 +178,13 @@ else
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-1">
                                     <MudIcon Icon="@Icons.Material.Filled.AccountTree" Size="Size.Small" />
                                     <MudText Typo="Typo.subtitle1"><b>@tree.Name</b></MudText>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@tree.SkillCount Skill(s)</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["TreeSkillCount", tree.SkillCount]</MudText>
                                     <MudSpacer />
-                                    <MudTooltip Text="Löschen (Skills bleiben erhalten)">
+                                    <MudTooltip Text="@L["DeleteTreeTooltip"]">
                                         <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                        Size="Size.Small"
                                                        OnClick="@(() => DeleteTreeAsync(tree))"
-                                                       aria-label="@($"{tree.Name} löschen")" />
+                                                       aria-label="@L["DeleteTreeAria", tree.Name]" />
                                     </MudTooltip>
                                 </MudStack>
 
@@ -216,8 +215,8 @@ else
                         @if (withoutTree.Count > 0)
                         {
                             <MudAlert Severity="Severity.Info" Dense="true">
-                                @withoutTree.Count Skill(s) ohne Baum —
-                                <MudLink Href="/modules/player/skills" Color="Color.Primary">in der Skill-Liste zuordnen</MudLink>.
+                                @L["SkillsWithoutTree", withoutTree.Count]
+                                <MudLink Href="/modules/player/skills" Color="Color.Primary">@L["SkillsWithoutTreeLink"]</MudLink>.
                             </MudAlert>
                         }
                     </MudStack>
@@ -239,8 +238,8 @@ else
     private Guid _projectId;
 
     private string Subtitle => _skills is null
-        ? "Wird geladen …"
-        : $"{_characters!.Count} Figur(en), {_trees!.Count} Skilltree(s), {_skills.Count} Skill(s)";
+        ? L["Loading"]
+        : L["SubtitleCount", _characters!.Count, _trees!.Count, _skills.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -296,21 +295,21 @@ else
         }
     }
 
-    private static string CostLabel(SkillListRow skill)
+    private string CostLabel(SkillListRow skill)
     {
         var parts = new List<string>();
 
         if (skill.CostPoints is { } points)
         {
-            parts.Add($"{points:0.##} Punkte");
+            parts.Add(L["CostPoints", points.ToString("0.##")]);
         }
 
         if (skill.CostItemId is not null)
         {
-            parts.Add($"{skill.CostItemAmount ?? 1}× {skill.CostItemName ?? "(gelöschtes Item)"}");
+            parts.Add(L["CostItem", skill.CostItemAmount ?? 1, skill.CostItemName ?? L["DeletedItem"]]);
         }
 
-        return parts.Count == 0 ? "kostenlos" : string.Join(" + ", parts);
+        return parts.Count == 0 ? L["CostFree"] : string.Join(" + ", parts);
     }
 
     // ---------------------------------------------------------------- Spielerfiguren
@@ -324,7 +323,7 @@ else
         {
             await Player.SaveCharacterAsync(character);
             _savedCharacterIds.Add(character.Id);
-            Snackbar.Add($"„{character.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["CharacterSavedMessage", character.Name], Severity.Success);
         }
         catch (ContentValidationException ex)
         {
@@ -341,10 +340,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Spielerfigur löschen",
-            $"„{character.Name}“ wird mit ihren Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteCharacterTitle"],
+            L["DeleteCharacterMessage", character.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -352,7 +351,7 @@ else
         }
 
         await Player.DeleteCharacterAsync(character.Id);
-        Snackbar.Add("Spielerfigur gelöscht.", Severity.Success);
+        Snackbar.Add(L["CharacterDeletedMessage"], Severity.Success);
         await LoadAsync();
     }
 
@@ -367,7 +366,7 @@ else
         {
             await Player.SaveTreeAsync(tree);
             _editingTrees.Remove(tree);
-            Snackbar.Add($"„{tree.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["TreeSavedMessage", tree.Name], Severity.Success);
             await LoadAsync();
         }
         catch (ContentValidationException ex)
@@ -379,10 +378,10 @@ else
     private async Task DeleteTreeAsync(SkillTreeRow tree)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Skilltree löschen",
-            $"„{tree.Name}“ wird gelöscht. Die {tree.SkillCount} Skill(s) bleiben erhalten und werden „ohne Baum“.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteTreeTitle"],
+            L["DeleteTreeMessage", tree.Name, tree.SkillCount],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -390,7 +389,7 @@ else
         }
 
         await Player.DeleteTreeAsync(tree.Id);
-        Snackbar.Add("Skilltree gelöscht.", Severity.Success);
+        Snackbar.Add(L["TreeDeletedMessage"], Severity.Success);
         await LoadAsync();
     }
 }

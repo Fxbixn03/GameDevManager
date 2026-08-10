@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -11,7 +12,8 @@ namespace GameDevManager.Data.Services;
 public class AudioService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<SoundEffectListRow>> GetSoundsAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -92,10 +94,10 @@ public class AudioService(
 
         if (string.IsNullOrWhiteSpace(sound.Name))
         {
-            throw new ContentValidationException("Der Sound braucht einen Namen.");
+            throw new ContentValidationException(messages["SoundNameRequired"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 

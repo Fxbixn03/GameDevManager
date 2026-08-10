@@ -7,6 +7,7 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject IStringLocalizer<StoryEditor> L
+@inject ModuleLabels Modules
 
 <PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
@@ -139,7 +140,7 @@ else
                                                        Margin="Margin.Dense">
                                                 @foreach (var module in ParticipantModules)
                                                 {
-                                                    <MudSelectItem T="string" Value="@module.Id">@module.Name</MudSelectItem>
+                                                    <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
                                                 }
                                             </MudSelect>
                                         </MudItem>

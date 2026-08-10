@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -11,7 +12,8 @@ namespace GameDevManager.Data.Services;
 public class DiplomacyService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<DiplomacyListRow>> GetRelationsAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -106,20 +108,20 @@ public class DiplomacyService(
 
         if (string.IsNullOrWhiteSpace(relation.Name))
         {
-            throw new ContentValidationException("Die Beziehung braucht einen Namen — etwa „Nichtangriffspakt“.");
+            throw new ContentValidationException(messages["RelationNameRequired"]);
         }
 
         if (relation.FactionAId == Guid.Empty || relation.FactionBId == Guid.Empty)
         {
-            throw new ContentValidationException("Eine Beziehung braucht zwei Fraktionen.");
+            throw new ContentValidationException(messages["RelationNeedsTwoFactions"]);
         }
 
         if (relation.FactionAId == relation.FactionBId)
         {
-            throw new ContentValidationException("Eine Fraktion kann keine Beziehung zu sich selbst haben.");
+            throw new ContentValidationException(messages["RelationSelfReference"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -132,9 +134,7 @@ public class DiplomacyService(
 
         if (duplicate)
         {
-            throw new ContentValidationException(
-                "Zwischen diesen beiden Fraktionen gibt es bereits eine Beziehung. " +
-                "Bitte die bestehende anpassen — im Graphen wäre eine doppelte Kante nicht zu deuten.");
+            throw new ContentValidationException(messages["RelationDuplicate"]);
         }
 
         var now = DateTime.UtcNow;
@@ -188,13 +188,13 @@ public class DiplomacyService(
     }
 
     /// <summary>Anzeigename einer Haltung — an einer Stelle, damit Liste, Graph und Maske gleich sprechen.</summary>
-    public static string StanceLabel(DiplomaticStance stance) => stance switch
+    public string StanceLabel(DiplomaticStance stance) => stance switch
     {
-        DiplomaticStance.Alliance => "Allianz",
-        DiplomaticStance.Friendship => "Freundschaft",
-        DiplomaticStance.Neutral => "Neutral",
-        DiplomaticStance.Hostility => "Feindschaft",
-        DiplomaticStance.War => "Krieg",
+        DiplomaticStance.Alliance => messages["Stance_Alliance"],
+        DiplomaticStance.Friendship => messages["Stance_Friendship"],
+        DiplomaticStance.Neutral => messages["Stance_Neutral"],
+        DiplomaticStance.Hostility => messages["Stance_Hostility"],
+        DiplomaticStance.War => messages["Stance_War"],
         _ => stance.ToString()
     };
 }

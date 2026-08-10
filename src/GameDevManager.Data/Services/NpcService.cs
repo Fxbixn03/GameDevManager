@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class NpcService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<NpcListRow>> GetNpcsAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -108,11 +110,11 @@ public class NpcService(
 
         if (string.IsNullOrWhiteSpace(npc.Name))
         {
-            throw new ContentValidationException("Der NPC braucht einen Namen.");
+            throw new ContentValidationException(messages["NpcNameRequired"]);
         }
 
         Validate(npc);
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -159,12 +161,12 @@ public class NpcService(
         npc.Description = stored.Description;
     }
 
-    private static void Validate(Npc npc)
+    private void Validate(Npc npc)
     {
         // Ein Angebot ohne Item ist eine unfertige Eingabezeile; die Maske räumt sie vorher weg.
         if (npc.IsTrader && npc.Offers.Any(offer => offer.ItemId == Guid.Empty))
         {
-            throw new ContentValidationException("Jedes Angebot braucht ein Item.");
+            throw new ContentValidationException(messages["TraderOfferItemRequired"]);
         }
 
         var duplicate = npc.Offers
@@ -173,31 +175,29 @@ public class NpcService(
 
         if (duplicate is not null)
         {
-            throw new ContentValidationException(
-                "Dasselbe Item steht mehrfach im Angebot. Bitte die Posten zusammenfassen.");
+            throw new ContentValidationException(messages["TraderOfferDuplicate"]);
         }
 
         foreach (var offer in npc.Offers)
         {
             if (offer.SellPrice < 0 || offer.BuyPrice < 0)
             {
-                throw new ContentValidationException("Preise dürfen nicht negativ sein.");
+                throw new ContentValidationException(messages["TraderPriceNegative"]);
             }
 
             if (offer.Stock < 0)
             {
-                throw new ContentValidationException("Der Lagerbestand darf nicht negativ sein.");
+                throw new ContentValidationException(messages["TraderStockNegative"]);
             }
 
             if (offer.RestockSeconds < 0)
             {
-                throw new ContentValidationException("Die Auffüllzeit darf nicht negativ sein.");
+                throw new ContentValidationException(messages["TraderRestockNegative"]);
             }
 
             if (offer.CurrencyId is null && (offer.SellPrice is not null || offer.BuyPrice is not null))
             {
-                throw new ContentValidationException(
-                    "Zu einem Preis gehört eine Währung — sonst ist die Zahl nicht zu deuten.");
+                throw new ContentValidationException(messages["TraderPriceNeedsCurrency"]);
             }
         }
     }

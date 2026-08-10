@@ -1,6 +1,8 @@
 @inject SearchService Search
 @inject ProjectContext Project
 @inject NavigationManager Navigation
+@inject IStringLocalizer<GlobalSearch> L
+@inject ModuleLabels Modules
 
 @*
     Die globale Suche aus dem Konzept: ein Feld für alle Module. Neben Namen und Beschreibungen
@@ -13,7 +15,7 @@
                  ValueChanged="OpenAsync"
                  SearchFunc="SearchAsync"
                  ToStringFunc="@(hit => hit?.Name ?? string.Empty)"
-                 Placeholder="Suchen oder GUID einfügen …"
+                 Placeholder="@L["Placeholder"]"
                  Variant="Variant.Outlined"
                  Margin="Margin.Dense"
                  Dense="true"
@@ -95,10 +97,10 @@
         _ => ModuleRegistry.Find(hit.ModuleKey)?.Icon ?? Icons.Material.Filled.Search
     };
 
-    private static string Describe(SearchHit hit)
+    private string Describe(SearchHit hit)
     {
-        var module = ModuleRegistry.Find(hit.ModuleKey)?.Name ?? hit.ModuleKey;
+        var module = Modules.Name(hit.ModuleKey);
 
-        return string.IsNullOrWhiteSpace(hit.Subtitle) ? module : $"{module} · {hit.Subtitle}";
+        return string.IsNullOrWhiteSpace(hit.Subtitle) ? module : L["SubtitleWithModule", module, hit.Subtitle];
     }
 }

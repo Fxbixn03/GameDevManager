@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class CurrencyService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     /// <summary>Übersicht aller Währungen eines Projekts, alphabetisch.</summary>
     public async Task<List<CurrencyListRow>> GetCurrenciesAsync(Guid projectId, CancellationToken ct = default)
@@ -80,10 +82,10 @@ public class CurrencyService(
 
         if (string.IsNullOrWhiteSpace(currency.Name))
         {
-            throw new ContentValidationException("Die Währung braucht einen Namen.");
+            throw new ContentValidationException(messages["CurrencyNameRequired"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -96,7 +98,7 @@ public class CurrencyService(
 
         if (taken)
         {
-            throw new ContentValidationException($"Es gibt bereits eine Währung namens „{name}“.");
+            throw new ContentValidationException(messages["CurrencyNameExists", name]);
         }
 
         var now = DateTime.UtcNow;

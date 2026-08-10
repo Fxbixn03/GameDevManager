@@ -82,7 +82,7 @@ else
                            Style="max-width:200px;">
                     @foreach (var kind in Enum.GetValues<QuestKind>())
                     {
-                        <MudSelectItem T="QuestKind?" Value="@kind">@QuestService.KindLabel(kind)</MudSelectItem>
+                        <MudSelectItem T="QuestKind?" Value="@kind">@Quests.KindLabel(kind)</MudSelectItem>
                     }
                 </MudSelect>
 
@@ -134,7 +134,7 @@ else
                 <MudTd DataLabel="@L["HeaderKind"]">
                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
                              Color="@(context.Kind == QuestKind.MainMission ? Color.Primary : Color.Default)">
-                        @QuestService.KindLabel(context.Kind)
+                        @Quests.KindLabel(context.Kind)
                     </MudChip>
                 </MudTd>
                 <MudTd DataLabel="@L["HeaderGiver"]">

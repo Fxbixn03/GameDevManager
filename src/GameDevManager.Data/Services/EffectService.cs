@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class EffectService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<EffectListRow>> GetEffectsAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -97,11 +99,11 @@ public class EffectService(
 
         if (string.IsNullOrWhiteSpace(effect.Name))
         {
-            throw new ContentValidationException("Der Effekt braucht einen Namen.");
+            throw new ContentValidationException(messages["EffectNameRequired"]);
         }
 
         Validate(effect);
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -142,12 +144,12 @@ public class EffectService(
         effect.Description = stored.Description;
     }
 
-    private static void Validate(GameEffect effect)
+    private void Validate(GameEffect effect)
     {
         // Eine Zuweisung ohne Item ist eine unfertige Eingabezeile; die Maske räumt sie vorher weg.
         if (effect.Assignments.Any(a => a.ItemId == Guid.Empty))
         {
-            throw new ContentValidationException("Jede Zuweisung braucht ein Item.");
+            throw new ContentValidationException(messages["EffectAssignmentItemRequired"]);
         }
 
         var duplicate = effect.Assignments
@@ -156,7 +158,7 @@ public class EffectService(
 
         if (duplicate is not null)
         {
-            throw new ContentValidationException("Dasselbe Item steht mehrfach in den Zuweisungen.");
+            throw new ContentValidationException(messages["EffectAssignmentDuplicate"]);
         }
     }
 

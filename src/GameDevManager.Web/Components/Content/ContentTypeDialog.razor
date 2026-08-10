@@ -1,3 +1,5 @@
+@inject IStringLocalizer<ContentTypeDialog> L
+
 @*
     Anlegen und Bearbeiten einer Art (Item-Art „Waffe“, NPC-Art „Händler“, …). Die Felder der
     Art werden nicht hier, sondern auf der Arten-Seite gepflegt.
@@ -7,27 +9,27 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@(string.IsNullOrWhiteSpace(Type.Icon) ? Icons.Material.Filled.Style : Type.Icon)" />
-            <MudText Typo="Typo.h6">@(IsNew ? "Neue Art" : "Art bearbeiten")</MudText>
+            <MudText Typo="Typo.h6">@(IsNew ? L["TitleNew"] : L["TitleEdit"])</MudText>
         </MudStack>
     </TitleContent>
 
     <DialogContent>
         <MudStack Spacing="4" Style="min-width:min(520px, 80vw);">
             <MudTextField @bind-Value="Type.Name"
-                          Label="Name"
+                          Label="@L["NameLabel"]"
                           Variant="Variant.Outlined"
                           Immediate="true"
                           Required="true"
-                          HelperText="Zum Beispiel „Waffe“, „Rüstung“ oder „Verbrauchsgegenstand“." />
+                          HelperText="@L["NameHelper"]" />
 
             <MudTextField @bind-Value="Type.Description"
-                          Label="Beschreibung (optional)"
+                          Label="@L["DescriptionLabel"]"
                           Variant="Variant.Outlined"
                           Lines="2" />
 
             <MudSelect T="string"
                        @bind-Value="Type.Icon"
-                       Label="Icon (optional)"
+                       Label="@L["IconLabel"]"
                        Variant="Variant.Outlined"
                        Clearable="true">
                 @foreach (var icon in IconChoices)
@@ -35,16 +37,16 @@
                     <MudSelectItem T="string" Value="@icon.Value">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                             <MudIcon Icon="@icon.Value" Size="Size.Small" />
-                            <MudText Typo="Typo.body2">@icon.Key</MudText>
+                            <MudText Typo="Typo.body2">@L[icon.Key]</MudText>
                         </MudStack>
                     </MudSelectItem>
                 }
             </MudSelect>
 
             <MudNumericField @bind-Value="Type.SortOrder"
-                             Label="Sortierung"
+                             Label="@L["SortOrderLabel"]"
                              Variant="Variant.Outlined"
-                             HelperText="Kleinere Zahlen stehen in Listen weiter oben." />
+                             HelperText="@L["SortOrderHelper"]" />
 
             @if (_error is not null)
             {
@@ -54,8 +56,8 @@
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="@(() => MudDialog.Cancel())">Abbrechen</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Übernehmen</MudButton>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">@L["Submit"]</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -73,32 +75,33 @@
 
     /// <summary>
     /// Kleine kuratierte Auswahl statt freier Icon-Eingabe — die Material-Namen kennt niemand
-    /// auswendig, und ein Tippfehler ergäbe ein leeres Icon.
+    /// auswendig, und ein Tippfehler ergäbe ein leeres Icon. Der Schlüssel ist der resx-Name,
+    /// nicht die Beschriftung selbst — sonst hinge die Auswahl an einer Sprache.
     /// </summary>
     private static readonly Dictionary<string, string> IconChoices = new()
     {
-        ["Allgemein"] = Icons.Material.Filled.Category,
-        ["Waffe"] = Icons.Material.Filled.Hardware,
-        ["Rüstung"] = Icons.Material.Filled.Shield,
-        ["Trank"] = Icons.Material.Filled.Science,
-        ["Nahrung"] = Icons.Material.Filled.Restaurant,
-        ["Rohstoff"] = Icons.Material.Filled.Grass,
-        ["Werkzeug"] = Icons.Material.Filled.Build,
-        ["Schmuck"] = Icons.Material.Filled.Diamond,
-        ["Schlüssel"] = Icons.Material.Filled.VpnKey,
-        ["Buch"] = Icons.Material.Filled.MenuBook,
-        ["Währung"] = Icons.Material.Filled.Paid,
-        ["Magie"] = Icons.Material.Filled.AutoAwesome,
-        ["Munition"] = Icons.Material.Filled.Bolt,
-        ["Behälter"] = Icons.Material.Filled.Inventory2,
-        ["Quest"] = Icons.Material.Filled.Assignment
+        ["IconGeneral"] = Icons.Material.Filled.Category,
+        ["IconWeapon"] = Icons.Material.Filled.Hardware,
+        ["IconArmor"] = Icons.Material.Filled.Shield,
+        ["IconPotion"] = Icons.Material.Filled.Science,
+        ["IconFood"] = Icons.Material.Filled.Restaurant,
+        ["IconResource"] = Icons.Material.Filled.Grass,
+        ["IconTool"] = Icons.Material.Filled.Build,
+        ["IconJewelry"] = Icons.Material.Filled.Diamond,
+        ["IconKey"] = Icons.Material.Filled.VpnKey,
+        ["IconBook"] = Icons.Material.Filled.MenuBook,
+        ["IconCurrency"] = Icons.Material.Filled.Paid,
+        ["IconMagic"] = Icons.Material.Filled.AutoAwesome,
+        ["IconAmmunition"] = Icons.Material.Filled.Bolt,
+        ["IconContainer"] = Icons.Material.Filled.Inventory2,
+        ["IconQuest"] = Icons.Material.Filled.Assignment
     };
 
     private void Submit()
     {
         if (string.IsNullOrWhiteSpace(Type.Name))
         {
-            _error = "Bitte einen Namen angeben.";
+            _error = L["NameRequired"];
             return;
         }
 

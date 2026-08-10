@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Es gibt keine Quest mit dieser GUID. Vielleicht wurde sie gelöscht.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Quest-Art</value>
+  </data>
+  <data name="EventHintBefore" xml:space="preserve">
+    <value>Zufalls-Events mit Spawns, Loot und Orten bekommen im</value>
+  </data>
+  <data name="EventHintLink" xml:space="preserve">
+    <value>Event-Modul</value>
+  </data>
+  <data name="EventHintAfter" xml:space="preserve">
+    <value>mehr Möglichkeiten.</value>
+  </data>
+  <data name="SectionLinks" xml:space="preserve">
+    <value>Verknüpfungen</value>
+  </data>
+  <data name="GiverLabel" xml:space="preserve">
+    <value>Questgeber (NPC)</value>
+  </data>
+  <data name="GiverHelper" xml:space="preserve">
+    <value>Wer die Quest vergibt. Die Rolle „Questgeber“ wird am NPC geschaltet.</value>
+  </data>
+  <data name="StoryEntryLabel" xml:space="preserve">
+    <value>Story-Abschnitt</value>
+  </data>
+  <data name="StoryEntryHelper" xml:space="preserve">
+    <value>An welchen Teil der Story die Quest angelehnt ist.</value>
+  </data>
+  <data name="DialogueLabel" xml:space="preserve">
+    <value>Dialog</value>
+  </data>
+  <data name="DialogueHelper" xml:space="preserve">
+    <value>Der Dialog, aus dem die Quest hervorgeht.</value>
+  </data>
+  <data name="SectionConditions" xml:space="preserve">
+    <value>Bedingungen</value>
+  </data>
+  <data name="AvailabilityPanel" xml:space="preserve">
+    <value>Verfügbarkeit</value>
+  </data>
+  <data name="AvailabilityPanelCount" xml:space="preserve">
+    <value>Verfügbarkeit ({0})</value>
+  </data>
+  <data name="AvailabilityHint" xml:space="preserve">
+    <value>Ohne Bedingung ist die Quest von Anfang an verfügbar.</value>
+  </data>
+  <data name="CompletionPanel" xml:space="preserve">
+    <value>Abschluss</value>
+  </data>
+  <data name="CompletionPanelCount" xml:space="preserve">
+    <value>Abschluss ({0})</value>
+  </data>
+  <data name="CompletionHint" xml:space="preserve">
+    <value>Ohne Abschlussbedingung wüsste das Spiel nie, wann die Quest erledigt ist.</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Für Angaben, die nur diese eine Quest braucht.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Angelegt</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="HeadingDefault" xml:space="preserve">
+    <value>Quest</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neue Quest</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Quest ohne Namen</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Quest löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit Feldwerten, individuellen Feldern, Bedingungen und Sprites gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Quest gelöscht.</value>
+  </data>
+</root>

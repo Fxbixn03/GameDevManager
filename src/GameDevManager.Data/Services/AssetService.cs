@@ -1,6 +1,7 @@
 using GameDevManager.Data.Assets;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -13,7 +14,8 @@ public class AssetService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     IAssetStorage storage,
     AssetStorageOptions options,
-    ReferenceService references)
+    ReferenceService references,
+    IStringLocalizer<DataMessages> messages)
 {
     public AssetStorageOptions Options => options;
 
@@ -42,7 +44,7 @@ public class AssetService(
         if (!options.AllowedMimeTypes.Contains(mimeType, StringComparer.OrdinalIgnoreCase))
         {
             throw new ContentValidationException(
-                $"„{fileName}“ hat den Typ {mimeType}. Erlaubt sind: {string.Join(", ", options.AllowedMimeTypes)}.");
+                messages["AssetMimeNotAllowed", fileName, mimeType, string.Join(", ", options.AllowedMimeTypes)]);
         }
 
         var asset = new Asset
@@ -217,7 +219,7 @@ public class AssetService(
         var asset = await db.Assets
             .Include(a => a.Tags)
             .FirstOrDefaultAsync(a => a.Id == assetId, ct)
-            ?? throw new ContentValidationException("Das Asset existiert nicht mehr.");
+            ?? throw new ContentValidationException(messages["AssetGone"]);
 
         var previousOwnerId = asset.OwnerEntityId;
         var wasPrimary = asset.IsPrimary;
@@ -263,12 +265,11 @@ public class AssetService(
         await using var db = await factory.CreateDbContextAsync(ct);
 
         var asset = await db.Assets.FirstOrDefaultAsync(a => a.Id == assetId, ct)
-            ?? throw new ContentValidationException("Das Asset existiert nicht mehr.");
+            ?? throw new ContentValidationException(messages["AssetGone"]);
 
         if (asset.OwnerEntityId is not { } ownerId)
         {
-            throw new ContentValidationException(
-                "Nur ein Asset, das zu einer Entität gehört, kann deren Icon sein.");
+            throw new ContentValidationException(messages["AssetPrimaryNeedsOwner"]);
         }
 
         var siblings = await db.Assets.Where(a => a.OwnerEntityId == ownerId).ToListAsync(ct);
@@ -408,7 +409,7 @@ public class AssetService(
     {
         if (string.IsNullOrWhiteSpace(tag.Name))
         {
-            throw new ContentValidationException("Das Stichwort braucht einen Namen.");
+            throw new ContentValidationException(messages["AssetTagNameRequired"]);
         }
 
         var name = tag.Name.Trim();
@@ -420,7 +421,7 @@ public class AssetService(
 
         if (taken)
         {
-            throw new ContentValidationException($"Das Stichwort „{name}“ gibt es bereits.");
+            throw new ContentValidationException(messages["AssetTagExists", name]);
         }
 
         var stored = await db.AssetTags.FirstOrDefaultAsync(other => other.Id == tag.Id, ct);

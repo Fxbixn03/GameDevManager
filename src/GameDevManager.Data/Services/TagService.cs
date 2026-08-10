@@ -1,5 +1,6 @@
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -7,7 +8,7 @@ namespace GameDevManager.Data.Services;
 /// Das Tag-Modul: modulübergreifende Tags definieren, je Modul freigeben und Entitäten
 /// zuweisen. Die Asset-Stichwörter der Sprite-Bibliothek bleiben davon getrennt.
 /// </summary>
-public class TagService(IDbContextFactory<GameDevManagerDbContext> factory)
+public class TagService(IDbContextFactory<GameDevManagerDbContext> factory, IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<ContentTagRow>> GetTagsAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -33,7 +34,7 @@ public class TagService(IDbContextFactory<GameDevManagerDbContext> factory)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ContentValidationException("Das Tag braucht einen Namen.");
+            throw new ContentValidationException(messages["TagNameRequired"]);
         }
 
         await using var db = await factory.CreateDbContextAsync(ct);
@@ -44,7 +45,7 @@ public class TagService(IDbContextFactory<GameDevManagerDbContext> factory)
 
         if (taken)
         {
-            throw new ContentValidationException($"Es gibt bereits ein Tag namens „{trimmed}“.");
+            throw new ContentValidationException(messages["TagNameExists", trimmed]);
         }
 
         var stored = await db.ContentTags

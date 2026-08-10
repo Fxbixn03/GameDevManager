@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="FirstType" xml:space="preserve">
+    <value>Erste Art anlegen</value>
+  </data>
+  <data name="FieldCount" xml:space="preserve">
+    <value>{0} Feld(er)</value>
+  </data>
+  <data name="AddField" xml:space="preserve">
+    <value>Feld</value>
+  </data>
+  <data name="EditTypeTooltip" xml:space="preserve">
+    <value>Art bearbeiten</value>
+  </data>
+  <data name="EditTypeAria" xml:space="preserve">
+    <value>Art {0} bearbeiten</value>
+  </data>
+  <data name="DeleteTypeTooltip" xml:space="preserve">
+    <value>Art löschen</value>
+  </data>
+  <data name="DeleteTypeAria" xml:space="preserve">
+    <value>Art {0} löschen</value>
+  </data>
+  <data name="NoFields" xml:space="preserve">
+    <value>Diese Art hat noch keine Felder. Ohne Felder lassen sich nur Name und Beschreibung erfassen.</value>
+  </data>
+  <data name="RequiredChip" xml:space="preserve">
+    <value>Pflicht</value>
+  </data>
+  <data name="MoveUpTooltip" xml:space="preserve">
+    <value>Nach oben</value>
+  </data>
+  <data name="MoveUpAria" xml:space="preserve">
+    <value>Feld nach oben</value>
+  </data>
+  <data name="MoveDownTooltip" xml:space="preserve">
+    <value>Nach unten</value>
+  </data>
+  <data name="MoveDownAria" xml:space="preserve">
+    <value>Feld nach unten</value>
+  </data>
+  <data name="EditFieldTooltip" xml:space="preserve">
+    <value>Feld bearbeiten</value>
+  </data>
+  <data name="EditFieldAria" xml:space="preserve">
+    <value>Feld {0} bearbeiten</value>
+  </data>
+  <data name="DeleteFieldTooltip" xml:space="preserve">
+    <value>Feld löschen</value>
+  </data>
+  <data name="DeleteFieldAria" xml:space="preserve">
+    <value>Feld {0} löschen</value>
+  </data>
+  <data name="DefaultEntityNoun" xml:space="preserve">
+    <value>Eintrag</value>
+  </data>
+  <data name="DefaultEmptyTitle" xml:space="preserve">
+    <value>Noch keine Arten</value>
+  </data>
+  <data name="DefaultEmptyHint" xml:space="preserve">
+    <value>Eine Art bündelt die Felder, die alle Einträge dieser Kategorie gemeinsam haben.</value>
+  </data>
+  <data name="NewTypeDialogTitle" xml:space="preserve">
+    <value>Neue Art</value>
+  </data>
+  <data name="EditTypeDialogTitle" xml:space="preserve">
+    <value>Art bearbeiten</value>
+  </data>
+  <data name="TypeSavedMessage" xml:space="preserve">
+    <value>Art „{0}“ gespeichert.</value>
+  </data>
+  <data name="TypeInUseMessage" xml:space="preserve">
+    <value>„{0}“ wird noch von {1} {2}(s) verwendet und kann nicht gelöscht werden.</value>
+  </data>
+  <data name="DeleteTypeTitle" xml:space="preserve">
+    <value>Art löschen</value>
+  </data>
+  <data name="DeleteTypeMessage" xml:space="preserve">
+    <value>„{0}“ wird mit ihren {1} Feld(ern) gelöscht.</value>
+  </data>
+  <data name="TypeDeletedMessage" xml:space="preserve">
+    <value>Art gelöscht.</value>
+  </data>
+  <data name="NewFieldDialogTitle" xml:space="preserve">
+    <value>Neues Feld</value>
+  </data>
+  <data name="EditFieldDialogTitle" xml:space="preserve">
+    <value>Feld bearbeiten</value>
+  </data>
+  <data name="FieldSavedMessage" xml:space="preserve">
+    <value>Feld „{0}“ gespeichert.</value>
+  </data>
+  <data name="DeleteFieldTitle" xml:space="preserve">
+    <value>Feld löschen</value>
+  </data>
+  <data name="DeleteFieldMessage" xml:space="preserve">
+    <value>Das Feld „{0}“ wird gelöscht — samt aller Werte, die dazu erfasst wurden.</value>
+  </data>
+  <data name="FieldDeletedMessage" xml:space="preserve">
+    <value>Feld gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="ReferenceTarget" xml:space="preserve">
+    <value>→ {0}</value>
+  </data>
+  <data name="UnitFormat" xml:space="preserve">
+    <value>in {0}</value>
+  </data>
+</root>

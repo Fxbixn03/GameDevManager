@@ -2,6 +2,9 @@
 @inject ReferenceService References
 @inject ProjectContext Project
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<ConditionEditor> L
+@inject ConditionLabels Labels
+@inject ModuleLabels Modules
 
 @*
     Der Bedingungs-Editor aus dem Konzept — „ein einheitliches System, welches über alle Module
@@ -22,19 +25,19 @@ else
     <MudStack Spacing="3">
         @if (_set.Conditions.Count == 0)
         {
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@EmptyHint</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@EmptyHintText</MudText>
         }
         else
         {
             <MudSelect T="ConditionLogic"
                        Value="_set.Logic"
                        ValueChanged="@((ConditionLogic logic) => Touch(() => _set.Logic = logic))"
-                       Label="Verknüpfung"
+                       Label="@L["LogicLabel"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Style="max-width:280px;">
-                <MudSelectItem T="ConditionLogic" Value="@(ConditionLogic.All)">Alle müssen zutreffen</MudSelectItem>
-                <MudSelectItem T="ConditionLogic" Value="@(ConditionLogic.Any)">Mindestens eine muss zutreffen</MudSelectItem>
+                <MudSelectItem T="ConditionLogic" Value="@(ConditionLogic.All)">@L["LogicAll"]</MudSelectItem>
+                <MudSelectItem T="ConditionLogic" Value="@(ConditionLogic.Any)">@L["LogicAny"]</MudSelectItem>
             </MudSelect>
 
             @foreach (var condition in _set.Conditions)
@@ -45,12 +48,12 @@ else
                             <MudSelect T="ConditionKind"
                                        Value="condition.Kind"
                                        ValueChanged="@((ConditionKind kind) => ChangeKindAsync(condition, kind))"
-                                       Label="Bedingung"
+                                       Label="@L["KindLabel"]"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense">
                                 @foreach (var kind in Enum.GetValues<ConditionKind>())
                                 {
-                                    <MudSelectItem T="ConditionKind" Value="@kind">@ConditionLabels.Describe(kind)</MudSelectItem>
+                                    <MudSelectItem T="ConditionKind" Value="@kind">@Labels.Describe(kind)</MudSelectItem>
                                 }
                             </MudSelect>
                         </MudItem>
@@ -65,8 +68,8 @@ else
                                 {
                                     <MudTextField T="string"
                                                   Value="@ModuleName(module)"
-                                                  Label="Bezug"
-                                                  HelperText="@($"Im Modul „{ModuleName(module)}“ gibt es dazu noch nichts.")"
+                                                  Label="@L["TargetLabel"]"
+                                                  HelperText="@L["TargetHelperEmpty", ModuleName(module)]"
                                                   Variant="Variant.Outlined"
                                                   Margin="Margin.Dense"
                                                   Disabled="true" />
@@ -95,13 +98,13 @@ else
                                 <MudSelect T="ComparisonOperator"
                                            Value="condition.Operator"
                                            ValueChanged="@((ComparisonOperator op) => Touch(() => condition.Operator = op))"
-                                           Label="Vergleich"
+                                           Label="@L["OperatorLabel"]"
                                            Variant="Variant.Outlined"
                                            Margin="Margin.Dense">
                                     @foreach (var comparison in Enum.GetValues<ComparisonOperator>())
                                     {
                                         <MudSelectItem T="ComparisonOperator" Value="@comparison">
-                                            @ConditionLabels.Describe(comparison)
+                                            @Labels.Describe(comparison)
                                         </MudSelectItem>
                                     }
                                 </MudSelect>
@@ -111,7 +114,7 @@ else
                                 <MudNumericField T="double?"
                                                  Value="condition.NumberValue"
                                                  ValueChanged="@((double? v) => Touch(() => condition.NumberValue = v))"
-                                                 Label="Wert"
+                                                 Label="@L["NumberLabel"]"
                                                  Variant="Variant.Outlined"
                                                  Margin="Margin.Dense"
                                                  Min="0" />
@@ -125,7 +128,7 @@ else
                                            Value="@(condition.BooleanValue ?? true)"
                                            ValueChanged="@((bool v) => Touch(() => condition.BooleanValue = v))"
                                            Color="Color.Primary"
-                                           Label="@(condition.BooleanValue == false ? "trifft nicht zu" : "trifft zu")" />
+                                           Label="@(condition.BooleanValue == false ? L["BooleanFalse"].Value : L["BooleanTrue"].Value)" />
                             </MudItem>
                         }
 
@@ -144,13 +147,13 @@ else
 
                         <MudItem xs="12" Class="d-flex align-center justify-space-between">
                             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                @ConditionLabels.Sentence(condition, TargetName(condition))
+                                @Labels.Sentence(condition, TargetName(condition))
                             </MudText>
-                            <MudTooltip Text="Bedingung entfernen">
+                            <MudTooltip Text="@L["RemoveCondition"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                Size="Size.Small"
                                                OnClick="@(() => Remove(condition))"
-                                               aria-label="Bedingung entfernen" />
+                                               aria-label="@L["RemoveCondition"]" />
                             </MudTooltip>
                         </MudItem>
                     </MudGrid>
@@ -160,7 +163,7 @@ else
 
         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
             <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="AddAsync">
-                Bedingung
+                @L["AddCondition"]
             </MudButton>
 
             @if (_dirty)
@@ -170,9 +173,9 @@ else
                            Size="Size.Small"
                            StartIcon="@Icons.Material.Filled.Save"
                            OnClick="SaveAsync">
-                    Bedingungen speichern
+                    @L["SaveConditions"]
                 </MudButton>
-                <MudText Typo="Typo.caption" Color="Color.Warning">Noch nicht gespeichert</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Warning">@L["NotSavedYet"]</MudText>
             }
         </MudStack>
     </MudStack>
@@ -188,9 +191,12 @@ else
     [Parameter]
     public string Slot { get; set; } = ConditionSlots.Availability;
 
+    /// <summary>Leer bedeutet Standardtext aus der resx — siehe <see cref="EmptyHintText"/>.</summary>
     [Parameter]
-    public string EmptyHint { get; set; } =
-        "Ohne Bedingung ist es immer verfügbar.";
+    public string? EmptyHint { get; set; }
+
+    private string EmptyHintText =>
+        string.IsNullOrWhiteSpace(EmptyHint) ? L["DefaultEmptyHint"] : EmptyHint;
 
     /// <summary>Meldet der Seite, wie viele Bedingungen gespeichert wurden.</summary>
     [Parameter]
@@ -237,8 +243,7 @@ else
 
     private List<EntitySummary> Options(string moduleKey) => _options.GetValueOrDefault(moduleKey, []);
 
-    private static string ModuleName(string moduleKey) =>
-        ModuleRegistry.Find(moduleKey)?.Name ?? moduleKey;
+    private string ModuleName(string moduleKey) => Modules.Name(moduleKey);
 
     private EntitySummary? TargetFor(Condition condition) =>
         condition.ExpectedTargetModule is { } moduleKey && condition.TargetEntityId is { } id
@@ -264,11 +269,11 @@ else
         return Task.FromResult(matches);
     }
 
-    private static string TextLabel(ConditionKind kind) => kind switch
+    private string TextLabel(ConditionKind kind) => kind switch
     {
-        ConditionKind.Flag => "Name des Schalters",
-        ConditionKind.QuestState => "Zustand",
-        _ => "Beschreibung"
+        ConditionKind.Flag => L["TextLabelFlag"],
+        ConditionKind.QuestState => L["TextLabelQuestState"],
+        _ => L["TextLabelDefault"]
     };
 
     private async Task AddAsync()
@@ -337,7 +342,7 @@ else
             _dirty = false;
 
             Snackbar.Add(
-                _set.Conditions.Count == 0 ? "Bedingungen entfernt." : "Bedingungen gespeichert.",
+                _set.Conditions.Count == 0 ? L["RemovedMessage"] : L["SavedMessage"],
                 Severity.Success);
 
             await OnSaved.InvokeAsync(_set.Conditions.Count);

@@ -131,13 +131,12 @@ else
                 @if (!_context.IsNew && _usage is not null)
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Getragen von</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionCarriedBy"]</MudText>
 
                         @if (_usage.Npcs.Count == 0 && _usage.PlayerCharacters.Count == 0)
                         {
                             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                Noch niemand hat diese Klasse. Zugeordnet wird sie im NPC-Modul
-                                und an den Spielerfiguren.
+                                @L["CarriedByEmpty"]
                             </MudText>
                         }
                         else
@@ -147,7 +146,7 @@ else
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween"
                                           Class="gdm-field-row py-1">
                                     <MudLink Href="@($"/modules/npcs/{npc.Id}")" Typo="Typo.body2">@npc.Name</MudLink>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">NPC</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NpcCaption"]</MudText>
                                 </MudStack>
                             }
                             @foreach (var character in _usage.PlayerCharacters)
@@ -155,7 +154,7 @@ else
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween"
                                           Class="gdm-field-row py-1">
                                     <MudLink Href="/modules/player" Typo="Typo.body2">@character.Name</MudLink>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Spielerfigur</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["PlayerCharacterCaption"]</MudText>
                                 </MudStack>
                             }
                         }
@@ -188,10 +187,10 @@ else
 
     private string PageHeading => _context switch
     {
-        null => "Klasse",
-        { IsNew: true } => "Neue Klasse",
+        null => L["PageHeadingDefault"],
+        { IsNew: true } => L["PageHeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "Klasse ohne Namen"
+        _ => L["PageHeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -254,7 +253,7 @@ else
             await Classes.SaveClassAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -285,10 +284,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Klasse löschen",
-            $"„{_context.Entity.Name}“ wird mit Feldwerten, individuellen Feldern und Sprites gelöscht. NPCs und Spielerfiguren mit dieser Klasse werden klassenlos.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -296,7 +295,7 @@ else
         }
 
         await Classes.DeleteClassAsync(_context.Entity.Id);
-        Snackbar.Add("Klasse gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/classes");
     }
 

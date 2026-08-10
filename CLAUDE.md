@@ -66,9 +66,22 @@ Ein neues Modul umsetzen heißt also:
 2. Einen Service nach dem Muster von `ItemService`/`CurrencyService` schreiben. Die Feldmechanik kommt komplett aus `ContentFields` (laden, Pflichtfelder prüfen, Werte in denselben `SaveChanges` einreihen, beim Löschen aufräumen) — nicht neu bauen. Beim Löschen einer Entität `AssetService.DeleteForOwnerAsync` aufrufen, sonst bleiben Sprites und Dateien liegen.
 3. Eine `ModuleEntitySource<T>` anlegen und in `AddGameDevManagerContentServices` registrieren. Damit ist das Modul in Referenzansicht, Auswahlfeldern, Arten-Zählung und Suche auf einmal da.
 4. Seiten unter `Components/Pages/<Modul>/` anlegen. Die Arten-Verwaltung ist eine Zeile (`<ContentTypeManager ModuleKey="…" />`), die Feldabschnitte der Maske ebenso (`<ContentFieldsPanel TEntity="…" …/>`).
-5. In `ModuleRegistry` `Implemented: true` setzen.
+5. In `ModuleRegistry` `Implemented: true` setzen — und Name plus Beschreibung als `<key>_Name` / `<key>_Description` in [ModuleLabels.resx](src/GameDevManager.Web/Services/ModuleLabels.resx) eintragen.
+6. Je Seite eine `.resx` daneben legen (siehe „Texte“).
 
 Das Währungsmodul ist nach genau diesem Ablauf entstanden und der kürzeste Beleg, dass er trägt.
+
+### Texte
+
+**Kein sichtbarer Text steht im Code.** Jede Seite und jede Komponente hat eine gleichnamige `.resx` direkt daneben (kein `ResourcesPath`) und holt sich ihre Texte über `@inject IStringLocalizer<DieseKomponente> L` als `@L["Schlüssel"]`; Platzhalter als `L["Schlüssel", wert]`. Das gilt auch für das, was nicht im Markup steht: Löschdialoge, Snackbar-Meldungen und `PageHeading`.
+
+Drei Stellen brauchen einen Umweg, weil ein Localizer dort nicht direkt hinkommt:
+
+- **Statische Klassen und Feldinitialisierer.** `ModuleDefinition` trägt deshalb **weder Name noch Beschreibung** — die Registry ist statisch. Beides kommt aus [ModuleLabels.cs](src/GameDevManager.Web/Services/ModuleLabels.cs) (`Modules.Name(module)`), ebenso wie `ConditionLabels` und `FieldTypeLabels` Dienste statt statischer Klassen sind. Ihre Icon-Methoden bleiben `static`, Icons sind sprachunabhängig.
+- **Generische Komponenten.** `IStringLocalizer<Komponente<T>>` sucht unter dem gemangelten Typnamen (`` Komponente`1 ``) und findet die `.resx` nicht — die Schlüssel stünden roh in der Oberfläche. `ContentFieldsPanel` hängt seinen Localizer deshalb an den nicht-generischen Marker `ContentFieldsPanelText`.
+- **Parameter mit Vorgabetext.** Ein Feldinitialisierer (`public string Hint { get; set; } = "…"`) kennt den Localizer noch nicht. Solche Parameter sind `string?` und werden über eine `…Text`-Eigenschaft aufgelöst (siehe `ContentTypeManager.EmptyHintText`).
+
+**Die Datenschicht hat eigene Texte**, weil sie selbst prüft und die Oberfläche die Meldung nur durchreicht (`Snackbar.Add(ex.Message, …)`): [DataMessages.resx](src/GameDevManager.Data/DataMessages.resx), bezogen über `IStringLocalizer<DataMessages> messages` im Primärkonstruktor. In einer LINQ-Abfrage den Text **vorher in eine lokale Variable ziehen** — einen Indexer-Aufruf kann EF nicht übersetzen. Ausgenommen sind Start- und Konfigurationsfehler (`InvalidOperationException` in `DatabaseServiceExtensions` und `FileSystemAssetStorage`): Die landen im Log, nicht in der Oberfläche.
 
 **EF-Fallstrick bei Kind-Sammlungen** (Rezept-Zutaten, später Händler-Angebote, Loot-Einträge): Neue Kinder an einem **bestehenden** Elterndatensatz immer über `db.Set<T>().Add(...)` einfügen, nie über die Navigationsliste. Die Entitäten bringen ihre GUID schon mit, und EF hält sie beim Anhängen sonst für vorhandene Datensätze und erzeugt ein `UPDATE` auf eine Zeile, die es noch nicht gibt. Entfernt wird umgekehrt nur über die Navigationsliste — der Fremdschlüssel ist pflicht, EF löscht die Waise dadurch von selbst; zusätzlich `Remove` aufzurufen erzeugt einen zweiten `DELETE`.
 

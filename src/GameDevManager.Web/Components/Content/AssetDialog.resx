@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung (optional)</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Gehört zu Modul</value>
+  </data>
+  <data name="ModuleHelper" xml:space="preserve">
+    <value>Ohne Modul bleibt es ein Werkzeug-Asset, z. B. ein Karten-Marker.</value>
+  </data>
+  <data name="ToolAssetOption" xml:space="preserve">
+    <value>Werkzeug-Asset (keine Entität)</value>
+  </data>
+  <data name="NoEntitiesHint" xml:space="preserve">
+    <value>In diesem Modul gibt es noch keine Entität, der sich das Asset zuordnen ließe.</value>
+  </data>
+  <data name="EntityLabel" xml:space="preserve">
+    <value>Entität</value>
+  </data>
+  <data name="TagsLabel" xml:space="preserve">
+    <value>Stichwörter</value>
+  </data>
+  <data name="TagsHelperEmpty" xml:space="preserve">
+    <value>Noch keine Stichwörter angelegt — unten eines hinzufügen.</value>
+  </data>
+  <data name="NewTagLabel" xml:space="preserve">
+    <value>Neues Stichwort</value>
+  </data>
+  <data name="AddTag" xml:space="preserve">
+    <value>Anlegen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="Dimensions" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+</root>

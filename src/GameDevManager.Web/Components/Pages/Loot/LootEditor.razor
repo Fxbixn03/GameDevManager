@@ -6,15 +6,16 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IStringLocalizer<LootEditor> L
 
-<PageTitle>@PageHeading – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
 
 @if (_notFound)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">
-        Es gibt keine Loot-Table mit dieser GUID. Vielleicht wurde sie gelöscht.
+        @L["NotFound"]
     </MudAlert>
-    <MudButton Variant="Variant.Outlined" Href="/modules/loot">Zurück zur Übersicht</MudButton>
+    <MudButton Variant="Variant.Outlined" Href="/modules/loot">@L["BackToList"]</MudButton>
 }
 else if (_context is null)
 {
@@ -24,13 +25,13 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? "Noch nicht gespeichert" : null)"
+                  Subtitle="@(_context.IsNew ? L["NotSavedYet"].Value : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
-                    Ungespeicherte Änderungen
+                    @L["UnsavedChanges"]
                 </MudChip>
             }
             @if (!_context.IsNew)
@@ -39,16 +40,16 @@ else
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
-                    Löschen
+                    @L["Delete"]
                 </MudButton>
             }
-            <MudButton Variant="Variant.Outlined" Href="/modules/loot">Abbrechen</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/loot">@L["Cancel"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
                        OnClick="SaveAsync">
-                Speichern
+                @L["Save"]
             </MudButton>
         </Actions>
     </ModuleHeader>
@@ -59,20 +60,20 @@ else
 
                 @* ------------------------------------------------------------- Stammdaten *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Stammdaten</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionMasterData"]</MudText>
 
                     <MudStack Spacing="4">
                         <MudTextField Value="_context.Entity.Name"
                                       ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
                                       T="string"
-                                      Label="Name *"
+                                      Label="@L["NameLabel"]"
                                       Variant="Variant.Outlined"
                                       Immediate="true" />
 
                         <MudTextField Value="_context.Entity.Description"
                                       ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
                                       T="string"
-                                      Label="Beschreibung"
+                                      Label="@L["DescriptionLabel"]"
                                       Variant="Variant.Outlined"
                                       Lines="2" />
 
@@ -80,22 +81,22 @@ else
                             <MudSelect T="LootRollMode"
                                        Value="_context.Entity.RollMode"
                                        ValueChanged="@((LootRollMode mode) => Touch(() => _context.Entity.RollMode = mode))"
-                                       Label="Wurf"
+                                       Label="@L["RollModeLabel"]"
                                        Variant="Variant.Outlined"
                                        HelperText="@RollModeHint"
                                        Style="max-width:280px;">
                                 <MudSelectItem T="LootRollMode" Value="@(LootRollMode.Independent)">
-                                    Unabhängig je Eintrag
+                                    @L["RollModeIndependent"]
                                 </MudSelectItem>
                                 <MudSelectItem T="LootRollMode" Value="@(LootRollMode.SinglePick)">
-                                    Einzelwurf über alle
+                                    @L["RollModeSinglePick"]
                                 </MudSelectItem>
                             </MudSelect>
 
                             <MudSelect T="Guid?"
                                        Value="_context.Entity.ContentTypeId"
                                        ValueChanged="ChangeType"
-                                       Label="Loot-Art"
+                                       Label="@L["TypeLabel"]"
                                        Variant="Variant.Outlined"
                                        Clearable="true"
                                        Style="max-width:240px;">
@@ -111,18 +112,18 @@ else
                 @* ------------------------------------------------------------------ Einträge *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                        <MudText Typo="Typo.overline" Color="Color.Secondary">Einträge</MudText>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionEntries"]</MudText>
                         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
                             <MudText Typo="Typo.body2"
                                      Class="gdm-mono"
                                      Color="@(IsOverfull ? Color.Warning : Color.Secondary)">
-                                @TotalChance.ToString("0.##") %
+                                @L["TotalChance", TotalChance.ToString("0.##")]
                             </MudText>
                             <MudButton StartIcon="@Icons.Material.Filled.Add"
                                        Size="Size.Small"
                                        Disabled="@(_items.Count == 0)"
                                        OnClick="AddEntry">
-                                Eintrag
+                                @L["AddEntry"]
                             </MudButton>
                         </MudStack>
                     </MudStack>
@@ -130,23 +131,21 @@ else
                     @if (IsOverfull)
                     {
                         <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
-                            Bei einem Einzelwurf teilen sich die Einträge eine Ziehung. Über 100 %
-                            hinaus sind die hinteren Einträge unerreichbar.
+                            @L["OverfullWarning"]
                         </MudAlert>
                     }
 
                     @if (_items.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true">
-                            Es gibt noch keine Items —
-                            <MudLink Href="/modules/items" Color="Color.Primary">jetzt welche anlegen</MudLink>.
+                            @L["NoItemsHint"]
+                            <MudLink Href="/modules/items" Color="Color.Primary">@L["NoItemsLink"]</MudLink>.
                         </MudAlert>
                     }
                     else if (_context.Entity.Entries.Count == 0)
                     {
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            Noch kein Eintrag. Dasselbe Item darf mehrfach vorkommen — etwa zu 50 %
-                            eine Münze und zu 5 % gleich zwanzig.
+                            @L["NoEntries"]
                         </MudText>
                     }
                     else
@@ -161,7 +160,7 @@ else
                                                          ValueChanged="@((EntitySummary? e) => Touch(() => entry.ItemId = e?.Id ?? Guid.Empty))"
                                                          SearchFunc="SearchItemsAsync"
                                                          ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                                         Label="Item"
+                                                         Label="@L["ItemLabel"]"
                                                          Variant="Variant.Outlined"
                                                          Margin="Margin.Dense"
                                                          Clearable="true"
@@ -174,7 +173,7 @@ else
                                         <MudNumericField T="double"
                                                          Value="entry.Chance"
                                                          ValueChanged="@((double v) => Touch(() => entry.Chance = v))"
-                                                         Label="Chance"
+                                                         Label="@L["ChanceLabel"]"
                                                          Adornment="Adornment.End"
                                                          AdornmentText="%"
                                                          Variant="Variant.Outlined"
@@ -187,7 +186,7 @@ else
                                         <MudNumericField T="int"
                                                          Value="entry.MinQuantity"
                                                          ValueChanged="@((int v) => Touch(() => entry.MinQuantity = v))"
-                                                         Label="von"
+                                                         Label="@L["QuantityFromLabel"]"
                                                          Variant="Variant.Outlined"
                                                          Margin="Margin.Dense"
                                                          Min="1" />
@@ -197,15 +196,15 @@ else
                                         <MudNumericField T="int"
                                                          Value="entry.MaxQuantity"
                                                          ValueChanged="@((int v) => Touch(() => entry.MaxQuantity = v))"
-                                                         Label="bis"
+                                                         Label="@L["QuantityToLabel"]"
                                                          Variant="Variant.Outlined"
                                                          Margin="Margin.Dense"
                                                          Min="1" />
-                                        <MudTooltip Text="Eintrag entfernen">
+                                        <MudTooltip Text="@L["RemoveEntry"]">
                                             <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                            Size="Size.Small"
                                                            OnClick="@(() => RemoveEntry(entry))"
-                                                           aria-label="Eintrag entfernen" />
+                                                           aria-label="@L["RemoveEntry"]" />
                                         </MudTooltip>
                                     </MudItem>
                                 </MudGrid>
@@ -220,7 +219,7 @@ else
                                         Context="_context"
                                         ModuleKey="@ModuleKeys.Loot"
                                         TypesRoute="/modules/loot/arten"
-                                        IndividualHint="Für Angaben, die nur diese eine Tabelle braucht."
+                                        IndividualHint="@L["IndividualHint"]"
                                         OnValueChanged="MarkDirty"
                                         OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
                 </div>
@@ -230,17 +229,17 @@ else
         <MudItem xs="12" md="4">
             <MudStack Spacing="4">
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">Referenz</MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">GUID</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidCaption"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Angelegt</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CreatedCaption"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">Zuletzt geändert</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@L["UpdatedCaption"]</MudText>
                         <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
                     }
                 </MudPaper>
@@ -271,10 +270,10 @@ else
 
     private string PageHeading => _context switch
     {
-        null => "Loot-Table",
-        { IsNew: true } => "Neue Loot-Table",
+        null => L["HeadingDefault"],
+        { IsNew: true } => L["HeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "Loot-Table ohne Namen"
+        _ => L["HeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -285,8 +284,8 @@ else
         _context?.Entity.RollMode == LootRollMode.SinglePick && TotalChance > 100.0001;
 
     private string RollModeHint => _context?.Entity.RollMode == LootRollMode.SinglePick
-        ? "Höchstens ein Eintrag fällt; die Chancen teilen sich einen Wurf."
-        : "Jeder Eintrag wird einzeln gewürfelt — mehrere Treffer sind möglich.";
+        ? L["RollModeHintSinglePick"]
+        : L["RollModeHintIndependent"];
 
     protected override async Task OnParametersSetAsync()
     {
@@ -369,7 +368,7 @@ else
             await Loot.SaveTableAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -400,10 +399,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Loot-Table löschen",
-            $"„{_context.Entity.Name}“ wird mit ihren Einträgen gelöscht. NPCs, die darauf verweisen, verlieren ihre Zuordnung.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -411,7 +410,7 @@ else
         }
 
         await Loot.DeleteTableAsync(_context.Entity.Id);
-        Snackbar.Add("Loot-Table gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/loot");
     }
 

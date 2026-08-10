@@ -1,28 +1,30 @@
 using GameDevManager.Domain.Entities;
+using Microsoft.Extensions.Localization;
 using MudBlazor;
 
 namespace GameDevManager.Web.Services;
 
 /// <summary>
-/// Deutsche Bezeichnungen und Icons für die Feldtypen. Der Enum selbst bleibt englisch —
-/// hier liegt allein die Darstellung.
+/// Bezeichnungen und Icons für die Feldtypen. Der Enum selbst bleibt englisch — hier liegt
+/// allein die Darstellung, und die kommt aus <c>FieldTypeLabels.resx</c>.
 /// </summary>
-public static class FieldTypeLabels
+public sealed class FieldTypeLabels(IStringLocalizer<FieldTypeLabels> localizer)
 {
-    public static string Describe(ContentFieldType type) => type switch
+    public string Describe(ContentFieldType type) => type switch
     {
-        ContentFieldType.Text => "Text",
-        ContentFieldType.MultilineText => "Text, mehrzeilig",
-        ContentFieldType.Integer => "Ganze Zahl",
-        ContentFieldType.Decimal => "Kommazahl",
-        ContentFieldType.Boolean => "Ja/Nein",
-        ContentFieldType.Date => "Datum",
-        ContentFieldType.Select => "Auswahl",
-        ContentFieldType.EntityReference => "Referenz auf Entität",
-        ContentFieldType.Color => "Farbe",
+        ContentFieldType.Text => localizer["Type_Text"],
+        ContentFieldType.MultilineText => localizer["Type_MultilineText"],
+        ContentFieldType.Integer => localizer["Type_Integer"],
+        ContentFieldType.Decimal => localizer["Type_Decimal"],
+        ContentFieldType.Boolean => localizer["Type_Boolean"],
+        ContentFieldType.Date => localizer["Type_Date"],
+        ContentFieldType.Select => localizer["Type_Select"],
+        ContentFieldType.EntityReference => localizer["Type_EntityReference"],
+        ContentFieldType.Color => localizer["Type_Color"],
         _ => type.ToString()
     };
 
+    /// <summary>Bleibt statisch: Icons sind sprachunabhängig.</summary>
     public static string Icon(ContentFieldType type) => type switch
     {
         ContentFieldType.Text => Icons.Material.Filled.ShortText,
@@ -38,27 +40,29 @@ public static class FieldTypeLabels
     };
 
     /// <summary>Kurzfassung eines Feldwerts für Listen und die Übersicht.</summary>
-    public static string Format(FieldDefinition definition, FieldValue? value)
+    public string Format(FieldDefinition definition, FieldValue? value)
     {
+        var empty = localizer["Empty"].Value;
+
         if (value is null || value.IsEmpty)
         {
-            return "—";
+            return empty;
         }
 
         var formatted = definition.Type switch
         {
-            ContentFieldType.Boolean => value.BooleanValue == true ? "Ja" : "Nein",
-            ContentFieldType.Date => value.DateValue?.ToString("dd.MM.yyyy") ?? "—",
-            ContentFieldType.Integer => value.NumberValue?.ToString("0") ?? "—",
-            ContentFieldType.Decimal => value.NumberValue?.ToString("0.##") ?? "—",
+            ContentFieldType.Boolean => value.BooleanValue == true ? localizer["Yes"].Value : localizer["No"].Value,
+            ContentFieldType.Date => value.DateValue?.ToString("dd.MM.yyyy") ?? empty,
+            ContentFieldType.Integer => value.NumberValue?.ToString("0") ?? empty,
+            ContentFieldType.Decimal => value.NumberValue?.ToString("0.##") ?? empty,
             ContentFieldType.Select => definition.Options
-                .FirstOrDefault(option => option.Id == value.OptionId)?.Label ?? "—",
-            ContentFieldType.EntityReference => value.ReferenceValue?.ToString() ?? "—",
-            _ => value.TextValue ?? "—"
+                .FirstOrDefault(option => option.Id == value.OptionId)?.Label ?? empty,
+            ContentFieldType.EntityReference => value.ReferenceValue?.ToString() ?? empty,
+            _ => value.TextValue ?? empty
         };
 
-        return string.IsNullOrWhiteSpace(definition.Unit) || formatted == "—"
+        return string.IsNullOrWhiteSpace(definition.Unit) || formatted == empty
             ? formatted
-            : $"{formatted} {definition.Unit}";
+            : localizer["WithUnit", formatted, definition.Unit];
     }
 }

@@ -395,15 +395,15 @@ else
         && (_context.Entity.IncludesPlayer || _context.Entity.Participants.Count > 0);
 
     private string KindHint => IsBark
-        ? "Zeilen stehen unabhängig nebeneinander und erscheinen zufällig."
-        : "Zeilen bilden einen Verlauf; Antworten führen weiter.";
+        ? L["KindHintBark"]
+        : L["KindHintConversation"];
 
     private string PageHeading => _context switch
     {
-        null => "Dialog",
-        { IsNew: true } => "Neuer Dialog",
+        null => L["HeadingDefault"],
+        { IsNew: true } => L["HeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "Dialog ohne Namen"
+        _ => L["HeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -449,9 +449,9 @@ else
     private string LineLabel(DialogueLine line)
     {
         var speaker = line.SpeakerNpcId is { } id ? NpcFor(id)?.Name ?? "?" : "Spieler";
-        var text = string.IsNullOrWhiteSpace(line.Text) ? "(ohne Text)" : line.Text;
+        var text = string.IsNullOrWhiteSpace(line.Text) ? L["NoText"].Value : line.Text;
 
-        return $"{speaker}: {(text.Length <= 32 ? text : string.Concat(text.AsSpan(0, 32), "…"))}";
+        return L["LineLabelFormat", speaker, text.Length <= 32 ? text : string.Concat(text.AsSpan(0, 32), "…")];
     }
 
     // ------------------------------------------------------------------------- Bearbeiten
@@ -597,7 +597,7 @@ else
             await Dialogues.SaveDialogueAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -628,10 +628,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Dialog löschen",
-            $"„{_context.Entity.Name}“ wird mit allen Zeilen, Antwortmöglichkeiten und Bedingungen gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -639,7 +639,7 @@ else
         }
 
         await Dialogues.DeleteDialogueAsync(_context.Entity.Id);
-        Snackbar.Add("Dialog gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/dialogs");
     }
 

@@ -289,10 +289,10 @@ else
 
     private string PageHeading => _context switch
     {
-        null => "Event",
-        { IsNew: true } => "Neues Event",
+        null => L["HeadingDefault"],
+        { IsNew: true } => L["HeadingNew"],
         { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
-        _ => "Event ohne Namen"
+        _ => L["HeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
@@ -382,7 +382,7 @@ else
             await Events.SaveEventAsync(_context);
             _dirty = false;
 
-            Snackbar.Add($"„{_context.Entity.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
 
             if (wasNew)
             {
@@ -413,10 +413,10 @@ else
         }
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Event löschen",
-            $"„{_context.Entity.Name}“ wird mit Spawns, Feldwerten, individuellen Feldern und Sprites gelöscht.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -424,7 +424,7 @@ else
         }
 
         await Events.DeleteEventAsync(_context.Entity.Id);
-        Snackbar.Add("Event gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
         Navigation.NavigateTo("/modules/events");
     }
 

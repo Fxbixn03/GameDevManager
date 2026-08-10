@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -11,7 +12,8 @@ namespace GameDevManager.Data.Services;
 public class QuestService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<QuestListRow>> GetQuestsAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -104,10 +106,10 @@ public class QuestService(
 
         if (string.IsNullOrWhiteSpace(quest.Name))
         {
-            throw new ContentValidationException("Die Quest braucht einen Namen.");
+            throw new ContentValidationException(messages["QuestNameRequired"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -163,11 +165,11 @@ public class QuestService(
     }
 
     /// <summary>Anzeigename einer Quest-Form — an einer Stelle, damit alle Ansichten gleich sprechen.</summary>
-    public static string KindLabel(QuestKind kind) => kind switch
+    public string KindLabel(QuestKind kind) => kind switch
     {
-        QuestKind.MainMission => "Hauptmission",
-        QuestKind.SideMission => "Nebenmission",
-        QuestKind.Event => "Event",
+        QuestKind.MainMission => messages["QuestKind_MainMission"],
+        QuestKind.SideMission => messages["QuestKind_SideMission"],
+        QuestKind.Event => messages["QuestKind_Event"],
         _ => kind.ToString()
     };
 }

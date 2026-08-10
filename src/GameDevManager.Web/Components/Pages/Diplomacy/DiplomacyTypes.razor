@@ -1,32 +1,33 @@
 @page "/modules/diplomacy/arten"
+@inject IStringLocalizer<DiplomacyTypes> L
 
-<PageTitle>Beziehungs-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Beziehungs-Arten"
-              Subtitle="Fraktionen und Haltung stehen fest an der Beziehung — alles Weitere definieren die Felder der Art."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/diplomacy">Zu den Beziehungen</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/diplomacy">@L["ToRelations"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Diplomacy"
-                    EntityNoun="Beziehung"
-                    EmptyTitle="Noch keine Beziehungs-Arten"
-                    EmptyHint="Über Arten lassen sich Angaben ergänzen, die die Beziehung selbst nicht kennt — etwa Vertragsdauer, Tribut oder ein Kündigungsgrund." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Diplomacy);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 

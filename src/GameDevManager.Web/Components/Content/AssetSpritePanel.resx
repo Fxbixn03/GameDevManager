@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SectionSprites" xml:space="preserve">
+    <value>Sprites</value>
+  </data>
+  <data name="LibraryButton" xml:space="preserve">
+    <value>Bibliothek</value>
+  </data>
+  <data name="UploadText" xml:space="preserve">
+    <value>Sprite</value>
+  </data>
+  <data name="DisabledHint" xml:space="preserve">
+    <value>Sprites hängen an der GUID der Entität — sie lassen sich hochladen, sobald einmal gespeichert wurde.</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Noch kein Sprite. Das erste hochgeladene wird automatisch zum Icon, das die Module in ihren Listen zeigen.</value>
+  </data>
+  <data name="PrimaryChip" xml:space="preserve">
+    <value>Icon</value>
+  </data>
+  <data name="AlreadyPrimary" xml:space="preserve">
+    <value>Ist bereits das Icon</value>
+  </data>
+  <data name="SetPrimary" xml:space="preserve">
+    <value>Als Icon verwenden</value>
+  </data>
+  <data name="MoveForwardTooltip" xml:space="preserve">
+    <value>Nach vorne</value>
+  </data>
+  <data name="MoveBackwardTooltip" xml:space="preserve">
+    <value>Nach hinten</value>
+  </data>
+  <data name="EditTooltip" xml:space="preserve">
+    <value>Angaben bearbeiten</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Sprite löschen</value>
+  </data>
+  <data name="EditDialogTitle" xml:space="preserve">
+    <value>Asset bearbeiten</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Sprite löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird samt Datei gelöscht. Das lässt sich nicht rückgängig machen.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Sprite gelöscht.</value>
+  </data>
+</root>

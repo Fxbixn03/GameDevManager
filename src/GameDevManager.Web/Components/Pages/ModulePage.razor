@@ -1,5 +1,6 @@
 @page "/modules/{ModuleId}"
 @inject IStringLocalizer<ModulePage> L
+@inject ModuleLabels Modules
 
 @if (_module is null)
 {
@@ -8,14 +9,14 @@
 }
 else
 {
-    <PageTitle>@L["PageTitleFormat", _module.Name]</PageTitle>
+    <PageTitle>@L["PageTitleFormat", Modules.Name(_module)]</PageTitle>
 
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-4">
         <MudIcon Icon="@_module.Icon" Size="Size.Large" />
-        <MudText Typo="Typo.h4">@_module.Name</MudText>
+        <MudText Typo="Typo.h4">@Modules.Name(_module)</MudText>
     </MudStack>
 
-    <MudText Typo="Typo.body1" Class="mb-6">@_module.Description</MudText>
+    <MudText Typo="Typo.body1" Class="mb-6">@Modules.Description(_module)</MudText>
 
     <MudAlert Severity="Severity.Info">
         @L["InDevelopmentHint"]

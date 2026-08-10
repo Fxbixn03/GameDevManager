@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Kind_HasItem" xml:space="preserve">
+    <value>Item im Besitz</value>
+  </data>
+  <data name="Kind_HasCurrency" xml:space="preserve">
+    <value>Währung im Besitz</value>
+  </data>
+  <data name="Kind_QuestState" xml:space="preserve">
+    <value>Quest-Zustand</value>
+  </data>
+  <data name="Kind_NpcDefeated" xml:space="preserve">
+    <value>NPC besiegt</value>
+  </data>
+  <data name="Kind_Flag" xml:space="preserve">
+    <value>Schalter der Story</value>
+  </data>
+  <data name="Kind_PlayerLevel" xml:space="preserve">
+    <value>Stufe des Spielers</value>
+  </data>
+  <data name="Kind_Custom" xml:space="preserve">
+    <value>Frei beschrieben</value>
+  </data>
+  <data name="Operator_AtLeast" xml:space="preserve">
+    <value>mindestens</value>
+  </data>
+  <data name="Operator_GreaterThan" xml:space="preserve">
+    <value>mehr als</value>
+  </data>
+  <data name="Operator_Equal" xml:space="preserve">
+    <value>genau</value>
+  </data>
+  <data name="Operator_AtMost" xml:space="preserve">
+    <value>höchstens</value>
+  </data>
+  <data name="Operator_LessThan" xml:space="preserve">
+    <value>weniger als</value>
+  </data>
+  <data name="Operator_NotEqual" xml:space="preserve">
+    <value>nicht</value>
+  </data>
+  <data name="UnknownTarget" xml:space="preserve">
+    <value>(unbekannt)</value>
+  </data>
+  <data name="Sentence_HasItem" xml:space="preserve">
+    <value>Besitzt {0} {1}× {2}</value>
+  </data>
+  <data name="Sentence_HasCurrency" xml:space="preserve">
+    <value>Besitzt {0} {1} {2}</value>
+  </data>
+  <data name="Sentence_PlayerLevel" xml:space="preserve">
+    <value>Stufe {0} {1}</value>
+  </data>
+  <data name="Sentence_NpcDefeated" xml:space="preserve">
+    <value>{0} wurde besiegt</value>
+  </data>
+  <data name="Sentence_NpcNotDefeated" xml:space="preserve">
+    <value>{0} wurde nicht besiegt</value>
+  </data>
+  <data name="Sentence_FlagSet" xml:space="preserve">
+    <value>Schalter „{0}“ ist gesetzt</value>
+  </data>
+  <data name="Sentence_FlagNotSet" xml:space="preserve">
+    <value>Schalter „{0}“ ist nicht gesetzt</value>
+  </data>
+  <data name="Sentence_QuestState" xml:space="preserve">
+    <value>Quest {0} steht auf „{1}“</value>
+  </data>
+  <data name="Sentence_Custom" xml:space="preserve">
+    <value>Frei beschriebene Bedingung</value>
+  </data>
+</root>

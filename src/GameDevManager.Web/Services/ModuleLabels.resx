@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="items_Name" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="items_Description" xml:space="preserve">
+    <value>Items und Item-Arten mit eigenen Feldern definieren</value>
+  </data>
+  <data name="crafting_Name" xml:space="preserve">
+    <value>Crafting</value>
+  </data>
+  <data name="crafting_Description" xml:space="preserve">
+    <value>Rezepte und Crafting-Trees auf Basis der Items</value>
+  </data>
+  <data name="currencies_Name" xml:space="preserve">
+    <value>Währungen</value>
+  </data>
+  <data name="currencies_Description" xml:space="preserve">
+    <value>Spielwährungen in beliebigen Variationen</value>
+  </data>
+  <data name="npcs_Name" xml:space="preserve">
+    <value>NPCs</value>
+  </data>
+  <data name="npcs_Description" xml:space="preserve">
+    <value>NPCs und Mobs, Händler, Spawns und Bedingungen</value>
+  </data>
+  <data name="factions_Name" xml:space="preserve">
+    <value>Fraktionen</value>
+  </data>
+  <data name="factions_Description" xml:space="preserve">
+    <value>Fraktionen, Rollen und Ränge für NPCs</value>
+  </data>
+  <data name="diplomacy_Name" xml:space="preserve">
+    <value>Diplomatie</value>
+  </data>
+  <data name="diplomacy_Description" xml:space="preserve">
+    <value>Allianzen und Feindschaften als Graph</value>
+  </data>
+  <data name="maps_Name" xml:space="preserve">
+    <value>Karten</value>
+  </data>
+  <data name="maps_Description" xml:space="preserve">
+    <value>Welt- und Detailkarten mit Markern und Gebieten</value>
+  </data>
+  <data name="dialogs_Name" xml:space="preserve">
+    <value>Dialoge</value>
+  </data>
+  <data name="dialogs_Description" xml:space="preserve">
+    <value>Dialoge, Sprechblasen und Antwortmöglichkeiten</value>
+  </data>
+  <data name="story_Name" xml:space="preserve">
+    <value>Story</value>
+  </data>
+  <data name="story_Description" xml:space="preserve">
+    <value>Storyline im Zeitstreifen mit Verknüpfungen</value>
+  </data>
+  <data name="quests_Name" xml:space="preserve">
+    <value>Quests</value>
+  </data>
+  <data name="quests_Description" xml:space="preserve">
+    <value>Haupt-/Nebenmissionen und Events mit Bedingungen</value>
+  </data>
+  <data name="assets_Name" xml:space="preserve">
+    <value>Assets</value>
+  </data>
+  <data name="assets_Description" xml:space="preserve">
+    <value>Sprite-Bibliothek über alle Entitäten</value>
+  </data>
+  <data name="player_Name" xml:space="preserve">
+    <value>Spieler</value>
+  </data>
+  <data name="player_Description" xml:space="preserve">
+    <value>Spielerfigur und Skilltrees</value>
+  </data>
+  <data name="classes_Name" xml:space="preserve">
+    <value>Klassen</value>
+  </data>
+  <data name="classes_Description" xml:space="preserve">
+    <value>Klassen für Spieler und NPCs</value>
+  </data>
+  <data name="loot_Name" xml:space="preserve">
+    <value>Loot-Tables</value>
+  </data>
+  <data name="loot_Description" xml:space="preserve">
+    <value>Drop-Wahrscheinlichkeiten und Mengen</value>
+  </data>
+  <data name="effects_Name" xml:space="preserve">
+    <value>Effekte</value>
+  </data>
+  <data name="effects_Description" xml:space="preserve">
+    <value>Effekte und deren Wirkung, z. B. Verbrennung</value>
+  </data>
+  <data name="achievements_Name" xml:space="preserve">
+    <value>Achievements</value>
+  </data>
+  <data name="achievements_Description" xml:space="preserve">
+    <value>Erfolge, die der Spieler erreichen kann</value>
+  </data>
+  <data name="collectibles_Name" xml:space="preserve">
+    <value>Sammelobjekte</value>
+  </data>
+  <data name="collectibles_Description" xml:space="preserve">
+    <value>Statuen, Notizen und andere Sammelobjekte</value>
+  </data>
+  <data name="events_Name" xml:space="preserve">
+    <value>Events</value>
+  </data>
+  <data name="events_Description" xml:space="preserve">
+    <value>Zufalls-Events mit Spawns, Loot und Orten</value>
+  </data>
+  <data name="tags_Name" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="tags_Description" xml:space="preserve">
+    <value>Tags/Labels, modulübergreifend einsetzbar</value>
+  </data>
+  <data name="audio_Name" xml:space="preserve">
+    <value>SFX/Audio</value>
+  </data>
+  <data name="audio_Description" xml:space="preserve">
+    <value>Sounds und Musik mit Audiodateien</value>
+  </data>
+  <data name="cutscenes_Name" xml:space="preserve">
+    <value>Cutscenes</value>
+  </data>
+  <data name="cutscenes_Description" xml:space="preserve">
+    <value>Cutscenes als Storyboard mit Verknüpfungen</value>
+  </data>
+  <data name="statistics_Name" xml:space="preserve">
+    <value>Statistik</value>
+  </data>
+  <data name="statistics_Description" xml:space="preserve">
+    <value>Kennzahlen und Health Checks über alle Module</value>
+  </data>
+</root>

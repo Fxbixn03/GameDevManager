@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -11,7 +12,8 @@ namespace GameDevManager.Data.Services;
 public class StoryService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     /// <summary>Der Zeitstreifen: alle Abschnitte eines Projekts in ihrer Reihenfolge.</summary>
     public async Task<List<StoryListRow>> GetEntriesAsync(Guid projectId, CancellationToken ct = default)
@@ -136,11 +138,11 @@ public class StoryService(
 
         if (string.IsNullOrWhiteSpace(entry.Name))
         {
-            throw new ContentValidationException("Der Story-Abschnitt braucht einen Namen.");
+            throw new ContentValidationException(messages["StoryEntryNameRequired"]);
         }
 
         Validate(entry);
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -183,12 +185,12 @@ public class StoryService(
         entry.Description = stored.Description;
     }
 
-    private static void Validate(StoryEntry entry)
+    private void Validate(StoryEntry entry)
     {
         // Ein Beteiligter ohne Entität ist eine unfertige Eingabezeile; die Maske räumt sie vorher weg.
         if (entry.Participants.Any(p => p.TargetEntityId == Guid.Empty))
         {
-            throw new ContentValidationException("Jeder Beteiligte braucht eine Entität.");
+            throw new ContentValidationException(messages["StoryParticipantEntityRequired"]);
         }
 
         var duplicate = entry.Participants
@@ -197,7 +199,7 @@ public class StoryService(
 
         if (duplicate is not null)
         {
-            throw new ContentValidationException("Dieselbe Entität steht mehrfach bei den Beteiligten.");
+            throw new ContentValidationException(messages["StoryParticipantDuplicate"]);
         }
     }
 

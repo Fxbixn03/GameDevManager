@@ -1,5 +1,6 @@
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -53,9 +54,17 @@ public interface IModuleEntitySource
 /// abgeleitet sind. Zählen, Auflisten und Namen auflösen läuft überall gleich; nur die
 /// Suchtreffer bekommen je Modul eine eigene Beschriftung.
 /// </summary>
-public abstract class ModuleEntitySource<TEntity> : IModuleEntitySource
+public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages> messages)
+    : IModuleEntitySource
     where TEntity : ContentEntity
 {
+    /// <summary>
+    /// Untertitel in Suche und Referenzansicht sind Text für die Oberfläche und stehen deshalb
+    /// in <c>DataMessages.resx</c>. Vor einer LINQ-Abfrage in eine lokale Variable ziehen —
+    /// einen Indexer-Aufruf kann EF nicht übersetzen.
+    /// </summary>
+    protected IStringLocalizer<DataMessages> Messages { get; } = messages;
+
     public abstract string ModuleKey { get; }
 
     protected abstract DbSet<TEntity> Set(GameDevManagerDbContext db);

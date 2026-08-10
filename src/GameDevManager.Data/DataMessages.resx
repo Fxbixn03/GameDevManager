@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="RequiredFieldEmpty" xml:space="preserve">
+    <value>Das Pflichtfeld „{0}“ ist nicht gefüllt.</value>
+  </data>
+  <data name="TypeNameRequired" xml:space="preserve">
+    <value>Die Art braucht einen Namen.</value>
+  </data>
+  <data name="TypeGone" xml:space="preserve">
+    <value>Die Art existiert nicht mehr.</value>
+  </data>
+  <data name="TypeInUse" xml:space="preserve">
+    <value>„{0}“ wird noch von {1} Eintrag/Einträgen verwendet. Bitte zuerst umtragen oder löschen.</value>
+  </data>
+  <data name="FieldNameRequired" xml:space="preserve">
+    <value>Das Feld braucht einen Namen.</value>
+  </data>
+  <data name="FieldOwnerAmbiguous" xml:space="preserve">
+    <value>Ein Feld gehört entweder zu einer Art oder zu genau einer Entität.</value>
+  </data>
+  <data name="FieldReferenceModuleRequired" xml:space="preserve">
+    <value>Bei einer Referenz muss das Zielmodul angegeben sein.</value>
+  </data>
+  <data name="FieldOptionsNotEmpty" xml:space="preserve">
+    <value>Auswahlmöglichkeiten dürfen nicht leer sein.</value>
+  </data>
+  <data name="AssetMimeNotAllowed" xml:space="preserve">
+    <value>„{0}“ hat den Typ {1}. Erlaubt sind: {2}.</value>
+  </data>
+  <data name="AssetGone" xml:space="preserve">
+    <value>Das Asset existiert nicht mehr.</value>
+  </data>
+  <data name="AssetPrimaryNeedsOwner" xml:space="preserve">
+    <value>Nur ein Asset, das zu einer Entität gehört, kann deren Icon sein.</value>
+  </data>
+  <data name="AssetTagNameRequired" xml:space="preserve">
+    <value>Das Stichwort braucht einen Namen.</value>
+  </data>
+  <data name="AssetTagExists" xml:space="preserve">
+    <value>Das Stichwort „{0}“ gibt es bereits.</value>
+  </data>
+  <data name="AchievementNameRequired" xml:space="preserve">
+    <value>Das Achievement braucht einen Namen.</value>
+  </data>
+  <data name="SoundNameRequired" xml:space="preserve">
+    <value>Der Sound braucht einen Namen.</value>
+  </data>
+  <data name="ClassNameRequired" xml:space="preserve">
+    <value>Die Klasse braucht einen Namen.</value>
+  </data>
+  <data name="CollectibleNameRequired" xml:space="preserve">
+    <value>Das Sammelobjekt braucht einen Namen.</value>
+  </data>
+  <data name="ItemNameRequired" xml:space="preserve">
+    <value>Das Item braucht einen Namen.</value>
+  </data>
+  <data name="QuestNameRequired" xml:space="preserve">
+    <value>Die Quest braucht einen Namen.</value>
+  </data>
+  <data name="CurrencyNameRequired" xml:space="preserve">
+    <value>Die Währung braucht einen Namen.</value>
+  </data>
+  <data name="CurrencyNameExists" xml:space="preserve">
+    <value>Es gibt bereits eine Währung namens „{0}“.</value>
+  </data>
+  <data name="TagNameRequired" xml:space="preserve">
+    <value>Das Tag braucht einen Namen.</value>
+  </data>
+  <data name="TagNameExists" xml:space="preserve">
+    <value>Es gibt bereits ein Tag namens „{0}“.</value>
+  </data>
+  <data name="ConditionTargetRequired" xml:space="preserve">
+    <value>Diese Bedingung bezieht sich auf eine Entität — bitte eine auswählen.</value>
+  </data>
+  <data name="ConditionNumberRequired" xml:space="preserve">
+    <value>Diese Bedingung braucht eine Zahl.</value>
+  </data>
+  <data name="ConditionFlagNameRequired" xml:space="preserve">
+    <value>Ein Schalter braucht einen Namen.</value>
+  </data>
+  <data name="ConditionCustomTextRequired" xml:space="preserve">
+    <value>Eine freie Bedingung braucht eine Beschreibung.</value>
+  </data>
+  <data name="ConditionTargetGone" xml:space="preserve">
+    <value>Die Bedingung bezieht sich auf eine Entität, die es nicht mehr gibt.</value>
+  </data>
+  <data name="ConditionContradictionBoolean" xml:space="preserve">
+    <value>„{0}“ soll gleichzeitig zutreffen und nicht zutreffen.</value>
+  </data>
+  <data name="ConditionContradictionRange" xml:space="preserve">
+    <value>„{0}“ soll gleichzeitig mindestens {1} und höchstens {2} sein.</value>
+  </data>
+  <data name="ConditionKind_HasItem" xml:space="preserve">
+    <value>Item im Besitz</value>
+  </data>
+  <data name="ConditionKind_HasCurrency" xml:space="preserve">
+    <value>Währung im Besitz</value>
+  </data>
+  <data name="RecipeNameRequired" xml:space="preserve">
+    <value>Das Rezept braucht einen Namen.</value>
+  </data>
+  <data name="RecipeOutputAtLeastOne" xml:space="preserve">
+    <value>Ein Rezept muss mindestens ein Stück herstellen.</value>
+  </data>
+  <data name="RecipeIngredientQuantity" xml:space="preserve">
+    <value>Jede Zutat braucht eine Menge von mindestens 1.</value>
+  </data>
+  <data name="RecipeIngredientDuplicate" xml:space="preserve">
+    <value>Dasselbe Item steht mehrfach in der Zutatenliste. Bitte die Mengen zusammenfassen.</value>
+  </data>
+  <data name="DeletedItem" xml:space="preserve">
+    <value>(gelöschtes Item)</value>
+  </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>(gelöscht)</value>
+  </data>
+  <data name="CutsceneNameRequired" xml:space="preserve">
+    <value>Die Cutscene braucht einen Namen.</value>
+  </data>
+  <data name="CutsceneShotTextRequired" xml:space="preserve">
+    <value>Jede Einstellung braucht einen Text.</value>
+  </data>
+  <data name="DialogueNameRequired" xml:space="preserve">
+    <value>Der Dialog braucht einen Namen.</value>
+  </data>
+  <data name="DialogueParticipantNpcRequired" xml:space="preserve">
+    <value>Jeder Beteiligte braucht einen NPC.</value>
+  </data>
+  <data name="DialogueParticipantDuplicate" xml:space="preserve">
+    <value>Derselbe NPC ist mehrfach beteiligt.</value>
+  </data>
+  <data name="DialogueLineTextRequired" xml:space="preserve">
+    <value>Jede Zeile braucht einen Text.</value>
+  </data>
+  <data name="DialogueSpeakerNotParticipant" xml:space="preserve">
+    <value>Eine Zeile wird von einem NPC gesprochen, der gar nicht beteiligt ist.</value>
+  </data>
+  <data name="DialoguePlayerNotParticipant" xml:space="preserve">
+    <value>Eine Zeile spricht der Spieler, obwohl er nicht beteiligt ist.</value>
+  </data>
+  <data name="DialogueBarkHasNoChoices" xml:space="preserve">
+    <value>Sprechblasen haben keine Antwortmöglichkeiten.</value>
+  </data>
+  <data name="DialogueChoiceTextRequired" xml:space="preserve">
+    <value>Jede Antwortmöglichkeit braucht einen Text.</value>
+  </data>
+  <data name="DialogueChoiceTargetMissing" xml:space="preserve">
+    <value>Eine Antwortmöglichkeit führt zu einer Zeile, die es in diesem Dialog nicht gibt.</value>
+  </data>
+  <data name="DialogueLineUnreachable" xml:space="preserve">
+    <value>Die Zeile „{0}“ ist von keiner Antwort aus erreichbar.</value>
+  </data>
+  <data name="RelationNameRequired" xml:space="preserve">
+    <value>Die Beziehung braucht einen Namen — etwa „Nichtangriffspakt“.</value>
+  </data>
+  <data name="RelationNeedsTwoFactions" xml:space="preserve">
+    <value>Eine Beziehung braucht zwei Fraktionen.</value>
+  </data>
+  <data name="RelationSelfReference" xml:space="preserve">
+    <value>Eine Fraktion kann keine Beziehung zu sich selbst haben.</value>
+  </data>
+  <data name="RelationDuplicate" xml:space="preserve">
+    <value>Zwischen diesen beiden Fraktionen gibt es bereits eine Beziehung. Bitte die bestehende anpassen — im Graphen wäre eine doppelte Kante nicht zu deuten.</value>
+  </data>
+  <data name="Stance_Alliance" xml:space="preserve">
+    <value>Allianz</value>
+  </data>
+  <data name="Stance_Friendship" xml:space="preserve">
+    <value>Freundschaft</value>
+  </data>
+  <data name="Stance_Neutral" xml:space="preserve">
+    <value>Neutral</value>
+  </data>
+  <data name="Stance_Hostility" xml:space="preserve">
+    <value>Feindschaft</value>
+  </data>
+  <data name="Stance_War" xml:space="preserve">
+    <value>Krieg</value>
+  </data>
+  <data name="EffectNameRequired" xml:space="preserve">
+    <value>Der Effekt braucht einen Namen.</value>
+  </data>
+  <data name="EffectAssignmentItemRequired" xml:space="preserve">
+    <value>Jede Zuweisung braucht ein Item.</value>
+  </data>
+  <data name="EffectAssignmentDuplicate" xml:space="preserve">
+    <value>Dasselbe Item steht mehrfach in den Zuweisungen.</value>
+  </data>
+  <data name="EventNameRequired" xml:space="preserve">
+    <value>Das Event braucht einen Namen.</value>
+  </data>
+  <data name="EventChanceRange" xml:space="preserve">
+    <value>Die Wahrscheinlichkeit liegt zwischen 0 und 100 Prozent.</value>
+  </data>
+  <data name="EventSpawnNpcRequired" xml:space="preserve">
+    <value>Jeder Spawn braucht einen NPC/Mob.</value>
+  </data>
+  <data name="EventSpawnDuplicate" xml:space="preserve">
+    <value>Derselbe Mob steht mehrfach bei den Spawns. Bitte die Anzahl im vorhandenen Eintrag erhöhen.</value>
+  </data>
+  <data name="EventSpawnCount" xml:space="preserve">
+    <value>Jeder Spawn braucht eine Anzahl von mindestens 1.</value>
+  </data>
+  <data name="FactionNameRequired" xml:space="preserve">
+    <value>Die Fraktion braucht einen Namen.</value>
+  </data>
+  <data name="FactionMemberNpcRequired" xml:space="preserve">
+    <value>Jede Mitgliedschaft braucht einen NPC.</value>
+  </data>
+  <data name="FactionMemberDuplicate" xml:space="preserve">
+    <value>Derselbe NPC steht mehrfach in der Mitgliederliste. Ein NPC hat je Fraktion einen Rang.</value>
+  </data>
+  <data name="LootNameRequired" xml:space="preserve">
+    <value>Die Loot-Table braucht einen Namen.</value>
+  </data>
+  <data name="LootEntryItemRequired" xml:space="preserve">
+    <value>Jeder Eintrag braucht ein Item.</value>
+  </data>
+  <data name="LootChanceRange" xml:space="preserve">
+    <value>Wahrscheinlichkeiten liegen zwischen 0 und 100 Prozent.</value>
+  </data>
+  <data name="LootMinQuantity" xml:space="preserve">
+    <value>Die kleinste Menge ist 1.</value>
+  </data>
+  <data name="LootMaxBelowMin" xml:space="preserve">
+    <value>Die obere Menge darf nicht kleiner als die untere sein.</value>
+  </data>
+  <data name="MapNameRequired" xml:space="preserve">
+    <value>Die Karte braucht einen Namen.</value>
+  </data>
+  <data name="MapMarkerRange" xml:space="preserve">
+    <value>Markierungen liegen relativ zum Bild zwischen 0 und 1.</value>
+  </data>
+  <data name="MapRadiusRange" xml:space="preserve">
+    <value>Der Radius eines Bereichs liegt zwischen 0 und 1 der Bildbreite.</value>
+  </data>
+  <data name="MapSelfLink" xml:space="preserve">
+    <value>Eine Karte kann nicht auf sich selbst verweisen.</value>
+  </data>
+  <data name="NpcNameRequired" xml:space="preserve">
+    <value>Der NPC braucht einen Namen.</value>
+  </data>
+  <data name="TraderOfferItemRequired" xml:space="preserve">
+    <value>Jedes Angebot braucht ein Item.</value>
+  </data>
+  <data name="TraderOfferDuplicate" xml:space="preserve">
+    <value>Dasselbe Item steht mehrfach im Angebot. Bitte die Posten zusammenfassen.</value>
+  </data>
+  <data name="TraderPriceNegative" xml:space="preserve">
+    <value>Preise dürfen nicht negativ sein.</value>
+  </data>
+  <data name="TraderStockNegative" xml:space="preserve">
+    <value>Der Lagerbestand darf nicht negativ sein.</value>
+  </data>
+  <data name="TraderRestockNegative" xml:space="preserve">
+    <value>Die Auffüllzeit darf nicht negativ sein.</value>
+  </data>
+  <data name="TraderPriceNeedsCurrency" xml:space="preserve">
+    <value>Zu einem Preis gehört eine Währung — sonst ist die Zahl nicht zu deuten.</value>
+  </data>
+  <data name="CharacterNameRequired" xml:space="preserve">
+    <value>Die Spielerfigur braucht einen Namen.</value>
+  </data>
+  <data name="SkillTreeNameRequired" xml:space="preserve">
+    <value>Der Skilltree braucht einen Namen.</value>
+  </data>
+  <data name="SkillNameRequired" xml:space="preserve">
+    <value>Der Skill braucht einen Namen.</value>
+  </data>
+  <data name="SkillPointsNegative" xml:space="preserve">
+    <value>Skill-Punkte dürfen nicht negativ sein.</value>
+  </data>
+  <data name="SkillCostAmountMin" xml:space="preserve">
+    <value>Die Ressourcen-Menge muss mindestens 1 sein.</value>
+  </data>
+  <data name="SkillSelfParent" xml:space="preserve">
+    <value>Ein Skill kann nicht sich selbst voraussetzen.</value>
+  </data>
+  <data name="SkillParentGone" xml:space="preserve">
+    <value>Der vorausgesetzte Skill existiert nicht mehr.</value>
+  </data>
+  <data name="SkillParentOtherTree" xml:space="preserve">
+    <value>Der vorausgesetzte Skill liegt in einem anderen Baum. Voraussetzungen gelten je Skilltree.</value>
+  </data>
+  <data name="SkillParentCycle" xml:space="preserve">
+    <value>Diese Voraussetzung ergäbe einen Kreis — der Skill setzt sich indirekt selbst voraus.</value>
+  </data>
+  <data name="StoryEntryNameRequired" xml:space="preserve">
+    <value>Der Story-Abschnitt braucht einen Namen.</value>
+  </data>
+  <data name="StoryParticipantEntityRequired" xml:space="preserve">
+    <value>Jeder Beteiligte braucht eine Entität.</value>
+  </data>
+  <data name="StoryParticipantDuplicate" xml:space="preserve">
+    <value>Dieselbe Entität steht mehrfach bei den Beteiligten.</value>
+  </data>
+  <data name="QuestKind_MainMission" xml:space="preserve">
+    <value>Hauptmission</value>
+  </data>
+  <data name="QuestKind_SideMission" xml:space="preserve">
+    <value>Nebenmission</value>
+  </data>
+  <data name="QuestKind_Event" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="DeletedEntity" xml:space="preserve">
+    <value>(gelöschte Entität)</value>
+  </data>
+  <data name="NpcSubtitle_Mob" xml:space="preserve">
+    <value>Mob</value>
+  </data>
+  <data name="NpcSubtitle_Trader" xml:space="preserve">
+    <value>Händler</value>
+  </data>
+  <data name="Reference_TradeGoods" xml:space="preserve">
+    <value>Handelsware</value>
+  </data>
+  <data name="Reference_OfferCurrency" xml:space="preserve">
+    <value>Währung im Angebot</value>
+  </data>
+  <data name="Reference_LootTable" xml:space="preserve">
+    <value>Loot-Table</value>
+  </data>
+  <data name="Reference_MapArea" xml:space="preserve">
+    <value>Bereich auf der Karte</value>
+  </data>
+  <data name="Reference_MapMarker" xml:space="preserve">
+    <value>Markierung auf der Karte</value>
+  </data>
+  <data name="LootSubtitle_Entries" xml:space="preserve">
+    <value>{0} Eintrag/Einträge</value>
+  </data>
+  <data name="Reference_StoryParticipant" xml:space="preserve">
+    <value>Beteiligt an der Story</value>
+  </data>
+  <data name="Reference_QuestDialogue" xml:space="preserve">
+    <value>Dialog zur Quest</value>
+  </data>
+  <data name="Reference_EventSpawn" xml:space="preserve">
+    <value>Spawnt beim Event</value>
+  </data>
+  <data name="Reference_SkillParent" xml:space="preserve">
+    <value>Setzt diesen Skill voraus</value>
+  </data>
+  <data name="Reference_ItemEffect" xml:space="preserve">
+    <value>Effekt am Item</value>
+  </data>
+  <data name="Reference_CutsceneStory" xml:space="preserve">
+    <value>Cutscene zur Story</value>
+  </data>
+  <data name="Reference_CutsceneDialogue" xml:space="preserve">
+    <value>Dialog in Cutscene</value>
+  </data>
+  <data name="Search_RecipeYields" xml:space="preserve">
+    <value>ergibt </value>
+  </data>
+  <data name="Search_Mob" xml:space="preserve">
+    <value>Mob</value>
+  </data>
+  <data name="Search_Trader" xml:space="preserve">
+    <value>Händler</value>
+  </data>
+  <data name="Search_Barks" xml:space="preserve">
+    <value>Sprechblasen</value>
+  </data>
+  <data name="Search_LineCount" xml:space="preserve">
+    <value> Zeile(n)</value>
+  </data>
+  <data name="Search_MarkerCount" xml:space="preserve">
+    <value> Markierung(en)</value>
+  </data>
+  <data name="Search_EntryCount" xml:space="preserve">
+    <value> Eintrag/Einträge</value>
+  </data>
+  <data name="Search_MemberCount" xml:space="preserve">
+    <value> Mitglied(er)</value>
+  </data>
+  <data name="Search_StoryChapter" xml:space="preserve">
+    <value>Abschnitt </value>
+  </data>
+  <data name="Search_PercentSuffix" xml:space="preserve">
+    <value> %</value>
+  </data>
+  <data name="Search_SkillFallback" xml:space="preserve">
+    <value>Skill</value>
+  </data>
+  <data name="Search_ItemCount" xml:space="preserve">
+    <value> Item(s)</value>
+  </data>
+  <data name="Search_Secret" xml:space="preserve">
+    <value>Versteckt</value>
+  </data>
+  <data name="Search_FileCount" xml:space="preserve">
+    <value> Datei(en)</value>
+  </data>
+  <data name="Search_ShotCount" xml:space="preserve">
+    <value> Einstellung(en)</value>
+  </data>
+  <data name="Reference_FactionMember" xml:space="preserve">
+    <value>Mitglied</value>
+  </data>
+  <data name="Reference_RecipeOutput" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="Reference_RecipeIngredient" xml:space="preserve">
+    <value>Zutat</value>
+  </data>
+  <data name="Reference_QuestStory" xml:space="preserve">
+    <value>Story-Anbindung</value>
+  </data>
+  <data name="Reference_SkillCost" xml:space="preserve">
+    <value>Skill-Kosten</value>
+  </data>
+  <data name="Reference_Class" xml:space="preserve">
+    <value>Klasse</value>
+  </data>
+  <data name="ConditionKind_QuestState" xml:space="preserve">
+    <value>Quest-Zustand</value>
+  </data>
+  <data name="ConditionKind_NpcDefeated" xml:space="preserve">
+    <value>NPC besiegt</value>
+  </data>
+  <data name="ConditionKind_Flag" xml:space="preserve">
+    <value>Schalter</value>
+  </data>
+  <data name="ConditionKind_PlayerLevel" xml:space="preserve">
+    <value>Spielerstufe</value>
+  </data>
+  <data name="ConditionKind_Default" xml:space="preserve">
+    <value>Bedingung</value>
+  </data>
+</root>

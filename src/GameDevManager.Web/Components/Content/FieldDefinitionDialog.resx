@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TitleNew" xml:space="preserve">
+    <value>Neues Feld</value>
+  </data>
+  <data name="TitleEdit" xml:space="preserve">
+    <value>Feld bearbeiten</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Hilfetext (optional)</value>
+  </data>
+  <data name="DescriptionHelper" xml:space="preserve">
+    <value>Steht in der Maske unter dem Eingabefeld.</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Datentyp</value>
+  </data>
+  <data name="TypeChangeWarning" xml:space="preserve">
+    <value>Beim Wechsel des Datentyps werden die bisher erfassten Werte dieses Feldes gelöscht — sie stehen in einer anderen Spalte und lassen sich nicht umdeuten.</value>
+  </data>
+  <data name="ReferenceModuleLabel" xml:space="preserve">
+    <value>Zielmodul</value>
+  </data>
+  <data name="ReferenceModuleHelper" xml:space="preserve">
+    <value>Auf Entitäten welches Moduls darf dieses Feld verweisen?</value>
+  </data>
+  <data name="ModuleNotImplemented" xml:space="preserve">
+    <value>(noch nicht umgesetzt)</value>
+  </data>
+  <data name="SectionOptions" xml:space="preserve">
+    <value>Auswahlmöglichkeiten</value>
+  </data>
+  <data name="OptionLabel" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="RemoveOptionTooltip" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="RemoveOptionAria" xml:space="preserve">
+    <value>Auswahlmöglichkeit entfernen</value>
+  </data>
+  <data name="AddOption" xml:space="preserve">
+    <value>Auswahlmöglichkeit</value>
+  </data>
+  <data name="UnitLabel" xml:space="preserve">
+    <value>Einheit (optional)</value>
+  </data>
+  <data name="UnitHelper" xml:space="preserve">
+    <value>Reine Anzeige, z. B. „kg“, „s“ oder „%“.</value>
+  </data>
+  <data name="RequiredLabel" xml:space="preserve">
+    <value>Pflichtfeld</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="NameRequired" xml:space="preserve">
+    <value>Bitte einen Namen angeben.</value>
+  </data>
+  <data name="ReferenceModuleRequired" xml:space="preserve">
+    <value>Bitte das Zielmodul der Referenz wählen.</value>
+  </data>
+  <data name="OptionsRequired" xml:space="preserve">
+    <value>Eine Auswahl braucht mindestens eine Möglichkeit.</value>
+  </data>
+  <data name="OptionLabelRequired" xml:space="preserve">
+    <value>Auswahlmöglichkeiten dürfen nicht leer sein.</value>
+  </data>
+</root>

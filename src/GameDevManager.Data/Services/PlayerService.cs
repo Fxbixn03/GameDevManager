@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -11,7 +12,8 @@ namespace GameDevManager.Data.Services;
 public class PlayerService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     // ------------------------------------------------------------- Spielerfiguren
 
@@ -30,7 +32,7 @@ public class PlayerService(
     {
         if (string.IsNullOrWhiteSpace(character.Name))
         {
-            throw new ContentValidationException("Die Spielerfigur braucht einen Namen.");
+            throw new ContentValidationException(messages["CharacterNameRequired"]);
         }
 
         await using var db = await factory.CreateDbContextAsync(ct);
@@ -97,7 +99,7 @@ public class PlayerService(
     {
         if (string.IsNullOrWhiteSpace(tree.Name))
         {
-            throw new ContentValidationException("Der Skilltree braucht einen Namen.");
+            throw new ContentValidationException(messages["SkillTreeNameRequired"]);
         }
 
         await using var db = await factory.CreateDbContextAsync(ct);
@@ -217,17 +219,17 @@ public class PlayerService(
 
         if (string.IsNullOrWhiteSpace(skill.Name))
         {
-            throw new ContentValidationException("Der Skill braucht einen Namen.");
+            throw new ContentValidationException(messages["SkillNameRequired"]);
         }
 
         if (skill.CostPoints is < 0)
         {
-            throw new ContentValidationException("Skill-Punkte dürfen nicht negativ sein.");
+            throw new ContentValidationException(messages["SkillPointsNegative"]);
         }
 
         if (skill.CostItemAmount is < 1 && skill.CostItemId is not null)
         {
-            throw new ContentValidationException("Die Ressourcen-Menge muss mindestens 1 sein.");
+            throw new ContentValidationException(messages["SkillCostAmountMin"]);
         }
 
         if (skill.CostItemId is null)
@@ -238,10 +240,10 @@ public class PlayerService(
 
         if (skill.ParentSkillId == skill.Id)
         {
-            throw new ContentValidationException("Ein Skill kann nicht sich selbst voraussetzen.");
+            throw new ContentValidationException(messages["SkillSelfParent"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -253,13 +255,12 @@ public class PlayerService(
 
             if (parent is null)
             {
-                throw new ContentValidationException("Der vorausgesetzte Skill existiert nicht mehr.");
+                throw new ContentValidationException(messages["SkillParentGone"]);
             }
 
             if (parent.SkillTreeId != skill.SkillTreeId)
             {
-                throw new ContentValidationException(
-                    "Der vorausgesetzte Skill liegt in einem anderen Baum. Voraussetzungen gelten je Skilltree.");
+                throw new ContentValidationException(messages["SkillParentOtherTree"]);
             }
 
             // Die Elternkette darf nicht zurück zu diesem Skill führen — sonst wäre der
@@ -275,8 +276,7 @@ public class PlayerService(
             {
                 if (currentId == skill.Id)
                 {
-                    throw new ContentValidationException(
-                        "Diese Voraussetzung ergäbe einen Kreis — der Skill setzt sich indirekt selbst voraus.");
+                    throw new ContentValidationException(messages["SkillParentCycle"]);
                 }
 
                 cursor = next;

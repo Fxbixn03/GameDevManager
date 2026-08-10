@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SectionTypeFields" xml:space="preserve">
+    <value>Felder der Art „{0}“</value>
+  </data>
+  <data name="EditTypeFieldsTooltip" xml:space="preserve">
+    <value>Felder dieser Art bearbeiten</value>
+  </data>
+  <data name="TypeWithoutFields" xml:space="preserve">
+    <value>Diese Art hat noch keine Felder.</value>
+  </data>
+  <data name="SectionIndividualFields" xml:space="preserve">
+    <value>Individuelle Felder</value>
+  </data>
+  <data name="AddField" xml:space="preserve">
+    <value>Feld hinzufügen</value>
+  </data>
+  <data name="NewEntityHint" xml:space="preserve">
+    <value>Individuelle Felder gehören zu genau diesem Eintrag — sie lassen sich anlegen, sobald er einmal gespeichert wurde.</value>
+  </data>
+  <data name="DefaultIndividualHint" xml:space="preserve">
+    <value>Für einzigartige Werte, die kein anderer Eintrag dieser Art hat.</value>
+  </data>
+  <data name="EditFieldTooltip" xml:space="preserve">
+    <value>Feld bearbeiten</value>
+  </data>
+  <data name="EditFieldAria" xml:space="preserve">
+    <value>Feld {0} bearbeiten</value>
+  </data>
+  <data name="DeleteFieldTooltip" xml:space="preserve">
+    <value>Feld löschen</value>
+  </data>
+  <data name="DeleteFieldAria" xml:space="preserve">
+    <value>Feld {0} löschen</value>
+  </data>
+  <data name="NewFieldDialogTitle" xml:space="preserve">
+    <value>Neues Feld</value>
+  </data>
+  <data name="EditFieldDialogTitle" xml:space="preserve">
+    <value>Feld bearbeiten</value>
+  </data>
+  <data name="FieldSavedMessage" xml:space="preserve">
+    <value>Feld „{0}“ gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Feld löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>Das Feld „{0}“ und sein erfasster Wert werden gelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="FieldDeletedMessage" xml:space="preserve">
+    <value>Feld gelöscht.</value>
+  </data>
+</root>

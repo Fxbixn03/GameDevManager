@@ -1,3 +1,5 @@
+@inject IStringLocalizer<ConditionDialog> L
+
 @*
     Rahmen um den Bedingungs-Editor für Fälle, in denen kein Platz für einen eigenen Abschnitt
     ist — etwa ein einzelner Händler-Posten in einer ohnehin dichten Zeile.
@@ -8,7 +10,7 @@
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.Rule" />
             <div>
-                <MudText Typo="Typo.h6">Bedingungen</MudText>
+                <MudText Typo="Typo.h6">@L["Title"]</MudText>
                 @if (!string.IsNullOrWhiteSpace(Subject))
                 {
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@Subject</MudText>
@@ -22,14 +24,14 @@
             <ConditionEditor OwnerId="OwnerId"
                              OwnerModuleKey="OwnerModuleKey"
                              Slot="Slot"
-                             EmptyHint="@EmptyHint"
+                             EmptyHint="@EmptyHintText"
                              OnSaved="OnSaved" />
         </div>
     </DialogContent>
 
     <DialogActions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => MudDialog.Close(DialogResult.Ok(_count)))">
-            Fertig
+            @L["Done"]
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -51,8 +53,12 @@
     [Parameter]
     public string? Subject { get; set; }
 
+    /// <summary>Leer bedeutet Standardtext aus der resx — siehe <see cref="EmptyHintText"/>.</summary>
     [Parameter]
-    public string EmptyHint { get; set; } = "Ohne Bedingung ist es immer verfügbar.";
+    public string? EmptyHint { get; set; }
+
+    private string EmptyHintText =>
+        string.IsNullOrWhiteSpace(EmptyHint) ? L["DefaultEmptyHint"] : EmptyHint;
 
     private int? _count;
 

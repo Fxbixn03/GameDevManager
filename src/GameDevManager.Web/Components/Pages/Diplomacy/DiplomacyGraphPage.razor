@@ -2,20 +2,21 @@
 @inject DiplomacyService Diplomacy
 @inject ProjectContext Project
 @inject NavigationManager Navigation
+@inject IStringLocalizer<DiplomacyGraphPage> L
 
-<PageTitle>Diplomatie-Graph – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Diplomatie-Graph"
-              Subtitle="Alle Fraktionen und ihre Beziehungen auf einen Blick — im Konzept: „als Graphen angezeigt“."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/diplomacy">Zu den Beziehungen</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/diplomacy">@L["ToRelations"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="/modules/diplomacy/neu">
-            Neue Beziehung
+            @L["NewRelation"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -28,12 +29,12 @@ else if (_graph.Nodes.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Hub" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Fraktionen</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Der Graph zeigt Fraktionen als Knoten und Beziehungen als Kanten.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/factions/neu">
-            Erste Fraktion
+            @L["FirstFaction"]
         </MudButton>
     </div>
 }
@@ -45,12 +46,12 @@ else
             {
                 <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
                     <span style="display:inline-block;width:24px;height:0;border-top:3px solid @EdgeColor(stance);"></span>
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@DiplomacyService.StanceLabel(stance)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@Diplomacy.StanceLabel(stance)</MudText>
                 </MudStack>
             }
             <MudSpacer />
             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                Klick auf einen Knoten öffnet die Fraktion, Klick auf eine Kante die Beziehung.
+                @L["LegendHint"]
             </MudText>
         </MudStack>
     </MudPaper>
@@ -60,7 +61,7 @@ else
              width="100%"
              style="max-width:820px;display:block;margin:0 auto;"
              role="img"
-             aria-label="Diplomatie-Graph">
+             aria-label="@L["GraphAria"]">
 
             @* Kanten zuerst, damit die Knoten darüber liegen. *@
             @foreach (var edge in _graph.Edges)
@@ -79,7 +80,7 @@ else
                       stroke-width="3"
                       style="cursor:pointer;"
                       @onclick="@(() => Navigation.NavigateTo($"/modules/diplomacy/{edge.RelationId}"))">
-                    <title>@edge.Name (@DiplomacyService.StanceLabel(edge.Stance))</title>
+                    <title>@L["EdgeTitle", edge.Name, Diplomacy.StanceLabel(edge.Stance)]</title>
                 </line>
             }
 
@@ -107,7 +108,7 @@ else
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Diplomacy);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Graph", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbGraph"], null, disabled: true)];
 
     private const int CanvasSize = 640;
 
@@ -143,12 +144,10 @@ else
         // Beschriftung nach außen versetzt, damit sie nicht auf den Kanten liegt.
         var labelX = CanvasSize / 2.0 + (radius + 26) * Math.Cos(angle);
         var labelY = CanvasSize / 2.0 + (radius + 26) * Math.Sin(angle) + 4;
-        var anchor = Math.Cos(angle) switch
-        {
-            < -0.3 => "end",
-            > 0.3 => "start",
-            _ => "middle"
-        };
+        // Bewusst als Bedingung und nicht als switch mit relationalen Mustern: Ein Muster,
+        // das mit "<" beginnt, liest der Razor-Parser im @code-Block als Beginn eines Tags.
+        var cosine = Math.Cos(angle);
+        var anchor = cosine <= -0.3 ? "end" : cosine >= 0.3 ? "start" : "middle";
 
         return (x, y, labelX, labelY, anchor);
     }

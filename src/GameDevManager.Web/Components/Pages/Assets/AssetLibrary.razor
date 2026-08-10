@@ -4,6 +4,7 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<AssetLibrary> L
+@inject ModuleLabels Modules
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -185,8 +186,8 @@ else
     private HashSet<Guid> _tagFilter = [];
 
     private string Subtitle => _entries is null
-        ? "Wird geladen …"
-        : $"{_entries.Count} Datei(en), {AssetFormat.Size(_entries.Sum(entry => entry.Asset.SizeBytes))}";
+        ? L["Loading"]
+        : L["SubtitleCount", _entries.Count, AssetFormat.Size(_entries.Sum(entry => entry.Asset.SizeBytes))];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -249,11 +250,10 @@ else
             .ThenBy(group => GroupName(group.Key))
     ];
 
-    private static string ModuleName(string moduleKey) =>
-        ModuleRegistry.Find(moduleKey)?.Name ?? moduleKey;
+    private string ModuleName(string moduleKey) => Modules.Name(moduleKey);
 
-    private static string GroupName(string groupKey) =>
-        groupKey == ToolGroupKey ? "Werkzeug-Assets (ohne Entität)" : ModuleName(groupKey);
+    private string GroupName(string groupKey) =>
+        groupKey == ToolGroupKey ? L["ToolGroupName"] : ModuleName(groupKey);
 
     private static string GroupIcon(string groupKey) =>
         groupKey == ToolGroupKey
@@ -279,7 +279,7 @@ else
         var parameters = new DialogParameters<AssetDialog> { { dialog => dialog.Asset, asset } };
 
         var reference = await Dialogs.ShowAsync<AssetDialog>(
-            "Asset bearbeiten", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+            L["EditDialogTitle"], parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
 
         if (await reference.Result is { Canceled: false })
         {
@@ -290,10 +290,10 @@ else
     private async Task DeleteAsync(Asset asset)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Asset löschen",
-            $"„{asset.FileName}“ wird samt Datei gelöscht. Das lässt sich nicht rückgängig machen.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", asset.FileName],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -302,13 +302,13 @@ else
 
         await Library.DeleteAsync(asset.Id);
         await LoadAsync();
-        Snackbar.Add("Asset gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
     }
 
     private async Task ManageTagsAsync()
     {
         var reference = await Dialogs.ShowAsync<AssetTagsDialog>(
-            "Stichwörter", new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+            L["TagsDialogTitle"], new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
 
         await reference.Result;
         await LoadAsync();

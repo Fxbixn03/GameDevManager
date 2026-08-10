@@ -1,26 +1,28 @@
 using GameDevManager.Domain.Entities;
+using Microsoft.Extensions.Localization;
 using MudBlazor;
 
 namespace GameDevManager.Web.Services;
 
 /// <summary>
-/// Deutsche Bezeichnungen rund um das Bedingungssystem. Die Enums bleiben englisch —
-/// hier liegt allein die Darstellung.
+/// Bezeichnungen rund um das Bedingungssystem. Die Enums bleiben englisch — hier liegt allein
+/// die Darstellung, und die kommt aus <c>ConditionLabels.resx</c>.
 /// </summary>
-public static class ConditionLabels
+public sealed class ConditionLabels(IStringLocalizer<ConditionLabels> localizer)
 {
-    public static string Describe(ConditionKind kind) => kind switch
+    public string Describe(ConditionKind kind) => kind switch
     {
-        ConditionKind.HasItem => "Item im Besitz",
-        ConditionKind.HasCurrency => "Währung im Besitz",
-        ConditionKind.QuestState => "Quest-Zustand",
-        ConditionKind.NpcDefeated => "NPC besiegt",
-        ConditionKind.Flag => "Schalter der Story",
-        ConditionKind.PlayerLevel => "Stufe des Spielers",
-        ConditionKind.Custom => "Frei beschrieben",
+        ConditionKind.HasItem => localizer["Kind_HasItem"],
+        ConditionKind.HasCurrency => localizer["Kind_HasCurrency"],
+        ConditionKind.QuestState => localizer["Kind_QuestState"],
+        ConditionKind.NpcDefeated => localizer["Kind_NpcDefeated"],
+        ConditionKind.Flag => localizer["Kind_Flag"],
+        ConditionKind.PlayerLevel => localizer["Kind_PlayerLevel"],
+        ConditionKind.Custom => localizer["Kind_Custom"],
         _ => kind.ToString()
     };
 
+    /// <summary>Bleibt statisch: Icons sind sprachunabhängig.</summary>
     public static string Icon(ConditionKind kind) => kind switch
     {
         ConditionKind.HasItem => Icons.Material.Filled.Category,
@@ -32,14 +34,14 @@ public static class ConditionLabels
         _ => Icons.Material.Filled.HelpOutline
     };
 
-    public static string Describe(ComparisonOperator comparison) => comparison switch
+    public string Describe(ComparisonOperator comparison) => comparison switch
     {
-        ComparisonOperator.AtLeast => "mindestens",
-        ComparisonOperator.GreaterThan => "mehr als",
-        ComparisonOperator.Equal => "genau",
-        ComparisonOperator.AtMost => "höchstens",
-        ComparisonOperator.LessThan => "weniger als",
-        ComparisonOperator.NotEqual => "nicht",
+        ComparisonOperator.AtLeast => localizer["Operator_AtLeast"],
+        ComparisonOperator.GreaterThan => localizer["Operator_GreaterThan"],
+        ComparisonOperator.Equal => localizer["Operator_Equal"],
+        ComparisonOperator.AtMost => localizer["Operator_AtMost"],
+        ComparisonOperator.LessThan => localizer["Operator_LessThan"],
+        ComparisonOperator.NotEqual => localizer["Operator_NotEqual"],
         _ => comparison.ToString()
     };
 
@@ -47,27 +49,30 @@ public static class ConditionLabels
     /// Die Bedingung als lesbarer Satz. <paramref name="targetName"/> ist der Name der bezogenen
     /// Entität, sofern er der aufrufenden Seite bekannt ist.
     /// </summary>
-    public static string Sentence(Condition condition, string? targetName)
+    public string Sentence(Condition condition, string? targetName)
     {
-        var target = targetName ?? "(unbekannt)";
+        var target = targetName ?? localizer["UnknownTarget"].Value;
+        var amount = condition.NumberValue?.ToString("0.##") ?? string.Empty;
 
         return condition.Kind switch
         {
             ConditionKind.HasItem =>
-                $"Besitzt {Describe(condition.Operator)} {condition.NumberValue:0.##}× {target}",
+                localizer["Sentence_HasItem", Describe(condition.Operator), amount, target],
             ConditionKind.HasCurrency =>
-                $"Besitzt {Describe(condition.Operator)} {condition.NumberValue:0.##} {target}",
+                localizer["Sentence_HasCurrency", Describe(condition.Operator), amount, target],
             ConditionKind.PlayerLevel =>
-                $"Stufe {Describe(condition.Operator)} {condition.NumberValue:0.##}",
+                localizer["Sentence_PlayerLevel", Describe(condition.Operator), amount],
             ConditionKind.NpcDefeated =>
-                condition.BooleanValue == false ? $"{target} wurde nicht besiegt" : $"{target} wurde besiegt",
+                condition.BooleanValue == false
+                    ? localizer["Sentence_NpcNotDefeated", target]
+                    : localizer["Sentence_NpcDefeated", target],
             ConditionKind.Flag =>
                 condition.BooleanValue == false
-                    ? $"Schalter „{condition.TextValue}“ ist nicht gesetzt"
-                    : $"Schalter „{condition.TextValue}“ ist gesetzt",
+                    ? localizer["Sentence_FlagNotSet", condition.TextValue ?? string.Empty]
+                    : localizer["Sentence_FlagSet", condition.TextValue ?? string.Empty],
             ConditionKind.QuestState =>
-                $"Quest {target} steht auf „{condition.TextValue}“",
-            _ => condition.TextValue ?? "Frei beschriebene Bedingung"
+                localizer["Sentence_QuestState", target, condition.TextValue ?? string.Empty],
+            _ => condition.TextValue ?? localizer["Sentence_Custom"].Value
         };
     }
 }

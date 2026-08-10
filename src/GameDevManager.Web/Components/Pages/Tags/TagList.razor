@@ -3,8 +3,10 @@
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<TagList> L
+@inject ModuleLabels Modules
 
-<PageTitle>Tags – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
@@ -12,7 +14,7 @@
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddTag">
-            Neues Tag
+            @L["NewTag"]
         </MudButton>
     </Actions>
 </ModuleHeader>
@@ -25,14 +27,12 @@ else if (_tags.Count == 0 && _editing.Count == 0)
 {
     <div class="gdm-empty">
         <MudIcon Icon="@Icons.Material.Filled.Label" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-        <MudText Typo="Typo.h6">Noch keine Tags</MudText>
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-            Tags sind modulübergreifende Labels. Je Tag lässt sich einstellen, in welchen
-            Modulen es verfügbar ist — ohne Auswahl gilt es überall. Zugewiesen wird es
-            direkt in den Bearbeitungsmasken.
+            @L["EmptyHint"]
         </MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTag">
-            Erstes Tag
+            @L["FirstTag"]
         </MudButton>
     </div>
 }
@@ -46,7 +46,7 @@ else
                     <MudItem xs="12" sm="3">
                         <MudTextField T="string"
                                       @bind-Value="draft.Name"
-                                      Label="Name *"
+                                      Label="@L["NameLabel"]"
                                       Variant="Variant.Outlined"
                                       Margin="Margin.Dense"
                                       MaxLength="100" />
@@ -54,14 +54,14 @@ else
                     <MudItem xs="12" sm="3">
                         <MudTextField T="string"
                                       @bind-Value="draft.Description"
-                                      Label="Beschreibung"
+                                      Label="@L["DescriptionLabel"]"
                                       Variant="Variant.Outlined"
                                       Margin="Margin.Dense" />
                     </MudItem>
                     <MudItem xs="6" sm="2">
                         <MudTextField T="string"
                                       @bind-Value="draft.Color"
-                                      Label="Farbe (Hex)"
+                                      Label="@L["ColorLabel"]"
                                       Placeholder="#FFC300"
                                       Variant="Variant.Outlined"
                                       Margin="Margin.Dense"
@@ -71,30 +71,30 @@ else
                         <MudSelect T="string"
                                    MultiSelection="true"
                                    @bind-SelectedValues="draft.ModuleKeys"
-                                   Label="Verfügbar in"
-                                   HelperText="Leer = überall"
+                                   Label="@L["ModulesLabel"]"
+                                   HelperText="@L["ModulesHelper"]"
                                    Variant="Variant.Outlined"
                                    Margin="Margin.Dense"
                                    Clearable="true">
                             @foreach (var module in ImplementedModules)
                             {
-                                <MudSelectItem T="string" Value="@module.Id">@module.Name</MudSelectItem>
+                                <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" sm="1" Class="d-flex justify-end">
-                        <MudTooltip Text="Speichern">
+                        <MudTooltip Text="@L["SaveTooltip"]">
                             <MudIconButton Icon="@Icons.Material.Filled.Save"
                                            Size="Size.Small"
                                            Color="Color.Primary"
                                            OnClick="@(() => SaveAsync(draft))"
-                                           aria-label="Tag speichern" />
+                                           aria-label="@L["SaveAria"]" />
                         </MudTooltip>
-                        <MudTooltip Text="Verwerfen">
+                        <MudTooltip Text="@L["DiscardTooltip"]">
                             <MudIconButton Icon="@Icons.Material.Filled.Close"
                                            Size="Size.Small"
                                            OnClick="@(() => _editing.Remove(draft))"
-                                           aria-label="Tag verwerfen" />
+                                           aria-label="@L["DiscardAria"]" />
                         </MudTooltip>
                     </MudItem>
                 </MudGrid>
@@ -110,14 +110,14 @@ else
                       Dense="true"
                       Breakpoint="Breakpoint.Sm">
                 <HeaderContent>
-                    <MudTh>Tag</MudTh>
-                    <MudTh>Beschreibung</MudTh>
-                    <MudTh>Verfügbar in</MudTh>
-                    <MudTh>Verwendungen</MudTh>
+                    <MudTh>@L["HeaderTag"]</MudTh>
+                    <MudTh>@L["HeaderDescription"]</MudTh>
+                    <MudTh>@L["HeaderModules"]</MudTh>
+                    <MudTh>@L["HeaderUsages"]</MudTh>
                     <MudTh Style="width:96px;"></MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Tag">
+                    <MudTd DataLabel="@L["HeaderTag"]">
                         <MudChip T="string"
                                  Size="Size.Small"
                                  Variant="Variant.Outlined"
@@ -125,34 +125,34 @@ else
                             @context.Name
                         </MudChip>
                     </MudTd>
-                    <MudTd DataLabel="Beschreibung">
+                    <MudTd DataLabel="@L["HeaderDescription"]">
                         <MudText Typo="Typo.body2" Color="Color.Secondary">@(context.Description ?? "—")</MudText>
                     </MudTd>
-                    <MudTd DataLabel="Verfügbar in">
+                    <MudTd DataLabel="@L["HeaderModules"]">
                         @if (context.ModuleKeys.Count == 0)
                         {
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">überall</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Everywhere"]</MudText>
                         }
                         else
                         {
                             <MudText Typo="Typo.body2">@ModuleNames(context.ModuleKeys)</MudText>
                         }
                     </MudTd>
-                    <MudTd DataLabel="Verwendungen">
+                    <MudTd DataLabel="@L["HeaderUsages"]">
                         <MudText Typo="Typo.body2">@context.AssignmentCount</MudText>
                     </MudTd>
                     <MudTd>
-                        <MudTooltip Text="Bearbeiten">
+                        <MudTooltip Text="@L["EditTooltip"]">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Size="Size.Small"
                                            OnClick="@(() => EditTag(context))"
-                                           aria-label="@($"{context.Name} bearbeiten")" />
+                                           aria-label="@L["EditAria", context.Name]" />
                         </MudTooltip>
-                        <MudTooltip Text="Löschen">
+                        <MudTooltip Text="@L["DeleteTooltip"]">
                             <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                            Size="Size.Small"
                                            OnClick="@(() => DeleteAsync(context))"
-                                           aria-label="@($"{context.Name} löschen")" />
+                                           aria-label="@L["DeleteAria", context.Name]" />
                         </MudTooltip>
                     </MudTd>
                 </RowTemplate>
@@ -182,8 +182,8 @@ else
     private Guid _projectId;
 
     private string Subtitle => _tags is null
-        ? "Wird geladen …"
-        : $"{_tags.Count} Tag(s)";
+        ? L["Loading"]
+        : L["SubtitleCount", _tags.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -193,8 +193,8 @@ else
         _tags = await Tags.GetTagsAsync(_projectId);
     }
 
-    private static string ModuleNames(IReadOnlyList<string> keys) =>
-        string.Join(", ", keys.Select(key => ModuleRegistry.Find(key)?.Name ?? key));
+    private string ModuleNames(IReadOnlyList<string> keys) =>
+        string.Join(", ", keys.Select(Modules.Name));
 
     private void AddTag() => _editing.Insert(0, new TagDraft());
 
@@ -222,7 +222,7 @@ else
             await Tags.SaveTagAsync(
                 _projectId, draft.Id, draft.Name, draft.Description, draft.Color, [.. draft.ModuleKeys]);
             _editing.Remove(draft);
-            Snackbar.Add($"„{draft.Name}“ wurde gespeichert.", Severity.Success);
+            Snackbar.Add(L["SavedMessage", draft.Name], Severity.Success);
             await LoadAsync();
         }
         catch (ContentValidationException ex)
@@ -234,10 +234,10 @@ else
     private async Task DeleteAsync(ContentTagRow row)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            "Tag löschen",
-            $"„{row.Name}“ wird mit allen {row.AssignmentCount} Zuweisung(en) gelöscht. Die Entitäten bleiben erhalten.",
-            yesText: "Löschen",
-            cancelText: "Abbrechen");
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name, row.AssignmentCount],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
         {
@@ -245,7 +245,7 @@ else
         }
 
         await Tags.DeleteTagAsync(row.Id);
-        Snackbar.Add($"„{row.Name}“ wurde gelöscht.", Severity.Success);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
 }

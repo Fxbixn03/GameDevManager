@@ -1,32 +1,33 @@
 @page "/modules/effects/arten"
+@inject IStringLocalizer<EffectTypes> L
 
-<PageTitle>Effekt-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Effekt-Arten"
-              Subtitle="Die Item-Zuweisung steht fest am Effekt — Wirkungsgrößen wie Schaden und Dauer definieren die Felder der Art."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/effects">Zu den Effekten</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/effects">@L["ToEffects"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Effects"
-                    EntityNoun="Effekt"
-                    EmptyTitle="Noch keine Effekt-Arten"
-                    EmptyHint="Über Arten lassen sich Wirkungen einteilen — etwa Schaden über Zeit, Buff oder Debuff — und um eigene Felder wie Schadenswert und Dauer ergänzen." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Effects);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 

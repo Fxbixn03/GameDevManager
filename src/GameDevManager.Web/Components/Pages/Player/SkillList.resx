@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Skills – GameDevManager</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Skills</value>
+  </data>
+  <data name="ToOverview" xml:space="preserve">
+    <value>Zur Übersicht</value>
+  </data>
+  <data name="NewSkill" xml:space="preserve">
+    <value>Neuer Skill</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Skills</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Je Skill: Name, Wirkung und wie er erreicht wird — über Punkte oder Ressourcen.</value>
+  </data>
+  <data name="FirstSkill" xml:space="preserve">
+    <value>Erster Skill</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Nach Name oder Beschreibung suchen</value>
+  </data>
+  <data name="TreeFilterLabel" xml:space="preserve">
+    <value>Skilltree</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="HeaderSprite" xml:space="preserve">
+    <value>Sprite</value>
+  </data>
+  <data name="HeaderName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="HeaderTree" xml:space="preserve">
+    <value>Skilltree</value>
+  </data>
+  <data name="HeaderParent" xml:space="preserve">
+    <value>Voraussetzung</value>
+  </data>
+  <data name="HeaderCost" xml:space="preserve">
+    <value>Kosten</value>
+  </data>
+  <data name="HeaderType" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="NoTree" xml:space="preserve">
+    <value>ohne Baum</value>
+  </data>
+  <data name="DeletedTree" xml:space="preserve">
+    <value>(gelöschter Baum)</value>
+  </data>
+  <data name="NoParent" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="DeletedParent" xml:space="preserve">
+    <value>(gelöschter Skill)</value>
+  </data>
+  <data name="NoType" xml:space="preserve">
+    <value>ohne Art</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>{0} löschen</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>Kein Skill passt zur Suche.</value>
+  </data>
+  <data name="BreadcrumbSkills" xml:space="preserve">
+    <value>Skills</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Skill(s)</value>
+  </data>
+  <data name="CostPoints" xml:space="preserve">
+    <value>{0} Punkte</value>
+  </data>
+  <data name="CostItem" xml:space="preserve">
+    <value>{0}× {1}</value>
+  </data>
+  <data name="DeletedItem" xml:space="preserve">
+    <value>(gelöschtes Item)</value>
+  </data>
+  <data name="CostFree" xml:space="preserve">
+    <value>kostenlos</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Skill löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit Feldwerten und Sprites gelöscht. Skills, die ihn voraussetzen, verlieren die Voraussetzung.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gelöscht.</value>
+  </data>
+</root>

@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -10,7 +11,8 @@ namespace GameDevManager.Data.Services;
 public class FactionService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<FactionListRow>> GetFactionsAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -99,11 +101,11 @@ public class FactionService(
 
         if (string.IsNullOrWhiteSpace(faction.Name))
         {
-            throw new ContentValidationException("Die Fraktion braucht einen Namen.");
+            throw new ContentValidationException(messages["FactionNameRequired"]);
         }
 
         Validate(faction);
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -145,12 +147,12 @@ public class FactionService(
         faction.Description = stored.Description;
     }
 
-    private static void Validate(Faction faction)
+    private void Validate(Faction faction)
     {
         // Eine Mitgliedschaft ohne NPC ist eine unfertige Eingabezeile; die Maske räumt sie vorher weg.
         if (faction.Members.Any(member => member.NpcId == Guid.Empty))
         {
-            throw new ContentValidationException("Jede Mitgliedschaft braucht einen NPC.");
+            throw new ContentValidationException(messages["FactionMemberNpcRequired"]);
         }
 
         var duplicate = faction.Members
@@ -159,8 +161,7 @@ public class FactionService(
 
         if (duplicate is not null)
         {
-            throw new ContentValidationException(
-                "Derselbe NPC steht mehrfach in der Mitgliederliste. Ein NPC hat je Fraktion einen Rang.");
+            throw new ContentValidationException(messages["FactionMemberDuplicate"]);
         }
     }
 

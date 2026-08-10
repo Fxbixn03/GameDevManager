@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -11,7 +12,8 @@ namespace GameDevManager.Data.Services;
 public class EventService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<EventListRow>> GetEventsAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -86,11 +88,11 @@ public class EventService(
 
         if (string.IsNullOrWhiteSpace(gameEvent.Name))
         {
-            throw new ContentValidationException("Das Event braucht einen Namen.");
+            throw new ContentValidationException(messages["EventNameRequired"]);
         }
 
         Validate(gameEvent);
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -133,17 +135,17 @@ public class EventService(
         gameEvent.Description = stored.Description;
     }
 
-    private static void Validate(GameEvent gameEvent)
+    private void Validate(GameEvent gameEvent)
     {
         if (gameEvent.Chance is < 0 or > 100)
         {
-            throw new ContentValidationException("Die Wahrscheinlichkeit liegt zwischen 0 und 100 Prozent.");
+            throw new ContentValidationException(messages["EventChanceRange"]);
         }
 
         // Ein Spawn ohne Mob ist eine unfertige Eingabezeile; die Maske räumt sie vorher weg.
         if (gameEvent.Spawns.Any(spawn => spawn.NpcId == Guid.Empty))
         {
-            throw new ContentValidationException("Jeder Spawn braucht einen NPC/Mob.");
+            throw new ContentValidationException(messages["EventSpawnNpcRequired"]);
         }
 
         var duplicate = gameEvent.Spawns
@@ -152,13 +154,12 @@ public class EventService(
 
         if (duplicate is not null)
         {
-            throw new ContentValidationException(
-                "Derselbe Mob steht mehrfach bei den Spawns. Bitte die Anzahl im vorhandenen Eintrag erhöhen.");
+            throw new ContentValidationException(messages["EventSpawnDuplicate"]);
         }
 
         if (gameEvent.Spawns.Any(spawn => spawn.Count < 1))
         {
-            throw new ContentValidationException("Jeder Spawn braucht eine Anzahl von mindestens 1.");
+            throw new ContentValidationException(messages["EventSpawnCount"]);
         }
     }
 

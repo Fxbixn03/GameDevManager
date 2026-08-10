@@ -1,6 +1,7 @@
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -11,7 +12,8 @@ namespace GameDevManager.Data.Services;
 public class ClassService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
-    AssetService assets)
+    AssetService assets,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<ClassListRow>> GetClassesAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -104,10 +106,10 @@ public class ClassService(
 
         if (string.IsNullOrWhiteSpace(characterClass.Name))
         {
-            throw new ContentValidationException("Die Klasse braucht einen Namen.");
+            throw new ContentValidationException(messages["ClassNameRequired"]);
         }
 
-        ContentFields.ValidateRequired(context);
+        ContentFields.ValidateRequired(context, messages);
 
         await using var db = await factory.CreateDbContextAsync(ct);
 

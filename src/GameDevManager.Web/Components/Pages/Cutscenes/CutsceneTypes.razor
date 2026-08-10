@@ -1,32 +1,33 @@
 @page "/modules/cutscenes/arten"
+@inject IStringLocalizer<CutsceneTypes> L
 
-<PageTitle>Cutscene-Arten – GameDevManager</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module"
-              Title="Cutscene-Arten"
-              Subtitle="Storyboard und Verknüpfungen stehen fest an der Cutscene — alles Weitere definieren die Felder der Art."
+              Title="@L["Title"]"
+              Subtitle="@L["Subtitle"]"
               Breadcrumbs="Breadcrumbs">
     <Actions>
-        <MudButton Variant="Variant.Outlined" Href="/modules/cutscenes">Zu den Cutscenes</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/cutscenes">@L["ToCutscenes"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="AddAsync">
-            Neue Art
+            @L["NewType"]
         </MudButton>
     </Actions>
 </ModuleHeader>
 
 <ContentTypeManager @ref="_manager"
                     ModuleKey="@ModuleKeys.Cutscenes"
-                    EntityNoun="Cutscene"
-                    EmptyTitle="Noch keine Cutscene-Arten"
-                    EmptyHint="Über Arten lassen sich Cutscenes einteilen — etwa Intro, Zwischensequenz oder Abspann — und um eigene Felder wie Dauer oder Kameraführung ergänzen." />
+                    EntityNoun="@L["EntityNoun"]"
+                    EmptyTitle="@L["EmptyTitle"]"
+                    EmptyHint="@L["EmptyHint"]" />
 
 @code {
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Cutscenes);
 
-    private static readonly List<BreadcrumbItem> Breadcrumbs = [new("Arten", null, disabled: true)];
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["BreadcrumbTypes"], null, disabled: true)];
 
     private ContentTypeManager? _manager;
 
