@@ -1,0 +1,77 @@
+@inject IStringLocalizer<CollapsiblePanel> L
+
+@*
+    Ein Panel im Stil der Modul-Listen (gdm-panel), dessen Inhalt sich ein- und ausklappen
+    lässt — standardmäßig eingeklappt. Kopfzeile und Aktionen bleiben immer sichtbar.
+    Umgeklappt wird über den Pfeil oder einen Klick auf die Kopfzeile; die Aktionen liegen
+    bewusst außerhalb der Klickfläche, damit ein Klick dort nicht zusätzlich umklappt.
+*@
+
+<MudPaper Elevation="0" Class="gdm-panel">
+    <div class="pa-4 @(_expanded ? "gdm-panel-head" : null)">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="3">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="flex-grow-1">
+                <MudTooltip Text="@ToggleLabel">
+                    <MudIconButton Icon="@(_expanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                                   Size="Size.Small"
+                                   OnClick="Toggle"
+                                   aria-expanded="@(_expanded ? "true" : "false")"
+                                   aria-label="@ToggleLabel" />
+                </MudTooltip>
+                <div class="d-flex align-center gap-3 flex-grow-1 cursor-pointer" @onclick="Toggle">
+                    @HeaderContent
+                </div>
+            </MudStack>
+
+            @if (HeaderActions is not null)
+            {
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    @HeaderActions
+                </MudStack>
+            }
+        </MudStack>
+    </div>
+
+    <MudCollapse Expanded="_expanded">
+        @ChildContent
+    </MudCollapse>
+</MudPaper>
+
+@code {
+    /// <summary>Immer sichtbarer Inhalt der Kopfzeile; ein Klick darauf klappt um.</summary>
+    [Parameter, EditorRequired]
+    public required RenderFragment HeaderContent { get; set; }
+
+    /// <summary>Schaltflächen rechts in der Kopfzeile — außerhalb der Klickfläche.</summary>
+    [Parameter]
+    public RenderFragment? HeaderActions { get; set; }
+
+    /// <summary>Der einklappbare Inhalt.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Anfangszustand; danach verwaltet das Panel den Zustand selbst.</summary>
+    [Parameter]
+    public bool InitiallyExpanded { get; set; }
+
+    /// <summary>
+    /// Beschriftung von Tooltip und aria-label des Pfeils. Bleiben die Parameter leer,
+    /// greifen die Standardtexte aus der resx; deshalb nullable und über ToggleLabel
+    /// aufgelöst statt über einen Feldinitialisierer.
+    /// </summary>
+    [Parameter]
+    public string? ExpandLabel { get; set; }
+
+    [Parameter]
+    public string? CollapseLabel { get; set; }
+
+    private bool _expanded;
+
+    private string ToggleLabel => _expanded
+        ? (string.IsNullOrWhiteSpace(CollapseLabel) ? L["DefaultCollapseLabel"] : CollapseLabel)
+        : (string.IsNullOrWhiteSpace(ExpandLabel) ? L["DefaultExpandLabel"] : ExpandLabel);
+
+    protected override void OnInitialized() => _expanded = InitiallyExpanded;
+
+    private void Toggle() => _expanded = !_expanded;
+}

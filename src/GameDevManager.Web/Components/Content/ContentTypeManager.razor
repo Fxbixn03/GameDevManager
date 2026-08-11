@@ -30,112 +30,111 @@ else
     <MudStack Spacing="4">
         @foreach (var type in _types)
         {
-            <MudPaper Elevation="0" Class="gdm-panel">
-
-                @* --------------------------------------------------------- Kopf der Art *@
-                <div class="pa-4 gdm-panel-head">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
-                            <MudIcon Icon="@(string.IsNullOrWhiteSpace(type.Icon) ? Icons.Material.Filled.Style : type.Icon)"
-                                     Color="Color.Primary" />
-                            <div>
-                                <MudText Typo="Typo.h6">@type.Name</MudText>
-                                @if (!string.IsNullOrWhiteSpace(type.Description))
-                                {
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@type.Description</MudText>
-                                }
-                            </div>
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">
-                                @L["FieldCount", type.Fields.Count]
-                            </MudChip>
-                        </MudStack>
-
-                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
-                            <MudButton StartIcon="@Icons.Material.Filled.Add"
-                                       Size="Size.Small"
-                                       OnClick="@(() => AddFieldAsync(type))">
-                                @L["AddField"]
-                            </MudButton>
-                            <MudTooltip Text="@L["EditTypeTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                               Size="Size.Small"
-                                               OnClick="@(() => EditTypeAsync(type))"
-                                               aria-label="@L["EditTypeAria", type.Name]" />
-                            </MudTooltip>
-                            <MudTooltip Text="@L["DeleteTypeTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteTypeAsync(type))"
-                                               aria-label="@L["DeleteTypeAria", type.Name]" />
-                            </MudTooltip>
-                        </MudStack>
-                    </MudStack>
-                </div>
-
-                @* ------------------------------------------------------ Felder der Art *@
-                @if (type.Fields.Count == 0)
-                {
-                    <div class="pa-4">
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            @L["NoFields"]
-                        </MudText>
+            @* Felder je Art eingeklappt (CollapsiblePanel-Standard); der Zustand überlebt das
+               Neuladen der Liste, weil @key die Komponente an der Art festhält. *@
+            <CollapsiblePanel @key="type.Id"
+                              ExpandLabel="@L["ShowFieldsTooltip"]"
+                              CollapseLabel="@L["HideFieldsTooltip"]">
+                <HeaderContent>
+                    <MudIcon Icon="@(string.IsNullOrWhiteSpace(type.Icon) ? Icons.Material.Filled.Style : type.Icon)"
+                             Color="Color.Primary" />
+                    <div>
+                        <MudText Typo="Typo.h6">@type.Name</MudText>
+                        @if (!string.IsNullOrWhiteSpace(type.Description))
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@type.Description</MudText>
+                        }
                     </div>
-                }
-                else
-                {
-                    @foreach (var field in type.Fields)
-                    {
-                        <div class="pa-3 gdm-field-row">
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="3">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
-                                    <MudIcon Icon="@FieldTypeLabels.Icon(field.Type)" Size="Size.Small" Color="Color.Secondary" />
-                                    <div>
-                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                            <MudText Typo="Typo.body1">@field.Name</MudText>
-                                            @if (field.IsRequired)
-                                            {
-                                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">
-                                                    @L["RequiredChip"]
-                                                </MudChip>
-                                            }
-                                        </MudStack>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@DescribeField(field)</MudText>
-                                    </div>
-                                </MudStack>
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">
+                        @(type.Fields.Count == 1 ? L["FieldCountOne"] : L["FieldCountMany", type.Fields.Count])
+                    </MudChip>
+                </HeaderContent>
 
-                                <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center">
-                                    <MudTooltip Text="@L["MoveUpTooltip"]">
-                                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp"
-                                                       Size="Size.Small"
-                                                       Disabled="@(type.Fields.IndexOf(field) == 0)"
-                                                       OnClick="@(() => MoveFieldAsync(type, field, -1))"
-                                                       aria-label="@L["MoveUpAria"]" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="@L["MoveDownTooltip"]">
-                                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown"
-                                                       Size="Size.Small"
-                                                       Disabled="@(type.Fields.IndexOf(field) == type.Fields.Count - 1)"
-                                                       OnClick="@(() => MoveFieldAsync(type, field, 1))"
-                                                       aria-label="@L["MoveDownAria"]" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="@L["EditFieldTooltip"]">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => EditFieldAsync(field))"
-                                                       aria-label="@L["EditFieldAria", field.Name]" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="@L["DeleteFieldTooltip"]">
-                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => DeleteFieldAsync(field))"
-                                                       aria-label="@L["DeleteFieldAria", field.Name]" />
-                                    </MudTooltip>
-                                </MudStack>
-                            </MudStack>
+                <HeaderActions>
+                    <MudButton StartIcon="@Icons.Material.Filled.Add"
+                               Size="Size.Small"
+                               OnClick="@(() => AddFieldAsync(type))">
+                        @L["AddField"]
+                    </MudButton>
+                    <MudTooltip Text="@L["EditTypeTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditTypeAsync(type))"
+                                       aria-label="@L["EditTypeAria", type.Name]" />
+                    </MudTooltip>
+                    <MudTooltip Text="@L["DeleteTypeTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteTypeAsync(type))"
+                                       aria-label="@L["DeleteTypeAria", type.Name]" />
+                    </MudTooltip>
+                </HeaderActions>
+
+                <ChildContent>
+                    @if (type.Fields.Count == 0)
+                    {
+                        <div class="pa-4">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                @L["NoFields"]
+                            </MudText>
                         </div>
                     }
-                }
-            </MudPaper>
+                    else
+                    {
+                        @foreach (var field in type.Fields)
+                        {
+                            <div class="pa-3 gdm-field-row">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="3">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                        <MudIcon Icon="@FieldTypeLabels.Icon(field.Type)" Size="Size.Small" Color="Color.Secondary" />
+                                        <div>
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                <MudText Typo="Typo.body1">@field.Name</MudText>
+                                                @if (field.IsRequired)
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">
+                                                        @L["RequiredChip"]
+                                                    </MudChip>
+                                                }
+                                            </MudStack>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@DescribeField(field)</MudText>
+                                        </div>
+                                    </MudStack>
+
+                                    <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center">
+                                        <MudTooltip Text="@L["MoveUpTooltip"]">
+                                            <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp"
+                                                           Size="Size.Small"
+                                                           Disabled="@(type.Fields.IndexOf(field) == 0)"
+                                                           OnClick="@(() => MoveFieldAsync(type, field, -1))"
+                                                           aria-label="@L["MoveUpAria"]" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="@L["MoveDownTooltip"]">
+                                            <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown"
+                                                           Size="Size.Small"
+                                                           Disabled="@(type.Fields.IndexOf(field) == type.Fields.Count - 1)"
+                                                           OnClick="@(() => MoveFieldAsync(type, field, 1))"
+                                                           aria-label="@L["MoveDownAria"]" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="@L["EditFieldTooltip"]">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => EditFieldAsync(field))"
+                                                           aria-label="@L["EditFieldAria", field.Name]" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="@L["DeleteFieldTooltip"]">
+                                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => DeleteFieldAsync(field))"
+                                                           aria-label="@L["DeleteFieldAria", field.Name]" />
+                                        </MudTooltip>
+                                    </MudStack>
+                                </MudStack>
+                            </div>
+                        }
+                    }
+                </ChildContent>
+            </CollapsiblePanel>
         }
     </MudStack>
 }

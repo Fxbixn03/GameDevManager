@@ -77,7 +77,9 @@
       "PowerShell(dotnet build src/GameDevManager.Web/GameDevManager.Web.csproj)",
       "PowerShell(Get-Process -Id 34852)",
       "PowerShell(Stop-Process -Id 34852 -Force -Confirm:$false)",
-      "PowerShell([System.Reflection.Assembly]::LoadFile\\(\"C:\\\\Users\\\\FabianStangl\\\\source\\\\repos\\\\GameDevManager\\\\src\\\\GameDevManager.Web\\\\bin\\\\Debug\\\\net10.0\\\\GameDevManager.Web.dll\"\\).GetManifestResourceNames\\(\\))"
+      "PowerShell([System.Reflection.Assembly]::LoadFile\\(\"C:\\\\Users\\\\FabianStangl\\\\source\\\\repos\\\\GameDevManager\\\\src\\\\GameDevManager.Web\\\\bin\\\\Debug\\\\net10.0\\\\GameDevManager.Web.dll\"\\).GetManifestResourceNames\\(\\))",
+      "PowerShell(dotnet build)",
+      "PowerShell(dotnet build src/GameDevManager.Web/GameDevManager.Web.csproj -p:BaseOutputPath=\"C:\\\\Users\\\\FABIAN~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-FabianStangl-source-repos-GameDevManager\\\\ff70e846-3e3c-407a-9382-61baea10988a\\\\scratchpad\\\\build\\\\\" -v minimal)"
     ],
     "deny": [
       "Bash(rm:*)",

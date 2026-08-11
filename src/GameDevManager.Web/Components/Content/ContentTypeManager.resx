@@ -15,8 +15,11 @@
   <data name="FirstType" xml:space="preserve">
     <value>Erste Art anlegen</value>
   </data>
-  <data name="FieldCount" xml:space="preserve">
-    <value>{0} Feld(er)</value>
+  <data name="FieldCountOne" xml:space="preserve">
+    <value>1 Feld</value>
+  </data>
+  <data name="FieldCountMany" xml:space="preserve">
+    <value>{0} Felder</value>
   </data>
   <data name="AddField" xml:space="preserve">
     <value>Feld</value>
@@ -116,6 +119,12 @@
   </data>
   <data name="DeleteCancel" xml:space="preserve">
     <value>Abbrechen</value>
+  </data>
+  <data name="ShowFieldsTooltip" xml:space="preserve">
+    <value>Felder einblenden</value>
+  </data>
+  <data name="HideFieldsTooltip" xml:space="preserve">
+    <value>Felder ausblenden</value>
   </data>
   <data name="ReferenceTarget" xml:space="preserve">
     <value>→ {0}</value>
