@@ -1,27 +1,25 @@
 namespace GameDevManager.Domain.Entities;
 
 /// <summary>
-/// Ein Crafting-Rezept: eine Menge an Zutaten ergibt eine Menge eines Items —
-/// „3× Holz + 5× Kohle = Fackel“.
+/// Ein Crafting-Rezept: eine Menge an Zutaten ergibt eine Menge an Ziel-Items —
+/// „3× Holz + 5× Kohle = 1× Fackel“.
 /// <para>
-/// Struktur hat das Rezept nur, wo sie fachlich unumgänglich ist: Ergebnis, Menge und Zutaten.
+/// Ein Rezept kennt genau drei Angaben: seine Ziel-Items, seine Zutaten und seine Art.
 /// Alles Weitere — Herstellungsdauer, benötigte Werkbank, Mindestlevel — definiert der Nutzer
 /// als Felder an der Rezept-Art. Damit gilt hier dieselbe Regel wie bei den Items: das Schema
 /// ist nutzerdefiniert, nicht fest kodiert.
+/// </para>
+/// <para>
+/// Einen eigenen Namen trägt das Rezept nicht mehr: Er wird beim Speichern aus den Ziel-Items
+/// gebildet, weil er in Listen, Suche und Referenzansicht gebraucht wird.
 /// </para>
 /// </summary>
 public class Recipe : ContentEntity
 {
     public override string ModuleKey => ModuleKeys.Crafting;
 
-    /// <summary>
-    /// Das hergestellte Item. GUID-Referenz ohne Fremdschlüssel, weil sie über die Modulgrenze
-    /// zeigt — die Referenzansicht macht sichtbar, welche Rezepte ein Item verwenden.
-    /// </summary>
-    public Guid? OutputItemId { get; set; }
-
-    /// <summary>Wie viele Stück ein Durchlauf des Rezepts liefert.</summary>
-    public int OutputQuantity { get; set; } = 1;
+    /// <summary>Was ein Durchlauf liefert — mehrere Ziel-Items sind erlaubt.</summary>
+    public List<RecipeOutput> Outputs { get; set; } = [];
 
     public List<RecipeIngredient> Ingredients { get; set; } = [];
 }

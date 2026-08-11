@@ -114,17 +114,20 @@
   <data name="ConditionKind_HasCurrency" xml:space="preserve">
     <value>Währung im Besitz</value>
   </data>
-  <data name="RecipeNameRequired" xml:space="preserve">
-    <value>Das Rezept braucht einen Namen.</value>
+  <data name="RecipeWithoutOutput" xml:space="preserve">
+    <value>Rezept ohne Ziel-Item</value>
   </data>
-  <data name="RecipeOutputAtLeastOne" xml:space="preserve">
-    <value>Ein Rezept muss mindestens ein Stück herstellen.</value>
+  <data name="RecipeOutputQuantity" xml:space="preserve">
+    <value>Jedes Ziel-Item braucht eine Menge von mindestens 1.</value>
+  </data>
+  <data name="RecipeOutputDuplicate" xml:space="preserve">
+    <value>Dasselbe Item steht mehrfach in der Ziel-Liste. Bitte die Mengen zusammenfassen.</value>
   </data>
   <data name="RecipeIngredientQuantity" xml:space="preserve">
-    <value>Jede Zutat braucht eine Menge von mindestens 1.</value>
+    <value>Jedes benötigte Item braucht eine Menge von mindestens 1.</value>
   </data>
   <data name="RecipeIngredientDuplicate" xml:space="preserve">
-    <value>Dasselbe Item steht mehrfach in der Zutatenliste. Bitte die Mengen zusammenfassen.</value>
+    <value>Dasselbe Item steht mehrfach in der Liste der benötigten Items. Bitte die Mengen zusammenfassen.</value>
   </data>
   <data name="DeletedItem" xml:space="preserve">
     <value>(gelöschtes Item)</value>
@@ -418,10 +421,10 @@
     <value>Mitglied</value>
   </data>
   <data name="Reference_RecipeOutput" xml:space="preserve">
-    <value>Ergebnis</value>
+    <value>Ziel-Item</value>
   </data>
   <data name="Reference_RecipeIngredient" xml:space="preserve">
-    <value>Zutat</value>
+    <value>Benötigtes Item</value>
   </data>
   <data name="Reference_QuestStory" xml:space="preserve">
     <value>Story-Anbindung</value>

@@ -3,7 +3,7 @@ namespace GameDevManager.Domain.Entities;
 /// <summary>
 /// Eine Zutat eines Rezepts: ein Item in einer bestimmten Menge.
 /// </summary>
-public class RecipeIngredient
+public class RecipeIngredient : IRecipeLine
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 

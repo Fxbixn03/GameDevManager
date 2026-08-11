@@ -1502,12 +1502,6 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<Guid?>("OutputItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("OutputQuantity")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -1518,8 +1512,6 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
-
-                    b.HasIndex("OutputItemId");
 
                     b.ToTable("Recipes");
                 });
@@ -1549,6 +1541,33 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.HasIndex("RecipeId");
 
                     b.ToTable("RecipeIngredients");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.RecipeOutput", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("RecipeOutputs");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Skill", b =>
@@ -2355,6 +2374,17 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.Navigation("Recipe");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.RecipeOutput", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Recipe", "Recipe")
+                        .WithMany("Outputs")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Skill", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -2524,6 +2554,8 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.Recipe", b =>
                 {
                     b.Navigation("Ingredients");
+
+                    b.Navigation("Outputs");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.StoryEntry", b =>

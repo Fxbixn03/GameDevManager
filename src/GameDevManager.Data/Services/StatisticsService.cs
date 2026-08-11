@@ -74,7 +74,7 @@ public class StatisticsService(
         return await db.Items
             .AsNoTracking()
             .Where(item => item.GameProjectId == projectId
-                && !db.Recipes.Any(recipe => recipe.OutputItemId == item.Id)
+                && !db.RecipeOutputs.Any(output => output.ItemId == item.Id)
                 && !db.TraderOffers.Any(offer => offer.ItemId == item.Id)
                 && !db.LootEntries.Any(entry => entry.ItemId == item.Id))
             .OrderBy(item => item.Name)

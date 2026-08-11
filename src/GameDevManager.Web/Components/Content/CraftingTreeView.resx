@@ -21,9 +21,6 @@
   <data name="CycleChip" xml:space="preserve">
     <value>Zyklus</value>
   </data>
-  <data name="RecipeYield" xml:space="preserve">
-    <value> (ergibt {0}×)</value>
-  </data>
   <data name="NoRecipe" xml:space="preserve">
     <value>Grundstoff — kein Rezept</value>
   </data>

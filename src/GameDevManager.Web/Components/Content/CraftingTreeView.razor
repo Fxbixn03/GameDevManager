@@ -30,8 +30,10 @@
                 }
                 else if (Node.RecipeId is { } recipeId)
                 {
+                    @* Der Name des Rezepts nennt seine Ziel-Items mit Menge — die Ausbeute
+                       dieses Knotens steht damit schon drin. *@
                     <MudLink Href="@($"/modules/crafting/{recipeId}")" Typo="Typo.caption" Color="Color.Secondary">
-                        @Node.RecipeName@(Node.RecipeOutputQuantity > 1 ? L["RecipeYield", Node.RecipeOutputQuantity].Value : "")
+                        @Node.RecipeName
                     </MudLink>
                 }
                 else

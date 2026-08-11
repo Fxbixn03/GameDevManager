@@ -1,6 +1,7 @@
 @page "/modules/crafting/neu"
 @page "/modules/crafting/{Id:guid}"
 @inject CraftingService Crafting
+@inject AssetService Library
 @inject ReferenceService References
 @inject ProjectContext Project
 @inject IDialogService Dialogs
@@ -66,76 +67,72 @@ else
         <MudItem xs="12" md="8">
             <MudStack Spacing="4">
 
-                @* ------------------------------------------------------------- Stammdaten *@
+                @* -------------------------------------------------------------- Ziel-Items *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionMasterData"]</MudText>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionOutputs"]</MudText>
+                        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                   Size="Size.Small"
+                                   Disabled="@(_items.Count == 0)"
+                                   OnClick="AddOutput">
+                            @L["AddOutput"]
+                        </MudButton>
+                    </MudStack>
 
-                    <MudStack Spacing="4">
-                        <MudTextField Value="_context.Entity.Name"
-                                      ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
-                                      T="string"
-                                      Label="@L["NameLabel"]"
-                                      Variant="Variant.Outlined"
-                                      Immediate="true"
-                                      HelperText="@NameHint" />
-
-                        <MudTextField Value="_context.Entity.Description"
-                                      ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
-                                      T="string"
-                                      Label="@L["DescriptionLabel"]"
-                                      Variant="Variant.Outlined"
-                                      Lines="2" />
-
-                        <MudSelect T="Guid?"
-                                   Value="_context.Entity.ContentTypeId"
-                                   ValueChanged="ChangeType"
-                                   Label="@L["TypeLabel"]"
-                                   Variant="Variant.Outlined"
-                                   Clearable="true"
-                                   HelperText="@L["TypeHelper"]">
-                            @foreach (var type in _context.AvailableTypes)
+                    @if (_context.Entity.Outputs.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            @L["NoOutputs"]
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudStack Spacing="3">
+                            @foreach (var output in _context.Entity.Outputs)
                             {
-                                <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                                <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+                                    <MudNumericField T="int"
+                                                     Value="output.Quantity"
+                                                     ValueChanged="@((int quantity) => Touch(() => output.Quantity = quantity))"
+                                                     Label="@L["QuantityLabel"]"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Min="1"
+                                                     Style="max-width:110px;" />
+
+                                    <div style="flex:1 1 auto; min-width:0;">
+                                        <MudAutocomplete T="EntitySummary"
+                                                         Value="@ItemFor(output.ItemId)"
+                                                         ValueChanged="@((EntitySummary? entity) => SetOutputItemAsync(output, entity))"
+                                                         SearchFunc="SearchItemsAsync"
+                                                         ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
+                                                         Label="@L["OutputItemLabel"]"
+                                                         Variant="Variant.Outlined"
+                                                         Margin="Margin.Dense"
+                                                         Clearable="true"
+                                                         ResetValueOnEmptyText="true"
+                                                         CoerceValue="false"
+                                                         MaxItems="50" />
+                                    </div>
+
+                                    <AssetThumbnail AssetId="@AssetFor(output.ItemId)"
+                                                    Size="Size.Small"
+                                                    Alt="@(ItemFor(output.ItemId)?.Name ?? "")"
+                                                    FallbackIcon="@Icons.Material.Filled.Category" />
+
+                                    <MudTooltip Text="@L["RemoveOutput"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => RemoveOutputAsync(output))"
+                                                       aria-label="@L["RemoveOutput"]" />
+                                    </MudTooltip>
+                                </MudStack>
                             }
-                        </MudSelect>
-                    </MudStack>
+                        </MudStack>
+                    }
                 </MudPaper>
 
-                @* ---------------------------------------------------------------- Ergebnis *@
-                <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionOutput"]</MudText>
-
-                    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
-                        <MudNumericField T="int"
-                                         Value="_context.Entity.OutputQuantity"
-                                         ValueChanged="@((int quantity) => Touch(() => _context.Entity.OutputQuantity = quantity))"
-                                         Label="@L["QuantityLabel"]"
-                                         Variant="Variant.Outlined"
-                                         Min="1"
-                                         Style="max-width:110px;" />
-
-                        <div style="flex:1 1 auto; min-width:0;">
-                            <MudAutocomplete T="EntitySummary"
-                                             Value="OutputItem"
-                                             ValueChanged="SetOutputItem"
-                                             SearchFunc="SearchItemsAsync"
-                                             ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
-                                             Label="@L["OutputItemLabel"]"
-                                             Variant="Variant.Outlined"
-                                             Clearable="true"
-                                             ResetValueOnEmptyText="true"
-                                             CoerceValue="false"
-                                             MaxItems="50" />
-                        </div>
-
-                        <AssetThumbnail AssetId="_outputAssetId"
-                                        Size="Size.Small"
-                                        Alt="@(OutputItem?.Name ?? "")"
-                                        FallbackIcon="@Icons.Material.Filled.Category" />
-                    </MudStack>
-                </MudPaper>
-
-                @* ---------------------------------------------------------------- Zutaten *@
+                @* --------------------------------------------------------- Benötigte Items *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
                         <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionIngredients"]</MudText>
@@ -195,12 +192,25 @@ else
                     }
                 </MudPaper>
 
-                @* ------------------------------------------------------------------ Sprites *@
-                <AssetSpritePanel ModuleKey="@ModuleKeys.Crafting"
-                                  EntityId="_context.Entity.Id"
-                                  Disabled="_context.IsNew" />
+                @* -------------------------------------------------------------- Rezept-Art *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionType"]</MudText>
 
-                @* ------------------------------------------------------------------- Felder *@
+                    <MudSelect T="Guid?"
+                               Value="_context.Entity.ContentTypeId"
+                               ValueChanged="ChangeType"
+                               Label="@L["TypeLabel"]"
+                               Variant="Variant.Outlined"
+                               Clearable="true"
+                               HelperText="@L["TypeHelper"]">
+                        @foreach (var type in _context.AvailableTypes)
+                        {
+                            <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudPaper>
+
+                @* ----------------------------------------------- Felder der gewählten Art *@
                 <div>
                     <ContentFieldsPanel TEntity="Recipe"
                                         Context="_context"
@@ -231,14 +241,14 @@ else
                     }
                 </MudPaper>
 
-                @if (_context.Entity.OutputItemId is { } outputId && !_context.IsNew)
+                @if (TreeItemId is { } treeItemId && !_context.IsNew)
                 {
                     <MudPaper Elevation="0" Class="gdm-panel pa-4">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
                             <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionTree"]</MudText>
                             <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
                                            Size="Size.Small"
-                                           Href="@($"/modules/crafting/baum/{outputId}")"
+                                           Href="@($"/modules/crafting/baum/{treeItemId}")"
                                            aria-label="@L["OpenTreeAria"]" />
                         </MudStack>
 
@@ -272,30 +282,39 @@ else
     private ContentEditContext<Recipe>? _context;
     private ReferencesPanel? _referencesPanel;
     private List<EntitySummary> _items = [];
+
+    /// <summary>Die Icons der ausgewählten Ziel-Items, einmal je Item nachgeschlagen.</summary>
+    private readonly Dictionary<Guid, Guid?> _itemAssets = [];
+
     private CraftingTreeNode? _tree;
-    private Guid? _outputAssetId;
     private Guid? _loadedId;
     private bool _notFound;
     private bool _saving;
     private bool _dirty;
 
+    /// <summary>
+    /// Der Name eines Rezepts sind seine Ziel-Items. Er wird beim Speichern gebildet — hier
+    /// aus dem noch ungespeicherten Stand, damit die Überschrift sofort mitzieht.
+    /// </summary>
+    private string OutputSummary => _context is null
+        ? string.Empty
+        : CraftingService.FormatOutputs(_context.Entity.Outputs
+            .Where(output => output.ItemId != Guid.Empty)
+            .Select(output => (ItemFor(output.ItemId)?.Name ?? L["DeletedItem"].Value, output.Quantity)));
+
     private string PageHeading => _context switch
     {
         null => L["PageHeadingDefault"],
+        _ when !string.IsNullOrWhiteSpace(OutputSummary) => OutputSummary,
         { IsNew: true } => L["PageHeadingNew"],
-        { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
         _ => L["PageHeadingUnnamed"]
     };
 
     private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
 
-    private EntitySummary? OutputItem =>
-        _context?.Entity.OutputItemId is { } id ? ItemFor(id) : null;
-
-    private string? NameHint =>
-        _context is { IsNew: true } && OutputItem is { } item && string.IsNullOrWhiteSpace(_context.Entity.Name)
-            ? L["NameSuggestion", item.Name]
-            : null;
+    /// <summary>Der Baum zeigt das erste Ziel-Item — es ist das, worum es im Rezept geht.</summary>
+    private Guid? TreeItemId =>
+        _context?.Entity.Outputs.FirstOrDefault(output => output.ItemId != Guid.Empty)?.ItemId;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -314,6 +333,7 @@ else
         _dirty = false;
         _context = null;
         _tree = null;
+        _itemAssets.Clear();
 
         var projectId = await Project.GetCurrentIdAsync();
         _items = await References.GetEntitiesAsync(projectId, ModuleKeys.Items);
@@ -325,11 +345,13 @@ else
             return;
         }
 
-        await RefreshOutputAsync();
+        await RefreshOutputsAsync();
     }
 
     private EntitySummary? ItemFor(Guid itemId) =>
         _items.FirstOrDefault(entity => entity.Id == itemId);
+
+    private Guid? AssetFor(Guid itemId) => _itemAssets.GetValueOrDefault(itemId);
 
     private Task<IEnumerable<EntitySummary>> SearchItemsAsync(string? search, CancellationToken ct)
     {
@@ -340,38 +362,51 @@ else
         return Task.FromResult(matches);
     }
 
-    private async Task SetOutputItem(EntitySummary? entity)
+    private void AddOutput() =>
+        Touch(() => _context!.Entity.Outputs.Add(new RecipeOutput
+        {
+            RecipeId = _context.Entity.Id,
+            ItemId = Guid.Empty,
+            Quantity = 1,
+            SortOrder = _context.Entity.Outputs.Count
+        }));
+
+    private async Task RemoveOutputAsync(RecipeOutput output)
+    {
+        Touch(() => _context!.Entity.Outputs.Remove(output));
+        await RefreshOutputsAsync();
+    }
+
+    private async Task SetOutputItemAsync(RecipeOutput output, EntitySummary? entity)
+    {
+        Touch(() => output.ItemId = entity?.Id ?? Guid.Empty);
+        await RefreshOutputsAsync();
+    }
+
+    /// <summary>Icons der Ziel-Items nachladen und den Baum auf das erste Ziel stellen.</summary>
+    private async Task RefreshOutputsAsync()
     {
         if (_context is null)
         {
             return;
         }
 
-        _context.Entity.OutputItemId = entity?.Id;
-
-        // Der Name eines Rezepts ist fast immer der des Ergebnisses — nur vorbelegen,
-        // solange der Nutzer nichts Eigenes eingetragen hat.
-        if (entity is not null && string.IsNullOrWhiteSpace(_context.Entity.Name))
+        foreach (var output in _context.Entity.Outputs)
         {
-            _context.Entity.Name = entity.Name;
+            if (output.ItemId != Guid.Empty && !_itemAssets.ContainsKey(output.ItemId))
+            {
+                _itemAssets[output.ItemId] = await Library.GetPrimaryAssetIdAsync(output.ItemId);
+            }
         }
 
-        MarkDirty();
-        await RefreshOutputAsync();
-    }
-
-    private async Task RefreshOutputAsync()
-    {
-        if (_context?.Entity.OutputItemId is not { } outputId)
+        if (TreeItemId is not { } itemId)
         {
-            _outputAssetId = null;
             _tree = null;
             return;
         }
 
         var projectId = await Project.GetCurrentIdAsync();
-        _tree = await Crafting.BuildTreeAsync(projectId, outputId);
-        _outputAssetId = _tree?.PrimaryAssetId;
+        _tree = await Crafting.BuildTreeAsync(projectId, itemId);
     }
 
     private void AddIngredient() =>
@@ -407,7 +442,8 @@ else
             return;
         }
 
-        // Leere Zutatenzeilen sind ein Bedienschritt, kein Inhalt — sie fliegen still raus.
+        // Leere Zeilen sind ein Bedienschritt, kein Inhalt — sie fliegen still raus.
+        _context.Entity.Outputs.RemoveAll(output => output.ItemId == Guid.Empty);
         _context.Entity.Ingredients.RemoveAll(ingredient => ingredient.ItemId == Guid.Empty);
 
         _saving = true;
@@ -426,7 +462,7 @@ else
                 return;
             }
 
-            await RefreshOutputAsync();
+            await RefreshOutputsAsync();
 
             if (_referencesPanel is not null)
             {
@@ -452,7 +488,7 @@ else
 
         var confirmed = await Dialogs.ShowMessageBoxAsync(
             L["DeleteConfirmTitle"],
-            L["DeleteConfirmMessage", _context.Entity.Name],
+            L["DeleteConfirmMessage", PageHeading],
             yesText: L["DeleteYes"],
             cancelText: L["DeleteCancel"]);
 
@@ -490,11 +526,8 @@ else
             return;
         }
 
-        reloaded.Entity.Name = entity.Name;
-        reloaded.Entity.Description = entity.Description;
         reloaded.Entity.ContentTypeId = entity.ContentTypeId;
-        reloaded.Entity.OutputItemId = entity.OutputItemId;
-        reloaded.Entity.OutputQuantity = entity.OutputQuantity;
+        reloaded.Entity.Outputs = entity.Outputs;
         reloaded.Entity.Ingredients = entity.Ingredients;
 
         _context = reloaded;

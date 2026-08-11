@@ -23,6 +23,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Recipe> Recipes => Set<Recipe>();
 
+    public DbSet<RecipeOutput> RecipeOutputs => Set<RecipeOutput>();
+
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
 
     public DbSet<Currency> Currencies => Set<Currency>();
@@ -567,10 +569,15 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.HasIndex(o => o.CurrencyId);
         });
 
-        modelBuilder.Entity<Recipe>(entity =>
+        modelBuilder.Entity<RecipeOutput>(entity =>
         {
-            // Zeigt auf ein Item, also über die Modulgrenze — deshalb nur die GUID.
-            entity.HasIndex(r => r.OutputItemId);
+            entity.HasOne(o => o.Recipe)
+                .WithMany(r => r.Outputs)
+                .HasForeignKey(o => o.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „welche Rezepte stellen dieses Item her?“.
+            entity.HasIndex(o => o.ItemId);
         });
 
         modelBuilder.Entity<RecipeIngredient>(entity =>

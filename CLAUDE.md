@@ -114,14 +114,19 @@ In den Bearbeitungsmasken der Module wird `<AssetSpritePanel ModuleKey="…" Ent
 
 ### Crafting
 
-Das Rezept trägt nur, was fachlich unumgänglich ist: Ergebnis-Item, Ausbeute und Zutaten mit Mengen. Herstellungsdauer, Werkbank oder Mindestlevel definiert der Nutzer als Felder an der Rezept-Art — dieselbe Regel wie bei den Items. Ergebnis und Zutaten sind reine GUID-Referenzen auf Items, ohne Fremdschlüssel über die Modulgrenze.
+Ein Rezept hat genau **drei** Angaben, und die Maske zeigt auch nur diese drei: **Ziel-Items**, **benötigte Items** und die **Rezept-Art**. Herstellungsdauer, Werkbank oder Mindestlevel definiert der Nutzer als Felder an der Rezept-Art — dieselbe Regel wie bei den Items. Ziele und benötigte Items sind reine GUID-Referenzen auf Items, ohne Fremdschlüssel über die Modulgrenze.
 
-`CraftingService` lädt für Bäume und Zyklenprüfung den gesamten Rezeptbestand eines Projekts einmal und löst ihn im Speicher auf (`CraftingGraph`) — bei der Größenordnung eines Spielprojekts deutlich billiger als eine Abfrage je Ebene. Zwei Dinge, die daran hängen:
+Beides sind Kind-Sammlungen (`RecipeOutput`, `RecipeIngredient`) mit demselben Aufbau — Item, Menge, Position. Sie teilen sich `IRecipeLine`, damit `CraftingService.SyncLines` beide mit einem Abgleich speichert (samt EF-Fallstrick, siehe oben) und `ValidateLines` beide gleich prüft: Menge mindestens 1, kein Item doppelt. Mehrere Ziele sind der Normalfall für Nebenprodukte („1× Barren + 2× Schlacke“); ein Rezept ganz ohne Ziel ist erlaubt und in der Übersicht als Hinweis markiert.
+
+**Einen eigenen Namen trägt das Rezept nicht.** `Name` steht weiter in der Datenbank, weil Suche, Referenzansicht und Auswahlfelder aller Module über diese Spalte gehen — er wird aber beim Speichern aus den Ziel-Items gebildet (`FormatOutputs`, „2× Fackel + 1× Asche“). Wo der Crafting-Bereich selbst anzeigt (Übersicht, Überschrift der Maske, Baum), wird der Name aus den **aktuellen** Item-Namen gebildet; die gespeicherte Spalte kann nach dem Umbenennen eines Items bis zum nächsten Speichern des Rezepts veralten.
+
+`CraftingService` lädt für Bäume und Zyklenprüfung den gesamten Rezeptbestand eines Projekts einmal und löst ihn im Speicher auf (`CraftingGraph`) — bei der Größenordnung eines Spielprojekts deutlich billiger als eine Abfrage je Ebene. Drei Dinge, die daran hängen:
 
 - **Zyklen** („zyklische Rezepte“ aus der Health-Check-Liste des Konzepts) findet `FindCyclesAsync` per Tiefensuche; der Baumaufbau bricht an einem wiederkehrenden Item ab und markiert den Knoten, statt endlos zu laufen.
 - **`SummarizeBaseCost`** rechnet einen Baum auf seine Grundstoffe herunter und verrechnet dabei die Rezeptausbeuten, je Stufe aufgerundet: Ein Rezept, das vier Stäbe liefert, wird für sechs Stäbe zweimal ausgeführt.
+- **Die Ausbeute ist die des jeweiligen Ziels**, nicht die des Rezepts: `_byOutput` führt ein Rezept unter jedem seiner Ziel-Items, je mit der Menge genau dieses Items. Wer den Barren herstellt, braucht das Rezept einmal je vier Barren — an der Schlacke daneben hängt eine andere Zahl.
 
-Gibt es mehrere Rezepte für dasselbe Item, klappt der Baum das erste auf und weist die übrigen als Anzahl aus.
+Gibt es mehrere Rezepte für dasselbe Item, klappt der Baum das erste auf und weist die übrigen als Anzahl aus. Sprites hat das Rezept keine — sein Icon ist das des ersten Ziel-Items.
 
 ### Währungen
 

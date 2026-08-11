@@ -122,30 +122,33 @@ else
               RowClass="cursor-pointer">
         <HeaderContent>
             <MudTh Style="width:56px;"></MudTh>
-            <MudTh>@L["HeaderRecipe"]</MudTh>
-            <MudTh>@L["HeaderOutput"]</MudTh>
+            <MudTh>@L["HeaderOutputs"]</MudTh>
             <MudTh>@L["HeaderIngredients"]</MudTh>
             <MudTh>@L["HeaderType"]</MudTh>
             <MudTh Style="width:96px;"></MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="@L["HeaderSprite"]">
-                <AssetThumbnail AssetId="context.OutputAssetId"
+                <AssetThumbnail AssetId="context.PrimaryOutput?.AssetId"
                                 Size="Size.Small"
-                                Alt="@(context.OutputItemName ?? context.Name)"
+                                Alt="@(context.PrimaryOutput?.ItemName ?? context.Name)"
                                 FallbackIcon="@Icons.Material.Filled.Construction" />
             </MudTd>
-            <MudTd DataLabel="@L["HeaderRecipe"]">
-                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderOutput"]">
-                @if (context.OutputItemName is null)
+            <MudTd DataLabel="@L["HeaderOutputs"]">
+                @if (context.Outputs.Count == 0)
                 {
                     <MudText Typo="Typo.caption" Color="Color.Warning">@L["NoOutput"]</MudText>
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2">@L["OutputFormat", context.OutputQuantity, context.OutputItemName]</MudText>
+                    @* Die Ziel-Items sind zugleich der Name des Rezepts — deshalb steht hier
+                       keine eigene Namensspalte daneben. *@
+                    @foreach (var output in context.Outputs)
+                    {
+                        <MudText Typo="Typo.body2">
+                            <b>@L["OutputFormat", output.Quantity, output.ItemName ?? L["DeletedItem"].Value]</b>
+                        </MudText>
+                    }
                 }
             </MudTd>
             <MudTd DataLabel="@L["HeaderIngredients"]">
@@ -163,7 +166,7 @@ else
             </MudTd>
             <MudTd>
                 <MudStack Row="true" Spacing="0">
-                    @if (context.OutputItemId is { } outputId)
+                    @if (context.PrimaryOutput?.ItemId is { } outputId)
                     {
                         <MudTooltip Text="@L["TreeTooltip"]">
                             <MudIconButton Icon="@Icons.Material.Filled.AccountTree"
@@ -281,17 +284,17 @@ else
             {
                 rows = _itemRole switch
                 {
-                    ItemRole.Output => rows.Where(row => row.OutputItemId == item.Id),
+                    ItemRole.Output => rows.Where(row => row.Outputs.Any(output => output.ItemId == item.Id)),
                     ItemRole.Ingredient => rows.Where(row => _recipesUsingFilterItem.Contains(row.Id)),
-                    _ => rows.Where(row => row.OutputItemId == item.Id || _recipesUsingFilterItem.Contains(row.Id))
+                    _ => rows.Where(row => row.Outputs.Any(output => output.ItemId == item.Id)
+                        || _recipesUsingFilterItem.Contains(row.Id))
                 };
             }
 
             if (!string.IsNullOrWhiteSpace(_search))
             {
-                rows = rows.Where(row =>
-                    row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
-                    || (row.OutputItemName?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+                // Der Name eines Rezepts sind seine Ziel-Items — die Suche darüber trifft sie mit.
+                rows = rows.Where(row => row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase));
             }
 
             return [.. rows];

@@ -42,14 +42,8 @@
   <data name="NoItemsLink" xml:space="preserve">
     <value>jetzt Items anlegen</value>
   </data>
-  <data name="SectionMasterData" xml:space="preserve">
-    <value>Stammdaten</value>
-  </data>
-  <data name="NameLabel" xml:space="preserve">
-    <value>Name *</value>
-  </data>
-  <data name="DescriptionLabel" xml:space="preserve">
-    <value>Beschreibung</value>
+  <data name="SectionType" xml:space="preserve">
+    <value>Rezept-Art</value>
   </data>
   <data name="TypeLabel" xml:space="preserve">
     <value>Rezept-Art</value>
@@ -57,8 +51,8 @@
   <data name="TypeHelper" xml:space="preserve">
     <value>Über die Art kommen eigene Felder dazu, etwa Dauer oder Werkbank.</value>
   </data>
-  <data name="SectionOutput" xml:space="preserve">
-    <value>Ergebnis</value>
+  <data name="SectionOutputs" xml:space="preserve">
+    <value>Ziel-Items</value>
   </data>
   <data name="QuantityLabel" xml:space="preserve">
     <value>Menge</value>
@@ -66,20 +60,32 @@
   <data name="OutputItemLabel" xml:space="preserve">
     <value>Hergestelltes Item</value>
   </data>
+  <data name="AddOutput" xml:space="preserve">
+    <value>Ziel-Item</value>
+  </data>
+  <data name="NoOutputs" xml:space="preserve">
+    <value>Noch keine Ziel-Items. Ein Rezept kann mehrere liefern — etwa ein Nebenprodukt neben dem eigentlichen Erzeugnis.</value>
+  </data>
+  <data name="RemoveOutput" xml:space="preserve">
+    <value>Ziel-Item entfernen</value>
+  </data>
   <data name="SectionIngredients" xml:space="preserve">
-    <value>Zutaten</value>
+    <value>Benötigte Items</value>
   </data>
   <data name="AddIngredient" xml:space="preserve">
-    <value>Zutat</value>
+    <value>Benötigtes Item</value>
   </data>
   <data name="NoIngredients" xml:space="preserve">
-    <value>Noch keine Zutaten. Ein Rezept ohne Zutaten ist zulässig — etwa für Dinge, die ohne Material entstehen.</value>
+    <value>Noch keine benötigten Items. Ein Rezept ohne sie ist zulässig — etwa für Dinge, die ohne Material entstehen.</value>
   </data>
   <data name="IngredientItemLabel" xml:space="preserve">
     <value>Item</value>
   </data>
   <data name="RemoveIngredient" xml:space="preserve">
-    <value>Zutat entfernen</value>
+    <value>Benötigtes Item entfernen</value>
+  </data>
+  <data name="DeletedItem" xml:space="preserve">
+    <value>(gelöschtes Item)</value>
   </data>
   <data name="IndividualHint" xml:space="preserve">
     <value>Für Angaben, die nur dieses eine Rezept braucht.</value>
@@ -112,10 +118,7 @@
     <value>Neues Rezept</value>
   </data>
   <data name="PageHeadingUnnamed" xml:space="preserve">
-    <value>Rezept ohne Namen</value>
-  </data>
-  <data name="NameSuggestion" xml:space="preserve">
-    <value>Vorschlag: „{0}“</value>
+    <value>Rezept ohne Ziel-Item</value>
   </data>
   <data name="SavedMessage" xml:space="preserve">
     <value>„{0}“ wurde gespeichert.</value>
@@ -124,7 +127,7 @@
     <value>Rezept löschen</value>
   </data>
   <data name="DeleteConfirmMessage" xml:space="preserve">
-    <value>„{0}“ wird mit seinen Zutaten und Feldwerten gelöscht. Die beteiligten Items bleiben.</value>
+    <value>„{0}“ wird mit seinen Ziel-Items, benötigten Items und Feldwerten gelöscht. Die beteiligten Items bleiben.</value>
   </data>
   <data name="DeleteYes" xml:space="preserve">
     <value>Löschen</value>

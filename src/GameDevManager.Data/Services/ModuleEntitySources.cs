@@ -28,7 +28,7 @@ public sealed class ItemEntitySource(IStringLocalizer<DataMessages> messages)
 
 /// <summary>
 /// Rezepte für die modulübergreifenden Dienste. Als einziges Modul verweist es bisher über
-/// eigene Spalten auf fremde Entitäten — Ergebnis und Zutaten zeigen auf Items.
+/// eigene Spalten auf fremde Entitäten — Ziel-Items und Zutaten zeigen auf Items.
 /// </summary>
 public sealed class RecipeEntitySource(IStringLocalizer<DataMessages> messages)
     : ModuleEntitySource<Recipe>(messages)
@@ -41,14 +41,27 @@ public sealed class RecipeEntitySource(IStringLocalizer<DataMessages> messages)
     {
         var yields = Messages["Search_RecipeYields"].Value;
 
+        // Untertitel und Vorschaubild kommen vom ersten Ziel-Item; der Name des Rezepts nennt
+        // ohnehin alle. Der Treffer selbst geht über die Namensspalte, die beim Speichern aus
+        // den Ziel-Items gebildet wird.
         return query.Select(recipe => new SearchHit(
             recipe.Id,
             ModuleKeys.Crafting,
             SearchHitKind.Entity,
             recipe.Name,
-            db.Items.Where(i => i.Id == recipe.OutputItemId).Select(i => yields + i.Name).FirstOrDefault(),
-            db.Assets.Where(a => a.OwnerEntityId == recipe.OutputItemId && a.IsPrimary)
-                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+            db.RecipeOutputs
+                .Where(o => o.RecipeId == recipe.Id)
+                .OrderBy(o => o.SortOrder)
+                .Select(o => yields + db.Items.Where(i => i.Id == o.ItemId).Select(i => i.Name).FirstOrDefault())
+                .FirstOrDefault(),
+            db.RecipeOutputs
+                .Where(o => o.RecipeId == recipe.Id)
+                .OrderBy(o => o.SortOrder)
+                .Select(o => db.Assets
+                    .Where(a => a.OwnerEntityId == o.ItemId && a.IsPrimary)
+                    .Select(a => (Guid?)a.Id)
+                    .FirstOrDefault())
+                .FirstOrDefault()));
     }
 
     public override async Task<List<EntityReferenceHit>> FindReferencesAsync(
@@ -57,10 +70,11 @@ public sealed class RecipeEntitySource(IStringLocalizer<DataMessages> messages)
         var recipeOutput = Messages["Reference_RecipeOutput"].Value;
         var recipeIngredient = Messages["Reference_RecipeIngredient"].Value;
 
-        var hits = await db.Recipes
+        var hits = await db.RecipeOutputs
             .AsNoTracking()
-            .Where(recipe => recipe.OutputItemId == entityId)
-            .Select(recipe => new EntityReferenceHit(recipe.Id, ModuleKeys.Crafting, recipe.Name, recipeOutput))
+            .Where(output => output.ItemId == entityId)
+            .Select(output => new EntityReferenceHit(
+                output.RecipeId, ModuleKeys.Crafting, output.Recipe!.Name, recipeOutput))
             .ToListAsync(ct);
 
         hits.AddRange(await db.RecipeIngredients

@@ -1497,12 +1497,6 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("OutputItemId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("OutputQuantity")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -1513,8 +1507,6 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
-
-                    b.HasIndex("OutputItemId");
 
                     b.ToTable("Recipes");
                 });
@@ -1544,6 +1536,33 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("RecipeId");
 
                     b.ToTable("RecipeIngredients");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.RecipeOutput", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("RecipeOutputs");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Skill", b =>
@@ -2350,6 +2369,17 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("Recipe");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.RecipeOutput", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Recipe", "Recipe")
+                        .WithMany("Outputs")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Skill", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -2519,6 +2549,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.Recipe", b =>
                 {
                     b.Navigation("Ingredients");
+
+                    b.Navigation("Outputs");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.StoryEntry", b =>

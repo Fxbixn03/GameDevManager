@@ -37,7 +37,7 @@
     <value>Erstes Rezept</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>Nach Rezept- oder Ergebnisname suchen</value>
+    <value>Nach Ziel-Item suchen</value>
   </data>
   <data name="ItemFilterLabel" xml:space="preserve">
     <value>Item</value>
@@ -46,13 +46,13 @@
     <value>Rolle</value>
   </data>
   <data name="RoleAny" xml:space="preserve">
-    <value>Ergebnis oder Zutat</value>
+    <value>Ziel oder benötigt</value>
   </data>
   <data name="RoleOutput" xml:space="preserve">
-    <value>Nur als Ergebnis</value>
+    <value>Nur als Ziel-Item</value>
   </data>
   <data name="RoleIngredient" xml:space="preserve">
-    <value>Nur als Zutat</value>
+    <value>Nur als benötigtes Item</value>
   </data>
   <data name="TypeFilterLabel" xml:space="preserve">
     <value>Art</value>
@@ -63,20 +63,20 @@
   <data name="HeaderSprite" xml:space="preserve">
     <value>Sprite</value>
   </data>
-  <data name="HeaderRecipe" xml:space="preserve">
-    <value>Rezept</value>
-  </data>
-  <data name="HeaderOutput" xml:space="preserve">
-    <value>Ergebnis</value>
+  <data name="HeaderOutputs" xml:space="preserve">
+    <value>Ziel-Items</value>
   </data>
   <data name="HeaderIngredients" xml:space="preserve">
-    <value>Zutaten</value>
+    <value>Benötigte Items</value>
   </data>
   <data name="HeaderType" xml:space="preserve">
     <value>Art</value>
   </data>
   <data name="NoOutput" xml:space="preserve">
-    <value>kein Ergebnis gesetzt</value>
+    <value>kein Ziel-Item gesetzt</value>
+  </data>
+  <data name="DeletedItem" xml:space="preserve">
+    <value>(gelöschtes Item)</value>
   </data>
   <data name="OutputFormat" xml:space="preserve">
     <value>{0}× {1}</value>
@@ -115,7 +115,7 @@
     <value>Rezept löschen</value>
   </data>
   <data name="DeleteConfirmMessage" xml:space="preserve">
-    <value>„{0}“ wird mit seinen Zutaten und Feldwerten gelöscht. Die beteiligten Items bleiben.</value>
+    <value>„{0}“ wird mit seinen Ziel-Items, benötigten Items und Feldwerten gelöscht. Die beteiligten Items bleiben.</value>
   </data>
   <data name="DeleteYes" xml:space="preserve">
     <value>Löschen</value>

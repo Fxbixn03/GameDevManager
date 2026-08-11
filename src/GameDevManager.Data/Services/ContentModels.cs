@@ -398,18 +398,25 @@ public sealed record RarityListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>Ein Ziel-Item eines Rezepts, aufgelöst für die Anzeige.</summary>
+public sealed record RecipeOutputRow(Guid ItemId, string? ItemName, int Quantity, Guid? AssetId);
+
 /// <summary>Eine Zeile der Rezept-Übersicht.</summary>
+/// <param name="Name">
+/// Aus den Ziel-Items gebildet — ein Rezept trägt keinen eigenen Namen mehr.
+/// </param>
 public sealed record RecipeListRow(
     Guid Id,
     string Name,
     Guid? ContentTypeId,
     string? TypeName,
-    Guid? OutputItemId,
-    string? OutputItemName,
-    int OutputQuantity,
-    Guid? OutputAssetId,
+    IReadOnlyList<RecipeOutputRow> Outputs,
     int IngredientCount,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc)
+{
+    /// <summary>Das erste Ziel-Item — es trägt Icon und Baum-Verknüpfung der Zeile.</summary>
+    public RecipeOutputRow? PrimaryOutput => Outputs.Count > 0 ? Outputs[0] : null;
+}
 
 /// <summary>
 /// Ein Knoten des Crafting-Baums: ein Item in einer bestimmten Menge, darunter die Zutaten

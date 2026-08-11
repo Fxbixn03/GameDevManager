@@ -30,7 +30,7 @@ Man legt seine Daten strukturiert während Planungsphasen an und kann diese spä
 | Modul | Beschreibung |
 |---|---|
 | Items | Items mit Name, Sprite und Werten definieren; Item-Arten mit eigenen Feldern |
-| Crafting | Rezepte aus Items zusammenstellen, filterbare Rezeptliste, Crafting-Trees als Graph |
+| Crafting | Rezepte aus Ziel-Items, benötigten Items und einer Rezept-Art; filterbare Rezeptliste, Crafting-Trees als Graph |
 | Währungen | Beliebig viele Ingame-Währungen, die Händler akzeptieren |
 | NPCs | NPCs und Mobs mit Arten, Händler- und Quest-Rollen, Shop-Sortiment mit Preisen, Lagerbestand und Auffüllzeiten, Spawn-Orte auf der Karte |
 | Fraktionen | Fraktionen mit Rollen und Rängen für zugeordnete NPCs |

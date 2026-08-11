@@ -20,34 +20,64 @@ public class CraftingService(
     /// </summary>
     private const int MaximumTreeDepth = 12;
 
+    /// <summary>So viel fasst die Namensspalte der Modul-Entitäten.</summary>
+    private const int NameMaxLength = 200;
+
     // --------------------------------------------------------------------------- Übersicht
 
     public async Task<List<RecipeListRow>> GetRecipesAsync(Guid projectId, CancellationToken ct = default)
     {
         await using var db = await factory.CreateDbContextAsync(ct);
 
-        return await db.Recipes
+        var recipes = await db.Recipes
             .AsNoTracking()
             .Where(r => r.GameProjectId == projectId)
-            .OrderBy(r => r.Name)
-            .Select(r => new RecipeListRow(
+            .Select(r => new
+            {
                 r.Id,
-                r.Name,
                 r.ContentTypeId,
-                r.ContentType!.Name,
-                r.OutputItemId,
-                db.Items.Where(i => i.Id == r.OutputItemId).Select(i => i.Name).FirstOrDefault(),
-                r.OutputQuantity,
-                db.Assets
-                    .Where(a => a.OwnerEntityId == r.OutputItemId && a.IsPrimary)
-                    .Select(a => (Guid?)a.Id)
-                    .FirstOrDefault(),
-                r.Ingredients.Count,
-                r.UpdatedAtUtc))
+                TypeName = r.ContentType!.Name,
+                Outputs = r.Outputs
+                    .OrderBy(o => o.SortOrder)
+                    .Select(o => new { o.ItemId, o.Quantity })
+                    .ToList(),
+                IngredientCount = r.Ingredients.Count,
+                r.UpdatedAtUtc
+            })
             .ToListAsync(ct);
+
+        // Die Ziel-Items einmal für alle Zeilen auflösen: Sie tragen Name und Icon des Rezepts,
+        // und der Name soll auch dann stimmen, wenn ein Item seit dem letzten Speichern des
+        // Rezepts umbenannt wurde.
+        var items = await LoadItemsAsync(
+            db, [.. recipes.SelectMany(recipe => recipe.Outputs.Select(output => output.ItemId))], ct);
+
+        var rows = recipes.Select(recipe =>
+        {
+            List<RecipeOutputRow> outputs =
+            [
+                .. recipe.Outputs.Select(output =>
+                {
+                    var item = items.TryGetValue(output.ItemId, out var found) ? found : default;
+
+                    return new RecipeOutputRow(output.ItemId, item.Name, output.Quantity, item.AssetId);
+                })
+            ];
+
+            return new RecipeListRow(
+                recipe.Id,
+                DescribeOutputs(outputs),
+                recipe.ContentTypeId,
+                recipe.TypeName,
+                outputs,
+                recipe.IngredientCount,
+                recipe.UpdatedAtUtc);
+        });
+
+        return [.. rows.OrderBy(row => row.Name)];
     }
 
-    /// <summary>Die Rezepte, in denen ein Item als Ergebnis oder als Zutat vorkommt.</summary>
+    /// <summary>Die Rezepte, in denen ein Item als Ziel oder als Zutat vorkommt.</summary>
     public async Task<(List<RecipeListRow> Produces, List<RecipeListRow> Consumes)> GetRecipesForItemAsync(
         Guid projectId, Guid itemId, CancellationToken ct = default)
     {
@@ -62,8 +92,48 @@ public class CraftingService(
             .ToListAsync(ct);
 
         return (
-            [.. all.Where(row => row.OutputItemId == itemId)],
+            [.. all.Where(row => row.Outputs.Any(output => output.ItemId == itemId))],
             [.. all.Where(row => consumingIds.Contains(row.Id))]);
+    }
+
+    /// <summary>
+    /// Der Anzeigename eines Rezepts: seine Ziel-Items, etwa „2× Fackel + 1× Asche“. Ein Rezept
+    /// trägt keinen eigenen Namen mehr — die Oberfläche bildet ihn mit derselben Regel, damit
+    /// die Überschrift schon vor dem Speichern zum späteren Listeneintrag passt.
+    /// </summary>
+    public static string FormatOutputs(IEnumerable<(string Name, int Quantity)> outputs) =>
+        string.Join(" + ", outputs.Select(output =>
+            output.Quantity > 1 ? $"{output.Quantity}× {output.Name}" : output.Name));
+
+    private string DescribeOutputs(IEnumerable<RecipeOutputRow> outputs)
+    {
+        var deleted = messages["DeletedItem"].Value;
+        var name = FormatOutputs(outputs.Select(output => (output.ItemName ?? deleted, output.Quantity)));
+
+        return string.IsNullOrWhiteSpace(name) ? messages["RecipeWithoutOutput"] : name;
+    }
+
+    /// <summary>Namen und Icons einer Menge von Items, in einem Zug.</summary>
+    private static async Task<Dictionary<Guid, (string Name, Guid? AssetId)>> LoadItemsAsync(
+        GameDevManagerDbContext db, List<Guid> itemIds, CancellationToken ct)
+    {
+        List<Guid> distinct = [.. itemIds.Distinct()];
+
+        var items = await db.Items
+            .AsNoTracking()
+            .Where(i => distinct.Contains(i.Id))
+            .Select(i => new
+            {
+                i.Id,
+                i.Name,
+                AssetId = db.Assets
+                    .Where(a => a.OwnerEntityId == i.Id && a.IsPrimary)
+                    .Select(a => (Guid?)a.Id)
+                    .FirstOrDefault()
+            })
+            .ToListAsync(ct);
+
+        return items.ToDictionary(i => i.Id, i => (i.Name, i.AssetId));
     }
 
     // ------------------------------------------------------------------------- Bearbeiten
@@ -89,6 +159,7 @@ public class CraftingService(
 
         var recipe = await db.Recipes
             .AsNoTracking()
+            .Include(r => r.Outputs)
             .Include(r => r.Ingredients)
             .FirstOrDefaultAsync(r => r.Id == recipeId && r.GameProjectId == projectId, ct);
 
@@ -97,6 +168,7 @@ public class CraftingService(
             return null;
         }
 
+        recipe.Outputs = [.. recipe.Outputs.OrderBy(o => o.SortOrder)];
         recipe.Ingredients = [.. recipe.Ingredients.OrderBy(i => i.SortOrder)];
 
         return new ContentEditContext<Recipe>
@@ -113,29 +185,8 @@ public class CraftingService(
     {
         var recipe = context.Entity;
 
-        if (string.IsNullOrWhiteSpace(recipe.Name))
-        {
-            throw new ContentValidationException(messages["RecipeNameRequired"]);
-        }
-
-        if (recipe.OutputQuantity < 1)
-        {
-            throw new ContentValidationException(messages["RecipeOutputAtLeastOne"]);
-        }
-
-        if (recipe.Ingredients.Any(ingredient => ingredient.Quantity < 1))
-        {
-            throw new ContentValidationException(messages["RecipeIngredientQuantity"]);
-        }
-
-        var duplicate = recipe.Ingredients
-            .GroupBy(ingredient => ingredient.ItemId)
-            .FirstOrDefault(group => group.Count() > 1);
-
-        if (duplicate is not null)
-        {
-            throw new ContentValidationException(messages["RecipeIngredientDuplicate"]);
-        }
+        ValidateLines(recipe.Outputs, messages["RecipeOutputQuantity"], messages["RecipeOutputDuplicate"]);
+        ValidateLines(recipe.Ingredients, messages["RecipeIngredientQuantity"], messages["RecipeIngredientDuplicate"]);
 
         ContentFields.ValidateRequired(context, messages);
 
@@ -143,6 +194,7 @@ public class CraftingService(
 
         var now = DateTime.UtcNow;
         var stored = await db.Recipes
+            .Include(r => r.Outputs)
             .Include(r => r.Ingredients)
             .FirstOrDefaultAsync(r => r.Id == recipe.Id, ct);
 
@@ -152,7 +204,7 @@ public class CraftingService(
             {
                 Id = recipe.Id,
                 GameProjectId = recipe.GameProjectId,
-                Name = recipe.Name.Trim(),
+                Name = string.Empty,
                 CreatedAtUtc = now
             };
 
@@ -160,13 +212,11 @@ public class CraftingService(
         }
 
         stored.ContentTypeId = recipe.ContentTypeId;
-        stored.Name = recipe.Name.Trim();
-        stored.Description = string.IsNullOrWhiteSpace(recipe.Description) ? null : recipe.Description.Trim();
-        stored.OutputItemId = recipe.OutputItemId;
-        stored.OutputQuantity = recipe.OutputQuantity;
+        stored.Name = await BuildNameAsync(db, recipe.Outputs, ct);
         stored.UpdatedAtUtc = now;
 
-        SyncIngredients(db, stored, recipe);
+        SyncLines(db, stored.Outputs, recipe.Outputs, stored.Id);
+        SyncLines(db, stored.Ingredients, recipe.Ingredients, stored.Id);
 
         await ContentFields.StageValuesAsync(db, context, ct);
         await db.SaveChangesAsync(ct);
@@ -174,52 +224,98 @@ public class CraftingService(
         recipe.CreatedAtUtc = stored.CreatedAtUtc;
         recipe.UpdatedAtUtc = stored.UpdatedAtUtc;
         recipe.Name = stored.Name;
-        recipe.Description = stored.Description;
     }
 
-    private static void SyncIngredients(GameDevManagerDbContext db, Recipe stored, Recipe incoming)
+    /// <summary>Prüft eine Zeilenliste — Ziel-Items und Zutaten haben dieselben Regeln.</summary>
+    private static void ValidateLines<TLine>(List<TLine> lines, string quantityMessage, string duplicateMessage)
+        where TLine : IRecipeLine
     {
-        var wanted = incoming.Ingredients;
-        var wantedIds = wanted.Select(ingredient => ingredient.Id).ToHashSet();
+        if (lines.Any(line => line.Quantity < 1))
+        {
+            throw new ContentValidationException(quantityMessage);
+        }
+
+        if (lines.GroupBy(line => line.ItemId).Any(group => group.Count() > 1))
+        {
+            throw new ContentValidationException(duplicateMessage);
+        }
+    }
+
+    /// <summary>
+    /// Bildet den gespeicherten Namen aus den Ziel-Items. Er steht in der Datenbank, weil Suche,
+    /// Referenzansicht und Auswahlfelder aller Module über die Namensspalte gehen.
+    /// </summary>
+    private async Task<string> BuildNameAsync(
+        GameDevManagerDbContext db, List<RecipeOutput> outputs, CancellationToken ct)
+    {
+        List<Guid> itemIds = [.. outputs.Select(output => output.ItemId).Distinct()];
+
+        var names = await db.Items
+            .AsNoTracking()
+            .Where(i => itemIds.Contains(i.Id))
+            .ToDictionaryAsync(i => i.Id, i => i.Name, ct);
+
+        var deleted = messages["DeletedItem"].Value;
+        var name = FormatOutputs(outputs.Select(output => (names.GetValueOrDefault(output.ItemId, deleted), output.Quantity)));
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return messages["RecipeWithoutOutput"];
+        }
+
+        return name.Length <= NameMaxLength ? name : name[..(NameMaxLength - 1)] + "…";
+    }
+
+    /// <summary>
+    /// Gleicht eine Zeilenliste eines Rezepts mit dem gespeicherten Stand ab. Ziel-Items und
+    /// Zutaten liegen in eigenen Tabellen, verhalten sich beim Speichern aber gleich.
+    /// </summary>
+    private static void SyncLines<TLine>(
+        GameDevManagerDbContext db, List<TLine> stored, List<TLine> wanted, Guid recipeId)
+        where TLine : class, IRecipeLine, new()
+    {
+        var wantedIds = wanted.Select(line => line.Id).ToHashSet();
 
         // Nur aus der Navigationsliste entfernen. Der Fremdschlüssel auf das Rezept ist
         // pflicht, also löscht EF die Waise von selbst — zusätzlich db.Remove aufzurufen
         // erzeugte einen zweiten DELETE für dieselbe Zeile.
-        foreach (var obsolete in stored.Ingredients.Where(i => !wantedIds.Contains(i.Id)).ToList())
+        foreach (var obsolete in stored.Where(line => !wantedIds.Contains(line.Id)).ToList())
         {
-            stored.Ingredients.Remove(obsolete);
+            stored.Remove(obsolete);
         }
 
         for (var index = 0; index < wanted.Count; index++)
         {
-            var ingredient = wanted[index];
-            var target = stored.Ingredients.FirstOrDefault(i => i.Id == ingredient.Id);
+            var line = wanted[index];
+            var target = stored.FirstOrDefault(existing => existing.Id == line.Id);
 
             if (target is null)
             {
-                // Ausdrücklich über das DbSet und nicht über die Navigationsliste: die Zutat
+                // Ausdrücklich über das DbSet und nicht über die Navigationsliste: die Zeile
                 // bringt ihre GUID bereits mit, und EF hielte sie beim Anhängen an ein
                 // bestehendes Rezept für einen vorhandenen Datensatz — es entstünde ein
                 // UPDATE auf eine Zeile, die es noch gar nicht gibt.
-                db.RecipeIngredients.Add(new RecipeIngredient
+                db.Set<TLine>().Add(new TLine
                 {
-                    Id = ingredient.Id,
-                    RecipeId = stored.Id,
-                    ItemId = ingredient.ItemId,
-                    Quantity = ingredient.Quantity,
+                    Id = line.Id,
+                    RecipeId = recipeId,
+                    ItemId = line.ItemId,
+                    Quantity = line.Quantity,
                     SortOrder = index
                 });
             }
             else
             {
-                target.ItemId = ingredient.ItemId;
-                target.Quantity = ingredient.Quantity;
+                target.ItemId = line.ItemId;
+                target.Quantity = line.Quantity;
                 target.SortOrder = index;
             }
         }
     }
 
-    /// <summary>Löscht ein Rezept mit Zutaten, Feldwerten, individuellen Feldern und Sprites.</summary>
+    /// <summary>
+    /// Löscht ein Rezept mit Ziel-Items, Zutaten, Feldwerten, individuellen Feldern und Sprites.
+    /// </summary>
     public async Task DeleteRecipeAsync(Guid recipeId, CancellationToken ct = default)
     {
         await assets.DeleteForOwnerAsync(recipeId, ct);
@@ -229,7 +325,7 @@ public class CraftingService(
 
         await EntityCleanup.DeleteForEntityAsync(db, recipeId, ct);
 
-        // Die Zutaten fallen über den Fremdschlüssel mit.
+        // Ziel-Items und Zutaten fallen über den Fremdschlüssel mit.
         await db.Recipes
             .Where(r => r.Id == recipeId)
             .ExecuteDeleteAsync(ct);
@@ -326,9 +422,9 @@ public class CraftingService(
 
         var recipes = await db.Recipes
             .AsNoTracking()
-            .Where(r => r.GameProjectId == projectId && r.OutputItemId != null)
+            .Where(r => r.GameProjectId == projectId && r.Outputs.Any())
+            .Include(r => r.Outputs)
             .Include(r => r.Ingredients)
-            .OrderBy(r => r.Name)
             .ToListAsync(ct);
 
         return new CraftingGraph(
@@ -355,10 +451,20 @@ public class CraftingService(
 
         private string DeletedName { get; } = deletedName;
 
-        /// <summary>Rezepte je hergestelltem Item — mehrere Wege zum selben Item sind erlaubt.</summary>
-        private readonly Dictionary<Guid, List<Recipe>> _byOutput = recipes
-            .GroupBy(r => r.OutputItemId!.Value)
-            .ToDictionary(group => group.Key, group => group.ToList());
+        /// <summary>
+        /// Rezepte je hergestelltem Item, mit der Ausbeute an genau diesem Item — mehrere Wege
+        /// zum selben Item sind erlaubt, und ein Rezept kann in mehreren Listen stehen, wenn es
+        /// mehrere Ziel-Items hat.
+        /// </summary>
+        private readonly Dictionary<Guid, List<(Recipe Recipe, int Yield)>> _byOutput = recipes
+            .SelectMany(recipe => recipe.Outputs.Select(output => (Recipe: recipe, Output: output)))
+            .GroupBy(pair => pair.Output.ItemId)
+            .ToDictionary(
+                group => group.Key,
+                group => group
+                    .OrderBy(pair => pair.Recipe.Name)
+                    .Select(pair => (pair.Recipe, Yield: Math.Max(1, pair.Output.Quantity)))
+                    .ToList());
 
         public CraftingTreeNode Build(Guid itemId, int quantity, HashSet<Guid> path, int depth)
         {
@@ -372,14 +478,14 @@ public class CraftingService(
             }
 
             var candidates = _byOutput.GetValueOrDefault(itemId, []);
-            var recipe = candidates.FirstOrDefault();
 
-            if (recipe is null || depth >= MaximumTreeDepth)
+            if (candidates.Count == 0 || depth >= MaximumTreeDepth)
             {
                 return new CraftingTreeNode(
                     itemId, name, assetId, quantity, null, null, 1, candidates.Count, IsCycle: false, []);
             }
 
+            var (recipe, yield) = candidates[0];
             var nested = new HashSet<Guid>(path) { itemId };
 
             var children = recipe.Ingredients
@@ -393,12 +499,21 @@ public class CraftingService(
                 assetId,
                 quantity,
                 recipe.Id,
-                recipe.Name,
-                recipe.OutputQuantity,
+                Describe(recipe),
+                yield,
                 candidates.Count - 1,
                 IsCycle: false,
                 children);
         }
+
+        /// <summary>
+        /// Der Anzeigename eines Rezepts aus den hier bereits geladenen Item-Namen — der
+        /// gespeicherte Name stammt vom letzten Speichern und könnte veraltet sein.
+        /// </summary>
+        private string Describe(Recipe recipe) =>
+            FormatOutputs(recipe.Outputs
+                .OrderBy(output => output.SortOrder)
+                .Select(output => (Items.GetValueOrDefault(output.ItemId, (DeletedItemName, null)).Name, output.Quantity)));
 
         /// <summary>
         /// Sucht Items, die mittelbar aus sich selbst hergestellt werden. Tiefensuche mit
@@ -452,7 +567,7 @@ public class CraftingService(
 
             path.Add(itemId);
 
-            foreach (var recipe in _byOutput.GetValueOrDefault(itemId, []))
+            foreach (var (recipe, _) in _byOutput.GetValueOrDefault(itemId, []))
             {
                 foreach (var ingredient in recipe.Ingredients)
                 {
