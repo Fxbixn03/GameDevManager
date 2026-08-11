@@ -5,7 +5,6 @@
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
-@inject NavigationManager Navigation
 @inject IStringLocalizer<RecipeList> L
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -54,6 +53,8 @@ else if (_recipes.Count == 0)
 }
 else
 {
+    var filtered = Filtered;
+
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
@@ -108,88 +109,84 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _recipes.Count]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", filtered.Count, _recipes.Count]</MudText>
         </MudStack>
     </MudPaper>
 
-    <MudTable T="RecipeListRow"
-              Items="Filtered"
-              Elevation="0"
-              Hover="true"
-              Dense="true"
-              Breakpoint="Breakpoint.Sm"
-              OnRowClick="OpenRow"
-              RowClass="cursor-pointer">
-        <HeaderContent>
-            <MudTh Style="width:56px;"></MudTh>
-            <MudTh>@L["HeaderOutputs"]</MudTh>
-            <MudTh>@L["HeaderIngredients"]</MudTh>
-            <MudTh>@L["HeaderType"]</MudTh>
-            <MudTh Style="width:96px;"></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="@L["HeaderSprite"]">
-                <AssetThumbnail AssetId="context.PrimaryOutput?.AssetId"
-                                Size="Size.Small"
-                                Alt="@(context.PrimaryOutput?.ItemName ?? context.Name)"
-                                FallbackIcon="@Icons.Material.Filled.Construction" />
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderOutputs"]">
-                @if (context.Outputs.Count == 0)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Warning">@L["NoOutput"]</MudText>
-                }
-                else
-                {
-                    @* Die Ziel-Items sind zugleich der Name des Rezepts — deshalb steht hier
-                       keine eigene Namensspalte daneben. *@
-                    @foreach (var output in context.Outputs)
-                    {
-                        <MudText Typo="Typo.body2">
-                            <b>@L["OutputFormat", output.Quantity, output.ItemName ?? L["DeletedItem"].Value]</b>
+    @if (filtered.Count == 0)
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoRecords"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        @* Dieselbe Kachelansicht wie bei den Items — das Icon des ersten Ziel-Items trägt
+           die Kachel, der Name des Rezepts sind seine Ziel-Items. *@
+        <div class="gdm-item-grid">
+            @foreach (var recipe in filtered)
+            {
+                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                    <MudLink Href="@($"/modules/crafting/{recipe.Id}")" Underline="Underline.None">
+                        <AssetThumbnail AssetId="recipe.PrimaryOutput?.AssetId"
+                                        Class="gdm-item-tile"
+                                        Alt="@recipe.Name"
+                                        FallbackIcon="@Icons.Material.Filled.Construction" />
+                    </MudLink>
+
+                    <div class="pa-3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                            <MudLink Href="@($"/modules/crafting/{recipe.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                <b>@recipe.Name</b>
+                            </MudLink>
+                            <MudStack Row="true" Spacing="0">
+                                @if (recipe.PrimaryOutput?.ItemId is { } outputId)
+                                {
+                                    <MudTooltip Text="@L["TreeTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.AccountTree"
+                                                       Size="Size.Small"
+                                                       Href="@($"/modules/crafting/baum/{outputId}")"
+                                                       aria-label="@L["TreeAria"]" />
+                                    </MudTooltip>
+                                }
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(recipe))"
+                                                   aria-label="@L["DeleteAria", recipe.Name]" />
+                                </MudTooltip>
+                            </MudStack>
+                        </MudStack>
+
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                            @L["IngredientCount", recipe.IngredientCount]
                         </MudText>
-                    }
-                }
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderIngredients"]">
-                <MudText Typo="Typo.body2" Color="Color.Secondary">@context.IngredientCount</MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderType"]">
-                @if (context.TypeName is null)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                }
-                else
-                {
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
-                }
-            </MudTd>
-            <MudTd>
-                <MudStack Row="true" Spacing="0">
-                    @if (context.PrimaryOutput?.ItemId is { } outputId)
-                    {
-                        <MudTooltip Text="@L["TreeTooltip"]">
-                            <MudIconButton Icon="@Icons.Material.Filled.AccountTree"
-                                           Size="Size.Small"
-                                           Href="@($"/modules/crafting/baum/{outputId}")"
-                                           aria-label="@L["TreeAria"]" />
-                        </MudTooltip>
-                    }
-                    <MudTooltip Text="@L["DeleteTooltip"]">
-                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteAsync(context))"
-                                       aria-label="@L["DeleteAria", context.Name]" />
-                    </MudTooltip>
-                </MudStack>
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                @L["NoRecords"]
-            </MudText>
-        </NoRecordsContent>
-    </MudTable>
+
+                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                            @if (recipe.Outputs.Count == 0)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning">
+                                    @L["NoOutput"]
+                                </MudChip>
+                            }
+                            @if (recipe.TypeName is null)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@recipe.TypeName</MudChip>
+                            }
+                        </MudStack>
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                            @L["UpdatedAt", recipe.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                        </MudText>
+                    </div>
+                </MudPaper>
+            }
+        </div>
+    }
 
     @if (_cycles.Count > 0)
     {
@@ -298,14 +295,6 @@ else
             }
 
             return [.. rows];
-        }
-    }
-
-    private void OpenRow(TableRowClickEventArgs<RecipeListRow> args)
-    {
-        if (args.Item is { } row)
-        {
-            Navigation.NavigateTo($"/modules/crafting/{row.Id}");
         }
     }
 

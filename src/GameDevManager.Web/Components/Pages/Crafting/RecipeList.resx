@@ -60,26 +60,14 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderSprite" xml:space="preserve">
-    <value>Sprite</value>
+  <data name="IngredientCount" xml:space="preserve">
+    <value>{0} benötigte(s) Item(s)</value>
   </data>
-  <data name="HeaderOutputs" xml:space="preserve">
-    <value>Ziel-Items</value>
-  </data>
-  <data name="HeaderIngredients" xml:space="preserve">
-    <value>Benötigte Items</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
   <data name="NoOutput" xml:space="preserve">
     <value>kein Ziel-Item gesetzt</value>
-  </data>
-  <data name="DeletedItem" xml:space="preserve">
-    <value>(gelöschtes Item)</value>
-  </data>
-  <data name="OutputFormat" xml:space="preserve">
-    <value>{0}× {1}</value>
   </data>
   <data name="NoType" xml:space="preserve">
     <value>ohne Art</value>
