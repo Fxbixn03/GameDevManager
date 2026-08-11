@@ -3,6 +3,7 @@ using GameDevManager.Data.Services;
 using GameDevManager.Web.Components;
 using GameDevManager.Web.Services;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +14,10 @@ builder.Services.AddRazorComponents()
 // Die neutralen .resx-Dateien liegen direkt neben ihrer Seite (kein ResourcesPath) und
 // tragen die deutschen Texte; weitere Sprachen kommen später als Satelliten-Dateien dazu.
 builder.Services.AddLocalization();
-builder.Services.AddMudServices();
+// Snackbars unten rechts statt in der Standardecke oben rechts — dort verdecken sie
+// weder die Appbar noch die globale Suche.
+builder.Services.AddMudServices(options =>
+    options.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight);
 builder.Services.AddGameDevManagerDatabase(builder.Configuration);
 builder.Services.AddGameDevManagerAssetStorage(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddScoped<ProjectContext>();

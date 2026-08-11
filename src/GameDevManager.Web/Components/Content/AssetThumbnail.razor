@@ -1,9 +1,9 @@
 @*
-    Vorschau eines Assets. Der karierte Untergrund kommt aus app.css und macht sichtbar,
-    wo ein Sprite durchsichtig ist — bei Sprites ist genau das die häufigste Frage.
+    Vorschau eines Assets. Untergrund und Format kommen aus app.css (.gdm-thumb): eine
+    ruhige Fläche, damit das Sprite selbst die Kachel trägt.
 *@
 
-<div class="gdm-thumb @SizeClass" style="@Style" title="@Title">
+<div class="gdm-thumb @SizeClass @Class" style="@Style" title="@Title">
     @if (AssetId is { } id)
     {
         <img src="@($"/assets/{id}")" alt="@(Alt ?? string.Empty)" loading="lazy" />
@@ -33,6 +33,10 @@
 
     [Parameter]
     public string? Style { get; set; }
+
+    /// <summary>Zusätzliche CSS-Klasse, z. B. für ein abweichendes Format der Kachel.</summary>
+    [Parameter]
+    public string? Class { get; set; }
 
     private string SizeClass => Size switch
     {

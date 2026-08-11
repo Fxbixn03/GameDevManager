@@ -232,6 +232,9 @@ html {
 /* Text, der in einer Kachel nicht umbrechen soll. */
 .gdm-ellipsis {
     display: block;
+    /* Ohne das hält ein Flex-Kind seine Inhaltsbreite und kürzt nicht — z. B. ein langer
+       Item-Name neben dem Löschen-Knopf. */
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -427,8 +430,9 @@ html {
 
 /* ------------------------------------------------------------------------ Assets */
 
-/* Vorschau eines Sprites. Der karierte Untergrund macht sichtbar, wo das Bild durchsichtig
-   ist — bei Sprites die häufigste Frage, und auf Anthrazit sonst nicht zu erkennen. */
+/* Vorschau eines Sprites. Ruhige Fläche statt kariertem Untergrund: Sprites werden
+   durchsichtig hinterlegt, das Karo stünde also immer hinter jedem Bild und würde die
+   Übersicht unruhiger machen, als es an Transparenz zeigt. */
 .gdm-thumb {
     display: flex;
     align-items: center;
@@ -436,13 +440,6 @@ html {
     flex: 0 0 auto;
     border: 1px solid var(--mud-palette-lines-default);
     background-color: var(--mud-palette-background-gray);
-    background-image:
-        linear-gradient(45deg, var(--mud-palette-divider) 25%, transparent 25%),
-        linear-gradient(-45deg, var(--mud-palette-divider) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, var(--mud-palette-divider) 75%),
-        linear-gradient(-45deg, transparent 75%, var(--mud-palette-divider) 75%);
-    background-size: 12px 12px;
-    background-position: 0 0, 0 6px, 6px -6px, -6px 0;
     overflow: hidden;
 }
 
@@ -497,6 +494,27 @@ html {
     margin-top: 0.25rem;
     border-top: 1px solid var(--mud-palette-lines-default);
     padding-top: 0.25rem;
+}
+
+/* ------------------------------------------------------------------- Item-Kacheln */
+/* Items sind Sprites — die Übersicht zeigt sie wie die Karten als Kacheln statt als
+   Tabellenzeilen. */
+
+.gdm-item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+/* Quadratisch: alle Kacheln sind gleich groß, unabhängig vom Seitenverhältnis des Sprites.
+   Steht bewusst nach .gdm-thumb-*, weil es deren feste Maße überschreibt. */
+.gdm-item-tile {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    padding: 0.75rem;
+    border: 0;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
 }
 
 /* Anklickbare Card: Hover hebt nur die Kante hervor, die Fläche bleibt ruhig. */
