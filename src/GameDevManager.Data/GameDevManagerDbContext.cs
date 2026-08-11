@@ -27,6 +27,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Currency> Currencies => Set<Currency>();
 
+    public DbSet<Rarity> Rarities => Set<Rarity>();
+
     public DbSet<Npc> Npcs => Set<Npc>();
 
     public DbSet<TraderOffer> TraderOffers => Set<TraderOffer>();
@@ -232,6 +234,11 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         ConfigureContentEntity<Currency>(modelBuilder);
 
         modelBuilder.Entity<Currency>(entity => entity.Property(c => c.Symbol).HasMaxLength(10));
+
+        ConfigureContentEntity<Rarity>(modelBuilder);
+
+        // „#RRGGBB“ oder „#RRGGBBAA“ — mehr braucht eine Anzeigefarbe nicht.
+        modelBuilder.Entity<Rarity>(entity => entity.Property(r => r.Color).HasMaxLength(9));
 
         ConfigureContentEntity<Npc>(modelBuilder);
 

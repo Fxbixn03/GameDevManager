@@ -30,6 +30,12 @@
   <data name="currencies_Description" xml:space="preserve">
     <value>Spielwährungen in beliebigen Variationen</value>
   </data>
+  <data name="rarities_Name" xml:space="preserve">
+    <value>Seltenheiten</value>
+  </data>
+  <data name="rarities_Description" xml:space="preserve">
+    <value>Seltenheitsstufen, über Referenzfelder in allen Modulen nutzbar</value>
+  </data>
   <data name="npcs_Name" xml:space="preserve">
     <value>NPCs</value>
   </data>

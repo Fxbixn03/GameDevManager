@@ -1,0 +1,275 @@
+@page "/modules/rarities/neu"
+@page "/modules/rarities/{Id:guid}"
+@inject RarityService Rarities
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IStringLocalizer<RarityEditor> L
+
+@*
+    Bewusst schlanker als die übrigen Editoren: Seltenheiten haben keine Arten und keine
+    benutzerdefinierten Felder — nur Name, Farbe, Rang und Beschreibung.
+*@
+
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @L["NotFound"]
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/rarities">@L["BackToList"]</MudButton>
+}
+else if (_rarity is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@PageHeading"
+                  Subtitle="@(_isNew ? L["NotSavedYet"] : null)"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            @if (_dirty)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                    @L["UnsavedChanges"]
+                </MudChip>
+            }
+            @if (!_isNew)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="DeleteAsync">
+                    @L["Delete"]
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Href="/modules/rarities">@L["Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_saving"
+                       OnClick="SaveAsync">
+                @L["Save"]
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+
+                @* ------------------------------------------------------------- Stammdaten *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionBasics"]</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
+                            <div style="flex:1 1 auto; min-width:0;">
+                                <MudTextField Value="_rarity.Name"
+                                              ValueChanged="@((string name) => Touch(() => _rarity.Name = name))"
+                                              T="string"
+                                              Label="@L["NameLabel"]"
+                                              Variant="Variant.Outlined"
+                                              Immediate="true" />
+                            </div>
+
+                            <MudNumericField Value="_rarity.SortOrder"
+                                             ValueChanged="@((int rank) => Touch(() => _rarity.SortOrder = rank))"
+                                             T="int"
+                                             Label="@L["RankLabel"]"
+                                             Variant="Variant.Outlined"
+                                             HelperText="@L["RankHelperText"]"
+                                             Style="max-width:150px;" />
+                        </MudStack>
+
+                        <MudColorPicker Text="@_rarity.Color"
+                                        TextChanged="@((string color) => Touch(() => _rarity.Color = color))"
+                                        Label="@L["ColorLabel"]"
+                                        HelperText="@L["ColorHelperText"]"
+                                        Variant="Variant.Outlined"
+                                        ColorPickerView="ColorPickerView.Spectrum"
+                                        ShowAlpha="false" />
+
+                        @if (!string.IsNullOrWhiteSpace(_rarity.Color) && !string.IsNullOrWhiteSpace(_rarity.Name))
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                @L["ColorPreviewIntro"]
+                                <span style="@($"color:{_rarity.Color};")"><b>@_rarity.Name</b></span>.
+                            </MudText>
+                        }
+
+                        <MudTextField Value="_rarity.Description"
+                                      ValueChanged="@((string text) => Touch(() => _rarity.Description = text))"
+                                      T="string"
+                                      Label="@L["DescriptionLabel"]"
+                                      Variant="Variant.Outlined"
+                                      Lines="3" />
+                    </MudStack>
+                </MudPaper>
+
+                @* ------------------------------------------------------------------ Sprites *@
+                <AssetSpritePanel ModuleKey="@ModuleKeys.Rarities"
+                                  EntityId="_rarity.Id"
+                                  Disabled="_isNew" />
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidCaption"]</MudText>
+                    <EntityIdChip Id="_rarity.Id" />
+
+                    @if (!_isNew)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CreatedCaption"]</MudText>
+                        <MudText Typo="Typo.body2">@_rarity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@L["UpdatedCaption"]</MudText>
+                        <MudText Typo="Typo.body2">@_rarity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                    }
+                </MudPaper>
+
+                @if (!_isNew)
+                {
+                    <EntityTagsPanel ModuleKey="@ModuleKeys.Rarities" EntityId="_rarity.Id" />
+                    <ReferencesPanel @ref="_referencesPanel" EntityId="_rarity.Id" />
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Rarities);
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private Rarity? _rarity;
+    private ReferencesPanel? _referencesPanel;
+    private Guid? _loadedId;
+    private bool _isNew;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+
+    private string PageHeading => _rarity switch
+    {
+        null => L["HeadingFallback"],
+        _ when _isNew => L["HeadingNew"],
+        { Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
+        _ => L["HeadingUnnamed"]
+    };
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(PageHeading, null, disabled: true)];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_rarity is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _notFound = false;
+        _dirty = false;
+        _rarity = null;
+
+        var projectId = await Project.GetCurrentIdAsync();
+
+        if (Id is null)
+        {
+            _isNew = true;
+            _rarity = await Rarities.CreateNewAsync(projectId);
+            return;
+        }
+
+        _isNew = false;
+        _rarity = await Rarities.GetRarityAsync(projectId, Id.Value);
+
+        if (_rarity is null)
+        {
+            _notFound = true;
+        }
+    }
+
+    private void Touch(Action change)
+    {
+        change();
+        _dirty = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_rarity is null)
+        {
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            var wasNew = _isNew;
+            await Rarities.SaveRarityAsync(_rarity);
+            _dirty = false;
+            _isNew = false;
+
+            Snackbar.Add(L["SavedMessage", _rarity.Name], Severity.Success);
+
+            if (wasNew)
+            {
+                Navigation.NavigateTo($"/modules/rarities/{_rarity.Id}");
+                return;
+            }
+
+            if (_referencesPanel is not null)
+            {
+                await _referencesPanel.RefreshAsync();
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_rarity is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _rarity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Rarities.DeleteRarityAsync(_rarity.Id);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
+        Navigation.NavigateTo("/modules/rarities");
+    }
+}

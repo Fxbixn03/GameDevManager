@@ -733,6 +733,28 @@ public sealed class CutsceneEntitySource(IStringLocalizer<DataMessages> messages
 }
 
 /// <summary>
+/// Seltenheiten für die modulübergreifenden Dienste. Andere Module verweisen über
+/// benutzerdefinierte Referenzfelder hierher — das wertet der ReferenceService selbst aus.
+/// </summary>
+public sealed class RarityEntitySource(IStringLocalizer<DataMessages> messages)
+    : ModuleEntitySource<Rarity>(messages)
+{
+    public override string ModuleKey => ModuleKeys.Rarities;
+
+    protected override DbSet<Rarity> Set(GameDevManagerDbContext db) => db.Rarities;
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<Rarity> query) =>
+        query.Select(rarity => new SearchHit(
+            rarity.Id,
+            ModuleKeys.Rarities,
+            SearchHitKind.Entity,
+            rarity.Name,
+            rarity.Color,
+            db.Assets.Where(a => a.OwnerEntityId == rarity.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource(IStringLocalizer<DataMessages> messages)

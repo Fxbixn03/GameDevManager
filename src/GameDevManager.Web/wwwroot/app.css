@@ -216,6 +216,15 @@ html {
     text-align: center;
 }
 
+/* Farbfläche einer Seltenheit in Listen und Vorschauen — die Farbe selbst ist Nutzerdaten. */
+.gdm-color-dot {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+    border: 1px solid var(--mud-palette-lines-default);
+}
+
 .cursor-pointer {
     cursor: pointer;
 }

@@ -79,7 +79,11 @@
       "PowerShell(Stop-Process -Id 34852 -Force -Confirm:$false)",
       "PowerShell([System.Reflection.Assembly]::LoadFile\\(\"C:\\\\Users\\\\FabianStangl\\\\source\\\\repos\\\\GameDevManager\\\\src\\\\GameDevManager.Web\\\\bin\\\\Debug\\\\net10.0\\\\GameDevManager.Web.dll\"\\).GetManifestResourceNames\\(\\))",
       "PowerShell(dotnet build)",
-      "PowerShell(dotnet build src/GameDevManager.Web/GameDevManager.Web.csproj -p:BaseOutputPath=\"C:\\\\Users\\\\FABIAN~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-FabianStangl-source-repos-GameDevManager\\\\ff70e846-3e3c-407a-9382-61baea10988a\\\\scratchpad\\\\build\\\\\" -v minimal)"
+      "PowerShell(dotnet build src/GameDevManager.Web/GameDevManager.Web.csproj -p:BaseOutputPath=\"C:\\\\Users\\\\FABIAN~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-FabianStangl-source-repos-GameDevManager\\\\ff70e846-3e3c-407a-9382-61baea10988a\\\\scratchpad\\\\build\\\\\" -v minimal)",
+      "PowerShell(Get-Process -Id 31592)",
+      "PowerShell($env:Database__Provider=\"PostgreSql\"; dotnet ef migrations add AddRarities --project src/GameDevManager.Data.Migrations.PostgreSql --startup-project src/GameDevManager.Web)",
+      "PowerShell($env:Database__Provider=\"MySql\"; dotnet ef migrations add AddRarities --project src/GameDevManager.Data.Migrations.MySql --startup-project src/GameDevManager.Web)",
+      "PowerShell($env:Database__Provider=\"Sqlite\"; dotnet ef migrations add AddRarities --project src/GameDevManager.Data.Migrations.Sqlite --startup-project src/GameDevManager.Web)"
     ],
     "deny": [
       "Bash(rm:*)",

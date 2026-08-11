@@ -75,6 +75,12 @@
   <data name="CurrencyNameExists" xml:space="preserve">
     <value>Es gibt bereits eine Währung namens „{0}“.</value>
   </data>
+  <data name="RarityNameRequired" xml:space="preserve">
+    <value>Die Seltenheit braucht einen Namen.</value>
+  </data>
+  <data name="RarityNameExists" xml:space="preserve">
+    <value>Es gibt bereits eine Seltenheit namens „{0}“.</value>
+  </data>
   <data name="TagNameRequired" xml:space="preserve">
     <value>Das Tag braucht einen Namen.</value>
   </data>

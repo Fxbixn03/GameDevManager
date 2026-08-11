@@ -388,6 +388,16 @@ public sealed record CurrencyListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>Eine Zeile der Seltenheiten-Übersicht. Seltenheiten haben keine Arten.</summary>
+public sealed record RarityListRow(
+    Guid Id,
+    string Name,
+    string? Color,
+    int SortOrder,
+    string? Description,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
 /// <summary>Eine Zeile der Rezept-Übersicht.</summary>
 public sealed record RecipeListRow(
     Guid Id,

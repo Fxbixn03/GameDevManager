@@ -14,6 +14,7 @@ public static class ModuleKeys
     public const string Items = "items";
     public const string Crafting = "crafting";
     public const string Currencies = "currencies";
+    public const string Rarities = "rarities";
     public const string Npcs = "npcs";
     public const string Factions = "factions";
     public const string Diplomacy = "diplomacy";

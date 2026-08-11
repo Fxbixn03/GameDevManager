@@ -1,0 +1,178 @@
+@page "/modules/rarities"
+@inject RarityService Rarities
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IStringLocalizer<RarityList> L
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/modules/rarities/neu">
+            @L["NewRarity"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_rarities is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_rarities.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Diamond" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            @L["EmptyHint"]
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/rarities/neu">
+            @L["FirstRarity"]
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudTextField @bind-Value="_search"
+                          Placeholder="@L["SearchPlaceholder"]"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="max-width:360px;" />
+
+            <MudSpacer />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _rarities.Count]</MudText>
+        </MudStack>
+    </MudPaper>
+
+    <MudTable T="RarityListRow"
+              Items="Filtered"
+              Elevation="0"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm"
+              OnRowClick="OpenRow"
+              RowClass="cursor-pointer">
+        <HeaderContent>
+            <MudTh Style="width:72px;">@L["HeaderRank"]</MudTh>
+            <MudTh>@L["HeaderName"]</MudTh>
+            <MudTh>@L["HeaderColor"]</MudTh>
+            <MudTh>@L["HeaderDescription"]</MudTh>
+            <MudTh Style="width:56px;"></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="@L["HeaderRank"]">
+                <MudText Typo="Typo.body2" Class="gdm-mono">@context.SortOrder</MudText>
+            </MudTd>
+            <MudTd DataLabel="@L["HeaderName"]">
+                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
+            </MudTd>
+            <MudTd DataLabel="@L["HeaderColor"]">
+                @if (string.IsNullOrWhiteSpace(context.Color))
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
+                }
+                else
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <span class="gdm-color-dot" style="@($"background-color:{context.Color};")"></span>
+                        <MudText Typo="Typo.body2" Class="gdm-mono">@context.Color</MudText>
+                    </MudStack>
+                }
+            </MudTd>
+            <MudTd DataLabel="@L["HeaderDescription"]">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@Shorten(context.Description)</MudText>
+            </MudTd>
+            <MudTd>
+                <MudTooltip Text="@L["DeleteTooltip"]">
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                   Size="Size.Small"
+                                   OnClick="@(() => DeleteAsync(context))"
+                                   aria-label="@L["DeleteAria", context.Name]" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
+                @L["NoRecords"]
+            </MudText>
+        </NoRecordsContent>
+    </MudTable>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Rarities);
+
+    private List<RarityListRow>? _rarities;
+    private string? _search;
+
+    private string Subtitle => _rarities is null
+        ? L["Loading"]
+        : L["SubtitleCount", _rarities.Count];
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _rarities = await Rarities.GetRaritiesAsync(projectId);
+    }
+
+    private List<RarityListRow> Filtered
+    {
+        get
+        {
+            IEnumerable<RarityListRow> rows = _rarities ?? [];
+
+            if (!string.IsNullOrWhiteSpace(_search))
+            {
+                rows = rows.Where(row =>
+                    row.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                    || (row.Description?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            return [.. rows];
+        }
+    }
+
+    private void OpenRow(TableRowClickEventArgs<RarityListRow> args)
+    {
+        if (args.Item is { } row)
+        {
+            Navigation.NavigateTo($"/modules/rarities/{row.Id}");
+        }
+    }
+
+    private async Task DeleteAsync(RarityListRow row)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", row.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Rarities.DeleteRarityAsync(row.Id);
+        Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
+        await LoadAsync();
+    }
+
+    private static string Shorten(string? text) =>
+        string.IsNullOrWhiteSpace(text)
+            ? "—"
+            : text.Length <= 90 ? text : string.Concat(text.AsSpan(0, 90), "…");
+}

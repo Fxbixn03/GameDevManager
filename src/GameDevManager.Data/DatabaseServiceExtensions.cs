@@ -43,6 +43,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ItemService>();
         services.AddScoped<CraftingService>();
         services.AddScoped<CurrencyService>();
+        services.AddScoped<RarityService>();
         services.AddScoped<NpcService>();
         services.AddScoped<FactionService>();
         services.AddScoped<DiplomacyService>();
@@ -71,6 +72,7 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<IModuleEntitySource, ItemEntitySource>();
         services.AddSingleton<IModuleEntitySource, RecipeEntitySource>();
         services.AddSingleton<IModuleEntitySource, CurrencyEntitySource>();
+        services.AddSingleton<IModuleEntitySource, RarityEntitySource>();
         services.AddSingleton<IModuleEntitySource, NpcEntitySource>();
         services.AddSingleton<IModuleEntitySource, FactionEntitySource>();
         services.AddSingleton<IModuleEntitySource, DiplomaticRelationEntitySource>();

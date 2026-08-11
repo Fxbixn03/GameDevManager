@@ -31,6 +31,7 @@ public static class ModuleRegistry
         new(ModuleKeys.Items, Icons.Material.Filled.Category, Implemented: true),
         new(ModuleKeys.Crafting, Icons.Material.Filled.Construction, Implemented: true),
         new(ModuleKeys.Currencies, Icons.Material.Filled.Paid, Implemented: true),
+        new(ModuleKeys.Rarities, Icons.Material.Filled.Diamond, Implemented: true),
         new(ModuleKeys.Npcs, Icons.Material.Filled.People, Implemented: true),
         new(ModuleKeys.Factions, Icons.Material.Filled.Flag, Implemented: true),
         new(ModuleKeys.Diplomacy, Icons.Material.Filled.Handshake, Implemented: true),
