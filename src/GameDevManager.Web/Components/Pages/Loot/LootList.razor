@@ -4,7 +4,6 @@
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
-@inject NavigationManager Navigation
 @inject IStringLocalizer<LootList> L
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -61,6 +60,8 @@ else
         </MudAlert>
     }
 
+    var filtered = Filtered;
+
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
@@ -87,81 +88,79 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _tables.Count]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", filtered.Count, _tables.Count]</MudText>
         </MudStack>
     </MudPaper>
 
-    <MudTable T="LootTableListRow"
-              Items="Filtered"
-              Elevation="0"
-              Hover="true"
-              Dense="true"
-              Breakpoint="Breakpoint.Sm"
-              OnRowClick="OpenRow"
-              RowClass="cursor-pointer">
-        <HeaderContent>
-            <MudTh>@L["HeaderName"]</MudTh>
-            <MudTh>@L["HeaderRoll"]</MudTh>
-            <MudTh>@L["HeaderEntries"]</MudTh>
-            <MudTh>@L["HeaderSum"]</MudTh>
-            <MudTh>@L["HeaderUsedBy"]</MudTh>
-            <MudTh>@L["HeaderType"]</MudTh>
-            <MudTh Style="width:56px;"></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="@L["HeaderName"]">
-                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderRoll"]">
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
-                    @(context.RollMode == LootRollMode.SinglePick ? L["RollSinglePick"] : L["RollIndependent"])
-                </MudChip>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderEntries"]">
-                <MudText Typo="Typo.body2" Color="Color.Secondary">@context.EntryCount</MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderSum"]">
-                <MudText Typo="Typo.body2"
-                         Class="gdm-mono"
-                         Color="@(IsOverfull(context) ? Color.Warning : Color.Default)">
-                    @L["SumFormat", context.TotalChance.ToString("0.##")]
-                </MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderUsedBy"]">
-                @if (context.UsedByNpcCount == 0)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["UsedByNone"]</MudText>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2">@L["UsedByCount", context.UsedByNpcCount]</MudText>
-                }
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderType"]">
-                @if (context.TypeName is null)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                }
-                else
-                {
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
-                }
-            </MudTd>
-            <MudTd>
-                <MudTooltip Text="@L["DeleteTooltip"]">
-                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                   Size="Size.Small"
-                                   OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@L["DeleteAria", context.Name]" />
-                </MudTooltip>
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                @L["NoRecords"]
-            </MudText>
-        </NoRecordsContent>
-    </MudTable>
+    @if (filtered.Count == 0)
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoRecords"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        @* Loot-Tables tragen keine Sprites — die Kachel zeigt das Modulsymbol. *@
+        <div class="gdm-item-grid">
+            @foreach (var table in filtered)
+            {
+                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                    <MudLink Href="@($"/modules/loot/{table.Id}")" Underline="Underline.None">
+                        <AssetThumbnail Class="gdm-item-tile"
+                                        Alt="@table.Name"
+                                        FallbackIcon="@Icons.Material.Filled.Casino" />
+                    </MudLink>
+
+                    <div class="pa-3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                            <MudLink Href="@($"/modules/loot/{table.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                <b>@table.Name</b>
+                            </MudLink>
+                            <MudTooltip Text="@L["DeleteTooltip"]">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteAsync(table))"
+                                               aria-label="@L["DeleteAria", table.Name]" />
+                            </MudTooltip>
+                        </MudStack>
+
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                            @(table.UsedByNpcCount == 0 ? L["UsedByNone"] : L["UsedByCount", table.UsedByNpcCount])
+                        </MudText>
+
+                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                @(table.RollMode == LootRollMode.SinglePick ? L["RollSinglePick"] : L["RollIndependent"])
+                            </MudChip>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                @L["EntryCountChip", table.EntryCount]
+                            </MudChip>
+                            @* Über 100 % ist nur beim Einzelwurf ein Fund — deshalb hängt die Warnfarbe an IsOverfull. *@
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Variant="Variant.Text"
+                                     Class="gdm-mono"
+                                     Color="@(IsOverfull(table) ? Color.Warning : Color.Default)">
+                                @L["SumFormat", table.TotalChance.ToString("0.##")]
+                            </MudChip>
+                            @if (table.TypeName is null)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@table.TypeName</MudChip>
+                            }
+                        </MudStack>
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                            @L["UpdatedAt", table.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                        </MudText>
+                    </div>
+                </MudPaper>
+            }
+        </div>
+    }
 }
 
 @code {
@@ -208,14 +207,6 @@ else
             }
 
             return [.. rows];
-        }
-    }
-
-    private void OpenRow(TableRowClickEventArgs<LootTableListRow> args)
-    {
-        if (args.Item is { } row)
-        {
-            Navigation.NavigateTo($"/modules/loot/{row.Id}");
         }
     }
 

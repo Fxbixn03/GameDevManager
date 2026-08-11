@@ -48,23 +48,11 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
-  <data name="HeaderRoll" xml:space="preserve">
-    <value>Wurf</value>
-  </data>
-  <data name="HeaderEntries" xml:space="preserve">
-    <value>Einträge</value>
-  </data>
-  <data name="HeaderSum" xml:space="preserve">
-    <value>Summe</value>
-  </data>
-  <data name="HeaderUsedBy" xml:space="preserve">
-    <value>Verwendet von</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
+  <data name="EntryCountChip" xml:space="preserve">
+    <value>{0} Eintrag/Einträge</value>
   </data>
   <data name="RollSinglePick" xml:space="preserve">
     <value>Einzelwurf</value>
@@ -76,7 +64,7 @@
     <value>{0} %</value>
   </data>
   <data name="UsedByNone" xml:space="preserve">
-    <value>niemandem</value>
+    <value>Von keinem NPC verwendet</value>
   </data>
   <data name="UsedByCount" xml:space="preserve">
     <value>{0} NPC(s)</value>

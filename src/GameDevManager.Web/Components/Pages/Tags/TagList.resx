@@ -54,20 +54,11 @@
   <data name="DiscardAria" xml:space="preserve">
     <value>Tag verwerfen</value>
   </data>
-  <data name="HeaderTag" xml:space="preserve">
-    <value>Tag</value>
-  </data>
-  <data name="HeaderDescription" xml:space="preserve">
-    <value>Beschreibung</value>
-  </data>
-  <data name="HeaderModules" xml:space="preserve">
-    <value>Verfügbar in</value>
-  </data>
-  <data name="HeaderUsages" xml:space="preserve">
-    <value>Verwendungen</value>
+  <data name="UsageCountChip" xml:space="preserve">
+    <value>{0} Verwendung(en)</value>
   </data>
   <data name="Everywhere" xml:space="preserve">
-    <value>überall</value>
+    <value>Überall verfügbar</value>
   </data>
   <data name="EditTooltip" xml:space="preserve">
     <value>Bearbeiten</value>

@@ -42,32 +42,14 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderSprite" xml:space="preserve">
-    <value>Sprite</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="HeaderTree" xml:space="preserve">
-    <value>Skilltree</value>
-  </data>
-  <data name="HeaderParent" xml:space="preserve">
-    <value>Voraussetzung</value>
-  </data>
-  <data name="HeaderCost" xml:space="preserve">
-    <value>Kosten</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
-  </data>
-  <data name="NoTree" xml:space="preserve">
-    <value>ohne Baum</value>
+  <data name="ParentChip" xml:space="preserve">
+    <value>nach {0}</value>
   </data>
   <data name="DeletedTree" xml:space="preserve">
     <value>(gelöschter Baum)</value>
-  </data>
-  <data name="NoParent" xml:space="preserve">
-    <value>—</value>
   </data>
   <data name="DeletedParent" xml:space="preserve">
     <value>(gelöschter Skill)</value>

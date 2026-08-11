@@ -33,17 +33,11 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderRank" xml:space="preserve">
-    <value>Rang</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="HeaderColor" xml:space="preserve">
-    <value>Farbe</value>
-  </data>
-  <data name="HeaderDescription" xml:space="preserve">
-    <value>Beschreibung</value>
+  <data name="RankChip" xml:space="preserve">
+    <value>Rang {0}</value>
   </data>
   <data name="DeleteTooltip" xml:space="preserve">
     <value>Löschen</value>

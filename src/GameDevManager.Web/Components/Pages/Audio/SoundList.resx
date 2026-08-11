@@ -39,23 +39,17 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
-  <data name="HeaderDescription" xml:space="preserve">
-    <value>Beschreibung</value>
-  </data>
-  <data name="HeaderAudioFiles" xml:space="preserve">
-    <value>Audiodateien</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
+  <data name="AudioFileCountChip" xml:space="preserve">
+    <value>{0} Audiodatei(en)</value>
   </data>
   <data name="NoAudioFilesTooltip" xml:space="preserve">
     <value>Noch keine Audiodatei hochgeladen</value>
   </data>
   <data name="NoAudioFiles" xml:space="preserve">
-    <value>keine</value>
+    <value>keine Audiodatei</value>
   </data>
   <data name="NoType" xml:space="preserve">
     <value>ohne Art</value>

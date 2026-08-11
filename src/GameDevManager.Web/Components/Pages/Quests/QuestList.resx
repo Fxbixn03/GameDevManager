@@ -51,23 +51,11 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderSprite" xml:space="preserve">
-    <value>Sprite</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="HeaderKind" xml:space="preserve">
-    <value>Form</value>
-  </data>
-  <data name="HeaderGiver" xml:space="preserve">
-    <value>Questgeber</value>
-  </data>
-  <data name="HeaderStory" xml:space="preserve">
-    <value>Story</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
+  <data name="GiverChip" xml:space="preserve">
+    <value>von {0}</value>
   </data>
   <data name="DeletedNpc" xml:space="preserve">
     <value>(gelöschter NPC)</value>

@@ -103,60 +103,63 @@ else
 
         @if (_tags.Count > 0)
         {
-            <MudTable T="ContentTagRow"
-                      Items="_tags"
-                      Elevation="0"
-                      Hover="true"
-                      Dense="true"
-                      Breakpoint="Breakpoint.Sm">
-                <HeaderContent>
-                    <MudTh>@L["HeaderTag"]</MudTh>
-                    <MudTh>@L["HeaderDescription"]</MudTh>
-                    <MudTh>@L["HeaderModules"]</MudTh>
-                    <MudTh>@L["HeaderUsages"]</MudTh>
-                    <MudTh Style="width:96px;"></MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="@L["HeaderTag"]">
-                        <MudChip T="string"
-                                 Size="Size.Small"
-                                 Variant="Variant.Outlined"
-                                 Style="@(string.IsNullOrWhiteSpace(context.Color) ? null : $"border-color:{context.Color};")">
-                            @context.Name
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="@L["HeaderDescription"]">
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@(context.Description ?? "—")</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="@L["HeaderModules"]">
-                        @if (context.ModuleKeys.Count == 0)
-                        {
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Everywhere"]</MudText>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.body2">@ModuleNames(context.ModuleKeys)</MudText>
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="@L["HeaderUsages"]">
-                        <MudText Typo="Typo.body2">@context.AssignmentCount</MudText>
-                    </MudTd>
-                    <MudTd>
-                        <MudTooltip Text="@L["EditTooltip"]">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Size="Size.Small"
-                                           OnClick="@(() => EditTag(context))"
-                                           aria-label="@L["EditAria", context.Name]" />
-                        </MudTooltip>
-                        <MudTooltip Text="@L["DeleteTooltip"]">
-                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                           Size="Size.Small"
-                                           OnClick="@(() => DeleteAsync(context))"
-                                           aria-label="@L["DeleteAria", context.Name]" />
-                        </MudTooltip>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+            @* Tags haben keine eigene Maske — die Kachel öffnet die Zeile oben zum Bearbeiten. *@
+            <div class="gdm-item-grid">
+                @foreach (var tag in _tags)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <div class="cursor-pointer" @onclick="@(() => EditTag(tag))">
+                            <AssetThumbnail Class="gdm-item-tile"
+                                            Alt="@tag.Name"
+                                            FallbackIcon="@Icons.Material.Filled.Label" />
+                        </div>
+
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                @* min-width:0, sonst schrumpft der Name neben den Knöpfen nicht und kürzt nie. *@
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Style="min-width:0;">
+                                    @if (!string.IsNullOrWhiteSpace(tag.Color))
+                                    {
+                                        <span class="gdm-color-dot" style="@($"background-color:{tag.Color};")"></span>
+                                    }
+                                    <MudText Typo="Typo.body1" Class="gdm-ellipsis"><b>@tag.Name</b></MudText>
+                                </MudStack>
+                                <MudStack Row="true" Spacing="0">
+                                    <MudTooltip Text="@L["EditTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => EditTag(tag))"
+                                                       aria-label="@L["EditAria", tag.Name]" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="@L["DeleteTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeleteAsync(tag))"
+                                                       aria-label="@L["DeleteAria", tag.Name]" />
+                                    </MudTooltip>
+                                </MudStack>
+                            </MudStack>
+
+                            @if (!string.IsNullOrWhiteSpace(tag.Description))
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @tag.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                    @L["UsageCountChip", tag.AssignmentCount]
+                                </MudChip>
+                            </MudStack>
+
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1 gdm-ellipsis">
+                                @(tag.ModuleKeys.Count == 0 ? L["Everywhere"].Value : ModuleNames(tag.ModuleKeys))
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                }
+            </div>
         }
     </MudStack>
 }

@@ -39,26 +39,17 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderSprite" xml:space="preserve">
-    <value>Sprite</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="HeaderDescription" xml:space="preserve">
-    <value>Beschreibung</value>
-  </data>
-  <data name="HeaderPlacements" xml:space="preserve">
-    <value>Fundorte</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
+  <data name="PlacementCountChip" xml:space="preserve">
+    <value>{0} Fundort(e)</value>
   </data>
   <data name="NoPlacementsTooltip" xml:space="preserve">
     <value>Noch auf keiner Karte markiert</value>
   </data>
   <data name="NoPlacements" xml:space="preserve">
-    <value>keine</value>
+    <value>ohne Fundort</value>
   </data>
   <data name="NoType" xml:space="preserve">
     <value>ohne Art</value>

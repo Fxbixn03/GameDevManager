@@ -4,7 +4,6 @@
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
-@inject NavigationManager Navigation
 @inject IStringLocalizer<EventList> L
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -44,6 +43,8 @@ else if (_events.Count == 0)
 }
 else
 {
+    var filtered = Filtered;
+
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
@@ -70,78 +71,80 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _events.Count]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", filtered.Count, _events.Count]</MudText>
         </MudStack>
     </MudPaper>
 
-    <MudTable T="EventListRow"
-              Items="Filtered"
-              Elevation="0"
-              Hover="true"
-              Dense="true"
-              Breakpoint="Breakpoint.Sm"
-              OnRowClick="OpenRow"
-              RowClass="cursor-pointer">
-        <HeaderContent>
-            <MudTh Style="width:56px;"></MudTh>
-            <MudTh>@L["HeaderName"]</MudTh>
-            <MudTh>@L["HeaderChance"]</MudTh>
-            <MudTh>@L["HeaderSpawns"]</MudTh>
-            <MudTh>@L["HeaderReward"]</MudTh>
-            <MudTh>@L["HeaderType"]</MudTh>
-            <MudTh Style="width:56px;"></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="@L["HeaderSprite"]">
-                <AssetThumbnail AssetId="context.PrimaryAssetId"
-                                Size="Size.Small"
-                                Alt="@context.Name"
-                                FallbackIcon="@Icons.Material.Filled.Event" />
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderName"]">
-                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderChance"]">
-                <MudText Typo="Typo.body2" Class="gdm-mono">@context.Chance %</MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderSpawns"]">
-                <MudText Typo="Typo.body2">@context.SpawnCount</MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderReward"]">
-                @if (context.RewardLootTableId is null)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2">@(context.RewardLootTableName ?? L["DeletedLootTable"].Value)</MudText>
-                }
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderType"]">
-                @if (context.TypeName is null)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                }
-                else
-                {
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
-                }
-            </MudTd>
-            <MudTd>
-                <MudTooltip Text="@L["DeleteTooltip"]">
-                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                   Size="Size.Small"
-                                   OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@L["DeleteAria", context.Name]" />
-                </MudTooltip>
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                @L["NoRecords"]
-            </MudText>
-        </NoRecordsContent>
-    </MudTable>
+    @if (filtered.Count == 0)
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoRecords"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <div class="gdm-item-grid">
+            @foreach (var gameEvent in filtered)
+            {
+                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                    <MudLink Href="@($"/modules/events/{gameEvent.Id}")" Underline="Underline.None">
+                        <AssetThumbnail AssetId="gameEvent.PrimaryAssetId"
+                                        Class="gdm-item-tile"
+                                        Alt="@gameEvent.Name"
+                                        FallbackIcon="@Icons.Material.Filled.Event" />
+                    </MudLink>
+
+                    <div class="pa-3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                            <MudLink Href="@($"/modules/events/{gameEvent.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                <b>@gameEvent.Name</b>
+                            </MudLink>
+                            <MudTooltip Text="@L["DeleteTooltip"]">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteAsync(gameEvent))"
+                                               aria-label="@L["DeleteAria", gameEvent.Name]" />
+                            </MudTooltip>
+                        </MudStack>
+
+                        @if (!string.IsNullOrWhiteSpace(gameEvent.Description))
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                @gameEvent.Description
+                            </MudText>
+                        }
+
+                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="gdm-mono">
+                                @L["ChanceChip", gameEvent.Chance]
+                            </MudChip>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                @L["SpawnCountChip", gameEvent.SpawnCount]
+                            </MudChip>
+                            @if (gameEvent.RewardLootTableId is not null)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
+                                    @(gameEvent.RewardLootTableName ?? L["DeletedLootTable"].Value)
+                                </MudChip>
+                            }
+                            @if (gameEvent.TypeName is null)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@gameEvent.TypeName</MudChip>
+                            }
+                        </MudStack>
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                            @L["UpdatedAt", gameEvent.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                        </MudText>
+                    </div>
+                </MudPaper>
+            }
+        </div>
+    }
 }
 
 @code {
@@ -184,14 +187,6 @@ else
             }
 
             return [.. rows];
-        }
-    }
-
-    private void OpenRow(TableRowClickEventArgs<EventListRow> args)
-    {
-        if (args.Item is { } row)
-        {
-            Navigation.NavigateTo($"/modules/events/{row.Id}");
         }
     }
 

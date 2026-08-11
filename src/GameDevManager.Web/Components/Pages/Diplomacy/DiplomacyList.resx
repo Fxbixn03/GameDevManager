@@ -42,17 +42,8 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="HeaderFactions" xml:space="preserve">
-    <value>Fraktionen</value>
-  </data>
-  <data name="HeaderStance" xml:space="preserve">
-    <value>Haltung</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
   <data name="DeletedFaction" xml:space="preserve">
     <value>(gelöschte Fraktion)</value>

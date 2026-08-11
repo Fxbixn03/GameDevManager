@@ -4,7 +4,6 @@
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
-@inject NavigationManager Navigation
 @inject IStringLocalizer<DialogueList> L
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -61,6 +60,8 @@ else
         </MudAlert>
     }
 
+    var filtered = Filtered;
+
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
@@ -98,68 +99,73 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _dialogues.Count]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", filtered.Count, _dialogues.Count]</MudText>
         </MudStack>
     </MudPaper>
 
-    <MudTable T="DialogueListRow"
-              Items="Filtered"
-              Elevation="0"
-              Hover="true"
-              Dense="true"
-              Breakpoint="Breakpoint.Sm"
-              OnRowClick="OpenRow"
-              RowClass="cursor-pointer">
-        <HeaderContent>
-            <MudTh>@L["HeaderName"]</MudTh>
-            <MudTh>@L["HeaderKind"]</MudTh>
-            <MudTh>@L["HeaderParticipants"]</MudTh>
-            <MudTh>@L["HeaderLines"]</MudTh>
-            <MudTh>@L["HeaderType"]</MudTh>
-            <MudTh Style="width:56px;"></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="@L["HeaderName"]">
-                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderKind"]">
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
-                    @(context.Kind == DialogueKind.Bark ? L["KindBark"] : L["KindConversation"])
-                </MudChip>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderParticipants"]">
-                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                    @(context.IncludesPlayer ? L["ParticipantsWithPlayer", context.ParticipantCount] : L["ParticipantsNpcOnly", context.ParticipantCount])
-                </MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderLines"]">
-                <MudText Typo="Typo.body2" Color="Color.Secondary">@context.LineCount</MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderType"]">
-                @if (context.TypeName is null)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                }
-                else
-                {
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
-                }
-            </MudTd>
-            <MudTd>
-                <MudTooltip Text="@L["DeleteTooltip"]">
-                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                   Size="Size.Small"
-                                   OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@L["DeleteAria", context.Name]" />
-                </MudTooltip>
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                @L["NoRecords"]
-            </MudText>
-        </NoRecordsContent>
-    </MudTable>
+    @if (filtered.Count == 0)
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoRecords"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        @* Dialoge tragen keine Sprites — die Kachel zeigt deshalb das Symbol ihrer Form. *@
+        <div class="gdm-item-grid">
+            @foreach (var dialogue in filtered)
+            {
+                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                    <MudLink Href="@($"/modules/dialogs/{dialogue.Id}")" Underline="Underline.None">
+                        <AssetThumbnail Class="gdm-item-tile"
+                                        Alt="@dialogue.Name"
+                                        FallbackIcon="@KindIcon(dialogue.Kind)" />
+                    </MudLink>
+
+                    <div class="pa-3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                            <MudLink Href="@($"/modules/dialogs/{dialogue.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                <b>@dialogue.Name</b>
+                            </MudLink>
+                            <MudTooltip Text="@L["DeleteTooltip"]">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteAsync(dialogue))"
+                                               aria-label="@L["DeleteAria", dialogue.Name]" />
+                            </MudTooltip>
+                        </MudStack>
+
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                            @(dialogue.IncludesPlayer
+                                ? L["ParticipantsWithPlayer", dialogue.ParticipantCount]
+                                : L["ParticipantsNpcOnly", dialogue.ParticipantCount])
+                        </MudText>
+
+                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                @(dialogue.Kind == DialogueKind.Bark ? L["KindBark"] : L["KindConversation"])
+                            </MudChip>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                @L["LineCountChip", dialogue.LineCount]
+                            </MudChip>
+                            @if (dialogue.TypeName is null)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@dialogue.TypeName</MudChip>
+                            }
+                        </MudStack>
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                            @L["UpdatedAt", dialogue.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                        </MudText>
+                    </div>
+                </MudPaper>
+            }
+        </div>
+    }
 }
 
 @code {
@@ -215,13 +221,10 @@ else
         }
     }
 
-    private void OpenRow(TableRowClickEventArgs<DialogueListRow> args)
-    {
-        if (args.Item is { } row)
-        {
-            Navigation.NavigateTo($"/modules/dialogs/{row.Id}");
-        }
-    }
+    /// <summary>Sprechblasen und Gespräche sind auf einen Blick auseinanderzuhalten.</summary>
+    private static string KindIcon(DialogueKind kind) => kind == DialogueKind.Bark
+        ? Icons.Material.Filled.Campaign
+        : Icons.Material.Filled.Chat;
 
     private async Task DeleteAsync(DialogueListRow row)
     {

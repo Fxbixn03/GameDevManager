@@ -63,23 +63,8 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="HeaderKind" xml:space="preserve">
-    <value>Typ</value>
-  </data>
-  <data name="HeaderRoles" xml:space="preserve">
-    <value>Rollen</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
-  </data>
-  <data name="HeaderDescription" xml:space="preserve">
-    <value>Beschreibung</value>
-  </data>
-  <data name="HeaderSprite" xml:space="preserve">
-    <value>Sprite</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
   <data name="KindMob" xml:space="preserve">
     <value>Mob</value>

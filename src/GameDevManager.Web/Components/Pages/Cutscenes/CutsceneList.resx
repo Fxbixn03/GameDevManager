@@ -39,20 +39,11 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderSprite" xml:space="preserve">
-    <value>Sprite</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="HeaderShots" xml:space="preserve">
-    <value>Einstellungen</value>
-  </data>
-  <data name="HeaderStory" xml:space="preserve">
-    <value>Story</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
+  <data name="ShotCountChip" xml:space="preserve">
+    <value>{0} Einstellung(en)</value>
   </data>
   <data name="DeletedStoryEntry" xml:space="preserve">
     <value>(gelöschter Abschnitt)</value>

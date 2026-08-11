@@ -4,7 +4,6 @@
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
-@inject NavigationManager Navigation
 @inject IStringLocalizer<NpcList> L
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -42,6 +41,8 @@ else if (_npcs.Count == 0)
 }
 else
 {
+    var filtered = Filtered;
+
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
@@ -92,94 +93,84 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _npcs.Count]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", filtered.Count, _npcs.Count]</MudText>
         </MudStack>
     </MudPaper>
 
-    <MudTable T="NpcListRow"
-              Items="Filtered"
-              Elevation="0"
-              Hover="true"
-              Dense="true"
-              Breakpoint="Breakpoint.Sm"
-              OnRowClick="OpenRow"
-              RowClass="cursor-pointer">
-        <HeaderContent>
-            <MudTh Style="width:56px;"></MudTh>
-            <MudTh>@L["HeaderName"]</MudTh>
-            <MudTh>@L["HeaderKind"]</MudTh>
-            <MudTh>@L["HeaderRoles"]</MudTh>
-            <MudTh>@L["HeaderType"]</MudTh>
-            <MudTh>@L["HeaderDescription"]</MudTh>
-            <MudTh Style="width:56px;"></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="@L["HeaderSprite"]">
-                <AssetThumbnail AssetId="context.PrimaryAssetId"
-                                Size="Size.Small"
-                                Alt="@context.Name"
-                                FallbackIcon="@(context.Kind == NpcKind.Mob ? Icons.Material.Filled.Pets : Icons.Material.Filled.Person)" />
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderName"]">
-                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderKind"]">
-                <MudChip T="string"
-                         Size="Size.Small"
-                         Variant="Variant.Outlined"
-                         Color="@(context.Kind == NpcKind.Mob ? Color.Error : Color.Default)">
-                    @(context.Kind == NpcKind.Mob ? L["KindMob"] : L["KindNpc"])
-                </MudChip>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderRoles"]">
-                @if (!context.IsTrader && !context.IsQuestGiver)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
-                }
-                else
-                {
-                    <MudStack Row="true" Spacing="1">
-                        @if (context.IsTrader)
+    @if (filtered.Count == 0)
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoRecords"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <div class="gdm-item-grid">
+            @foreach (var npc in filtered)
+            {
+                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                    <MudLink Href="@($"/modules/npcs/{npc.Id}")" Underline="Underline.None">
+                        <AssetThumbnail AssetId="npc.PrimaryAssetId"
+                                        Class="gdm-item-tile"
+                                        Alt="@npc.Name"
+                                        FallbackIcon="@(npc.Kind == NpcKind.Mob ? Icons.Material.Filled.Pets : Icons.Material.Filled.Person)" />
+                    </MudLink>
+
+                    <div class="pa-3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                            <MudLink Href="@($"/modules/npcs/{npc.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                <b>@npc.Name</b>
+                            </MudLink>
+                            <MudTooltip Text="@L["DeleteTooltip"]">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteAsync(npc))"
+                                               aria-label="@L["DeleteAria", npc.Name]" />
+                            </MudTooltip>
+                        </MudStack>
+
+                        @if (!string.IsNullOrWhiteSpace(npc.Description))
                         {
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
-                                @L["TraderChip", context.OfferCount]
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                @npc.Description
+                            </MudText>
+                        }
+
+                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Variant="Variant.Text"
+                                     Color="@(npc.Kind == NpcKind.Mob ? Color.Error : Color.Default)">
+                                @(npc.Kind == NpcKind.Mob ? L["KindMob"] : L["KindNpc"])
                             </MudChip>
-                        }
-                        @if (context.IsQuestGiver)
-                        {
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["QuestChip"]</MudChip>
-                        }
-                    </MudStack>
-                }
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderType"]">
-                @if (context.TypeName is null)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                }
-                else
-                {
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
-                }
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderDescription"]">
-                <MudText Typo="Typo.body2" Color="Color.Secondary">@Shorten(context.Description)</MudText>
-            </MudTd>
-            <MudTd>
-                <MudTooltip Text="@L["DeleteTooltip"]">
-                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                   Size="Size.Small"
-                                   OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@L["DeleteAria", context.Name]" />
-                </MudTooltip>
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                @L["NoRecords"]
-            </MudText>
-        </NoRecordsContent>
-    </MudTable>
+                            @if (npc.IsTrader)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
+                                    @L["TraderChip", npc.OfferCount]
+                                </MudChip>
+                            }
+                            @if (npc.IsQuestGiver)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["QuestChip"]</MudChip>
+                            }
+                            @if (npc.TypeName is null)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@npc.TypeName</MudChip>
+                            }
+                        </MudStack>
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                            @L["UpdatedAt", npc.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                        </MudText>
+                    </div>
+                </MudPaper>
+            }
+        </div>
+    }
 }
 
 @code {
@@ -261,14 +252,6 @@ else
         }
     }
 
-    private void OpenRow(TableRowClickEventArgs<NpcListRow> args)
-    {
-        if (args.Item is { } row)
-        {
-            Navigation.NavigateTo($"/modules/npcs/{row.Id}");
-        }
-    }
-
     private async Task DeleteAsync(NpcListRow row)
     {
         var warning = row.OfferCount == 0
@@ -290,9 +273,4 @@ else
         Snackbar.Add(L["DeletedMessage", row.Name], Severity.Success);
         await LoadAsync();
     }
-
-    private static string Shorten(string? text) =>
-        string.IsNullOrWhiteSpace(text)
-            ? "—"
-            : text.Length <= 70 ? text : string.Concat(text.AsSpan(0, 70), "…");
 }

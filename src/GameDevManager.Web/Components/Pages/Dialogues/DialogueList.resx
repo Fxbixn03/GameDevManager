@@ -54,20 +54,11 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
-  <data name="HeaderKind" xml:space="preserve">
-    <value>Form</value>
-  </data>
-  <data name="HeaderParticipants" xml:space="preserve">
-    <value>Beteiligte</value>
-  </data>
-  <data name="HeaderLines" xml:space="preserve">
-    <value>Zeilen</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
+  <data name="LineCountChip" xml:space="preserve">
+    <value>{0} Zeile(n)</value>
   </data>
   <data name="KindConversation" xml:space="preserve">
     <value>Gespräch</value>

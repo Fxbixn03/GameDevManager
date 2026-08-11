@@ -39,23 +39,14 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderSprite" xml:space="preserve">
-    <value>Sprite</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
+  <data name="ChanceChip" xml:space="preserve">
+    <value>{0} %</value>
   </data>
-  <data name="HeaderChance" xml:space="preserve">
-    <value>Wahrscheinlichkeit</value>
-  </data>
-  <data name="HeaderSpawns" xml:space="preserve">
-    <value>Spawns</value>
-  </data>
-  <data name="HeaderReward" xml:space="preserve">
-    <value>Belohnung</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
+  <data name="SpawnCountChip" xml:space="preserve">
+    <value>{0} Spawn(s)</value>
   </data>
   <data name="DeletedLootTable" xml:space="preserve">
     <value>(gelöschter Loot-Table)</value>

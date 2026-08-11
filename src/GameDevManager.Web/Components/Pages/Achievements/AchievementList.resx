@@ -39,26 +39,14 @@
   <data name="FilterCount" xml:space="preserve">
     <value>{0} von {1}</value>
   </data>
-  <data name="HeaderIcon" xml:space="preserve">
-    <value>Icon</value>
-  </data>
-  <data name="HeaderName" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="HeaderDescription" xml:space="preserve">
-    <value>Beschreibung</value>
-  </data>
-  <data name="HeaderSecret" xml:space="preserve">
-    <value>Versteckt</value>
-  </data>
-  <data name="HeaderUnlock" xml:space="preserve">
-    <value>Freischaltung</value>
-  </data>
-  <data name="HeaderType" xml:space="preserve">
-    <value>Art</value>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Geändert {0}</value>
   </data>
   <data name="SecretChip" xml:space="preserve">
     <value>versteckt</value>
+  </data>
+  <data name="NoUnlockChip" xml:space="preserve">
+    <value>ohne Bedingung</value>
   </data>
   <data name="NoUnlockTooltip" xml:space="preserve">
     <value>Noch keine Freischalt-Bedingung hinterlegt</value>

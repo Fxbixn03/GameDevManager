@@ -4,7 +4,6 @@
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
-@inject NavigationManager Navigation
 @inject IStringLocalizer<DiplomacyList> L
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -49,6 +48,8 @@ else if (_relations.Count == 0)
 }
 else
 {
+    var filtered = Filtered;
+
     <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
             <MudTextField @bind-Value="_search"
@@ -75,66 +76,70 @@ else
             </MudSelect>
 
             <MudSpacer />
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", Filtered.Count, _relations.Count]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["FilterCount", filtered.Count, _relations.Count]</MudText>
         </MudStack>
     </MudPaper>
 
-    <MudTable T="DiplomacyListRow"
-              Items="Filtered"
-              Elevation="0"
-              Hover="true"
-              Dense="true"
-              Breakpoint="Breakpoint.Sm"
-              OnRowClick="OpenRow"
-              RowClass="cursor-pointer">
-        <HeaderContent>
-            <MudTh>@L["HeaderName"]</MudTh>
-            <MudTh>@L["HeaderFactions"]</MudTh>
-            <MudTh>@L["HeaderStance"]</MudTh>
-            <MudTh>@L["HeaderType"]</MudTh>
-            <MudTh Style="width:56px;"></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="@L["HeaderName"]">
-                <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderFactions"]">
-                <MudText Typo="Typo.body2">
-                    @(context.FactionAName ?? L["DeletedFaction"])
-                    <MudIcon Icon="@Icons.Material.Filled.SyncAlt" Size="Size.Small" Class="mx-1" Style="vertical-align:middle;" />
-                    @(context.FactionBName ?? L["DeletedFaction"])
-                </MudText>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderStance"]">
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@StanceColor(context.Stance)">
-                    @StanceLabel(context.Stance)
-                </MudChip>
-            </MudTd>
-            <MudTd DataLabel="@L["HeaderType"]">
-                @if (context.TypeName is null)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                }
-                else
-                {
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TypeName</MudChip>
-                }
-            </MudTd>
-            <MudTd>
-                <MudTooltip Text="@L["DeleteTooltip"]">
-                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                   Size="Size.Small"
-                                   OnClick="@(() => DeleteAsync(context))"
-                                   aria-label="@L["DeleteAria", context.Name]" />
-                </MudTooltip>
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
-                @L["NoRecords"]
-            </MudText>
-        </NoRecordsContent>
-    </MudTable>
+    @if (filtered.Count == 0)
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoRecords"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        @* Beziehungen tragen keine Sprites — die Kachel zeigt das Symbol der Haltung. *@
+        <div class="gdm-item-grid">
+            @foreach (var relation in filtered)
+            {
+                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                    <MudLink Href="@($"/modules/diplomacy/{relation.Id}")" Underline="Underline.None">
+                        <AssetThumbnail Class="gdm-item-tile"
+                                        Alt="@relation.Name"
+                                        FallbackIcon="@Icons.Material.Filled.Handshake" />
+                    </MudLink>
+
+                    <div class="pa-3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                            <MudLink Href="@($"/modules/diplomacy/{relation.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                <b>@relation.Name</b>
+                            </MudLink>
+                            <MudTooltip Text="@L["DeleteTooltip"]">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteAsync(relation))"
+                                               aria-label="@L["DeleteAria", relation.Name]" />
+                            </MudTooltip>
+                        </MudStack>
+
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                            @(relation.FactionAName ?? L["DeletedFaction"].Value)
+                            <MudIcon Icon="@Icons.Material.Filled.SyncAlt" Size="Size.Small" Class="mx-1" Style="vertical-align:middle;" />
+                            @(relation.FactionBName ?? L["DeletedFaction"].Value)
+                        </MudText>
+
+                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@StanceColor(relation.Stance)">
+                                @StanceLabel(relation.Stance)
+                            </MudChip>
+                            @if (relation.TypeName is null)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@relation.TypeName</MudChip>
+                            }
+                        </MudStack>
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                            @L["UpdatedAt", relation.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                        </MudText>
+                    </div>
+                </MudPaper>
+            }
+        </div>
+    }
 }
 
 @code {
@@ -198,14 +203,6 @@ else
         DiplomaticStance.War => Color.Error,
         _ => Color.Default
     };
-
-    private void OpenRow(TableRowClickEventArgs<DiplomacyListRow> args)
-    {
-        if (args.Item is { } row)
-        {
-            Navigation.NavigateTo($"/modules/diplomacy/{row.Id}");
-        }
-    }
 
     private async Task DeleteAsync(DiplomacyListRow row)
     {
