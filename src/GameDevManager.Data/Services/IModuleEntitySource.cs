@@ -72,7 +72,12 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
     public Task<int> CountByTypeAsync(GameDevManagerDbContext db, Guid typeId, CancellationToken ct) =>
         Set(db).CountAsync(entity => entity.ContentTypeId == typeId, ct);
 
-    public Task<List<EntitySummary>> GetEntitiesAsync(
+    /// <summary>
+    /// Standardfall: alphabetisch. Virtuell aus demselben Grund wie
+    /// <see cref="FindReferencesAsync"/> — Module mit eigener Reihenfolge (Seltenheiten
+    /// nach Rang) überschreiben das hier, sonst liefe ihre Fassung stillschweigend nie.
+    /// </summary>
+    public virtual Task<List<EntitySummary>> GetEntitiesAsync(
         GameDevManagerDbContext db, Guid projectId, CancellationToken ct)
     {
         // In eine lokale Variable ziehen: eine Eigenschaft der Klasse könnte EF nicht übersetzen.

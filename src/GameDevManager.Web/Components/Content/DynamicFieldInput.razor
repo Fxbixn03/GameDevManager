@@ -95,6 +95,7 @@
         break;
 
     case ContentFieldType.EntityReference:
+    case ContentFieldType.Rarity:
         @if (ReferenceOptions.Count == 0)
         {
             <MudTextField T="string"

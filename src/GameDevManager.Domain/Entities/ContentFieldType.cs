@@ -34,6 +34,12 @@ public enum ContentFieldType
     /// <summary>Verweis auf eine andere Entität über deren GUID — Zielmodul steht am Feld.</summary>
     EntityReference = 7,
 
-    /// <summary>Farbe als Hex-Wert, z. B. für Seltenheitsstufen.</summary>
-    Color = 8
+    /// <summary>Farbe als Hex-Wert.</summary>
+    Color = 8,
+
+    /// <summary>
+    /// Verweis auf eine <see cref="Rarity"/> — eine <see cref="EntityReference"/> mit fest
+    /// verdrahtetem Zielmodul, damit „Seltenheit“ direkt als Feldtyp wählbar ist.
+    /// </summary>
+    Rarity = 9
 }

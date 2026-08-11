@@ -39,6 +39,9 @@
   <data name="Type_Color" xml:space="preserve">
     <value>Farbe</value>
   </data>
+  <data name="Type_Rarity" xml:space="preserve">
+    <value>Seltenheit</value>
+  </data>
   <data name="Empty" xml:space="preserve">
     <value>—</value>
   </data>

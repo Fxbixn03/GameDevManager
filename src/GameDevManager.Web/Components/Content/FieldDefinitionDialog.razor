@@ -139,10 +139,14 @@
     {
         Field.Type = type;
 
-        if (type != ContentFieldType.EntityReference)
+        // „Seltenheit“ ist eine Referenz mit festem Ziel — der Schlüssel wird direkt gesetzt,
+        // damit die Maske die Auswahlliste laden kann, ohne auf das Speichern zu warten.
+        Field.ReferenceModuleKey = type switch
         {
-            Field.ReferenceModuleKey = null;
-        }
+            ContentFieldType.EntityReference => Field.ReferenceModuleKey,
+            ContentFieldType.Rarity => ModuleKeys.Rarities,
+            _ => null
+        };
 
         if (type != ContentFieldType.Select)
         {

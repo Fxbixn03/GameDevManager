@@ -743,6 +743,20 @@ public sealed class RarityEntitySource(IStringLocalizer<DataMessages> messages)
 
     protected override DbSet<Rarity> Set(GameDevManagerDbContext db) => db.Rarities;
 
+    /// <summary>
+    /// Die Auswahlfelder bieten Seltenheiten nach Rang an, nicht alphabetisch —
+    /// sonst stünde „Episch“ vor „Gewöhnlich“.
+    /// </summary>
+    public override Task<List<EntitySummary>> GetEntitiesAsync(
+        GameDevManagerDbContext db, Guid projectId, CancellationToken ct) =>
+        db.Rarities
+            .AsNoTracking()
+            .Where(rarity => rarity.GameProjectId == projectId)
+            .OrderBy(rarity => rarity.SortOrder)
+            .ThenBy(rarity => rarity.Name)
+            .Select(rarity => new EntitySummary(rarity.Id, ModuleKeys.Rarities, rarity.Name, null))
+            .ToListAsync(ct);
+
     protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<Rarity> query) =>
         query.Select(rarity => new SearchHit(
             rarity.Id,

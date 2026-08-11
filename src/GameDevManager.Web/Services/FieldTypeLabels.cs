@@ -21,6 +21,7 @@ public sealed class FieldTypeLabels(IStringLocalizer<FieldTypeLabels> localizer)
         ContentFieldType.Select => localizer["Type_Select"],
         ContentFieldType.EntityReference => localizer["Type_EntityReference"],
         ContentFieldType.Color => localizer["Type_Color"],
+        ContentFieldType.Rarity => localizer["Type_Rarity"],
         _ => type.ToString()
     };
 
@@ -36,6 +37,7 @@ public sealed class FieldTypeLabels(IStringLocalizer<FieldTypeLabels> localizer)
         ContentFieldType.Select => Icons.Material.Filled.ArrowDropDownCircle,
         ContentFieldType.EntityReference => Icons.Material.Filled.Link,
         ContentFieldType.Color => Icons.Material.Filled.Palette,
+        ContentFieldType.Rarity => Icons.Material.Filled.Diamond,
         _ => Icons.Material.Filled.HelpOutline
     };
 
@@ -57,7 +59,7 @@ public sealed class FieldTypeLabels(IStringLocalizer<FieldTypeLabels> localizer)
             ContentFieldType.Decimal => value.NumberValue?.ToString("0.##") ?? empty,
             ContentFieldType.Select => definition.Options
                 .FirstOrDefault(option => option.Id == value.OptionId)?.Label ?? empty,
-            ContentFieldType.EntityReference => value.ReferenceValue?.ToString() ?? empty,
+            ContentFieldType.EntityReference or ContentFieldType.Rarity => value.ReferenceValue?.ToString() ?? empty,
             _ => value.TextValue ?? empty
         };
 

@@ -135,7 +135,7 @@ public class ContentTypeService(
                 Type = field.Type,
                 IsRequired = field.IsRequired,
                 Unit = Normalize(field.Unit),
-                ReferenceModuleKey = field.Type == ContentFieldType.EntityReference ? field.ReferenceModuleKey : null,
+                ReferenceModuleKey = ResolveReferenceModule(field),
                 SortOrder = field.SortOrder,
                 Options = field.Type == ContentFieldType.Select
                     ? [.. field.Options.Select((o, index) => new FieldOption
@@ -168,7 +168,7 @@ public class ContentTypeService(
         stored.Type = field.Type;
         stored.IsRequired = field.IsRequired;
         stored.Unit = Normalize(field.Unit);
-        stored.ReferenceModuleKey = field.Type == ContentFieldType.EntityReference ? field.ReferenceModuleKey : null;
+        stored.ReferenceModuleKey = ResolveReferenceModule(field);
         stored.SortOrder = field.SortOrder;
 
         await SyncOptionsAsync(db, stored, field, ct);
@@ -282,6 +282,18 @@ public class ContentTypeService(
             throw new ContentValidationException(messages["FieldOptionsNotEmpty"]);
         }
     }
+
+    /// <summary>
+    /// Der Feldtyp „Seltenheit“ ist eine Referenz mit fest verdrahtetem Zielmodul — der
+    /// Schlüssel wird beim Speichern gesetzt, damit Auswahlfelder und Referenzansicht
+    /// keinen Sonderfall brauchen.
+    /// </summary>
+    private static string? ResolveReferenceModule(FieldDefinition field) => field.Type switch
+    {
+        ContentFieldType.EntityReference => field.ReferenceModuleKey,
+        ContentFieldType.Rarity => ModuleKeys.Rarities,
+        _ => null
+    };
 
     private static string? Normalize(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();

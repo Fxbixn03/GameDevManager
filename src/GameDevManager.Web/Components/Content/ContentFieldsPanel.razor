@@ -140,7 +140,7 @@
     private async Task LoadReferenceOptionsAsync()
     {
         var wanted = Context.ApplicableFields
-            .Where(field => field.Type == ContentFieldType.EntityReference)
+            .Where(field => field.Type is ContentFieldType.EntityReference or ContentFieldType.Rarity)
             .Select(field => field.ReferenceModuleKey)
             .OfType<string>()
             .Distinct();
