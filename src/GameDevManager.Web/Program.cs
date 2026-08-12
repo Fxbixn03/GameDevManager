@@ -75,6 +75,34 @@ app.MapGet("/assets/{id:guid}", async (Guid id, AssetService assets, HttpContext
     return Results.Stream(file.Value.Content, file.Value.MimeType);
 });
 
+// Der Projekt-Export als ZIP-Download. Wie die Assets bewusst ein Endpunkt: über die
+// SignalR-Verbindung von Blazor Server lässt sich keine Datei ausliefern, der Browser
+// lädt hier direkt herunter. Die Export-Seite baut nur die URL auf diesen Endpunkt.
+app.MapGet("/export/{projectId:guid}", async (
+    Guid projectId, string? target, bool? assets, ExportService export,
+    IDbContextFactory<GameDevManagerDbContext> dbFactory, CancellationToken ct) =>
+{
+    await using var db = await dbFactory.CreateDbContextAsync(ct);
+    var project = await db.GameProjects.AsNoTracking().FirstOrDefaultAsync(p => p.Id == projectId, ct);
+    if (project is null)
+    {
+        return Results.NotFound();
+    }
+
+    var exportTarget = Enum.TryParse<ExportTarget>(target, ignoreCase: true, out var parsed)
+        ? parsed
+        : ExportTarget.Json;
+
+    // Der Projektname wird Teil des Dateinamens — unzulässige Zeichen fliegen raus.
+    var safeName = string.Join("-", project.Name.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
+    var fileName = $"{safeName}-{exportTarget.ToString().ToLowerInvariant()}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.zip";
+
+    return Results.Stream(
+        stream => export.WriteExportAsync(projectId, exportTarget, assets ?? true, stream, ct),
+        "application/zip",
+        fileDownloadName: fileName);
+});
+
 // Ausstehende Migrationen beim Start anwenden (abschaltbar über "Database:AutoMigrate": false).
 var dbOptions = app.Services.GetRequiredService<DatabaseOptions>();
 var contextFactory = app.Services.GetRequiredService<IDbContextFactory<GameDevManagerDbContext>>();

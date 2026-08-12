@@ -1,0 +1,92 @@
+@page "/export"
+@inject ProjectContext Project
+@inject StatisticsService Statistics
+@inject ModuleLabels Modules
+@inject NavigationManager Nav
+@inject IStringLocalizer<ExportPage> L
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">@L["Heading"]</MudText>
+<MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">@L["Subtitle"]</MudText>
+
+<MudGrid Spacing="3">
+    <MudItem xs="12" md="7">
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["TargetHeading"]</MudText>
+
+            <MudRadioGroup T="ExportTarget" @bind-Value="_target">
+                <MudStack Spacing="2" Class="mt-2">
+                    @foreach (var option in Targets)
+                    {
+                        <MudRadio T="ExportTarget" Value="@option" Color="Color.Primary" Dense="true">
+                            <MudText Typo="Typo.subtitle2">@L[$"Target_{option}"]</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L[$"TargetHint_{option}"]</MudText>
+                        </MudRadio>
+                    }
+                </MudStack>
+            </MudRadioGroup>
+
+            <MudDivider Class="my-4" />
+
+            <MudSwitch T="bool" @bind-Value="_includeAssets" Color="Color.Primary" Label="@L["IncludeAssets"]" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-4">@L["IncludeAssetsHint"]</MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.FileDownload"
+                       Disabled="@(_projectId == Guid.Empty)"
+                       OnClick="Download">
+                @L["DownloadButton"]
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="5">
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ContentHeading"]</MudText>
+
+            @if (_counts is null)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-2" />
+            }
+            else
+            {
+                <MudSimpleTable Dense="true" Elevation="0" Class="mt-2">
+                    <tbody>
+                        @foreach (var count in _counts)
+                        {
+                            <tr>
+                                <td>@Modules.NameOrKey(count.ModuleKey)</td>
+                                <td class="gdm-mono" style="text-align:right;">@count.Count</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">@L["ContentHint"]</MudText>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private static readonly ExportTarget[] Targets =
+        [ExportTarget.Json, ExportTarget.Unity, ExportTarget.Unreal, ExportTarget.Godot];
+
+    private ExportTarget _target = ExportTarget.Json;
+    private bool _includeAssets = true;
+    private Guid _projectId;
+    private List<ModuleCount>? _counts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _projectId = await Project.GetCurrentIdAsync();
+        _counts = await Statistics.GetCountsAsync(_projectId);
+    }
+
+    // forceLoad, damit der Browser den Endpunkt direkt aufruft — der Blazor-Router würde
+    // die Navigation sonst abfangen. Die Antwort ist ein Download, die Seite bleibt stehen.
+    private void Download() => Nav.NavigateTo(
+        $"/export/{_projectId}?target={_target.ToString().ToLowerInvariant()}&assets={(_includeAssets ? "true" : "false")}",
+        forceLoad: true);
+}

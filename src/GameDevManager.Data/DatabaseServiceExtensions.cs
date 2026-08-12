@@ -67,6 +67,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ReferenceService>();
         services.AddScoped<AssetService>();
         services.AddScoped<SearchService>();
+        services.AddScoped<ExportService>();
 
         // Je Modul eine Quelle. Referenzansicht, Auswahlfelder, Arten-Zählung und globale
         // Suche fragen sie alle ab — ein neues Modul wird hier eingetragen und ist überall da.

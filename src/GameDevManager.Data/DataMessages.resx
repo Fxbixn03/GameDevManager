@@ -450,4 +450,39 @@
   <data name="ConditionKind_Default" xml:space="preserve">
     <value>Bedingung</value>
   </data>
+  <data name="Export_ProjectMissing" xml:space="preserve">
+    <value>Das Spielprojekt wurde nicht gefunden.</value>
+  </data>
+  <data name="Export_ReadmeCommon" xml:space="preserve">
+    <value># GameDevManager-Export
+
+Projekt: {0}
+Formatversion: {1}
+
+Alle Inhalte liegen als JSON unter `content/`, eine Datei je Modul. Entitäten verweisen ausschließlich über GUIDs aufeinander — jede `…Id`-Eigenschaft ist die `id` einer Entität aus einer der anderen Dateien. Benutzerdefinierte Arten und Felder stehen in `content/types-and-fields.json`, die zugehörigen Werte in `content/field-values.json`, Bedingungen in `content/conditions.json`, Tags in `content/tags.json`.
+
+Die Metadaten der hochgeladenen Dateien stehen in `content/assets.json`; die Dateien selbst liegen unter `assets/files/` — der Pfad dort ist der `storageKey` aus den Metadaten. `project.json` ist das Manifest des Exports (Formatversion, Zeitpunkt, Anzahl der Einträge je Modul).</value>
+  </data>
+  <data name="Export_ReadmeJson" xml:space="preserve">
+    <value>## Verwendung
+
+Dieses ZIP ist nicht auf eine bestimmte Engine zugeschnitten — entpacke es dorthin, wo dein Spiel oder deine Pipeline es erwartet, und lies die JSON-Dateien mit einem beliebigen JSON-Parser ein.</value>
+  </data>
+  <data name="Export_ReadmeUnity" xml:space="preserve">
+    <value>## Verwendung in Unity
+
+Entpacke das ZIP in das Wurzelverzeichnis deines Unity-Projekts: Die Inhalte landen unter `Assets/StreamingAssets/GameDevManager/` und werden von Unity unverändert mit ausgeliefert. Zur Laufzeit erreichst du sie über `Application.streamingAssetsPath`.
+
+Zum Einlesen empfiehlt sich das Paket `com.unity.nuget.newtonsoft-json` (Newtonsoft Json.NET), weil Unitys `JsonUtility` weder verschachtelte Listen noch GUIDs als Strings bequem verarbeitet.</value>
+  </data>
+  <data name="Export_ReadmeUnreal" xml:space="preserve">
+    <value>## Verwendung in Unreal Engine
+
+Entpacke das ZIP in das Wurzelverzeichnis deines Unreal-Projekts: Die Inhalte landen unter `Content/GameDevManager/`. JSON-Dateien lassen sich zur Laufzeit mit `FFileHelper::LoadFileToString` und `FJsonSerializer` einlesen; alternativ kannst du einzelne Dateien im Editor als DataTable importieren.</value>
+  </data>
+  <data name="Export_ReadmeGodot" xml:space="preserve">
+    <value>## Verwendung in Godot
+
+Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte landen unter `res://gamedevmanager/`. Zur Laufzeit lädst du sie mit `FileAccess.get_file_as_string()` und `JSON.parse_string()`.</value>
+  </data>
 </root>

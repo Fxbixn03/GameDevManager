@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Export – GameDevManager</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Der komplette Projektstand als ZIP: JSON je Modul plus die Asset-Dateien, alle Verweise als GUIDs.</value>
+  </data>
+  <data name="TargetHeading" xml:space="preserve">
+    <value>Ziel</value>
+  </data>
+  <data name="Target_Json" xml:space="preserve">
+    <value>JSON / ZIP</value>
+  </data>
+  <data name="TargetHint_Json" xml:space="preserve">
+    <value>Neutrales Format für eigene Pipelines — die Dateien liegen direkt an der Wurzel des Archivs.</value>
+  </data>
+  <data name="Target_Unity" xml:space="preserve">
+    <value>Unity</value>
+  </data>
+  <data name="TargetHint_Unity" xml:space="preserve">
+    <value>Zum Entpacken ins Unity-Projekt — die Inhalte landen unter Assets/StreamingAssets/GameDevManager/.</value>
+  </data>
+  <data name="Target_Unreal" xml:space="preserve">
+    <value>Unreal Engine</value>
+  </data>
+  <data name="TargetHint_Unreal" xml:space="preserve">
+    <value>Zum Entpacken ins Unreal-Projekt — die Inhalte landen unter Content/GameDevManager/.</value>
+  </data>
+  <data name="Target_Godot" xml:space="preserve">
+    <value>Godot</value>
+  </data>
+  <data name="TargetHint_Godot" xml:space="preserve">
+    <value>Zum Entpacken ins Godot-Projekt — die Inhalte landen unter res://gamedevmanager/.</value>
+  </data>
+  <data name="IncludeAssets" xml:space="preserve">
+    <value>Asset-Dateien einschließen</value>
+  </data>
+  <data name="IncludeAssetsHint" xml:space="preserve">
+    <value>Sprites, Sounds und alle anderen hochgeladenen Dateien wandern mit ins ZIP. Ohne sie enthält der Export nur die Metadaten der Assets.</value>
+  </data>
+  <data name="DownloadButton" xml:space="preserve">
+    <value>Export herunterladen</value>
+  </data>
+  <data name="ContentHeading" xml:space="preserve">
+    <value>Enthaltene Inhalte</value>
+  </data>
+  <data name="ContentHint" xml:space="preserve">
+    <value>Dazu kommen Arten und Felder, Feldwerte, Bedingungen und eine README mit Hinweisen zum gewählten Ziel.</value>
+  </data>
+</root>

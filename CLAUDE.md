@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GameDevManager ist ein selbst gehostetes Verwaltungstool für Indie-Spieleentwickler: ein strukturiertes Wiki für Spielinhalte (Items, NPCs, Quests, Dialoge, Karten, …) mit späterem Export in Game Engines (Unity, Unreal, Godot oder JSON/ZIP).
 
-**Status: Alle 22 Module umgesetzt.** Die Kern-Architektur der Roadmap steht ganz: Entitätenmodell, Arten/Felder, GUID-Referenzen **und das Bedingungssystem**. Sämtliche Module der Registry haben eine eigene Oberfläche — von Items über NPCs, Fraktionen, Diplomatie, Story, Quests und Events bis zu Spieler/Skilltrees, Klassen, Effekten, Achievements, Sammelobjekten, Tags, Audio, Cutscenes und der Statistik-Seite mit allen Health Checks; die Platzhalterseite `ModulePage.razor` wird nicht mehr angesteuert. Noch offen: Import/Export, Changelog (braucht Benutzeranmeldung), konfigurierbares Dashboard, Projektauswahl — und Testprojekte gibt es noch nicht (`dotnet test` folgt mit dem ersten). Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
+**Status: Alle 22 Module umgesetzt.** Die Kern-Architektur der Roadmap steht ganz: Entitätenmodell, Arten/Felder, GUID-Referenzen **und das Bedingungssystem**. Sämtliche Module der Registry haben eine eigene Oberfläche — von Items über NPCs, Fraktionen, Diplomatie, Story, Quests und Events bis zu Spieler/Skilltrees, Klassen, Effekten, Achievements, Sammelobjekten, Tags, Audio, Cutscenes und der Statistik-Seite mit allen Health Checks; die Platzhalterseite `ModulePage.razor` wird nicht mehr angesteuert. Der **Export** ist umgesetzt (JSON/ZIP inkl. Assets, wahlweise im Ordner-Layout von Unity, Unreal oder Godot — siehe Abschnitt „Export“); noch offen: Import, versionierte/diffbare Exporte, Changelog (braucht Benutzeranmeldung), konfigurierbares Dashboard, Projektauswahl — und Testprojekte gibt es noch nicht (`dotnet test` folgt mit dem ersten). Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
 
 **Sprache:** README, Konzept und Doku sind auf Deutsch. Neue Dokumentation und Commit-Messages ebenfalls auf Deutsch verfassen. Code (Bezeichner, Kommentare) auf Englisch.
 
@@ -182,6 +182,18 @@ Klicks auf das Kartenbild werden über [gdm-map.js](src/GameDevManager.Web/wwwro
 Der Domain-Enum heißt `ContentFieldType` und nicht `FieldType` — letzteres kollidiert mit `MudBlazor.FieldType` und macht jede Razor-Datei mehrdeutig.
 
 Alle Inhalte hängen an einem `GameProject`. Eine Projektauswahl gibt es noch nicht; bis dahin liefert `ProjectContext` das beim Start angelegte Standardprojekt. Wenn das Projekt-Modul kommt, ändert sich nur dieser Dienst.
+
+### Export
+
+`ExportService` schreibt den kompletten Projektstand als ZIP: unter `content/` eine JSON-Datei je Modul plus Arten/Felder, Feldwerte, Bedingungen, Tags und Asset-Metadaten; die Asset-Dateien unter `assets/files/` (Pfad = `storageKey`); `project.json` als Manifest mit `FormatVersion`. Das **Ziel** (`ExportTarget`) ändert nur den Wurzelpfad im Archiv (Unity: `Assets/StreamingAssets/GameDevManager/`, Unreal: `Content/GameDevManager/`, Godot: `gamedevmanager/`) und die Hinweise in der generierten README — der Inhalt ist für alle Ziele derselbe.
+
+Drei Entscheidungen, die man kennen muss:
+
+- **Serialisiert werden die Domain-Entitäten selbst**, kein DTO-Satz. Ein `JsonTypeInfo`-Modifier entfernt Navigationsobjekte (Referenzen bleiben als GUID-Spalten — die Regel des Konzepts) und berechnete Nur-Lese-Eigenschaften; Kind-Sammlungen bleiben eingebettet. Wer eine neue Kind-Sammlung lädt, muss sie im Service auch `Include`n und stabil sortieren — nicht geladene Sammlungen erschienen sonst als leere Listen im Export (deshalb wird `AssetTag.Assignments` explizit unterdrückt).
+- **Alle Listen sind stabil sortiert** (Name bzw. SortOrder, dann GUID): derselbe Stand ergibt denselben Export — die Vorarbeit für die versionierten, diffbaren Exporte des Konzepts. `FormatVersion` bei jeder Format-Änderung erhöhen.
+- **Das ZIP entsteht in einer Temp-Datei** (`DeleteOnClose`) und wird dann in den Response kopiert: `ZipArchive` schließt Einträge synchron ab, und der Response-Stream von ASP.NET Core verbietet synchrone Schreibzugriffe.
+
+Ausgeliefert wird über den Endpunkt `/export/{projectId}` in `Program.cs` (wie bei den Assets: über SignalR lässt sich kein Download anstoßen); die Seite `/export` baut nur die URL und navigiert mit `forceLoad` dorthin. Feldwerte und individuelle Felder tragen keine Projekt-Spalte und werden über die Menge aller exportierten Entitäts-GUIDs gefiltert.
 
 ## Design
 
