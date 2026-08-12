@@ -3,6 +3,8 @@
 @implements IDisposable
 @inject IStringLocalizer<MainLayout> L
 @inject ModuleLabels Modules
+@inject ModuleState ModuleState
+@inject IDialogService Dialogs
 
 <MudThemeProvider Theme="GameDevManagerTheme.Instance" IsDarkMode="_isDarkMode" DefaultScrollbar="true" />
 <MudPopoverProvider />
@@ -22,7 +24,7 @@
         <MudDivider Vertical="true" FlexItem="true" Class="mx-4 my-3" />
 
         <div class="gdm-module-strip">
-            @foreach (var module in ModuleRegistry.All)
+            @foreach (var module in ModuleState.EnabledModules)
             {
                 <MudTooltip Text="@Modules.Name(module)">
                     <MudIconButton Icon="@module.Icon"
@@ -43,6 +45,12 @@
                            Class="ml-2"
                            OnClick="ToggleDarkMode" />
         </MudTooltip>
+
+        <MudTooltip Text="@L["Settings"]">
+            <MudIconButton Icon="@Icons.Material.Filled.Settings"
+                           Color="Color.Inherit"
+                           OnClick="OpenSettingsAsync" />
+        </MudTooltip>
     </MudAppBar>
 
     <MudMainContent>
@@ -55,11 +63,25 @@
 @code {
     private bool _isDarkMode = true;
 
-    protected override void OnInitialized() =>
+    protected override async Task OnInitializedAsync()
+    {
         Navigation.LocationChanged += OnLocationChanged;
+        ModuleState.Changed += OnModulesChanged;
+        await ModuleState.EnsureLoadedAsync();
+    }
 
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e) =>
         InvokeAsync(StateHasChanged);
+
+    private void OnModulesChanged() => InvokeAsync(StateHasChanged);
+
+    private Task OpenSettingsAsync() =>
+        Dialogs.ShowAsync<SettingsDialog>(L["Settings"], new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true
+        });
 
     private bool IsActive(ModuleDefinition module)
     {
@@ -69,6 +91,9 @@
 
     private void ToggleDarkMode() => _isDarkMode = !_isDarkMode;
 
-    public void Dispose() =>
+    public void Dispose()
+    {
         Navigation.LocationChanged -= OnLocationChanged;
+        ModuleState.Changed -= OnModulesChanged;
+    }
 }

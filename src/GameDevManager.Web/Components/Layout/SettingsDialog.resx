@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="TabDatabase" xml:space="preserve">
+    <value>Datenbank</value>
+  </data>
+  <data name="TabModules" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="RestartHint" xml:space="preserve">
+    <value>Änderungen an der Datenbankverbindung werden in appsettings.Local.json gespeichert und gelten erst nach einem Neustart der Anwendung.</value>
+  </data>
+  <data name="ProviderLabel" xml:space="preserve">
+    <value>Datenbank-Provider</value>
+  </data>
+  <data name="ConnectionStringLabel" xml:space="preserve">
+    <value>Connection-String</value>
+  </data>
+  <data name="ConnectionStringHelper" xml:space="preserve">
+    <value>Verbindungszeichenfolge für den gewählten Provider.</value>
+  </data>
+  <data name="TestButton" xml:space="preserve">
+    <value>Verbindung testen</value>
+  </data>
+  <data name="SaveButton" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="TestSucceeded" xml:space="preserve">
+    <value>Verbindung erfolgreich hergestellt.</value>
+  </data>
+  <data name="TestFailed" xml:space="preserve">
+    <value>Verbindung fehlgeschlagen: {0}</value>
+  </data>
+  <data name="ConnectionStringRequired" xml:space="preserve">
+    <value>Bitte einen Connection-String angeben.</value>
+  </data>
+  <data name="SavedRestartRequired" xml:space="preserve">
+    <value>Gespeichert. Die Änderungen gelten nach einem Neustart der Anwendung.</value>
+  </data>
+  <data name="ModulesHint" xml:space="preserve">
+    <value>Ausgeschaltete Module verschwinden aus Topbar, Dashboard und Suche. Ihre Inhalte bleiben erhalten und erscheinen beim Wiedereinschalten unverändert.</value>
+  </data>
+  <data name="ProviderSqlServer" xml:space="preserve">
+    <value>SQL Server</value>
+  </data>
+  <data name="ProviderPostgreSql" xml:space="preserve">
+    <value>PostgreSQL</value>
+  </data>
+  <data name="ProviderMySql" xml:space="preserve">
+    <value>MySQL</value>
+  </data>
+  <data name="ProviderSqlite" xml:space="preserve">
+    <value>SQLite</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+</root>

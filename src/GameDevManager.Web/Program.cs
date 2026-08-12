@@ -8,6 +8,10 @@ using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Settings changed in the UI (database provider, connection strings) land in this file and
+// override appsettings.json on the next start — the checked-in file stays untouched.
+builder.Configuration.AddJsonFile(LocalSettingsFile.FileName, optional: true, reloadOnChange: false);
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -21,6 +25,8 @@ builder.Services.AddMudServices(options =>
 builder.Services.AddGameDevManagerDatabase(builder.Configuration);
 builder.Services.AddGameDevManagerAssetStorage(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddScoped<ProjectContext>();
+builder.Services.AddScoped<ModuleState>();
+builder.Services.AddSingleton<LocalSettingsFile>();
 
 // Beschriftungen, die aus C# statt aus einer Razor-Datei kommen (Modulnamen, Feldtypen,
 // Bedingungen). Sie sind Dienste und keine statischen Klassen mehr, weil sie einen

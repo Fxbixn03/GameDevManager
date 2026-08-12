@@ -1275,6 +1275,31 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.ToTable("MapMarkers");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ModuleSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("ModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId", "ModuleKey")
+                        .IsUnique();
+
+                    b.ToTable("ModuleSettings");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2275,6 +2300,17 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .IsRequired();
 
                     b.Navigation("Map");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ModuleSetting", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>

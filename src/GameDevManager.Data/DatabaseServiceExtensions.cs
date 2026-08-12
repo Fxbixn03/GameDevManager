@@ -40,6 +40,7 @@ public static class DatabaseServiceExtensions
     public static IServiceCollection AddGameDevManagerContentServices(this IServiceCollection services)
     {
         services.AddScoped<ContentTypeService>();
+        services.AddScoped<ModuleSettingsService>();
         services.AddScoped<ItemService>();
         services.AddScoped<CraftingService>();
         services.AddScoped<CurrencyService>();
@@ -114,6 +115,22 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<IAssetStorage, FileSystemAssetStorage>();
 
         return services;
+    }
+
+    /// <summary>
+    /// Opens a connection with the given provider and connection string once, then closes it.
+    /// Throws with the provider's error message when the database is unreachable — deliberately
+    /// not <c>CanConnectAsync</c>, which swallows the cause the settings dialog wants to show.
+    /// </summary>
+    public static async Task TestConnectionAsync(
+        DatabaseProvider provider, string connectionString, CancellationToken ct = default)
+    {
+        var builder = new DbContextOptionsBuilder<GameDevManagerDbContext>();
+        builder.UseGameDevManagerProvider(provider, connectionString);
+
+        await using var db = new GameDevManagerDbContext(builder.Options);
+        await db.Database.OpenConnectionAsync(ct);
+        await db.Database.CloseConnectionAsync();
     }
 
     /// <summary>

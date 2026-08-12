@@ -8,6 +8,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 {
     public DbSet<GameProject> GameProjects => Set<GameProject>();
 
+    /// <summary>Module on/off per project — no row means "enabled".</summary>
+    public DbSet<ModuleSetting> ModuleSettings => Set<ModuleSetting>();
+
     /// <summary>Benutzerdefinierte Arten aller Module (Item-Art „Waffe", NPC-Art „Händler", …).</summary>
     public DbSet<ContentType> ContentTypes => Set<ContentType>();
 
@@ -116,6 +119,18 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         {
             entity.Property(p => p.Name).HasMaxLength(200).IsRequired();
             entity.Property(p => p.Description).HasMaxLength(4000);
+        });
+
+        modelBuilder.Entity<ModuleSetting>(entity =>
+        {
+            entity.Property(s => s.ModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+
+            entity.HasOne(s => s.GameProject)
+                .WithMany()
+                .HasForeignKey(s => s.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(s => new { s.GameProjectId, s.ModuleKey }).IsUnique();
         });
 
         modelBuilder.Entity<ContentType>(entity =>

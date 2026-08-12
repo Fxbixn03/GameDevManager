@@ -1,5 +1,6 @@
 @inject SearchService Search
 @inject ProjectContext Project
+@inject ModuleState ModuleState
 @inject NavigationManager Navigation
 @inject IStringLocalizer<GlobalSearch> L
 @inject ModuleLabels Modules
@@ -60,7 +61,10 @@
     private async Task<IEnumerable<SearchHit>> SearchAsync(string? query, CancellationToken ct)
     {
         var projectId = await Project.GetCurrentIdAsync(ct);
-        return await Search.SearchAsync(projectId, query, ct: ct);
+        var hits = await Search.SearchAsync(projectId, query, ct: ct);
+
+        // Hits from disabled modules stay out — their pages are hidden as well.
+        return hits.Where(hit => ModuleState.IsEnabled(hit.ModuleKey));
     }
 
     private Task OpenAsync(SearchHit? hit)

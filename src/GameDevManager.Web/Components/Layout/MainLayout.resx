@@ -21,4 +21,7 @@
   <data name="DarkTheme" xml:space="preserve">
     <value>Dunkles Design</value>
   </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
 </root>

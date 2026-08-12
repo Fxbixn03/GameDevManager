@@ -3,6 +3,8 @@
 @inject GameDevManager.Data.DatabaseOptions DbOptions
 @inject IStringLocalizer<Home> L
 @inject ModuleLabels Modules
+@inject ModuleState ModuleState
+@implements IDisposable
 @using Microsoft.EntityFrameworkCore
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -60,7 +62,7 @@
     </MudItem>
 
     @* Modul-Cards aus der Registry *@
-    @foreach (var module in ModuleRegistry.All)
+    @foreach (var module in ModuleState.EnabledModules)
     {
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudCard Elevation="0" Class="gdm-card-link" Style="height:100%;">
@@ -89,6 +91,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        ModuleState.Changed += OnModulesChanged;
+        await ModuleState.EnsureLoadedAsync();
+
         try
         {
             await using var db = await DbFactory.CreateDbContextAsync();
@@ -99,4 +104,8 @@
             _dbError = L["NoConnection", ex.Message];
         }
     }
+
+    private void OnModulesChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => ModuleState.Changed -= OnModulesChanged;
 }
