@@ -29,7 +29,7 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_isNew ? L["NotSavedYet"] : null)"
+                  Subtitle="@(_isNew ? L["NotSavedYet"].Value : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)

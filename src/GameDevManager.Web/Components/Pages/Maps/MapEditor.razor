@@ -27,7 +27,7 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? L["NotSavedYet"] : null)"
+                  Subtitle="@(_context.IsNew ? L["NotSavedYet"].Value : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
@@ -276,7 +276,7 @@ else
                                        Clearable="true"
                                        Disabled="@(_markerIcons.Count == 0)"
                                        HelperText="@(_markerIcons.Count == 0
-                                           ? L["IconHelperText"]
+                                           ? L["IconHelperText"].Value
                                            : null)">
                                 @foreach (var icon in _markerIcons)
                                 {

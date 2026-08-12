@@ -83,7 +83,8 @@
       "PowerShell(Get-Process -Id 31592)",
       "PowerShell($env:Database__Provider=\"PostgreSql\"; dotnet ef migrations add AddRarities --project src/GameDevManager.Data.Migrations.PostgreSql --startup-project src/GameDevManager.Web)",
       "PowerShell($env:Database__Provider=\"MySql\"; dotnet ef migrations add AddRarities --project src/GameDevManager.Data.Migrations.MySql --startup-project src/GameDevManager.Web)",
-      "PowerShell($env:Database__Provider=\"Sqlite\"; dotnet ef migrations add AddRarities --project src/GameDevManager.Data.Migrations.Sqlite --startup-project src/GameDevManager.Web)"
+      "PowerShell($env:Database__Provider=\"Sqlite\"; dotnet ef migrations add AddRarities --project src/GameDevManager.Data.Migrations.Sqlite --startup-project src/GameDevManager.Web)",
+      "PowerShell(dotnet build GameDevManager.slnx /property:GenerateFullPaths=true)"
     ],
     "deny": [
       "Bash(rm:*)",

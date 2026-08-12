@@ -25,7 +25,7 @@ else
 {
     <ModuleHeader Module="Module"
                   Title="@PageHeading"
-                  Subtitle="@(_context.IsNew ? L["SubtitleNotSaved"] : null)"
+                  Subtitle="@(_context.IsNew ? L["SubtitleNotSaved"].Value : null)"
                   Breadcrumbs="Breadcrumbs">
         <Actions>
             @if (_dirty)
