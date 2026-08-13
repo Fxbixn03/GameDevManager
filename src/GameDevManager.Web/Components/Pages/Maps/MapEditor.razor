@@ -284,6 +284,15 @@ else
                                 }
                             </MudSelect>
 
+                            <MudColorPicker Text="@marker.Color"
+                                            TextChanged="@((string color) => Touch(() => marker.Color = color))"
+                                            Label="@L["ColorLabel"]"
+                                            HelperText="@(marker.IconAssetId is null ? L["ColorHelperText"].Value : L["ColorIconHint"].Value)"
+                                            Variant="Variant.Outlined"
+                                            Margin="Margin.Dense"
+                                            ColorPickerView="ColorPickerView.Spectrum"
+                                            ShowAlpha="false" />
+
                             <MudStack Row="true" Spacing="2">
                                 <MudNumericField T="double"
                                                  Value="@(marker.X * 100)"

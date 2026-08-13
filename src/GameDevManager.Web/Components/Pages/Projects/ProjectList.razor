@@ -1,0 +1,173 @@
+@page "/projekte"
+@inject ProjectService Projects
+@inject ProjectContext Project
+@inject NavigationManager Navigation
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<ProjectList> L
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-6">
+    <div>
+        <MudText Typo="Typo.h4" GutterBottom="true">@L["Heading"]</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary">@L["Subtitle"]</MudText>
+    </div>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="AddAsync">
+        @L["AddButton"]
+    </MudButton>
+</MudStack>
+
+@if (_projects is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel">
+        @foreach (var project in _projects)
+        {
+            var isCurrent = project.Id == _currentId;
+            <div class="pa-3 gdm-field-row">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                    <MudIcon Icon="@Icons.Material.Filled.SportsEsports"
+                             Color="@(isCurrent ? Color.Primary : Color.Default)" />
+
+                    <div style="flex:1; min-width:0;">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudText Typo="Typo.subtitle2">@project.Name</MudText>
+                            @if (isCurrent)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">
+                                    @L["ActiveChip"]
+                                </MudChip>
+                            }
+                        </MudStack>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @L["CreatedAt", project.CreatedAtUtc.ToLocalTime().ToString("g")]@(string.IsNullOrWhiteSpace(project.Description) ? null : $" — {project.Description}")
+                        </MudText>
+                    </div>
+
+                    <MudTooltip Text="@L["ActivateTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.SwapHoriz"
+                                       Size="Size.Small"
+                                       Disabled="@isCurrent"
+                                       aria-label="@L["ActivateAria"]"
+                                       OnClick="@(() => ActivateAsync(project))" />
+                    </MudTooltip>
+                    <MudTooltip Text="@L["EditTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       aria-label="@L["EditAria"]"
+                                       OnClick="@(() => EditAsync(project))" />
+                    </MudTooltip>
+                    <MudTooltip Text="@(isCurrent ? L["DeleteActiveTooltip"] : L["DeleteTooltip"])">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                       Size="Size.Small"
+                                       Disabled="@isCurrent"
+                                       aria-label="@L["DeleteAria"]"
+                                       OnClick="@(() => DeleteAsync(project))" />
+                    </MudTooltip>
+                </MudStack>
+            </div>
+        }
+    </MudPaper>
+}
+
+@code {
+    private List<GameProject>? _projects;
+    private Guid _currentId;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _currentId = await Project.GetCurrentIdAsync();
+        _projects = await Projects.GetProjectsAsync();
+    }
+
+    private Task AddAsync() =>
+        EditWithDialogAsync(new GameProject { Name = string.Empty }, isNew: true);
+
+    // Kopie statt Original in den Dialog — Abbrechen darf die Liste nicht verändert zurücklassen.
+    private Task EditAsync(GameProject project) =>
+        EditWithDialogAsync(new GameProject
+        {
+            Id = project.Id,
+            Name = project.Name,
+            Description = project.Description,
+            CreatedAtUtc = project.CreatedAtUtc
+        }, isNew: false);
+
+    private async Task EditWithDialogAsync(GameProject project, bool isNew)
+    {
+        var parameters = new DialogParameters<ProjectDialog>
+        {
+            { d => d.Project, project },
+            { d => d.IsNew, isNew }
+        };
+
+        var reference = await Dialogs.ShowAsync<ProjectDialog>(
+            isNew ? L["DialogTitleNew"] : L["DialogTitleEdit"],
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await reference.Result;
+        if (result is null || result.Canceled || result.Data is not GameProject edited)
+        {
+            return;
+        }
+
+        try
+        {
+            await Projects.SaveProjectAsync(edited);
+            Snackbar.Add(L["SavedMessage", edited.Name], Severity.Success);
+
+            if (edited.Id == _currentId)
+            {
+                // Appbar und Cache zeigen sonst den alten Namen.
+                Project.Invalidate();
+            }
+
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task ActivateAsync(GameProject project)
+    {
+        await Project.SetCurrentAsync(project.Id);
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+
+    private async Task DeleteAsync(GameProject project)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", project.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Projects.DeleteProjectAsync(project.Id);
+            Snackbar.Add(L["DeletedMessage"], Severity.Success);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

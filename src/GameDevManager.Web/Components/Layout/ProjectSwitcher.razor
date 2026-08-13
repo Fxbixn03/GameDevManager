@@ -1,0 +1,82 @@
+@inject ProjectContext Project
+@inject ProjectService Projects
+@inject NavigationManager Navigation
+@inject IStringLocalizer<ProjectSwitcher> L
+@implements IDisposable
+
+@*
+    Auswahl des aktiven Spielprojekts in der Appbar. Ein Wechsel gilt für die ganze
+    Installation und lädt die Anwendung komplett neu — jede Seite holt ihre Daten je
+    Projekt, ein Ereignis an 57 Seiten wäre der aufwendigere Weg.
+*@
+
+<MudMenu Dense="true"
+         AnchorOrigin="Origin.BottomLeft"
+         TransformOrigin="Origin.TopLeft"
+         OpenChanged="OnOpenChangedAsync">
+    <ActivatorContent>
+        <MudTooltip Text="@L["Tooltip"]">
+            <MudButton Color="Color.Inherit"
+                       StartIcon="@Icons.Material.Filled.FolderSpecial"
+                       EndIcon="@Icons.Material.Filled.ArrowDropDown">
+                @(_current?.Name ?? L["Loading"])
+            </MudButton>
+        </MudTooltip>
+    </ActivatorContent>
+    <ChildContent>
+        @if (_projects is not null)
+        {
+            @foreach (var project in _projects)
+            {
+                var isCurrent = project.Id == _current?.Id;
+                <MudMenuItem Icon="@(isCurrent ? Icons.Material.Filled.Check : null)"
+                             OnClick="@(() => SwitchAsync(project.Id))">
+                    @project.Name
+                </MudMenuItem>
+            }
+            <MudDivider />
+        }
+        <MudMenuItem Icon="@Icons.Material.Filled.Tune" Href="/projekte">@L["Manage"]</MudMenuItem>
+    </ChildContent>
+</MudMenu>
+
+@code {
+    private GameProject? _current;
+    private List<GameProject>? _projects;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Project.Changed += OnProjectChanged;
+        _current = await Project.GetCurrentAsync();
+        _projects = await Projects.GetProjectsAsync();
+    }
+
+    // Beim Öffnen frisch laden — auf der Projektseite kann inzwischen eines dazugekommen sein.
+    private async Task OnOpenChangedAsync(bool open)
+    {
+        if (open)
+        {
+            _projects = await Projects.GetProjectsAsync();
+        }
+    }
+
+    private async Task SwitchAsync(Guid projectId)
+    {
+        if (projectId == _current?.Id)
+        {
+            return;
+        }
+
+        await Project.SetCurrentAsync(projectId);
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+
+    private void OnProjectChanged() => _ = InvokeAsync(async () =>
+    {
+        _current = await Project.GetCurrentAsync();
+        _projects = await Projects.GetProjectsAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose() => Project.Changed -= OnProjectChanged;
+}

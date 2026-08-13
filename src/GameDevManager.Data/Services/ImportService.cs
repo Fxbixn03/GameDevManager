@@ -339,8 +339,10 @@ public class ImportService(
     /// dürfen wegen des Restrict-Fremdschlüssels erst nach den Entitäten fallen.
     /// Die Moduleinstellungen (Module an/aus) bleiben absichtlich stehen — sie sind
     /// Werkzeug-Konfiguration, kein Inhalt, und stehen auch nicht im Export.
+    /// Intern statt privat, weil das Löschen eines Projekts (<see cref="ProjectService"/>)
+    /// denselben Wipe braucht.
     /// </summary>
-    private static async Task<List<string>> WipeProjectAsync(
+    internal static async Task<List<string>> WipeProjectAsync(
         GameDevManagerDbContext db, Guid projectId, CancellationToken ct)
     {
         // Feldwerte und individuelle Felder tragen keine Projekt-Spalte — sie werden über die

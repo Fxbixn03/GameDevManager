@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Projekte – GameDevManager</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Projekte</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Mehrere Spiele nebeneinander verwalten — alle Inhalte hängen am aktiven Projekt.</value>
+  </data>
+  <data name="AddButton" xml:space="preserve">
+    <value>Neues Projekt</value>
+  </data>
+  <data name="ActiveChip" xml:space="preserve">
+    <value>Aktiv</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Angelegt am {0}</value>
+  </data>
+  <data name="ActivateTooltip" xml:space="preserve">
+    <value>Zum aktiven Projekt machen</value>
+  </data>
+  <data name="ActivateAria" xml:space="preserve">
+    <value>Projekt aktivieren</value>
+  </data>
+  <data name="EditTooltip" xml:space="preserve">
+    <value>Name und Beschreibung bearbeiten</value>
+  </data>
+  <data name="EditAria" xml:space="preserve">
+    <value>Projekt bearbeiten</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteActiveTooltip" xml:space="preserve">
+    <value>Das aktive Projekt kann nicht gelöscht werden — zuerst ein anderes aktivieren.</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Projekt löschen</value>
+  </data>
+  <data name="DialogTitleNew" xml:space="preserve">
+    <value>Neues Projekt</value>
+  </data>
+  <data name="DialogTitleEdit" xml:space="preserve">
+    <value>Projekt bearbeiten</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Projekt löschen</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit sämtlichen Inhalten aller Module, Arten, Feldern, Bedingungen, Tags und hochgeladenen Dateien endgültig gelöscht. Das lässt sich nicht rückgängig machen — ein Export vorher ist die einzige Sicherung.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Projekt gelöscht.</value>
+  </data>
+</root>

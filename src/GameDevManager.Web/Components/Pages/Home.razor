@@ -4,12 +4,22 @@
 @inject IStringLocalizer<Home> L
 @inject ModuleLabels Modules
 @inject ModuleState ModuleState
+@inject ProjectContext Project
+@inject DashboardService Dashboard
+@inject IDialogService Dialogs
 @implements IDisposable
 @using Microsoft.EntityFrameworkCore
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true">@L["Heading"]</MudText>
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudText Typo="Typo.h4">@L["Heading"]</MudText>
+    <MudTooltip Text="@L["ConfigureTooltip"]">
+        <MudIconButton Icon="@Icons.Material.Filled.Tune"
+                       aria-label="@L["ConfigureAria"]"
+                       OnClick="ConfigureAsync" />
+    </MudTooltip>
+</MudStack>
 
 <MudGrid Spacing="3">
 
@@ -35,59 +45,79 @@
         </MudCard>
     </MudItem>
 
-    @* Status-Card: zeigt, dass die Datenbankverbindung steht *@
-    <MudItem xs="12" sm="6" md="4" lg="3">
-        <MudCard Elevation="0" Style="height:100%;">
-            <MudCardHeader>
-                <CardHeaderAvatar>
-                    <MudIcon Icon="@Icons.Material.Filled.Storage" Color="@(_dbError is null ? Color.Success : Color.Error)" />
-                </CardHeaderAvatar>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">@L["DatabaseTitle"]</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudText Typo="Typo.body2">@L["ProviderLabel"] <b>@DbOptions.Provider</b></MudText>
-                @if (_dbError is null)
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Success">@L["ConnectionOk"]</MudText>
-                    <MudText Typo="Typo.body2">@L["ProjectCountLabel"] @(_projectCount?.ToString() ?? "…")</MudText>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Error">@_dbError</MudText>
-                }
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
-
-    @* Modul-Cards aus der Registry *@
-    @foreach (var module in ModuleState.EnabledModules)
+    @foreach (var key in VisibleCardKeys)
     {
-        <MudItem xs="12" sm="6" md="4" lg="3">
-            <MudCard Elevation="0" Class="gdm-card-link" Style="height:100%;">
-                <MudCardHeader>
-                    <CardHeaderAvatar>
-                        <MudIcon Icon="@module.Icon" />
-                    </CardHeaderAvatar>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">@Modules.Name(module)</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudText Typo="Typo.body2">@Modules.Description(module)</MudText>
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton Href="@module.Route" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">@L["OpenButton"]</MudButton>
-                </MudCardActions>
-            </MudCard>
-        </MudItem>
+        @if (key == DashboardCard.DatabaseCardKey)
+        {
+            @* Status-Card: zeigt, dass die Datenbankverbindung steht *@
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Elevation="0" Style="height:100%;">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudIcon Icon="@Icons.Material.Filled.Storage" Color="@(_dbError is null ? Color.Success : Color.Error)" />
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">@L["DatabaseTitle"]</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">@L["ProviderLabel"] <b>@DbOptions.Provider</b></MudText>
+                        @if (_dbError is null)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Success">@L["ConnectionOk"]</MudText>
+                            <MudText Typo="Typo.body2">@L["ProjectCountLabel"] @(_projectCount?.ToString() ?? "…")</MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Error">@_dbError</MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+        else
+        {
+            var module = ModuleRegistry.Get(key);
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Elevation="0" Class="gdm-card-link" Style="height:100%;">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudIcon Icon="@module.Icon" />
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">@Modules.Name(module)</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">@Modules.Description(module)</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Href="@module.Route" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">@L["OpenButton"]</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
     }
 </MudGrid>
 
 @code {
     private int? _projectCount;
     private string? _dbError;
+    private Dictionary<string, DashboardCard> _cards = [];
+
+    // Standard: Datenbank-Card zuerst, dann die Module in Registry-Reihenfolge. Angepasste
+    // Cards sortieren sich über ihren gespeicherten Platz ein, versteckte fallen raus.
+    // Bewusst je Rendern berechnet — schaltet der Nutzer ein Modul ab, folgt das Dashboard
+    // ohne eigenes Nachladen.
+    private IEnumerable<string> VisibleCardKeys => OrderCards(DefaultCardKeys())
+        .Where(key => !(_cards.TryGetValue(key, out var card) && card.IsHidden));
+
+    private List<string> DefaultCardKeys() =>
+        [DashboardCard.DatabaseCardKey, .. ModuleState.EnabledModules.Select(m => m.Id)];
+
+    private IEnumerable<string> OrderCards(List<string> keys) => keys
+        .OrderBy(key => _cards.TryGetValue(key, out var card) ? card.SortOrder : int.MaxValue)
+        .ThenBy(keys.IndexOf);
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,6 +126,8 @@
 
         try
         {
+            _cards = await Dashboard.GetCardsAsync(await Project.GetCurrentIdAsync());
+
             await using var db = await DbFactory.CreateDbContextAsync();
             _projectCount = await db.GameProjects.CountAsync();
         }
@@ -103,6 +135,35 @@
         {
             _dbError = L["NoConnection", ex.Message];
         }
+    }
+
+    private async Task ConfigureAsync()
+    {
+        var defaults = DefaultCardKeys();
+        var rows = OrderCards(defaults)
+            .Select(key => new DashboardConfigDialog.CardRow(
+                key,
+                key == DashboardCard.DatabaseCardKey ? L["DatabaseTitle"] : Modules.Name(ModuleRegistry.Get(key)),
+                key == DashboardCard.DatabaseCardKey ? Icons.Material.Filled.Storage : ModuleRegistry.Get(key).Icon,
+                !(_cards.TryGetValue(key, out var card) && card.IsHidden)))
+            .ToList();
+
+        var parameters = new DialogParameters<DashboardConfigDialog> { { d => d.Cards, rows } };
+        var reference = await Dialogs.ShowAsync<DashboardConfigDialog>(
+            L["ConfigureTitle"], parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await reference.Result;
+        if (result is null || result.Canceled || result.Data is not List<DashboardConfigDialog.CardRow> edited)
+        {
+            return;
+        }
+
+        var projectId = await Project.GetCurrentIdAsync();
+        await Dashboard.SaveCardsAsync(
+            projectId,
+            edited.Select(row => new DashboardCardOrder(row.Key, !row.Visible)).ToList());
+        _cards = await Dashboard.GetCardsAsync(projectId);
     }
 
     private void OnModulesChanged() => InvokeAsync(StateHasChanged);

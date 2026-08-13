@@ -38,6 +38,22 @@ public class LocalSettingsFile(IHostEnvironment environment)
         await File.WriteAllTextAsync(FilePath, root.ToJsonString(WriteOptions), ct);
     }
 
+    /// <summary>
+    /// Merkt sich das zuletzt gewählte Spielprojekt, damit die Auswahl einen Neustart
+    /// überlebt. Beim Start liest die <see cref="ProjectSelection"/> den Wert aus der
+    /// Konfiguration (<c>Project:CurrentId</c>).
+    /// </summary>
+    public async Task WriteCurrentProjectAsync(Guid projectId, CancellationToken ct = default)
+    {
+        var root = await ReadAsync(ct);
+
+        var project = root["Project"] as JsonObject ?? new JsonObject();
+        project["CurrentId"] = projectId.ToString();
+        root["Project"] = project;
+
+        await File.WriteAllTextAsync(FilePath, root.ToJsonString(WriteOptions), ct);
+    }
+
     private async Task<JsonObject> ReadAsync(CancellationToken ct)
     {
         if (!File.Exists(FilePath))

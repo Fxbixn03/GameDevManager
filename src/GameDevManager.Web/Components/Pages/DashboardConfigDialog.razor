@@ -1,0 +1,76 @@
+@inject IStringLocalizer<DashboardConfigDialog> L
+
+@*
+    Anpassen des Dashboards: Reihenfolge und Sichtbarkeit der Cards. Die Import/Export-Card
+    fehlt hier bewusst — sie ist laut Konzept immer fest sichtbar.
+*@
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Tune" />
+            <MudText Typo="Typo.h6">@L["Title"]</MudText>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">@L["Hint"]</MudText>
+
+        <div>
+            @for (var i = 0; i < Cards.Count; i++)
+            {
+                var index = i;
+                var row = Cards[index];
+                <div class="pa-2 gdm-field-row">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudIcon Icon="@row.Icon" Size="Size.Small" />
+                        <MudText Typo="Typo.body2" Style="flex:1;">@row.Title</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp"
+                                       Size="Size.Small"
+                                       Disabled="@(index == 0)"
+                                       aria-label="@L["MoveUpAria"]"
+                                       OnClick="@(() => Move(index, -1))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown"
+                                       Size="Size.Small"
+                                       Disabled="@(index == Cards.Count - 1)"
+                                       aria-label="@L["MoveDownAria"]"
+                                       OnClick="@(() => Move(index, +1))" />
+                        <MudTooltip Text="@(row.Visible ? L["VisibleTooltip"] : L["HiddenTooltip"])">
+                            <MudSwitch T="bool" @bind-Value="row.Visible" Color="Color.Primary" Size="Size.Small" />
+                        </MudTooltip>
+                    </MudStack>
+                </div>
+            }
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">@L["Submit"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    /// <summary>Eine Card im Dialog — veränderlich, weil Reihenfolge und Schalter direkt daran hängen.</summary>
+    public sealed class CardRow(string key, string title, string icon, bool visible)
+    {
+        public string Key { get; } = key;
+        public string Title { get; } = title;
+        public string Icon { get; } = icon;
+        public bool Visible { get; set; } = visible;
+    }
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public required List<CardRow> Cards { get; set; }
+
+    private void Move(int index, int offset)
+    {
+        var other = index + offset;
+        (Cards[index], Cards[other]) = (Cards[other], Cards[index]);
+    }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(Cards));
+}

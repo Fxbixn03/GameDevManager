@@ -39,8 +39,10 @@ public static class DatabaseServiceExtensions
     /// </summary>
     public static IServiceCollection AddGameDevManagerContentServices(this IServiceCollection services)
     {
+        services.AddScoped<ProjectService>();
         services.AddScoped<ContentTypeService>();
         services.AddScoped<ModuleSettingsService>();
+        services.AddScoped<DashboardService>();
         services.AddScoped<ItemService>();
         services.AddScoped<CraftingService>();
         services.AddScoped<CurrencyService>();

@@ -26,6 +26,7 @@ builder.Services.AddGameDevManagerDatabase(builder.Configuration);
 builder.Services.AddGameDevManagerAssetStorage(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddGameDevManagerExportStorage(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddScoped<ProjectContext>();
+builder.Services.AddSingleton<ProjectSelection>();
 builder.Services.AddScoped<ModuleState>();
 builder.Services.AddSingleton<LocalSettingsFile>();
 

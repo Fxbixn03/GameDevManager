@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GameDevManager ist ein selbst gehostetes Verwaltungstool für Indie-Spieleentwickler: ein strukturiertes Wiki für Spielinhalte (Items, NPCs, Quests, Dialoge, Karten, …) mit späterem Export in Game Engines (Unity, Unreal, Godot oder JSON/ZIP).
 
-**Status: Alle 22 Module umgesetzt.** Die Kern-Architektur der Roadmap steht ganz: Entitätenmodell, Arten/Felder, GUID-Referenzen **und das Bedingungssystem**. Sämtliche Module der Registry haben eine eigene Oberfläche — von Items über NPCs, Fraktionen, Diplomatie, Story, Quests und Events bis zu Spieler/Skilltrees, Klassen, Effekten, Achievements, Sammelobjekten, Tags, Audio, Cutscenes und der Statistik-Seite mit allen Health Checks; die Platzhalterseite `ModulePage.razor` wird nicht mehr angesteuert. **Import und Export sind abgeschlossen**: Export als JSON/ZIP inkl. Assets (wahlweise im Ordner-Layout von Unity, Unreal oder Godot), Import des Export-ZIPs sowie aufbewahrte Exportstände mit Diff-Ansicht — siehe Abschnitt „Import & Export“. Noch offen: Changelog (braucht Benutzeranmeldung), konfigurierbares Dashboard, Projektauswahl — und Testprojekte gibt es noch nicht (`dotnet test` folgt mit dem ersten). Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
+**Status: Alle 22 Module umgesetzt.** Die Kern-Architektur der Roadmap steht ganz: Entitätenmodell, Arten/Felder, GUID-Referenzen **und das Bedingungssystem**. Sämtliche Module der Registry haben eine eigene Oberfläche — von Items über NPCs, Fraktionen, Diplomatie, Story, Quests und Events bis zu Spieler/Skilltrees, Klassen, Effekten, Achievements, Sammelobjekten, Tags, Audio, Cutscenes und der Statistik-Seite mit allen Health Checks; die Platzhalterseite `ModulePage.razor` wird nicht mehr angesteuert. **Import und Export sind abgeschlossen**: Export als JSON/ZIP inkl. Assets (wahlweise im Ordner-Layout von Unity, Unreal oder Godot), Import des Export-ZIPs sowie aufbewahrte Exportstände mit Diff-Ansicht — siehe Abschnitt „Import & Export“. **Projektauswahl und konfigurierbares Dashboard sind umgesetzt** (siehe Abschnitt „Projekte & Dashboard“), ebenso ein erstes Testprojekt unter `tests/GameDevManager.Tests` (`dotnet test`). Noch offen: Changelog (braucht Benutzeranmeldung). Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
 
 **Sprache:** README, Konzept und Doku sind auf Deutsch. Neue Dokumentation und Commit-Messages ebenfalls auf Deutsch verfassen. Code (Bezeichner, Kommentare) auf Englisch.
 
@@ -27,7 +27,7 @@ $env:Database__Provider="SqlServer"; dotnet ef migrations add <Name> --project s
 # ebenso mit PostgreSql, MySql, Sqlite
 ```
 
-Testprojekte existieren noch nicht; sobald vorhanden: `dotnet test`.
+`dotnet test` führt das Testprojekt [tests/GameDevManager.Tests](tests/GameDevManager.Tests) aus: echte Dienste aus demselben DI-Aufbau wie die Anwendung, gegen SQLite im Speicher (`TestDatabase`) — keine externen Abhängigkeiten. Getestet sind die JSON-Regeln des Exportformats, der Crafting-Graph (Zyklen, Grundstoff-Rechnung) und die Health Checks (Bedingungen, Dialog-Sackgassen, Loot über 100 %).
 
 ## Architektur
 
@@ -39,6 +39,7 @@ GameDevManager.Data      ← EF Core, DbContext; referenziert Domain, bündelt a
 GameDevManager.Data.Migrations.{SqlServer|PostgreSql|MySql|Sqlite}
                          ← je ein Projekt nur für die Migrationen des jeweiligen Providers
 GameDevManager.Web       ← Blazor Server (net10.0) + MudBlazor; referenziert Data und alle Migrations-Projekte
+GameDevManager.Tests     ← xunit (unter tests/); echte Dienste gegen SQLite im Speicher
 ```
 
 Provider und Connection String kommen aus `appsettings.json` (`Database:Provider` + `ConnectionStrings:{Provider}`); die Verdrahtung inklusive `MigrationsAssembly` steht in [DatabaseServiceExtensions.cs](src/GameDevManager.Data/DatabaseServiceExtensions.cs). Der DbContext wird als **Factory** registriert (Blazor Server) — Dienste holen sich je Aufruf einen eigenen Kontext und halten keinen Zustand.
@@ -181,7 +182,13 @@ Klicks auf das Kartenbild werden über [gdm-map.js](src/GameDevManager.Web/wwwro
 
 Der Domain-Enum heißt `ContentFieldType` und nicht `FieldType` — letzteres kollidiert mit `MudBlazor.FieldType` und macht jede Razor-Datei mehrdeutig.
 
-Alle Inhalte hängen an einem `GameProject`. Eine Projektauswahl gibt es noch nicht; bis dahin liefert `ProjectContext` das beim Start angelegte Standardprojekt. Wenn das Projekt-Modul kommt, ändert sich nur dieser Dienst.
+### Projekte & Dashboard
+
+Alle Inhalte hängen an einem `GameProject`. Welches aktiv ist, hält die Singleton-`ProjectSelection` **installationsweit** fest — das Tool wird self-hosted von einer Person betrieben, alle Verbindungen arbeiten auf demselben Projekt. Der Startwert kommt aus `Project:CurrentId` in `appsettings.Local.json` (geschrieben über `LocalSettingsFile`), damit die Auswahl einen Neustart überlebt; der scopede `ProjectContext` cached das geladene Projekt je Verbindung. Gewechselt wird über den `ProjectSwitcher` in der Appbar — ein Wechsel lädt die Anwendung mit `forceLoad` komplett neu, weil jede Seite ihre Daten ohnehin je Projekt frisch lädt; ein Ereignis an ~57 Seiten wäre der aufwendigere Weg.
+
+Verwaltet werden Projekte unter `/projekte` (`ProjectService`): Namen sind installationsweit eindeutig, das aktive und das letzte Projekt lassen sich nicht löschen. **Das Löschen nutzt denselben Wipe wie der ersetzende Import** (`ImportService.WipeProjectAsync`, deshalb `internal`) — Feldwerte, individuelle Felder, Bedingungen und Assets hängen ohne Fremdschlüssel am Projekt und blieben bei einem bloßen Löschen der Projektzeile als Waisen zurück.
+
+Das Dashboard ist konfigurierbar: `DashboardCard` speichert je Projekt Sichtbarkeit und Reihenfolge einer Card (`CardKey` = Modul-Schlüssel oder `database`). Zeilen entstehen erst beim Anpassen — Cards ohne Zeile zeigt das Dashboard mit dem Standard, und die Import/Export-Card ist laut Konzept immer fest sichtbar und deshalb nicht konfigurierbar. Wie die Moduleinstellungen ist das Werkzeug-Konfiguration: nicht im Export, übersteht den ersetzenden Import.
 
 ### Import & Export
 

@@ -556,6 +556,34 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.ToTable("CutsceneShots");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DashboardCard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CardKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId", "CardKey")
+                        .IsUnique();
+
+                    b.ToTable("DashboardCards");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Dialogue", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2039,6 +2067,17 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .IsRequired();
 
                     b.Navigation("Cutscene");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DashboardCard", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Dialogue", b =>

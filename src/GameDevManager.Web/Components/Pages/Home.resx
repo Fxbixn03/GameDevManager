@@ -12,6 +12,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ConfigureTooltip" xml:space="preserve">
+    <value>Dashboard anpassen</value>
+  </data>
+  <data name="ConfigureAria" xml:space="preserve">
+    <value>Dashboard anpassen</value>
+  </data>
+  <data name="ConfigureTitle" xml:space="preserve">
+    <value>Dashboard anpassen</value>
+  </data>
   <data name="PageTitle" xml:space="preserve">
     <value>Dashboard – GameDevManager</value>
   </data>

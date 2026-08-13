@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Dashboard anpassen</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Reihenfolge über die Pfeile, Sichtbarkeit über den Schalter. Die Import/Export-Card bleibt immer sichtbar.</value>
+  </data>
+  <data name="MoveUpAria" xml:space="preserve">
+    <value>Nach oben</value>
+  </data>
+  <data name="MoveDownAria" xml:space="preserve">
+    <value>Nach unten</value>
+  </data>
+  <data name="VisibleTooltip" xml:space="preserve">
+    <value>Wird angezeigt</value>
+  </data>
+  <data name="HiddenTooltip" xml:space="preserve">
+    <value>Ausgeblendet</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+</root>

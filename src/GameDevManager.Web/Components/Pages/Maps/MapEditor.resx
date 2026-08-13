@@ -117,6 +117,15 @@
   <data name="IconHelperText" xml:space="preserve">
     <value>Werkzeug-Assets ohne Entität stehen hier zur Auswahl.</value>
   </data>
+  <data name="ColorLabel" xml:space="preserve">
+    <value>Farbe</value>
+  </data>
+  <data name="ColorHelperText" xml:space="preserve">
+    <value>Ohne Auswahl gilt die Akzentfarbe.</value>
+  </data>
+  <data name="ColorIconHint" xml:space="preserve">
+    <value>Bei eigenem Symbol färbt sie nur den Bereichsrand.</value>
+  </data>
   <data name="XLabel" xml:space="preserve">
     <value>X</value>
   </data>

@@ -26,6 +26,5 @@ jobs:
       - name: Build (Release)
         run: dotnet build GameDevManager.slnx --no-restore --configuration Release
 
-      # Läuft auch ohne Testprojekte durch — sobald Tests existieren, werden sie hier ausgeführt.
       - name: Tests
         run: dotnet test GameDevManager.slnx --no-build --configuration Release --verbosity normal

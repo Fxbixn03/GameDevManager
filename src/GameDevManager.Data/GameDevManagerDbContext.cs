@@ -11,6 +11,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
     /// <summary>Module on/off per project — no row means "enabled".</summary>
     public DbSet<ModuleSetting> ModuleSettings => Set<ModuleSetting>();
 
+    /// <summary>Sichtbarkeit und Reihenfolge der Dashboard-Cards, je Projekt.</summary>
+    public DbSet<DashboardCard> DashboardCards => Set<DashboardCard>();
+
     /// <summary>Benutzerdefinierte Arten aller Module (Item-Art „Waffe", NPC-Art „Händler", …).</summary>
     public DbSet<ContentType> ContentTypes => Set<ContentType>();
 
@@ -131,6 +134,18 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(s => new { s.GameProjectId, s.ModuleKey }).IsUnique();
+        });
+
+        modelBuilder.Entity<DashboardCard>(entity =>
+        {
+            entity.Property(c => c.CardKey).HasMaxLength(ModuleKeyLength).IsRequired();
+
+            entity.HasOne(c => c.GameProject)
+                .WithMany()
+                .HasForeignKey(c => c.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(c => new { c.GameProjectId, c.CardKey }).IsUnique();
         });
 
         modelBuilder.Entity<ContentType>(entity =>

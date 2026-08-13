@@ -12,6 +12,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ProjectNameRequired" xml:space="preserve">
+    <value>Das Projekt braucht einen Namen.</value>
+  </data>
+  <data name="ProjectNameExists" xml:space="preserve">
+    <value>Es gibt bereits ein Projekt namens „{0}“.</value>
+  </data>
+  <data name="ProjectLastOne" xml:space="preserve">
+    <value>Das letzte Projekt kann nicht gelöscht werden — mindestens eines muss bestehen bleiben.</value>
+  </data>
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>Das Pflichtfeld „{0}“ ist nicht gefüllt.</value>
   </data>

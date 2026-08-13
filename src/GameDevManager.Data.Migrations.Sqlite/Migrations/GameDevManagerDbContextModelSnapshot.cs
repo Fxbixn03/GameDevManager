@@ -551,6 +551,34 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("CutsceneShots");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DashboardCard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CardKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId", "CardKey")
+                        .IsUnique();
+
+                    b.ToTable("DashboardCards");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Dialogue", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2034,6 +2062,17 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .IsRequired();
 
                     b.Navigation("Cutscene");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.DashboardCard", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Dialogue", b =>
