@@ -105,4 +105,10 @@
   <data name="DeletedMessage" xml:space="preserve">
     <value>„{0}“ wurde gelöscht.</value>
   </data>
+  <data name="GraphTooltip" xml:space="preserve">
+    <value>Als Graph anzeigen</value>
+  </data>
+  <data name="GraphAria" xml:space="preserve">
+    <value>Verlauf von „{0}“ als Graph anzeigen</value>
+  </data>
 </root>

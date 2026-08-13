@@ -1,5 +1,6 @@
 using GameDevManager.Domain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
@@ -31,13 +32,21 @@ public sealed record SearchHit(
 /// laufen in diesem Tool ausschließlich über GUIDs, und die aus einer Fundstelle oder einem
 /// Export zu kopieren und hier einzufügen ist der schnellste Weg zur Entität.
 /// <para>
+/// Gesucht wird über mehr als den Namen: Beschreibungen, die Textwerte der
+/// benutzerdefinierten Felder und die gesprochenen Zeilen der Dialoge. Gerade Dialogtexte
+/// tragen ihren Inhalt nirgends im Namen und wären sonst nicht wiederzufinden. Treffer
+/// abseits des Namens sind als solche beschriftet, weil sonst unklar wäre, warum ein Eintrag
+/// in der Liste steht.
+/// </para>
+/// <para>
 /// Die Module melden sich über <see cref="IModuleEntitySource"/>; Assets und Arten kommen
 /// hinzu, weil sie keine Modul-Entitäten sind.
 /// </para>
 /// </summary>
 public class SearchService(
     IDbContextFactory<GameDevManagerDbContext> factory,
-    IEnumerable<IModuleEntitySource> sources)
+    IEnumerable<IModuleEntitySource> sources,
+    IStringLocalizer<DataMessages> messages)
 {
     /// <summary>Ab dieser Länge wird gesucht — kürzer träfe fast alles.</summary>
     public const int MinimumQueryLength = 2;
@@ -69,6 +78,18 @@ public class SearchService(
             hits.AddRange(await source.SearchAsync(db, projectId, needle, limit, ct));
         }
 
+        // Feldwerte danach und nicht vermischt: Wo dieselbe Entität schon über ihren Namen
+        // gefunden wurde, ist der Namenstreffer der bessere — der Feldtreffer entfällt.
+        var fieldValueHit = messages["Search_FieldValueHit"].Value;
+        var found = hits.Select(hit => hit.Id).ToHashSet();
+
+        foreach (var source in sources)
+        {
+            hits.AddRange((await source.SearchFieldValuesAsync(db, projectId, needle, limit, ct))
+                .Where(hit => found.Add(hit.Id))
+                .Select(hit => hit with { Subtitle = fieldValueHit }));
+        }
+
         hits.AddRange(await db.Assets
             .AsNoTracking()
             .Where(a => a.GameProjectId == projectId
@@ -83,13 +104,15 @@ public class SearchService(
                 a.FileName, a.Description, a.Id))
             .ToListAsync(ct));
 
+        var typeLabel = messages["Search_ContentType"].Value;
+
         hits.AddRange(await db.ContentTypes
             .AsNoTracking()
             .Where(t => t.GameProjectId == projectId && t.Name.ToLower().Contains(needle))
             .OrderBy(t => t.Name)
             .Take(limit)
             .Select(t => new SearchHit(
-                t.Id, t.ModuleKey, SearchHitKind.ContentType, t.Name, "Art", null))
+                t.Id, t.ModuleKey, SearchHitKind.ContentType, t.Name, typeLabel, null))
             .ToListAsync(ct));
 
         return [.. Rank(hits, needle).Take(limit)];
@@ -102,11 +125,13 @@ public class SearchService(
     private async Task<List<SearchHit>> FindByIdAsync(
         GameDevManagerDbContext db, Guid projectId, Guid id, CancellationToken ct)
     {
+        var guidHit = messages["Search_GuidHit"].Value;
+
         foreach (var source in sources)
         {
             if (await source.FindByIdAsync(db, projectId, id, ct) is { } hit)
             {
-                return [hit with { Subtitle = "GUID-Treffer" }];
+                return [hit with { Subtitle = guidHit }];
             }
         }
 
@@ -117,7 +142,7 @@ public class SearchService(
                 // Bewusst das Asset-Modul und nicht das der besitzenden Entität: der Treffer
                 // führt in die Bibliothek, also soll dort auch „Assets“ stehen.
                 a.Id, ModuleKeys.Assets, SearchHitKind.Asset,
-                a.FileName, "GUID-Treffer", a.Id))
+                a.FileName, guidHit, a.Id))
             .FirstOrDefaultAsync(ct);
 
         if (asset is not null)
@@ -125,11 +150,13 @@ public class SearchService(
             return [asset];
         }
 
+        var guidTypeHit = messages["Search_GuidContentTypeHit"].Value;
+
         var type = await db.ContentTypes
             .AsNoTracking()
             .Where(t => t.Id == id && t.GameProjectId == projectId)
             .Select(t => new SearchHit(
-                t.Id, t.ModuleKey, SearchHitKind.ContentType, t.Name, "GUID-Treffer, Art", null))
+                t.Id, t.ModuleKey, SearchHitKind.ContentType, t.Name, guidTypeHit, null))
             .FirstOrDefaultAsync(ct);
 
         return type is null ? [] : [type];

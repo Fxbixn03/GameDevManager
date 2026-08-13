@@ -427,10 +427,15 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
 
                     b.HasIndex("GameProjectId", "ModuleKey");
 
@@ -2014,7 +2019,14 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("GameProject");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Currency", b =>
@@ -2566,6 +2578,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
                 {
+                    b.Navigation("Children");
+
                     b.Navigation("Fields");
                 });
 

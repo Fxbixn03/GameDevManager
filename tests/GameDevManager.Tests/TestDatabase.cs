@@ -1,5 +1,6 @@
 using GameDevManager.Data;
 using GameDevManager.Data.Assets;
+using GameDevManager.Data.Services;
 using GameDevManager.Domain.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ public sealed class TestDatabase : IDisposable
 {
     private readonly SqliteConnection _connection;
     private readonly ServiceProvider _provider;
+    private readonly string _exportPath;
 
     public TestDatabase()
     {
@@ -24,12 +26,19 @@ public sealed class TestDatabase : IDisposable
         _connection = new SqliteConnection("DataSource=:memory:");
         _connection.Open();
 
+        // Exportstände liegen im Dateisystem — der ersetzende Import und das Löschen eines
+        // Projekts legen davor einen an. Je Test ein eigenes Verzeichnis, das mit ihm vergeht.
+        _exportPath = Path.Combine(Path.GetTempPath(), $"gdm-tests-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(_exportPath);
+
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddLocalization();
         services.AddDbContextFactory<GameDevManagerDbContext>(builder => builder.UseSqlite(_connection));
         services.AddSingleton<IAssetStorage, InMemoryAssetStorage>();
         services.AddSingleton(new AssetStorageOptions { RootPath = Path.GetTempPath() });
+        services.AddSingleton(new ExportStorageOptions { RootPath = _exportPath });
+        services.AddScoped<ExportSnapshotService>();
         services.AddGameDevManagerContentServices();
 
         _provider = services.BuildServiceProvider();
@@ -51,10 +60,18 @@ public sealed class TestDatabase : IDisposable
 
     public T GetService<T>() where T : notnull => _provider.GetRequiredService<T>();
 
+    /// <summary>Wo die Exportstände dieses Tests liegen — der Ordner vergeht mit ihm.</summary>
+    public string ExportPath => _exportPath;
+
     public void Dispose()
     {
         _provider.Dispose();
         _connection.Dispose();
+
+        if (Directory.Exists(_exportPath))
+        {
+            Directory.Delete(_exportPath, recursive: true);
+        }
     }
 
     /// <summary>Dateispeicher-Attrappe: es geht in den Tests nie um echte Dateien.</summary>

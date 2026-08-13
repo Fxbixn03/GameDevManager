@@ -27,6 +27,12 @@
   <data name="DescriptionLabel" xml:space="preserve">
     <value>Beschreibung (optional)</value>
   </data>
+  <data name="ParentLabel" xml:space="preserve">
+    <value>Unterart von (optional)</value>
+  </data>
+  <data name="ParentHelper" xml:space="preserve">
+    <value>Die Felder der Eltern-Art gelten dann zusätzlich — „Waffe“ mit den Unterarten Nahkampf, Fernkampf, Magie.</value>
+  </data>
   <data name="IconLabel" xml:space="preserve">
     <value>Icon (optional)</value>
   </data>

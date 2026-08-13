@@ -33,6 +33,21 @@
   <data name="TypeInUse" xml:space="preserve">
     <value>„{0}“ wird noch von {1} Eintrag/Einträgen verwendet. Bitte zuerst umtragen oder löschen.</value>
   </data>
+  <data name="TypeHasChildren" xml:space="preserve">
+    <value>„{0}“ hat noch {1} Unterart(en), die ihre Felder erben. Diese zuerst umhängen oder löschen.</value>
+  </data>
+  <data name="TypeParentSelf" xml:space="preserve">
+    <value>Eine Art kann nicht ihre eigene Unterart sein.</value>
+  </data>
+  <data name="TypeParentForeign" xml:space="preserve">
+    <value>Die Eltern-Art muss aus demselben Modul und demselben Projekt stammen.</value>
+  </data>
+  <data name="TypeParentCycle" xml:space="preserve">
+    <value>Diese Zuordnung schlösse einen Ring — die Eltern-Art ist selbst eine Unterart dieser Art.</value>
+  </data>
+  <data name="FieldNameInHierarchy" xml:space="preserve">
+    <value>Ein Feld namens „{0}“ gibt es in dieser Vererbungslinie bereits — geerbte und eigene Felder stünden sonst gleichnamig nebeneinander.</value>
+  </data>
   <data name="FieldNameRequired" xml:space="preserve">
     <value>Das Feld braucht einen Namen.</value>
   </data>
@@ -179,6 +194,12 @@
   </data>
   <data name="DialogueLineUnreachable" xml:space="preserve">
     <value>Die Zeile „{0}“ ist von keiner Antwort aus erreichbar.</value>
+  </data>
+  <data name="DialogueGraph_Player" xml:space="preserve">
+    <value>Spieler</value>
+  </data>
+  <data name="DialogueGraph_UnknownSpeaker" xml:space="preserve">
+    <value>Unbekannter Sprecher</value>
   </data>
   <data name="RelationNameRequired" xml:space="preserve">
     <value>Die Beziehung braucht einen Namen — etwa „Nichtangriffspakt“.</value>
@@ -381,6 +402,18 @@
   <data name="Reference_CutsceneDialogue" xml:space="preserve">
     <value>Dialog in Cutscene</value>
   </data>
+  <data name="Search_GuidHit" xml:space="preserve">
+    <value>GUID-Treffer</value>
+  </data>
+  <data name="Search_GuidContentTypeHit" xml:space="preserve">
+    <value>GUID-Treffer, Art</value>
+  </data>
+  <data name="Search_ContentType" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="Search_FieldValueHit" xml:space="preserve">
+    <value>Treffer in einem Feldwert</value>
+  </data>
   <data name="Search_RecipeYields" xml:space="preserve">
     <value>ergibt </value>
   </data>
@@ -499,6 +532,21 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   </data>
   <data name="Export_SnapshotInvalidName" xml:space="preserve">
     <value>Der Name des Exportstands ist ungültig.</value>
+  </data>
+  <data name="Export_SafetyNetFailed" xml:space="preserve">
+    <value>Vor dieser Aktion konnte kein Sicherungsstand angelegt werden — sie wurde abgebrochen. Ursache: {0}</value>
+  </data>
+  <data name="Duplicate_NotSupported" xml:space="preserve">
+    <value>Einträge dieses Moduls lassen sich nicht kopieren.</value>
+  </data>
+  <data name="Duplicate_Missing" xml:space="preserve">
+    <value>Der Eintrag wurde nicht gefunden — vermutlich ist er inzwischen gelöscht.</value>
+  </data>
+  <data name="Duplicate_NameSuffix" xml:space="preserve">
+    <value>{0} (Kopie)</value>
+  </data>
+  <data name="Duplicate_NameSuffixNumbered" xml:space="preserve">
+    <value>{0} (Kopie {1})</value>
   </data>
   <data name="Import_ManifestMissing" xml:space="preserve">
     <value>Das ZIP enthält kein project.json — es ist kein GameDevManager-Export.</value>

@@ -84,6 +84,10 @@ else
                                                OnClick="@(() => MoveAsync(entry, up: false))"
                                                aria-label="@L["MoveDownAria", entry.Name]" />
                             </MudTooltip>
+                            <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                   EntityId="entry.Id"
+                                                   Name="@entry.Name"
+                                                   EditRoute="/modules/story" />
                             <MudTooltip Text="@L["DeleteTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                Size="Size.Small"

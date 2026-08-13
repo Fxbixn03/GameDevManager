@@ -429,10 +429,15 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("char(36)");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
 
                     b.HasIndex("GameProjectId", "ModuleKey");
 
@@ -2016,7 +2021,14 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("GameProject");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Currency", b =>
@@ -2568,6 +2580,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
                 {
+                    b.Navigation("Children");
+
                     b.Navigation("Fields");
                 });
 

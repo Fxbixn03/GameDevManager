@@ -15,7 +15,11 @@ public class ContentTypeService(
     IEnumerable<IModuleEntitySource> sources,
     IStringLocalizer<DataMessages> messages)
 {
-    /// <summary>Alle Arten eines Moduls samt Feldern und Auswahlmöglichkeiten, fertig sortiert.</summary>
+    /// <summary>
+    /// Alle Arten eines Moduls samt Feldern und Auswahlmöglichkeiten, fertig sortiert.
+    /// Unterarten stehen direkt unter ihrer Eltern-Art und tragen deren Felder in
+    /// <see cref="ContentType.InheritedFields"/>.
+    /// </summary>
     public async Task<List<ContentType>> GetTypesAsync(Guid projectId, string moduleKey, CancellationToken ct = default)
     {
         await using var db = await factory.CreateDbContextAsync(ct);
@@ -40,7 +44,61 @@ public class ContentTypeService(
             }
         }
 
-        return [.. types.OrderBy(t => t.SortOrder).ThenBy(t => t.Name)];
+        var byId = types.ToDictionary(t => t.Id);
+
+        foreach (var type in types)
+        {
+            type.InheritedFields = [.. Ancestors(type, byId).Reverse().SelectMany(a => a.Fields)];
+        }
+
+        return [.. Hierarchy(types, parentId: null, byId)];
+    }
+
+    /// <summary>
+    /// Die Arten in der Reihenfolge der Hierarchie: jede Art, direkt gefolgt von ihren
+    /// Unterarten. Flach statt verschachtelt, weil alle Aufrufer eine Liste erwarten — die
+    /// Auswahlfelder ebenso wie die Arten-Verwaltung, die nur einrückt.
+    /// <para>
+    /// Eine Art, deren Eltern-Art nicht in der Liste steht (anderes Modul, aus einer kaputten
+    /// Einspielung), gilt als oberste Ebene und fällt dadurch nicht unter den Tisch.
+    /// </para>
+    /// </summary>
+    private static IEnumerable<ContentType> Hierarchy(
+        List<ContentType> types, Guid? parentId, Dictionary<Guid, ContentType> byId)
+    {
+        var level = types
+            .Where(t => (t.ParentId is { } id && byId.ContainsKey(id) ? id : null) == parentId)
+            .OrderBy(t => t.SortOrder)
+            .ThenBy(t => t.Name);
+
+        foreach (var type in level)
+        {
+            yield return type;
+
+            foreach (var child in Hierarchy(types, type.Id, byId))
+            {
+                yield return child;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Die Eltern-Arten von unten nach oben. Bricht ab, sobald eine Art zum zweiten Mal
+    /// vorkommt: Ein Ring entsteht beim Speichern zwar nicht, aber ein eingespielter Stand aus
+    /// einer fremden Quelle darf das Laden nicht zum Hängen bringen.
+    /// </summary>
+    private static IEnumerable<ContentType> Ancestors(ContentType type, Dictionary<Guid, ContentType> byId)
+    {
+        var seen = new HashSet<Guid> { type.Id };
+        var current = type;
+
+        while (current.ParentId is { } parentId
+               && byId.TryGetValue(parentId, out var parent)
+               && seen.Add(parentId))
+        {
+            yield return parent;
+            current = parent;
+        }
     }
 
     /// <summary>Legt eine Art an oder aktualisiert sie.</summary>
@@ -52,6 +110,9 @@ public class ContentTypeService(
         }
 
         await using var db = await factory.CreateDbContextAsync(ct);
+
+        await ValidateParentAsync(db, type, ct);
+
         var stored = await db.ContentTypes.FirstOrDefaultAsync(t => t.Id == type.Id, ct);
 
         if (stored is null)
@@ -61,6 +122,7 @@ public class ContentTypeService(
                 Id = type.Id,
                 GameProjectId = type.GameProjectId,
                 ModuleKey = type.ModuleKey,
+                ParentId = type.ParentId,
                 Name = type.Name.Trim(),
                 Description = Normalize(type.Description),
                 Icon = Normalize(type.Icon),
@@ -69,6 +131,7 @@ public class ContentTypeService(
         }
         else
         {
+            stored.ParentId = type.ParentId;
             stored.Name = type.Name.Trim();
             stored.Description = Normalize(type.Description);
             stored.Icon = Normalize(type.Icon);
@@ -76,6 +139,57 @@ public class ContentTypeService(
         }
 
         await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// Prüft die Eltern-Art: Sie muss im selben Projekt und Modul liegen — sonst erbte eine
+    /// Item-Art die Felder einer NPC-Art — und darf keinen Ring bilden. Ein Ring wäre keine
+    /// Hierarchie mehr, und das Zusammentragen der geerbten Felder liefe endlos.
+    /// </summary>
+    private async Task ValidateParentAsync(
+        GameDevManagerDbContext db, ContentType type, CancellationToken ct)
+    {
+        if (type.ParentId is not { } parentId)
+        {
+            return;
+        }
+
+        if (parentId == type.Id)
+        {
+            throw new ContentValidationException(messages["TypeParentSelf"]);
+        }
+
+        var candidates = await db.ContentTypes
+            .AsNoTracking()
+            .Where(t => t.GameProjectId == type.GameProjectId && t.ModuleKey == type.ModuleKey)
+            .Select(t => new { t.Id, t.Name, t.ParentId })
+            .ToListAsync(ct);
+
+        var byId = candidates.ToDictionary(t => t.Id);
+
+        if (!byId.ContainsKey(parentId))
+        {
+            throw new ContentValidationException(messages["TypeParentForeign"]);
+        }
+
+        // Aufwärts laufen: Trifft man auf dem Weg die Art selbst, schlösse sich ein Ring.
+        var seen = new HashSet<Guid> { type.Id };
+        var current = parentId;
+
+        while (byId.TryGetValue(current, out var ancestor))
+        {
+            if (!seen.Add(current))
+            {
+                throw new ContentValidationException(messages["TypeParentCycle"]);
+            }
+
+            if (ancestor.ParentId is not { } next)
+            {
+                return;
+            }
+
+            current = next;
+        }
     }
 
     /// <summary>
@@ -93,6 +207,14 @@ public class ContentTypeService(
         if (usages > 0)
         {
             throw new ContentValidationException(messages["TypeInUse", stored.Name, usages]);
+        }
+
+        // Unterarten erben die Felder dieser Art — mit ihr fielen sie weg. Zuerst umhängen
+        // oder löschen, dann die Eltern-Art.
+        var children = await db.ContentTypes.CountAsync(t => t.ParentId == typeId, ct);
+        if (children > 0)
+        {
+            throw new ContentValidationException(messages["TypeHasChildren", stored.Name, children]);
         }
 
         // Die Werte hängen an den Felddefinitionen, nicht an der Art — sie fallen über den
@@ -118,6 +240,9 @@ public class ContentTypeService(
         Validate(field);
 
         await using var db = await factory.CreateDbContextAsync(ct);
+
+        await EnsureNameFreeInHierarchyAsync(db, field, ct);
+
         var stored = await db.FieldDefinitions
             .Include(f => f.Options)
             .FirstOrDefaultAsync(f => f.Id == field.Id, ct);
@@ -190,6 +315,81 @@ public class ContentTypeService(
         // Werte fallen über den Fremdschlüssel mit.
         db.FieldDefinitions.Remove(stored);
         await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// Verhindert, dass ein Feldname zweimal in derselben Vererbungslinie vorkommt: Die Maske
+    /// zeigte dann zwei gleich benannte Felder untereinander, ohne dass zu erkennen wäre,
+    /// welches gemeint ist. Geprüft wird in beide Richtungen — ein Feld an der Eltern-Art
+    /// erreicht auch alle Unterarten.
+    /// <para>
+    /// Individuelle Felder einer Entität bleiben außen vor; sie gehören keiner Art an.
+    /// </para>
+    /// </summary>
+    private async Task EnsureNameFreeInHierarchyAsync(
+        GameDevManagerDbContext db, FieldDefinition field, CancellationToken ct)
+    {
+        if (field.ContentTypeId is not { } typeId)
+        {
+            return;
+        }
+
+        var owner = await db.ContentTypes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == typeId, ct);
+
+        if (owner is null)
+        {
+            return;
+        }
+
+        var relatives = await db.ContentTypes
+            .AsNoTracking()
+            .Where(t => t.GameProjectId == owner.GameProjectId && t.ModuleKey == owner.ModuleKey)
+            .Select(t => new { t.Id, t.ParentId })
+            .ToListAsync(ct);
+
+        var parentOf = relatives.ToDictionary(t => t.Id, t => t.ParentId);
+
+        // Alles, was die Linie berührt: die Art selbst, ihre Vorfahren und ihre Nachfahren.
+        var line = new HashSet<Guid> { typeId };
+
+        for (var current = parentOf[typeId]; current is { } id && line.Add(id); current = parentOf.GetValueOrDefault(id))
+        {
+        }
+
+        bool Descends(Guid candidate)
+        {
+            var guard = new HashSet<Guid>();
+
+            for (var current = parentOf.GetValueOrDefault(candidate);
+                 current is { } id && guard.Add(id);
+                 current = parentOf.GetValueOrDefault(id))
+            {
+                if (id == typeId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        line.UnionWith(relatives.Select(t => t.Id).Where(Descends));
+
+        var name = field.Name.Trim().ToLower();
+
+        var clash = await db.FieldDefinitions
+            .AsNoTracking()
+            .AnyAsync(f => f.Id != field.Id
+                && f.ContentTypeId != null
+                && line.Contains(f.ContentTypeId.Value)
+                && f.Name.ToLower() == name, ct);
+
+        if (clash)
+        {
+            throw new ContentValidationException(messages["FieldNameInHierarchy", field.Name.Trim()]);
+        }
     }
 
     /// <summary>Nächste freie Sortiernummer innerhalb einer Art bzw. einer Entität.</summary>

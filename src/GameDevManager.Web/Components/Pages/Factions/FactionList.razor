@@ -99,6 +99,10 @@ else
                             <MudLink Href="@($"/modules/factions/{faction.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
                                 <b>@faction.Name</b>
                             </MudLink>
+                            <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                   EntityId="faction.Id"
+                                                   Name="@faction.Name"
+                                                   EditRoute="/modules/factions" />
                             <MudTooltip Text="@L["DeleteTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                Size="Size.Small"

@@ -99,6 +99,10 @@ else
                             <MudLink Href="@($"/modules/events/{gameEvent.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
                                 <b>@gameEvent.Name</b>
                             </MudLink>
+                            <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                   EntityId="gameEvent.Id"
+                                                   Name="@gameEvent.Name"
+                                                   EditRoute="/modules/events" />
                             <MudTooltip Text="@L["DeleteTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                Size="Size.Small"

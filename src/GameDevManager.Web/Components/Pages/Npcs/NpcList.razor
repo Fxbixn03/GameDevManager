@@ -121,6 +121,10 @@ else
                             <MudLink Href="@($"/modules/npcs/{npc.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
                                 <b>@npc.Name</b>
                             </MudLink>
+                            <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                   EntityId="npc.Id"
+                                                   Name="@npc.Name"
+                                                   EditRoute="/modules/npcs" />
                             <MudTooltip Text="@L["DeleteTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                Size="Size.Small"

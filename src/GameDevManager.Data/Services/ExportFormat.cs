@@ -94,10 +94,7 @@ internal static class ExportFormat
             var isNavigation = property.PropertyType.IsClass
                 && property.PropertyType.Namespace == typeof(ContentEntity).Namespace;
 
-            // AssetTag.Assignments wird nie mitgeladen — die Zuordnungen stehen an den Assets.
-            // Eine immer leere Liste im Export sähe nach „keine Zuordnungen" aus.
-            var isUnloadedBackReference = typeInfo.Type == typeof(AssetTag)
-                && property.Name.Equals(nameof(AssetTag.Assignments), StringComparison.OrdinalIgnoreCase);
+            var isUnloadedBackReference = IsUnloadedCollection(typeInfo.Type, property.Name);
 
             if (property.Set is null || isNavigation || isUnloadedBackReference)
             {
@@ -105,4 +102,20 @@ internal static class ExportFormat
             }
         }
     }
+
+    /// <summary>
+    /// Kind-Sammlungen, die trotz ihrer Form nicht in den Export gehören. Sie sind entweder nie
+    /// mitgeladen — eine immer leere Liste im Archiv sähe nach „nichts vorhanden“ aus — oder
+    /// nur zusammengetragen und stünden sonst doppelt darin.
+    /// </summary>
+    private static bool IsUnloadedCollection(Type type, string propertyName) =>
+        (type == typeof(AssetTag) && Is(propertyName, nameof(AssetTag.Assignments)))
+        // Die Zuordnungen stehen an den Assets.
+        || (type == typeof(ContentType) && Is(propertyName, nameof(ContentType.InheritedFields)))
+        // Geerbte Felder stehen an der Eltern-Art.
+        || (type == typeof(ContentType) && Is(propertyName, nameof(ContentType.Children)));
+        // Die Unterarten stehen ohnehin als eigene Einträge in derselben Liste.
+
+    private static bool Is(string propertyName, string name) =>
+        propertyName.Equals(name, StringComparison.OrdinalIgnoreCase);
 }

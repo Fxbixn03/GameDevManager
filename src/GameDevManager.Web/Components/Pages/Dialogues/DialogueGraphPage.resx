@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Graph: {0}</value>
+  </data>
+  <data name="TitleFormat" xml:space="preserve">
+    <value>{0} als Graph</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Zeilen als Knoten, Antworten als Kanten.</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Zeilen, {1} Antworten mit Ziel — Spalten sind die Tiefe im Verlauf.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>wird geladen …</value>
+  </data>
+  <data name="BreadcrumbDialogues" xml:space="preserve">
+    <value>Dialoge</value>
+  </data>
+  <data name="BreadcrumbGraph" xml:space="preserve">
+    <value>Graph</value>
+  </data>
+  <data name="ToList" xml:space="preserve">
+    <value>Zur Übersicht</value>
+  </data>
+  <data name="ToEditor" xml:space="preserve">
+    <value>Dialog bearbeiten</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Diesen Dialog gibt es nicht (mehr).</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Zeilen</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Ein Graph entsteht aus den Zeilen des Gesprächs — die erste wird in der Maske angelegt.</value>
+  </data>
+  <data name="GraphAria" xml:space="preserve">
+    <value>Verlauf des Dialogs „{0}“ als Graph</value>
+  </data>
+  <data name="LegendEntry" xml:space="preserve">
+    <value>Einstieg</value>
+  </data>
+  <data name="LegendLine" xml:space="preserve">
+    <value>Zeile</value>
+  </data>
+  <data name="LegendUnreachable" xml:space="preserve">
+    <value>nicht erreichbar</value>
+  </data>
+  <data name="EndMarker" xml:space="preserve">
+    <value>Ende</value>
+  </data>
+  <data name="BarkHint" xml:space="preserve">
+    <value>Sprechblasen haben keinen Verlauf — ihre Zeilen stehen unabhängig nebeneinander.</value>
+  </data>
+  <data name="UnreachableHint" xml:space="preserve">
+    <value>{0} Zeilen sind von der ersten aus über keine Antwort erreichbar.</value>
+  </data>
+</root>

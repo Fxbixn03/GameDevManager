@@ -99,6 +99,10 @@ else
                             <MudLink Href="@($"/modules/collectibles/{collectible.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
                                 <b>@collectible.Name</b>
                             </MudLink>
+                            <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                   EntityId="collectible.Id"
+                                                   Name="@collectible.Name"
+                                                   EditRoute="/modules/collectibles" />
                             <MudTooltip Text="@L["DeleteTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                Size="Size.Small"

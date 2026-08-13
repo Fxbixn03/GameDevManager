@@ -9,7 +9,7 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.SportsEsports" />
-            <MudText Typo="Typo.h6">@(IsNew ? L["TitleNew"] : L["TitleEdit"])</MudText>
+            <MudText Typo="Typo.h6">@TitleText</MudText>
         </MudStack>
     </TitleContent>
 
@@ -49,6 +49,15 @@
 
     [Parameter]
     public bool IsNew { get; set; }
+
+    /// <summary>
+    /// Überschrift des Dialogs. Ein Feldinitialisierer kennt den Localizer noch nicht —
+    /// deshalb <c>string?</c> und die Auflösung erst in <see cref="TitleText"/>.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    private string TitleText => Title ?? (IsNew ? L["TitleNew"] : L["TitleEdit"]);
 
     private string? _error;
 

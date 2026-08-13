@@ -36,6 +36,15 @@ else
                               ExpandLabel="@L["ShowFieldsTooltip"]"
                               CollapseLabel="@L["HideFieldsTooltip"]">
                 <HeaderContent>
+                    @* Unterarten rücken ein — die Liste steht in Hierarchie-Reihenfolge, damit
+                       die Zugehörigkeit ohne Aufklappen zu sehen ist. *@
+                    @if (Depth(type) > 0)
+                    {
+                        <span style="display:inline-block;width:@(Depth(type) * 24)px;"></span>
+                        <MudIcon Icon="@Icons.Material.Filled.SubdirectoryArrowRight"
+                                 Size="Size.Small"
+                                 Color="Color.Secondary" />
+                    }
                     <MudIcon Icon="@(string.IsNullOrWhiteSpace(type.Icon) ? Icons.Material.Filled.Style : type.Icon)"
                              Color="Color.Primary" />
                     <div>
@@ -48,6 +57,12 @@ else
                     <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">
                         @(type.Fields.Count == 1 ? L["FieldCountOne"] : L["FieldCountMany", type.Fields.Count])
                     </MudChip>
+                    @if (type.InheritedFields.Count > 0)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary">
+                            @L["InheritedCount", type.InheritedFields.Count, ParentName(type)]
+                        </MudChip>
+                    }
                 </HeaderContent>
 
                 <HeaderActions>
@@ -71,11 +86,37 @@ else
                 </HeaderActions>
 
                 <ChildContent>
+                    @* Geerbte Felder zuerst und nur zum Nachsehen — geändert werden sie an
+                       ihrer Eltern-Art, sonst gälte die Änderung nur für eine Unterart. *@
+                    @foreach (var inherited in type.InheritedFields)
+                    {
+                        <div class="pa-3 gdm-field-row">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                <MudIcon Icon="@FieldTypeLabels.Icon(inherited.Type)" Size="Size.Small" Color="Color.Secondary" />
+                                <div>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudText Typo="Typo.body1" Color="Color.Secondary">@inherited.Name</MudText>
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary">
+                                            @L["InheritedFrom", OwnerName(inherited)]
+                                        </MudChip>
+                                        @if (inherited.IsRequired)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">
+                                                @L["RequiredChip"]
+                                            </MudChip>
+                                        }
+                                    </MudStack>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@DescribeField(inherited)</MudText>
+                                </div>
+                            </MudStack>
+                        </div>
+                    }
+
                     @if (type.Fields.Count == 0)
                     {
                         <div class="pa-4">
                             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                @L["NoFields"]
+                                @(type.InheritedFields.Count > 0 ? L["OnlyInheritedFields"] : L["NoFields"])
                             </MudText>
                         </div>
                     }
@@ -204,6 +245,7 @@ else
             Id = type.Id,
             GameProjectId = type.GameProjectId,
             ModuleKey = type.ModuleKey,
+            ParentId = type.ParentId,
             Name = type.Name,
             Description = type.Description,
             Icon = type.Icon,
@@ -215,7 +257,8 @@ else
         var parameters = new DialogParameters<ContentTypeDialog>
         {
             { dialog => dialog.Type, draft },
-            { dialog => dialog.IsNew, isNew }
+            { dialog => dialog.IsNew, isNew },
+            { dialog => dialog.AllTypes, (IReadOnlyList<ContentType>)(_types ?? []) }
         };
 
         var reference = await Dialogs.ShowAsync<ContentTypeDialog>(
@@ -357,6 +400,35 @@ else
         await ContentTypes.SaveFieldAsync(neighbour);
         await LoadAsync();
     }
+
+    /// <summary>
+    /// Wie tief eine Art in der Hierarchie steckt — nur für die Einrückung. Zählt über die
+    /// Eltern-Kette und bricht ab, wenn eine Art zweimal vorkommt.
+    /// </summary>
+    private int Depth(ContentType type)
+    {
+        var byId = (_types ?? []).ToDictionary(t => t.Id);
+        var seen = new HashSet<Guid> { type.Id };
+        var depth = 0;
+
+        var current = type;
+        while (current.ParentId is { } parentId
+               && byId.TryGetValue(parentId, out var parent)
+               && seen.Add(parentId))
+        {
+            depth++;
+            current = parent;
+        }
+
+        return depth;
+    }
+
+    private string ParentName(ContentType type) =>
+        (_types ?? []).FirstOrDefault(candidate => candidate.Id == type.ParentId)?.Name ?? string.Empty;
+
+    /// <summary>An welcher Art ein geerbtes Feld tatsächlich hängt.</summary>
+    private string OwnerName(FieldDefinition field) =>
+        (_types ?? []).FirstOrDefault(candidate => candidate.Id == field.ContentTypeId)?.Name ?? string.Empty;
 
     private string DescribeField(FieldDefinition field)
     {

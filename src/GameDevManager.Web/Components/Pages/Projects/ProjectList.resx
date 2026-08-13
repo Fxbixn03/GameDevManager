@@ -42,6 +42,21 @@
   <data name="EditAria" xml:space="preserve">
     <value>Projekt bearbeiten</value>
   </data>
+  <data name="DuplicateTooltip" xml:space="preserve">
+    <value>Kopie anlegen</value>
+  </data>
+  <data name="DuplicateAria" xml:space="preserve">
+    <value>Projekt duplizieren</value>
+  </data>
+  <data name="DialogTitleDuplicate" xml:space="preserve">
+    <value>Projekt duplizieren</value>
+  </data>
+  <data name="CopyNameSuffix" xml:space="preserve">
+    <value>{0} (Kopie)</value>
+  </data>
+  <data name="DuplicatedMessage" xml:space="preserve">
+    <value>„{0}“ wurde als Kopie angelegt.</value>
+  </data>
   <data name="DeleteTooltip" xml:space="preserve">
     <value>Löschen</value>
   </data>
@@ -64,7 +79,7 @@
     <value>Projekt löschen</value>
   </data>
   <data name="DeleteConfirmMessage" xml:space="preserve">
-    <value>„{0}“ wird mit sämtlichen Inhalten aller Module, Arten, Feldern, Bedingungen, Tags und hochgeladenen Dateien endgültig gelöscht. Das lässt sich nicht rückgängig machen — ein Export vorher ist die einzige Sicherung.</value>
+    <value>„{0}“ wird mit sämtlichen Inhalten aller Module, Arten, Feldern, Bedingungen, Tags und hochgeladenen Dateien gelöscht. Vorher wird automatisch ein Exportstand angelegt — nur über den lässt sich der Bestand zurückholen, und zwar in ein neues Projekt.</value>
   </data>
   <data name="DeleteYes" xml:space="preserve">
     <value>Löschen</value>

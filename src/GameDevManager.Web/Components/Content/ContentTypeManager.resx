@@ -39,6 +39,15 @@
   <data name="NoFields" xml:space="preserve">
     <value>Diese Art hat noch keine Felder. Ohne Felder lassen sich nur Name und Beschreibung erfassen.</value>
   </data>
+  <data name="OnlyInheritedFields" xml:space="preserve">
+    <value>Diese Unterart hat keine eigenen Felder — es gelten die geerbten oben.</value>
+  </data>
+  <data name="InheritedCount" xml:space="preserve">
+    <value>+{0} geerbt von „{1}“</value>
+  </data>
+  <data name="InheritedFrom" xml:space="preserve">
+    <value>geerbt von „{0}“</value>
+  </data>
   <data name="RequiredChip" xml:space="preserve">
     <value>Pflicht</value>
   </data>

@@ -160,8 +160,20 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
                 .HasForeignKey(t => t.GameProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Unterarten erben die Felder ihrer Eltern-Art. Bewusst kein Cascade: Eine Art mit
+            // Unterarten zu löschen risse deren Felder mit — der ContentTypeService blockt das
+            // vorher ab, wie bei einer noch verwendeten Art.
+            entity.HasOne(t => t.Parent)
+                .WithMany(t => t.Children)
+                .HasForeignKey(t => t.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Nur zusammengetragen, keine Spalte — die Felder stehen an der Eltern-Art.
+            entity.Ignore(t => t.InheritedFields);
+
             // Arten werden immer je Projekt und Modul geladen.
             entity.HasIndex(t => new { t.GameProjectId, t.ModuleKey });
+            entity.HasIndex(t => t.ParentId);
         });
 
         modelBuilder.Entity<FieldDefinition>(entity =>

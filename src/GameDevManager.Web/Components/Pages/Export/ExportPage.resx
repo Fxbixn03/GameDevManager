@@ -66,6 +66,36 @@
   <data name="HistoryHeading" xml:space="preserve">
     <value>Exportstände</value>
   </data>
+  <data name="HealthWarning" xml:space="preserve">
+    <value>Der Zustandscheck meldet {0} offene Funde. Der Export ist trotzdem möglich — er enthält den Stand so, wie er ist.</value>
+  </data>
+  <data name="HealthFinding" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+  <data name="HealthToStatistics" xml:space="preserve">
+    <value>Funde in der Statistik ansehen</value>
+  </data>
+  <data name="Check_deadItems" xml:space="preserve">
+    <value>Items ohne Bezugsquelle</value>
+  </data>
+  <data name="Check_craftingCycles" xml:space="preserve">
+    <value>Zyklische Rezepte</value>
+  </data>
+  <data name="Check_questsWithoutCompletion" xml:space="preserve">
+    <value>Quests ohne Abschluss</value>
+  </data>
+  <data name="Check_dialogueDeadEnds" xml:space="preserve">
+    <value>Dialog-Sackgassen</value>
+  </data>
+  <data name="Check_overfullLoot" xml:space="preserve">
+    <value>Loot über 100 %</value>
+  </data>
+  <data name="Check_orphanedAssets" xml:space="preserve">
+    <value>Verwaiste Sprites</value>
+  </data>
+  <data name="Check_impossibleConditions" xml:space="preserve">
+    <value>Unerfüllbare Bedingungen</value>
+  </data>
   <data name="HistoryIntro" xml:space="preserve">
     <value>Aufbewahrte Stände lassen sich herunterladen, wieder importieren und miteinander vergleichen — so wird nachvollziehbar, was ein Content-Update verändert hat.</value>
   </data>
@@ -124,7 +154,7 @@
     <value>Vorhandene Inhalte ersetzen</value>
   </data>
   <data name="ReplaceExistingHint" xml:space="preserve">
-    <value>Entfernt vor dem Import sämtliche Inhalte des Projekts. Ohne diese Option ist der Import nur in ein leeres Projekt möglich.</value>
+    <value>Entfernt vor dem Import sämtliche Inhalte des Projekts — der bisherige Stand wird vorher automatisch aufbewahrt. Ohne diese Option ist der Import nur in ein leeres Projekt möglich.</value>
   </data>
   <data name="ImportButton" xml:space="preserve">
     <value>Importieren</value>
@@ -133,7 +163,7 @@
     <value>Inhalte ersetzen?</value>
   </data>
   <data name="ImportConfirmMessage" xml:space="preserve">
-    <value>Der Import entfernt zuerst alle vorhandenen Inhalte dieses Projekts und ersetzt sie durch den Stand aus dem ZIP. Das lässt sich nicht rückgängig machen.</value>
+    <value>Der Import entfernt zuerst alle vorhandenen Inhalte dieses Projekts und ersetzt sie durch den Stand aus dem ZIP. Der bisherige Stand wird davor automatisch als Exportstand aufbewahrt und lässt sich von dort zurückholen.</value>
   </data>
   <data name="ImportConfirmYes" xml:space="preserve">
     <value>Ersetzen und importieren</value>

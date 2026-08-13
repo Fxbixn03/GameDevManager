@@ -94,6 +94,10 @@ else
                 <div class="pa-3">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
                         <MudLink Href="@($"/modules/maps/{map.Id}")" Typo="Typo.h6">@map.Name</MudLink>
+                        <EntityDuplicateButton ModuleKey="@Module.Id"
+                                               EntityId="map.Id"
+                                               Name="@map.Name"
+                                               EditRoute="/modules/maps" />
                         <MudTooltip Text="@L["DeleteTooltip"]">
                             <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                            Size="Size.Small"

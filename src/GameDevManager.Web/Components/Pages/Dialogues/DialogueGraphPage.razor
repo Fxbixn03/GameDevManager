@@ -1,0 +1,308 @@
+@page "/modules/dialogs/{Id:guid}/graph"
+@inject DialogueService Dialogues
+@inject ProjectContext Project
+@inject IStringLocalizer<DialogueGraphPage> L
+
+@*
+    Ein Gespräch als Knoten-Graph: Zeilen als Knoten, Antworten als Kanten. Die Liste in der
+    Maske zeigt die Zeilen in ihrer Reihenfolge — welche Verzweigungen es gibt und was von der
+    ersten Zeile aus nie erreicht wird, sieht man erst hier.
+
+    Gezeichnet wird als SVG ohne JavaScript, wie beim Diplomatie-Graphen: Die Spalten sind die
+    Tiefe im Verlauf, die der Dienst schon mitliefert.
+*@
+
+<PageTitle>@L["PageTitle", _graph?.Name ?? "…"]</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="@L["TitleFormat", _graph?.Name ?? "…"]"
+              Subtitle="@Subtitle"
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/dialogs">@L["ToList"]</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Edit"
+                   Href="@($"/modules/dialogs/{Id}")">
+            @L["ToEditor"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">@L["NotFound"]</MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/dialogs">@L["ToList"]</MudButton>
+}
+else if (_graph is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_graph.Nodes.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Hub" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["EmptyHint"]</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"/modules/dialogs/{Id}")">
+            @L["ToEditor"]
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            @foreach (var entry in Legend)
+            {
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <span style="display:inline-block;width:16px;height:16px;border:2px @entry.Style @entry.Color;"></span>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@entry.Label</MudText>
+                </MudStack>
+            }
+            <MudSpacer />
+            @if (_graph.Kind == DialogueKind.Bark)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["BarkHint"]</MudText>
+            }
+            else if (_graph.UnreachableCount > 0)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Warning">
+                    @L["UnreachableHint", _graph.UnreachableCount]
+                </MudText>
+            }
+        </MudStack>
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="gdm-panel pa-4" Style="overflow-x:auto;">
+        <svg viewBox="0 0 @CanvasWidth @CanvasHeight"
+             width="@CanvasWidth"
+             height="@CanvasHeight"
+             style="display:block;max-width:none;"
+             role="img"
+             aria-label="@L["GraphAria", _graph.Name]">
+
+            @* Kanten zuerst, damit die Knoten darüber liegen. *@
+            @foreach (var edge in _graph.Edges)
+            {
+                if (!_places.TryGetValue(edge.FromLineId, out var from)
+                    || !_places.TryGetValue(edge.ToLineId, out var to))
+                {
+                    continue;
+                }
+
+                <path d="@EdgePath(from, to)"
+                      fill="none"
+                      stroke="var(--mud-palette-lines-default)"
+                      stroke-width="2">
+                    <title>@edge.Text</title>
+                </path>
+            }
+
+            @foreach (var node in _graph.Nodes)
+            {
+                var place = _places[node.LineId];
+
+                <g>
+                    <rect x="@Fmt(place.X)" y="@Fmt(place.Y)"
+                          width="@NodeWidth" height="@NodeHeight"
+                          fill="var(--mud-palette-surface)"
+                          stroke="@NodeStroke(node)"
+                          stroke-width="2"
+                          stroke-dasharray="@(node.IsUnreachable ? "6 4" : null)" />
+
+                    <title>@node.Text</title>
+
+                    <text x="@Fmt(place.X + 12)" y="@Fmt(place.Y + 22)"
+                          fill="var(--mud-palette-text-secondary)"
+                          style="font-size:11px;font-family:inherit;text-transform:uppercase;letter-spacing:.06em;">
+                        @node.Speaker
+                    </text>
+
+                    @* Ein <text> mit <tspan>-Zeilen statt mehrerer <text>-Elemente: SVG
+                       bricht nicht selbst um, und ein <text> als erstes Element eines
+                       Razor-Blocks läse der Parser als sein eigenes Steuer-Tag. *@
+                    <text fill="var(--mud-palette-text-primary)"
+                          style="font-size:13px;font-family:inherit;">
+                        @foreach (var (line, index) in WrapText(node.Text).Select((line, index) => (line, index)))
+                        {
+                            <tspan x="@Fmt(place.X + 12)" y="@Fmt(place.Y + 42 + index * 16)">@line</tspan>
+                        }
+                    </text>
+
+                    @if (node.EndsHere)
+                    {
+                        <g>
+                            <text x="@Fmt(place.X + NodeWidth - 12)" y="@Fmt(place.Y + 22)"
+                                  text-anchor="end"
+                                  fill="var(--mud-palette-text-secondary)"
+                                  style="font-size:11px;font-family:inherit;">
+                                @L["EndMarker"]
+                            </text>
+                        </g>
+                    }
+                </g>
+            }
+        </svg>
+    </MudPaper>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Dialogs);
+
+    // Fest gesetzte Maße statt eines Layout-Algorithmus: Die Spalte ist die Tiefe im Verlauf,
+    // die Zeile die Reihenfolge innerhalb der Tiefe. Das ist ohne JavaScript deterministisch
+    // und für die Größenordnung eines Gesprächs völlig ausreichend.
+    private const int NodeWidth = 220;
+    private const int NodeHeight = 76;
+    private const int ColumnGap = 90;
+    private const int RowGap = 26;
+    private const int Padding = 20;
+
+    /// <summary>Zeichen je Zeile im Knoten und wie viele Zeilen — SVG bricht Text nicht selbst um.</summary>
+    private const int WrapWidth = 28;
+    private const int WrapLines = 2;
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private DialogueGraph? _graph;
+    private bool _notFound;
+    private Dictionary<Guid, (double X, double Y)> _places = [];
+    private int _columns;
+    private int _rows;
+
+    private List<BreadcrumbItem> Breadcrumbs =>
+    [
+        new(L["BreadcrumbDialogues"], "/modules/dialogs"),
+        new(L["BreadcrumbGraph"], null, disabled: true)
+    ];
+
+    private string Subtitle => _graph is null
+        ? L["Loading"]
+        : L["SubtitleCount", _graph.Nodes.Count, _graph.Edges.Count];
+
+    private int CanvasWidth => Padding * 2 + Math.Max(_columns, 1) * (NodeWidth + ColumnGap) - ColumnGap;
+
+    private int CanvasHeight => Padding * 2 + Math.Max(_rows, 1) * (NodeHeight + RowGap) - RowGap;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _graph = null;
+        _notFound = false;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        _graph = await Dialogues.GetGraphAsync(projectId, Id);
+
+        if (_graph is null)
+        {
+            _notFound = true;
+            return;
+        }
+
+        Layout(_graph);
+    }
+
+    /// <summary>
+    /// Setzt die Knoten in Spalten: eine Spalte je Tiefe, innerhalb der Spalte in der
+    /// Reihenfolge der Zeilen. Was von der ersten Zeile aus nicht erreichbar ist, kommt in
+    /// eine eigene Spalte ganz rechts — dort steht es sichtbar außerhalb des Verlaufs, statt
+    /// sich zwischen den erreichbaren Zeilen zu verstecken.
+    /// </summary>
+    private void Layout(DialogueGraph graph)
+    {
+        var maxDepth = graph.Nodes.Max(node => node.Depth);
+        var unreachableColumn = maxDepth + 1;
+
+        var nextRow = new Dictionary<int, int>();
+        var places = new Dictionary<Guid, (double X, double Y)>();
+
+        foreach (var node in graph.Nodes)
+        {
+            var column = node.IsUnreachable ? unreachableColumn : node.Depth;
+            var row = nextRow.GetValueOrDefault(column);
+            nextRow[column] = row + 1;
+
+            places[node.LineId] = (
+                Padding + column * (NodeWidth + ColumnGap),
+                Padding + row * (NodeHeight + RowGap));
+        }
+
+        _places = places;
+        _columns = nextRow.Keys.Max() + 1;
+        _rows = nextRow.Values.Max();
+    }
+
+    /// <summary>
+    /// Eine Bézierkurve von der rechten Kante zur linken. Führt eine Antwort zurück in den
+    /// Verlauf (eine Schleife im Gespräch), zeigt die Kurve einen weiten Bogen — das ist
+    /// gewollt, so ist die Rückführung als solche zu erkennen.
+    /// </summary>
+    private static string EdgePath((double X, double Y) from, (double X, double Y) to)
+    {
+        var x1 = from.X + NodeWidth;
+        var y1 = from.Y + NodeHeight / 2.0;
+        var x2 = to.X;
+        var y2 = to.Y + NodeHeight / 2.0;
+        var bend = Math.Max(ColumnGap / 2.0, Math.Abs(x2 - x1) / 2.0);
+
+        return $"M {Fmt(x1)} {Fmt(y1)} C {Fmt(x1 + bend)} {Fmt(y1)}, {Fmt(x2 - bend)} {Fmt(y2)}, {Fmt(x2)} {Fmt(y2)}";
+    }
+
+    private static string NodeStroke(DialogueGraphNode node) =>
+        node.IsUnreachable ? "var(--mud-palette-warning)"
+            : node.IsEntry ? "var(--mud-palette-primary)"
+            : "var(--mud-palette-lines-default)";
+
+    /// <summary>
+    /// Bricht den Text auf feste Zeilen um — SVG kennt keinen Umbruch. Was nicht mehr passt,
+    /// endet mit Auslassungszeichen; der vollständige Text steht im Tooltip des Knotens.
+    /// </summary>
+    private static List<string> WrapText(string text)
+    {
+        var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var lines = new List<string>();
+        var current = string.Empty;
+
+        foreach (var word in words)
+        {
+            var candidate = current.Length == 0 ? word : $"{current} {word}";
+
+            if (candidate.Length <= WrapWidth)
+            {
+                current = candidate;
+                continue;
+            }
+
+            lines.Add(current.Length == 0 ? word[..Math.Min(word.Length, WrapWidth)] : current);
+            current = word;
+
+            if (lines.Count == WrapLines)
+            {
+                break;
+            }
+        }
+
+        if (lines.Count < WrapLines && current.Length > 0)
+        {
+            lines.Add(current);
+        }
+
+        if (lines.Count == WrapLines && lines[^1].Length > WrapWidth - 1)
+        {
+            lines[^1] = string.Concat(lines[^1].AsSpan(0, WrapWidth - 1), "…");
+        }
+
+        return lines;
+    }
+
+    private List<(string Label, string Color, string Style)> Legend =>
+    [
+        (L["LegendEntry"], "var(--mud-palette-primary)", "solid"),
+        (L["LegendLine"], "var(--mud-palette-lines-default)", "solid"),
+        (L["LegendUnreachable"], "var(--mud-palette-warning)", "dashed")
+    ];
+
+    private static string Fmt(double value) =>
+        value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}

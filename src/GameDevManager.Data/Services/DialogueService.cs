@@ -363,6 +363,113 @@ public class DialogueService(
         await transaction.CommitAsync(ct);
     }
 
+    // ------------------------------------------------------------------------------ Graph
+
+    /// <summary>
+    /// Ein Gespräch als Knoten-Graph: Zeilen als Knoten, Antwortmöglichkeiten als Kanten.
+    /// <c>null</c>, wenn es den Dialog nicht (mehr) gibt.
+    /// <para>
+    /// Die <see cref="DialogueGraphNode.Depth"/> ist der Abstand von der Einstiegszeile —
+    /// daraus baut die Ansicht ihre Spalten, und dieselbe Breitensuche beantwortet nebenbei
+    /// die Frage des Health Checks: Was von der ersten Zeile aus nie erreicht wird, bekommt
+    /// <c>-1</c> und steht damit sichtbar außerhalb des Verlaufs.
+    /// </para>
+    /// <para>
+    /// Sprechblasen haben keinen Verlauf — ihre Zeilen stehen absichtlich unabhängig
+    /// nebeneinander und liegen deshalb alle auf Tiefe 0.
+    /// </para>
+    /// </summary>
+    public async Task<DialogueGraph?> GetGraphAsync(
+        Guid projectId, Guid dialogueId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var dialogue = await db.Dialogues
+            .AsNoTracking()
+            .Include(d => d.Lines).ThenInclude(line => line.Choices)
+            .FirstOrDefaultAsync(d => d.Id == dialogueId && d.GameProjectId == projectId, ct);
+
+        if (dialogue is null)
+        {
+            return null;
+        }
+
+        var lines = dialogue.Lines.OrderBy(line => line.SortOrder).ToList();
+
+        var speakerIds = lines
+            .Where(line => line.SpeakerNpcId is not null)
+            .Select(line => line.SpeakerNpcId!.Value)
+            .Distinct()
+            .ToList();
+
+        var speakers = await db.Npcs
+            .AsNoTracking()
+            .Where(npc => speakerIds.Contains(npc.Id))
+            .ToDictionaryAsync(npc => npc.Id, npc => npc.Name, ct);
+
+        var player = messages["DialogueGraph_Player"].Value;
+        var unknownSpeaker = messages["DialogueGraph_UnknownSpeaker"].Value;
+
+        var depths = ComputeDepths(dialogue, lines);
+
+        var nodes = lines
+            .Select((line, position) => new DialogueGraphNode(
+                line.Id,
+                line.SpeakerNpcId is { } npcId
+                    ? speakers.GetValueOrDefault(npcId, unknownSpeaker)
+                    : player,
+                line.Text,
+                depths[line.Id],
+                IsEntry: dialogue.Kind == DialogueKind.Bark || position == 0,
+                EndsHere: line.Choices.Count == 0 || line.Choices.Any(choice => choice.NextLineId is null)))
+            .ToList();
+
+        var edges = lines
+            .SelectMany(line => line.Choices
+                .OrderBy(choice => choice.SortOrder)
+                .Where(choice => choice.NextLineId is not null)
+                .Select(choice => new DialogueGraphEdge(line.Id, choice.NextLineId!.Value, choice.Text)))
+            .ToList();
+
+        return new DialogueGraph(dialogue.Id, dialogue.Name, dialogue.Kind, nodes, edges);
+    }
+
+    /// <summary>
+    /// Breitensuche von der Einstiegszeile aus. Sprechblasen haben keinen Verlauf, dort liegt
+    /// alles auf Tiefe 0; in einem Gespräch bekommt Unerreichbares <c>-1</c>.
+    /// </summary>
+    private static Dictionary<Guid, int> ComputeDepths(Dialogue dialogue, List<DialogueLine> lines)
+    {
+        var depths = lines.ToDictionary(line => line.Id, _ => dialogue.Kind == DialogueKind.Bark ? 0 : -1);
+
+        if (dialogue.Kind == DialogueKind.Bark || lines.Count == 0)
+        {
+            return depths;
+        }
+
+        var byId = lines.ToDictionary(line => line.Id);
+        var queue = new Queue<DialogueLine>([lines[0]]);
+        depths[lines[0].Id] = 0;
+
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+
+            foreach (var choice in current.Choices)
+            {
+                if (choice.NextLineId is { } next
+                    && byId.TryGetValue(next, out var line)
+                    && depths[next] < 0)
+                {
+                    depths[next] = depths[current.Id] + 1;
+                    queue.Enqueue(line);
+                }
+            }
+        }
+
+        return depths;
+    }
+
     // ------------------------------------------------------------------------ Health Check
 
     /// <summary>
@@ -431,3 +538,36 @@ public class DialogueService(
 
 /// <summary>Ein Fund der Sackgassen-Prüfung.</summary>
 public sealed record DialogueProblem(Guid DialogueId, string DialogueName, Guid LineId, string Message);
+
+/// <summary>
+/// Ein Knoten des Dialog-Graphen: eine gesprochene Zeile. <paramref name="Depth"/> ist der
+/// Abstand von der Einstiegszeile, <c>-1</c> heißt „von dort aus nicht erreichbar“.
+/// </summary>
+public sealed record DialogueGraphNode(
+    Guid LineId,
+    string Speaker,
+    string Text,
+    int Depth,
+    bool IsEntry,
+    bool EndsHere)
+{
+    /// <summary>Von der Einstiegszeile aus nie erreichbar — der Fund des Health Checks.</summary>
+    public bool IsUnreachable => Depth < 0;
+}
+
+/// <summary>
+/// Eine Kante: eine Antwortmöglichkeit, die zu einer anderen Zeile führt. Antworten ohne Ziel
+/// beenden das Gespräch und sind keine Kante — sie stehen als Merkmal am Knoten.
+/// </summary>
+public sealed record DialogueGraphEdge(Guid FromLineId, Guid ToLineId, string Text);
+
+/// <summary>Ein Gespräch als Graph — Zeilen als Knoten, Antworten als Kanten.</summary>
+public sealed record DialogueGraph(
+    Guid DialogueId,
+    string Name,
+    DialogueKind Kind,
+    IReadOnlyList<DialogueGraphNode> Nodes,
+    IReadOnlyList<DialogueGraphEdge> Edges)
+{
+    public int UnreachableCount => Nodes.Count(node => node.IsUnreachable);
+}

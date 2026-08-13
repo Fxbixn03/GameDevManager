@@ -8,6 +8,11 @@ namespace GameDevManager.Domain.Entities;
 /// Felder für eine einzelne Entität hängen direkt an der Entität
 /// (siehe <see cref="FieldDefinition.OwnerEntityId"/>).
 /// </para>
+/// <para>
+/// Arten können ineinander stecken: „Waffe“ mit den Unterarten „Nahkampf“, „Fernkampf“ und
+/// „Magie“. Eine Unterart <b>erbt</b> die Felder ihrer Eltern-Art — das ist der Grund, warum
+/// die Hierarchie hier und nicht über das Tag-Modul abgebildet ist: Tags tragen keine Felder.
+/// </para>
 /// </summary>
 public class ContentType
 {
@@ -30,7 +35,25 @@ public class ContentType
     /// <summary>Reihenfolge in Auswahllisten; bei Gleichstand wird nach Name sortiert.</summary>
     public int SortOrder { get; set; }
 
+    /// <summary>
+    /// Die Eltern-Art, deren Felder diese hier erbt. <c>null</c> heißt: eine Art auf oberster
+    /// Ebene. Die Eltern-Art liegt immer im selben Projekt und Modul.
+    /// </summary>
+    public Guid? ParentId { get; set; }
+
+    public ContentType? Parent { get; set; }
+
+    public List<ContentType> Children { get; set; } = [];
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
+    /// <summary>Die eigenen Felder dieser Art — ohne die geerbten.</summary>
     public List<FieldDefinition> Fields { get; set; } = [];
+
+    /// <summary>
+    /// Die Felder der Eltern-Arten, oberste zuerst. Nicht persistiert und nicht im Export:
+    /// Die Felder stehen an ihrer Eltern-Art, hier sind sie nur zusammengetragen. Gefüllt
+    /// wird die Liste vom <c>ContentTypeService</c>; wer eine Art anders lädt, bekommt sie leer.
+    /// </summary>
+    public List<FieldDefinition> InheritedFields { get; set; } = [];
 }

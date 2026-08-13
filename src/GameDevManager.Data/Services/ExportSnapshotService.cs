@@ -89,6 +89,29 @@ public partial class ExportSnapshotService(
             ?? throw new ContentValidationException(messages["Export_SnapshotMissing"].Value);
     }
 
+    /// <summary>
+    /// Das Sicherheitsnetz vor einer zerstörenden Aktion — dem ersetzenden Import und dem
+    /// Löschen eines Projekts. Es ist derselbe Stand wie <see cref="CreateAsync"/>, immer
+    /// <b>mit</b> Asset-Dateien: Was gleich gelöscht wird, muss vollständig
+    /// wiederherstellbar sein, und der Wipe nimmt die Dateien mit.
+    /// <para>
+    /// Scheitert das Anlegen, scheitert auch die Aktion — ein Netz, das reißen darf, ist
+    /// keines. Der IO-Fehler wird dabei in eine <see cref="ContentValidationException"/>
+    /// umgesetzt, weil die Oberfläche nur diese als Meldung durchreicht.
+    /// </para>
+    /// </summary>
+    public async Task<ExportSnapshot> CreateSafetyNetAsync(Guid projectId, CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(projectId, includeAssets: true, ct);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            throw new ContentValidationException(messages["Export_SafetyNetFailed", ex.Message].Value);
+        }
+    }
+
     /// <summary>Alle aufbewahrten Stände des Projekts, neueste zuerst.</summary>
     public List<ExportSnapshot> List(Guid projectId)
     {

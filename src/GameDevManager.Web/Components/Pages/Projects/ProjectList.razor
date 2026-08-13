@@ -21,6 +21,13 @@
     </MudButton>
 </MudStack>
 
+@* Beim Duplizieren bleibt die Liste stehen — das Kopieren läuft über Export und Import
+   und kann bei einem großen Projekt dauern. *@
+@if (_duplicating)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-3" />
+}
+
 @if (_projects is null)
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
@@ -64,6 +71,13 @@ else
                                        aria-label="@L["EditAria"]"
                                        OnClick="@(() => EditAsync(project))" />
                     </MudTooltip>
+                    <MudTooltip Text="@L["DuplicateTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
+                                       Size="Size.Small"
+                                       Disabled="@_duplicating"
+                                       aria-label="@L["DuplicateAria"]"
+                                       OnClick="@(() => DuplicateAsync(project))" />
+                    </MudTooltip>
                     <MudTooltip Text="@(isCurrent ? L["DeleteActiveTooltip"] : L["DeleteTooltip"])">
                         <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                        Size="Size.Small"
@@ -80,6 +94,7 @@ else
 @code {
     private List<GameProject>? _projects;
     private Guid _currentId;
+    private bool _duplicating;
 
     protected override Task OnInitializedAsync() => LoadAsync();
 
@@ -104,19 +119,8 @@ else
 
     private async Task EditWithDialogAsync(GameProject project, bool isNew)
     {
-        var parameters = new DialogParameters<ProjectDialog>
-        {
-            { d => d.Project, project },
-            { d => d.IsNew, isNew }
-        };
-
-        var reference = await Dialogs.ShowAsync<ProjectDialog>(
-            isNew ? L["DialogTitleNew"] : L["DialogTitleEdit"],
-            parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
-
-        var result = await reference.Result;
-        if (result is null || result.Canceled || result.Data is not GameProject edited)
+        var edited = await AskAsync(project, isNew, isNew ? L["DialogTitleNew"] : L["DialogTitleEdit"]);
+        if (edited is null)
         {
             return;
         }
@@ -137,6 +141,64 @@ else
         catch (ContentValidationException ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    /// <summary>
+    /// Fragt Name und Beschreibung ab. Die Kopie im Dialog statt des Originals — Abbrechen
+    /// darf die Liste nicht verändert zurücklassen. <c>null</c> heißt abgebrochen.
+    /// </summary>
+    private async Task<GameProject?> AskAsync(GameProject project, bool isNew, string title)
+    {
+        var parameters = new DialogParameters<ProjectDialog>
+        {
+            { d => d.Project, project },
+            { d => d.IsNew, isNew },
+            { d => d.Title, title }
+        };
+
+        var reference = await Dialogs.ShowAsync<ProjectDialog>(
+            title, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await reference.Result;
+        return result is null || result.Canceled ? null : result.Data as GameProject;
+    }
+
+    /// <summary>
+    /// Legt eine Kopie an. Der Name kommt aus demselben Dialog wie beim Anlegen, vorbelegt
+    /// mit „… (Kopie)“ — eindeutig muss er trotzdem sein, den Rest prüft der Dienst.
+    /// </summary>
+    private async Task DuplicateAsync(GameProject project)
+    {
+        var wanted = await AskAsync(
+            new GameProject
+            {
+                Name = L["CopyNameSuffix", project.Name],
+                Description = project.Description
+            },
+            isNew: true,
+            L["DialogTitleDuplicate"]);
+
+        if (wanted is null)
+        {
+            return;
+        }
+
+        _duplicating = true;
+
+        try
+        {
+            var copy = await Projects.DuplicateProjectAsync(project.Id, wanted.Name, wanted.Description);
+            Snackbar.Add(L["DuplicatedMessage", copy.Name], Severity.Success);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _duplicating = false;
         }
     }
 

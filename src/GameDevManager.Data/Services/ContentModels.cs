@@ -77,9 +77,14 @@ public sealed class ContentEditContext<TEntity>
     public ContentType? SelectedType =>
         AvailableTypes.FirstOrDefault(t => t.Id == Entity.ContentTypeId);
 
-    /// <summary>Die Felder der gewählten Art, in ihrer Sortierreihenfolge.</summary>
+    /// <summary>
+    /// Die Felder der gewählten Art, in ihrer Sortierreihenfolge — die geerbten der
+    /// Eltern-Arten zuerst, danach die eigenen. Eine Unterart „Nahkampf“ zeigt damit erst die
+    /// Felder von „Waffe“ und dann ihre eigenen; das ist die Reihenfolge, in der man sie auch
+    /// definiert hat.
+    /// </summary>
     public IReadOnlyList<FieldDefinition> TypeFields =>
-        SelectedType?.Fields ?? [];
+        SelectedType is { } type ? [.. type.InheritedFields, .. type.Fields] : [];
 
     /// <summary>Alle gerade geltenden Felder — Art-Felder und individuelle zusammen.</summary>
     public IEnumerable<FieldDefinition> ApplicableFields =>

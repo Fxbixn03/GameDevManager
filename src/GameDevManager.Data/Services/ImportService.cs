@@ -33,10 +33,16 @@ public sealed record ImportResult(
 /// funktionieren dadurch ohne jedes Umschreiben. Nur die Projektzugehörigkeit wird auf das
 /// Zielprojekt umgeschrieben, denn das ZIP kann aus einer anderen Installation stammen.
 /// </para>
+/// <para>
+/// Ein <c>replaceExisting</c>-Import wirft einen bestehenden Bestand weg. Davor legt der
+/// Dienst selbst einen Exportstand an (<see cref="ExportSnapshotService.CreateSafetyNetAsync"/>) —
+/// hier und nicht in der Oberfläche, damit kein zweiter Aufrufer es vergessen kann.
+/// </para>
 /// </summary>
 public class ImportService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     IAssetStorage storage,
+    ExportSnapshotService snapshots,
     IStringLocalizer<DataMessages> messages)
 {
     /// <summary>
@@ -147,9 +153,19 @@ public class ImportService(
             ?? throw new ContentValidationException(missingProject);
 
         // ------------------------------------------------- Zielprojekt leer oder ersetzen
-        if (!replaceExisting && await HasContentAsync(db, projectId, ct))
+        var hasContent = await HasContentAsync(db, projectId, ct);
+
+        if (!replaceExisting && hasContent)
         {
             throw new ContentValidationException(messages["Import_ProjectNotEmpty"].Value);
+        }
+
+        // Sicherheitsnetz vor dem Wipe: Der bisherige Stand bleibt als Exportstand erhalten
+        // und lässt sich über denselben Import wieder einspielen. Ein leeres Zielprojekt
+        // braucht keines — es gäbe nichts wiederherzustellen.
+        if (replaceExisting && hasContent)
+        {
+            await snapshots.CreateSafetyNetAsync(projectId, ct);
         }
 
         // ------------------------------------------------------- Asset-Dateien einspielen
@@ -303,8 +319,12 @@ public class ImportService(
         return new ImportResult(counts, warnings);
     }
 
-    /// <summary>Hat das Projekt schon irgendeinen Inhalt, den ein Import überschreiben würde?</summary>
-    private static async Task<bool> HasContentAsync(GameDevManagerDbContext db, Guid projectId, CancellationToken ct) =>
+    /// <summary>
+    /// Hat das Projekt schon irgendeinen Inhalt, den ein Import überschreiben würde?
+    /// Intern statt privat, weil das Löschen eines Projekts (<see cref="ProjectService"/>)
+    /// dieselbe Frage stellt, bevor es sein Sicherheitsnetz anlegt.
+    /// </summary>
+    internal static async Task<bool> HasContentAsync(GameDevManagerDbContext db, Guid projectId, CancellationToken ct) =>
         await db.Items.AnyAsync(e => e.GameProjectId == projectId, ct)
         || await db.Recipes.AnyAsync(e => e.GameProjectId == projectId, ct)
         || await db.Currencies.AnyAsync(e => e.GameProjectId == projectId, ct)

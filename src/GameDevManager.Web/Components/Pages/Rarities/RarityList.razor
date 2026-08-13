@@ -80,6 +80,10 @@ else
                             <MudLink Href="@($"/modules/rarities/{rarity.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
                                 <b>@rarity.Name</b>
                             </MudLink>
+                            <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                   EntityId="rarity.Id"
+                                                   Name="@rarity.Name"
+                                                   EditRoute="/modules/rarities" />
                             <MudTooltip Text="@L["DeleteTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                Size="Size.Small"

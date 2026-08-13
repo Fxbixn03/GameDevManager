@@ -54,6 +54,22 @@ public class LocalSettingsFile(IHostEnvironment environment)
         await File.WriteAllTextAsync(FilePath, root.ToJsonString(WriteOptions), ct);
     }
 
+    /// <summary>
+    /// Merkt sich die Hell/Dunkel-Wahl. Wie die Projektauswahl gilt sie installationsweit
+    /// und nicht je Browser: Das Tool wird self-hosted von einer Person betrieben, und ein
+    /// Wert im Browserspeicher wäre beim nächsten Gerät wieder weg.
+    /// </summary>
+    public async Task WriteDarkModeAsync(bool isDarkMode, CancellationToken ct = default)
+    {
+        var root = await ReadAsync(ct);
+
+        var appearance = root["Appearance"] as JsonObject ?? new JsonObject();
+        appearance["DarkMode"] = isDarkMode;
+        root["Appearance"] = appearance;
+
+        await File.WriteAllTextAsync(FilePath, root.ToJsonString(WriteOptions), ct);
+    }
+
     private async Task<JsonObject> ReadAsync(CancellationToken ct)
     {
         if (!File.Exists(FilePath))

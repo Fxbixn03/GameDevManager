@@ -29,6 +29,7 @@ builder.Services.AddScoped<ProjectContext>();
 builder.Services.AddSingleton<ProjectSelection>();
 builder.Services.AddScoped<ModuleState>();
 builder.Services.AddSingleton<LocalSettingsFile>();
+builder.Services.AddSingleton<AppearanceSelection>();
 
 // Beschriftungen, die aus C# statt aus einer Razor-Datei kommen (Modulnamen, Feldtypen,
 // Bedingungen). Sie sind Dienste und keine statischen Klassen mehr, weil sie einen

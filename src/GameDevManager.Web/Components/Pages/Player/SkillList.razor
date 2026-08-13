@@ -98,6 +98,10 @@ else
                             <MudLink Href="@($"/modules/player/skills/{skill.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
                                 <b>@skill.Name</b>
                             </MudLink>
+                            <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                   EntityId="skill.Id"
+                                                   Name="@skill.Name"
+                                                   EditRoute="/modules/player/skills" />
                             <MudTooltip Text="@L["DeleteTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                Size="Size.Small"

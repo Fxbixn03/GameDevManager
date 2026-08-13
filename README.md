@@ -29,14 +29,14 @@ Man legt seine Daten strukturiert während Planungsphasen an und kann diese spä
 
 | Modul | Beschreibung |
 |---|---|
-| Items | Items mit Name, Sprite und Werten definieren; Item-Arten mit eigenen Feldern |
+| Items | Items mit Name, Sprite und Werten definieren; Item-Arten mit eigenen Feldern und Unterarten, die diese Felder erben |
 | Crafting | Rezepte aus Ziel-Items, benötigten Items und einer Rezept-Art; filterbare Rezeptliste, Crafting-Trees als Graph |
 | Währungen | Beliebig viele Ingame-Währungen, die Händler akzeptieren |
 | NPCs | NPCs und Mobs mit Arten, Händler- und Quest-Rollen, Shop-Sortiment mit Preisen, Lagerbestand und Auffüllzeiten, Spawn-Orte auf der Karte |
 | Fraktionen | Fraktionen mit Rollen und Rängen für zugeordnete NPCs |
 | Diplomatie | Beziehungen zwischen Fraktionen (Allianzen, Feindschaften) als Graph |
 | Karten | Welt-, Höhlen- und Gebäudekarten als Bilder; Marker für NPCs und Fraktionsgebiete; verlinkte Karten, etwa ein Hausinnenraum auf der Weltkarte |
-| Dialoge | Dialoge zwischen NPCs und Spieler mit Antwortmöglichkeiten und Bedingungen; auch ambiente Sprechblasen |
+| Dialoge | Dialoge zwischen NPCs und Spieler mit Antwortmöglichkeiten und Bedingungen; Gespräche zusätzlich als Graph, in dem Verzweigungen und unerreichbare Zeilen sichtbar werden; auch ambiente Sprechblasen |
 | Story | Storyline auf einem Zeitstrahl, verknüpft mit NPCs, Fraktionen und Orten |
 | Quests | Haupt- und Nebenmissionen sowie Events, an Story und Dialoge angelehnt, mit Bedingungen |
 | Loot-Tables | Drop-Wahrscheinlichkeiten und Mengen, direkt mit Items und NPCs verknüpft |
@@ -59,6 +59,10 @@ Die Seite „Import &amp; Export“ deckt den kompletten Kreislauf ab:
 - **Export** als JSON zusammen mit Bildern, Sounds und VFX als ZIP-Archiv — wahlweise im Ordner-Layout von Unity, Unreal Engine oder Godot, damit sich das Archiv direkt ins Engine-Projekt entpacken lässt
 - **Import** des Export-ZIPs, um ein Projekt umzuziehen oder eine Sicherung wiederherzustellen (alle GUID-Referenzen bleiben erhalten)
 - **Exportstände**: Stände lassen sich aufbewahren, herunterladen und paarweise — oder gegen den aktuellen Stand — vergleichen; der Diff zeigt je Modul, was dazukam, wegfiel und welche Eigenschaften sich geändert haben
+- **Sicherheitsnetz**: Vor einem ersetzenden Import und vor dem Löschen eines Projekts entsteht automatisch ein Exportstand — der bisherige Bestand ist damit immer wiederherstellbar
+- **Hinweis statt Sperre**: Offene Health-Check-Funde zeigt die Seite vor dem Export an, blockiert ihn aber nicht — ein Zwischenstand muss sich exportieren lassen
+
+Projekte lassen sich über dieselbe Strecke **duplizieren** („Kopie anlegen“ auf der Projektseite): Der Stand wird flüchtig exportiert, alle GUIDs werden neu vergeben und in ein frisches Projekt eingespielt. Einzelne Einträge kopiert dagegen „Als Vorlage kopieren“ in jeder Modul-Liste — mit Feldwerten, individuellen Feldern und Bedingungen, aber weiterhin auf dieselben fremden Entitäten verweisend.
 
 ## Roadmap
 

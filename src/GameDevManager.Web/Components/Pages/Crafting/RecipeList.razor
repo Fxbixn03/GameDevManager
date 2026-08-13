@@ -149,6 +149,10 @@ else
                                                        aria-label="@L["TreeAria"]" />
                                     </MudTooltip>
                                 }
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="recipe.Id"
+                                                       Name="@recipe.Name"
+                                                       EditRoute="/modules/crafting" />
                                 <MudTooltip Text="@L["DeleteTooltip"]">
                                     <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                    Size="Size.Small"

@@ -23,6 +23,13 @@ public interface IModuleEntitySource
     /// <summary>Das Modul, das diese Quelle bedient — siehe <see cref="Domain.ModuleKeys"/>.</summary>
     string ModuleKey { get; }
 
+    /// <summary>
+    /// Ob sich Entitäten dieses Moduls kopieren lassen. Fast überall ja; ausgenommen sind
+    /// Module, in denen ein zweiter Datensatz derselben Sache keine Vorlage, sondern ein
+    /// Widerspruch wäre — siehe <see cref="DiplomaticRelationEntitySource"/>.
+    /// </summary>
+    bool CanDuplicate { get; }
+
     /// <summary>Wie viele Entitäten eine Art verwenden. Trägt den Löschschutz für Arten.</summary>
     Task<int> CountByTypeAsync(GameDevManagerDbContext db, Guid typeId, CancellationToken ct);
 
@@ -33,8 +40,19 @@ public interface IModuleEntitySource
     Task<Dictionary<Guid, string>> ResolveNamesAsync(
         GameDevManagerDbContext db, List<Guid> ids, CancellationToken ct);
 
-    /// <summary>Volltextsuche über Name und Beschreibung. <paramref name="needle"/> ist kleingeschrieben.</summary>
+    /// <summary>
+    /// Volltextsuche über Name und Beschreibung — Module mit eigenen Texten (Dialogzeilen)
+    /// suchen zusätzlich dort. <paramref name="needle"/> ist kleingeschrieben.
+    /// </summary>
     Task<List<SearchHit>> SearchAsync(
+        GameDevManagerDbContext db, Guid projectId, string needle, int limit, CancellationToken ct);
+
+    /// <summary>
+    /// Suche über die Textwerte der benutzerdefinierten Felder dieses Moduls. Getrennt von
+    /// <see cref="SearchAsync"/>, weil die Oberfläche solche Treffer anders beschriftet: Der
+    /// gesuchte Text steht nicht im Namen, sondern in einem Feld der Entität.
+    /// </summary>
+    Task<List<SearchHit>> SearchFieldValuesAsync(
         GameDevManagerDbContext db, Guid projectId, string needle, int limit, CancellationToken ct);
 
     /// <summary>Löst eine GUID auf, falls sie zu diesem Modul gehört.</summary>
@@ -56,6 +74,14 @@ public interface IModuleEntitySource
     /// </summary>
     Task<List<RecentEntry>> RecentAsync(
         GameDevManagerDbContext db, Guid projectId, int limit, CancellationToken ct);
+
+    /// <summary>
+    /// Kopiert eine Entität samt Kind-Sammlungen und allem, was an ihrer GUID hängt, und hängt
+    /// sie an den Kontext an — gespeichert wird vom Aufrufer. <c>null</c>, wenn es die Entität
+    /// nicht (mehr) gibt.
+    /// </summary>
+    Task<Guid?> DuplicateAsync(
+        GameDevManagerDbContext db, Guid entityId, string name, CancellationToken ct);
 
     /// <summary>
     /// Stellen, an denen dieses Modul über eigene Spalten auf eine fremde Entität verweist —
@@ -83,6 +109,12 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
     protected IStringLocalizer<DataMessages> Messages { get; } = messages;
 
     public abstract string ModuleKey { get; }
+
+    /// <summary>
+    /// Standardfall: Kopieren ist erlaubt. Virtuell aus demselben Grund wie
+    /// <see cref="FindReferencesAsync"/>.
+    /// </summary>
+    public virtual bool CanDuplicate => true;
 
     protected abstract DbSet<TEntity> Set(GameDevManagerDbContext db);
 
@@ -115,7 +147,12 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
             .Where(entity => ids.Contains(entity.Id))
             .ToDictionaryAsync(entity => entity.Id, entity => entity.Name, ct);
 
-    public Task<List<SearchHit>> SearchAsync(
+    /// <summary>
+    /// Name und Beschreibung. Virtuell aus demselben Grund wie
+    /// <see cref="FindReferencesAsync"/> — Module mit eigenen Texten (Dialogzeilen) hängen
+    /// ihre Suche hier an.
+    /// </summary>
+    public virtual Task<List<SearchHit>> SearchAsync(
         GameDevManagerDbContext db, Guid projectId, string needle, int limit, CancellationToken ct) =>
         Project(db, Set(db)
             .AsNoTracking()
@@ -125,6 +162,29 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
             .OrderBy(entity => entity.Name)
             .Take(limit))
         .ToListAsync(ct);
+
+    /// <summary>
+    /// Die Textwerte der benutzerdefinierten Felder. Gesucht wird über die Entitäten des
+    /// Moduls und nicht über die Feldwerte selbst: Die tragen keine Projekt-Spalte, und über
+    /// den Umweg bleibt der Treffer sicher im aktuellen Projekt.
+    /// </summary>
+    public Task<List<SearchHit>> SearchFieldValuesAsync(
+        GameDevManagerDbContext db, Guid projectId, string needle, int limit, CancellationToken ct)
+    {
+        // In eine lokale Variable ziehen: eine Eigenschaft der Klasse könnte EF nicht übersetzen.
+        var moduleKey = ModuleKey;
+
+        return Project(db, Set(db)
+            .AsNoTracking()
+            .Where(entity => entity.GameProjectId == projectId
+                && db.FieldValues.Any(value => value.OwnerEntityId == entity.Id
+                    && value.OwnerModuleKey == moduleKey
+                    && value.TextValue != null
+                    && value.TextValue.ToLower().Contains(needle)))
+            .OrderBy(entity => entity.Name)
+            .Take(limit))
+        .ToListAsync(ct);
+    }
 
     public async Task<SearchHit?> FindByIdAsync(
         GameDevManagerDbContext db, Guid projectId, Guid id, CancellationToken ct) =>
@@ -201,6 +261,30 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
                 .Where(stamp => byId.ContainsKey(stamp.Id))
                 .Select(stamp => new RecentEntry(byId[stamp.Id], stamp.UpdatedAtUtc))
         ];
+    }
+
+    /// <summary>
+    /// Kopiert eine Entität. Welche Kind-Sammlungen es gibt, steht im EF-Modell — sie werden
+    /// von dort geholt statt je Modul aufgezählt, damit ein neu hinzugekommenes Kind von
+    /// selbst mitkommt. Das Umschreiben der GUIDs übernimmt <see cref="EntityDuplication"/>.
+    /// </summary>
+    public async Task<Guid?> DuplicateAsync(
+        GameDevManagerDbContext db, Guid entityId, string name, CancellationToken ct)
+    {
+        IQueryable<TEntity> query = Set(db).AsNoTracking();
+
+        foreach (var navigation in db.Model.FindEntityType(typeof(TEntity))!
+                     .GetNavigations()
+                     .Where(navigation => navigation.IsCollection))
+        {
+            query = query.Include(navigation.Name);
+        }
+
+        var original = await query.FirstOrDefaultAsync(entity => entity.Id == entityId, ct);
+
+        return original is null
+            ? null
+            : (await EntityDuplication.CopyAsync(db, original, name, ct)).Id;
     }
 
     /// <summary>

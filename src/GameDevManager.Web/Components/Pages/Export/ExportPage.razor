@@ -6,6 +6,7 @@
 @inject NavigationManager Nav
 @inject ExportSnapshotService Snapshots
 @inject ImportService Importer
+@inject DashboardOverviewService Overview
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogs
 @inject IStringLocalizer<ExportPage> L
@@ -37,6 +38,18 @@
 
             <MudSwitch T="bool" @bind-Value="_includeAssets" Color="Color.Primary" Label="@L["IncludeAssets"]" />
             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-4">@L["IncludeAssetsHint"]</MudText>
+
+            @* Die offenen Health-Check-Funde als Hinweis, nicht als Sperre — dieselbe Linie
+               wie beim Loot-Check: nachschauen, nicht verbieten. Ein Zwischenstand mit
+               offenen Funden muss sich exportieren lassen. *@
+            @if (_health is { IsClean: false })
+            {
+                <MudAlert Severity="Severity.Warning" Dense="true" Square="true" Class="mb-4">
+                    <MudText Typo="Typo.body2">@L["HealthWarning", _health.TotalFindings]</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-1">@FindingsSummary</MudText>
+                    <MudLink Href="/modules/statistics" Typo="Typo.caption">@L["HealthToStatistics"]</MudLink>
+                </MudAlert>
+            }
 
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
@@ -306,12 +319,50 @@
     private bool _diffing;
     private SnapshotDiff? _diff;
 
+    private HealthSummary? _health;
+
     protected override async Task OnInitializedAsync()
     {
         _projectId = await Project.GetCurrentIdAsync();
         _counts = await Statistics.GetCountsAsync(_projectId);
         LoadSnapshots();
     }
+
+    /// <summary>
+    /// Die Health Checks laufen über den gesamten Bestand mehrerer Module — wie auf dem
+    /// Dashboard werden sie erst nach dem ersten Rendern nachgeladen. Der Export soll nicht
+    /// auf die langsamste Prüfung warten, sein Hinweis kommt eine Sekunde später eben nach.
+    /// <para>
+    /// Die Bedingung fragt nicht nach <c>firstRender</c>, sondern nach dem Ergebnis: Ein
+    /// Import setzt es zurück, damit der Hinweis den neuen Bestand meint statt den alten.
+    /// </para>
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_projectId == Guid.Empty || _health is not null)
+        {
+            return;
+        }
+
+        try
+        {
+            _health = await Overview.GetHealthAsync(_projectId);
+        }
+        catch (Exception ex) when (ex is ContentValidationException or InvalidOperationException)
+        {
+            // Der Hinweis ist Beiwerk — scheitert er, bleibt der Export trotzdem bedienbar.
+            return;
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>Nur die Prüfungen mit Funden, in der Reihenfolge des Zustandsbands.</summary>
+    private string FindingsSummary => string.Join(
+        ", ",
+        (_health?.Checks ?? [])
+            .Where(check => check.Findings > 0)
+            .Select(check => L["HealthFinding", check.Findings, L[$"Check_{check.CheckKey}"]].Value));
 
     // forceLoad, damit der Browser den Endpunkt direkt aufruft — der Blazor-Router würde
     // die Navigation sonst abfangen. Die Antwort ist ein Download, die Seite bleibt stehen.
@@ -431,6 +482,11 @@
             _importFile = null;
             _diff = null;
             _counts = await Statistics.GetCountsAsync(_projectId);
+
+            // Ein ersetzender Import legt vorher einen Stand als Sicherheitsnetz an — der
+            // soll in der Historie sofort auftauchen, nicht erst beim nächsten Seitenaufruf.
+            LoadSnapshots();
+            _health = null;
         }
         catch (ContentValidationException ex)
         {

@@ -171,6 +171,30 @@ public sealed class DialogueEntitySource(IStringLocalizer<DataMessages> messages
             null));
     }
 
+    /// <summary>
+    /// Zusätzlich zu Name und Beschreibung die gesprochenen Zeilen. Ein Gespräch trägt seinen
+    /// Inhalt nicht im Namen — ohne diese Suche ist eine bestimmte Zeile in einem gewachsenen
+    /// Projekt praktisch nicht wiederzufinden.
+    /// </summary>
+    public override async Task<List<SearchHit>> SearchAsync(
+        GameDevManagerDbContext db, Guid projectId, string needle, int limit, CancellationToken ct)
+    {
+        var hits = await base.SearchAsync(db, projectId, needle, limit, ct);
+
+        var found = hits.Select(hit => hit.Id).ToHashSet();
+
+        hits.AddRange((await Project(db, Set(db)
+                    .AsNoTracking()
+                    .Where(dialogue => dialogue.GameProjectId == projectId
+                        && dialogue.Lines.Any(line => line.Text.ToLower().Contains(needle)))
+                    .OrderBy(dialogue => dialogue.Name)
+                    .Take(limit))
+                .ToListAsync(ct))
+            .Where(hit => !found.Contains(hit.Id)));
+
+        return hits;
+    }
+
     public override async Task<List<EntityReferenceHit>> FindReferencesAsync(
         GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
     {
@@ -320,6 +344,13 @@ public sealed class DiplomaticRelationEntitySource(IStringLocalizer<DataMessages
     : ModuleEntitySource<DiplomaticRelation>(messages)
 {
     public override string ModuleKey => ModuleKeys.Diplomacy;
+
+    /// <summary>
+    /// Eine Beziehung ist durch ihr Fraktionspaar bestimmt — eine zweite zwischen denselben
+    /// beiden wäre keine Vorlage, sondern ein Widerspruch, und der <see cref="DiplomacyService"/>
+    /// lehnt sie beim Speichern ohnehin ab.
+    /// </summary>
+    public override bool CanDuplicate => false;
 
     protected override DbSet<DiplomaticRelation> Set(GameDevManagerDbContext db) => db.DiplomaticRelations;
 

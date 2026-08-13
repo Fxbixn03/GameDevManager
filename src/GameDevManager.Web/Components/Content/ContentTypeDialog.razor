@@ -27,6 +27,20 @@
                           Variant="Variant.Outlined"
                           Lines="2" />
 
+            @* Unterart: Die Felder der Eltern-Art gelten dann zusätzlich. Angeboten wird nur,
+               was keinen Ring ergäbe — die Art selbst und ihre eigenen Unterarten fehlen. *@
+            <MudSelect T="Guid?"
+                       @bind-Value="Type.ParentId"
+                       Label="@L["ParentLabel"]"
+                       Variant="Variant.Outlined"
+                       Clearable="true"
+                       HelperText="@L["ParentHelper"]">
+                @foreach (var candidate in ParentChoices)
+                {
+                    <MudSelectItem T="Guid?" Value="@candidate.Id">@candidate.Name</MudSelectItem>
+                }
+            </MudSelect>
+
             <MudSelect T="string"
                        @bind-Value="Type.Icon"
                        Label="@L["IconLabel"]"
@@ -71,7 +85,39 @@
     [Parameter]
     public bool IsNew { get; set; }
 
+    /// <summary>
+    /// Alle Arten des Moduls in Hierarchie-Reihenfolge — daraus wird die Auswahl der
+    /// Eltern-Art gebildet.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<ContentType> AllTypes { get; set; } = [];
+
     private string? _error;
+
+    /// <summary>
+    /// Die möglichen Eltern-Arten: alle außer der Art selbst und ihren Nachfahren. Eine Art zu
+    /// ihrer eigenen Unterart zu machen, lehnt der Dienst ohnehin ab — hier steht es gar nicht
+    /// erst zur Wahl.
+    /// </summary>
+    private List<ContentType> ParentChoices
+    {
+        get
+        {
+            var blocked = new HashSet<Guid> { Type.Id };
+
+            // AllTypes steht in Hierarchie-Reihenfolge: Eltern immer vor ihren Kindern.
+            // Ein Durchlauf genügt deshalb, um alle Nachfahren einzusammeln.
+            foreach (var candidate in AllTypes)
+            {
+                if (candidate.ParentId is { } parentId && blocked.Contains(parentId))
+                {
+                    blocked.Add(candidate.Id);
+                }
+            }
+
+            return [.. AllTypes.Where(candidate => !blocked.Contains(candidate.Id))];
+        }
+    }
 
     /// <summary>
     /// Kleine kuratierte Auswahl statt freier Icon-Eingabe — die Material-Namen kennt niemand

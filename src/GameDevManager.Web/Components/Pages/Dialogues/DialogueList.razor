@@ -127,6 +127,21 @@ else
                             <MudLink Href="@($"/modules/dialogs/{dialogue.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
                                 <b>@dialogue.Name</b>
                             </MudLink>
+                            @* Sprechblasen haben keinen Verlauf — für sie zeigte der Graph
+                               nur unverbundene Knoten. *@
+                            @if (dialogue.Kind == DialogueKind.Conversation && dialogue.LineCount > 0)
+                            {
+                                <MudTooltip Text="@L["GraphTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Hub"
+                                                   Size="Size.Small"
+                                                   Href="@($"/modules/dialogs/{dialogue.Id}/graph")"
+                                                   aria-label="@L["GraphAria", dialogue.Name]" />
+                                </MudTooltip>
+                            }
+                            <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                   EntityId="dialogue.Id"
+                                                   Name="@dialogue.Name"
+                                                   EditRoute="/modules/dialogs" />
                             <MudTooltip Text="@L["DeleteTooltip"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                Size="Size.Small"

@@ -47,7 +47,11 @@ public class ExportService(
     /// Änderung an Aufbau oder Bedeutung der Dateien erhöht, damit der spätere Import und
     /// die Engine-Seite wissen, was sie vor sich haben.
     /// </summary>
-    public const int FormatVersion = 1;
+    /// <remarks>
+    /// Version 2: Arten tragen eine <c>parentId</c> — Unterarten erben die Felder ihrer
+    /// Eltern-Art.
+    /// </remarks>
+    public const int FormatVersion = 2;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.

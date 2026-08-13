@@ -432,10 +432,15 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
 
                     b.HasIndex("GameProjectId", "ModuleKey");
 
@@ -2019,7 +2024,14 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("GameProject");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Currency", b =>
@@ -2571,6 +2583,8 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
                 {
+                    b.Navigation("Children");
+
                     b.Navigation("Fields");
                 });
 

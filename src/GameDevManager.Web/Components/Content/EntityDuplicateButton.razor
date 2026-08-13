@@ -1,0 +1,79 @@
+@inject EntityDuplicationService Duplication
+@inject ProjectContext Project
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<EntityDuplicateButton> L
+
+@*
+    „Als Vorlage kopieren“ — eine Zeile je Modul-Liste. Die Kopie bekommt neue GUIDs, behält
+    Feldwerte, individuelle Felder und Bedingungen und verweist weiter auf dieselben fremden
+    Entitäten; Sprites bleiben beim Original.
+*@
+
+@if (_available)
+{
+    <MudTooltip Text="@L["Tooltip"]">
+        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
+                       Size="Size.Small"
+                       Disabled="@_busy"
+                       aria-label="@L["Aria", Name]"
+                       OnClick="DuplicateAsync" />
+    </MudTooltip>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public required string ModuleKey { get; set; }
+
+    [Parameter, EditorRequired]
+    public required Guid EntityId { get; set; }
+
+    /// <summary>Nur für die Beschriftung — welcher Name die Kopie bekommt, entscheidet der Dienst.</summary>
+    [Parameter, EditorRequired]
+    public required string Name { get; set; }
+
+    /// <summary>
+    /// Route der Bearbeitungsmaske ohne GUID (z. B. <c>/modules/items</c>). Ist sie gesetzt,
+    /// springt die Seite direkt in die Kopie — kopiert wird, um gleich weiterzuarbeiten.
+    /// </summary>
+    [Parameter]
+    public string? EditRoute { get; set; }
+
+    /// <summary>Wird gerufen, wenn nicht gesprungen wird — die Liste lädt dann neu.</summary>
+    [Parameter]
+    public EventCallback OnDuplicated { get; set; }
+
+    private bool _available;
+    private bool _busy;
+
+    protected override void OnParametersSet() => _available = Duplication.CanDuplicate(ModuleKey);
+
+    private async Task DuplicateAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            var copyId = await Duplication.DuplicateAsync(projectId, ModuleKey, EntityId);
+
+            Snackbar.Add(L["CopiedMessage", Name], Severity.Success);
+
+            if (EditRoute is not null)
+            {
+                Navigation.NavigateTo($"{EditRoute}/{copyId}");
+                return;
+            }
+
+            await OnDuplicated.InvokeAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}
