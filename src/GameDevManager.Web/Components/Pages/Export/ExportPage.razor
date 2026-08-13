@@ -1,8 +1,13 @@
 @page "/export"
+@using System.Text.Json
 @inject ProjectContext Project
 @inject StatisticsService Statistics
 @inject ModuleLabels Modules
 @inject NavigationManager Nav
+@inject ExportSnapshotService Snapshots
+@inject ImportService Importer
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
 @inject IStringLocalizer<ExportPage> L
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -11,6 +16,7 @@
 <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">@L["Subtitle"]</MudText>
 
 <MudGrid Spacing="3">
+    @* ------------------------------------------------------------------------ Export *@
     <MudItem xs="12" md="7">
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudText Typo="Typo.overline" Color="Color.Secondary">@L["TargetHeading"]</MudText>
@@ -42,6 +48,7 @@
         </MudPaper>
     </MudItem>
 
+    @* -------------------------------------------------------------- Enthaltene Inhalte *@
     <MudItem xs="12" md="5">
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ContentHeading"]</MudText>
@@ -67,21 +74,243 @@
             }
         </MudPaper>
     </MudItem>
+
+    @* ------------------------------------------------------------------- Exportstände *@
+    <MudItem xs="12" md="7">
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["HistoryHeading"]</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-3">@L["HistoryIntro"]</MudText>
+
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap" Class="mb-3">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.SaveAlt"
+                           Disabled="@(_projectId == Guid.Empty || _creatingSnapshot)"
+                           OnClick="CreateSnapshotAsync">
+                    @L["KeepSnapshotButton"]
+                </MudButton>
+                <MudSwitch T="bool" @bind-Value="_snapshotIncludeAssets" Color="Color.Primary" Label="@L["SnapshotIncludeAssets"]" />
+            </MudStack>
+
+            @if (_creatingSnapshot)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-3" />
+            }
+
+            @if (_snapshots.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@L["HistoryEmpty"]</MudText>
+            }
+            else
+            {
+                <MudSimpleTable Dense="true" Elevation="0">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">@L["HistoryDate"]</th>
+                            <th style="text-align:right;">@L["HistoryEntries"]</th>
+                            <th style="text-align:right;">@L["HistorySize"]</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var snapshot in _snapshots)
+                        {
+                            <tr>
+                                <td>@snapshot.ExportedAtUtc.ToLocalTime().ToString("g")</td>
+                                <td class="gdm-mono" style="text-align:right;">@snapshot.EntryCount</td>
+                                <td class="gdm-mono" style="text-align:right;">@FormatSize(snapshot.SizeBytes)</td>
+                                <td style="text-align:right; white-space:nowrap;">
+                                    <MudIconButton Icon="@Icons.Material.Filled.FileDownload"
+                                                   Size="Size.Small"
+                                                   title="@L["DownloadSnapshot"]"
+                                                   OnClick="@(() => DownloadSnapshot(snapshot))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="Size.Small"
+                                                   title="@L["DeleteSnapshot"]"
+                                                   OnClick="@(() => DeleteSnapshotAsync(snapshot))" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+        </MudPaper>
+    </MudItem>
+
+    @* ------------------------------------------------------------------------ Import *@
+    <MudItem xs="12" md="5">
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ImportHeading"]</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-3">@L["ImportIntro"]</MudText>
+
+            <MudFileUpload T="IBrowserFile"
+                           FilesChanged="ImportFileSelected"
+                           Accept=".zip"
+                           Disabled="@_importing">
+                <CustomContent Context="upload">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.FolderZip"
+                               Disabled="@_importing"
+                               OnClick="@(() => upload.OpenFilePickerAsync())">
+                        @L["SelectZipButton"]
+                    </MudButton>
+                </CustomContent>
+            </MudFileUpload>
+
+            @if (_importFile is not null)
+            {
+                <MudText Typo="Typo.body2" Class="mt-2">
+                    @_importFile.Name
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Inline="true" Class="gdm-mono ml-1">
+                        @FormatSize(_importFile.Size)
+                    </MudText>
+                </MudText>
+            }
+
+            <MudDivider Class="my-4" />
+
+            <MudSwitch T="bool" @bind-Value="_replaceExisting" Color="Color.Primary" Label="@L["ReplaceExisting"]" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-4">@L["ReplaceExistingHint"]</MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.FileUpload"
+                       Disabled="@(_projectId == Guid.Empty || _importFile is null || _importing)"
+                       OnClick="ImportAsync">
+                @L["ImportButton"]
+            </MudButton>
+
+            @if (_importing)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-3" />
+            }
+
+            @if (_importResult is not null)
+            {
+                <MudAlert Severity="Severity.Success" Dense="true" Class="mt-3">
+                    @L["ImportedMessage", _importResult.TotalCount]
+                </MudAlert>
+
+                @foreach (var warning in _importResult.Warnings)
+                {
+                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">@warning</MudAlert>
+                }
+            }
+        </MudPaper>
+    </MudItem>
+
+    @* ---------------------------------------------------------------------- Vergleich *@
+    <MudItem xs="12">
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["DiffHeading"]</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-3">@L["DiffIntro"]</MudText>
+
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap">
+                <MudSelect T="string" @bind-Value="_diffLeft" Label="@L["DiffLeftLabel"]" Dense="true" Style="min-width: 260px;">
+                    <MudSelectItem T="string" Value="@CurrentStateKey">@L["DiffCurrentState"]</MudSelectItem>
+                    @foreach (var snapshot in _snapshots)
+                    {
+                        <MudSelectItem T="string" Value="@snapshot.FileName">@SnapshotLabel(snapshot)</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Color="Color.Secondary" />
+
+                <MudSelect T="string" @bind-Value="_diffRight" Label="@L["DiffRightLabel"]" Dense="true" Style="min-width: 260px;">
+                    <MudSelectItem T="string" Value="@CurrentStateKey">@L["DiffCurrentState"]</MudSelectItem>
+                    @foreach (var snapshot in _snapshots)
+                    {
+                        <MudSelectItem T="string" Value="@snapshot.FileName">@SnapshotLabel(snapshot)</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Difference"
+                           Disabled="@(_projectId == Guid.Empty || _diffing)"
+                           OnClick="CompareAsync">
+                    @L["CompareButton"]
+                </MudButton>
+            </MudStack>
+
+            @if (_diffing)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-3" />
+            }
+
+            @if (_diff is not null)
+            {
+                @if (!_diff.HasChanges)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true" Class="mt-4">@L["DiffNoChanges"]</MudAlert>
+                }
+                else
+                {
+                    <MudStack Row="true" Spacing="2" Class="mt-4">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">+@_diff.AddedCount</MudChip>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Text">−@_diff.RemovedCount</MudChip>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Text">~@_diff.ChangedCount</MudChip>
+                    </MudStack>
+
+                    @foreach (var file in _diff.Files)
+                    {
+                        <MudText Typo="Typo.subtitle2" Class="mt-4">@FileLabel(file)</MudText>
+                        <MudStack Spacing="1" Class="mt-1">
+                            @foreach (var change in file.Added)
+                            {
+                                @DiffRow(change, L["DiffAddedLabel"], Color.Success)
+                            }
+                            @foreach (var change in file.Removed)
+                            {
+                                @DiffRow(change, L["DiffRemovedLabel"], Color.Error)
+                            }
+                            @foreach (var change in file.Changed)
+                            {
+                                @DiffRow(change, L["DiffChangedLabel"], Color.Warning)
+                            }
+                        </MudStack>
+                    }
+                }
+            }
+        </MudPaper>
+    </MudItem>
 </MudGrid>
 
 @code {
     private static readonly ExportTarget[] Targets =
         [ExportTarget.Json, ExportTarget.Unity, ExportTarget.Unreal, ExportTarget.Godot];
 
+    /// <summary>Platzhalterwert der Vergleichsauswahl für „aktueller Stand" (kein Dateiname).</summary>
+    private const string CurrentStateKey = "";
+
+    /// <summary>Obergrenze für das Import-ZIP — großzügig, ein Export mit Assets kann groß sein.</summary>
+    private const long MaxImportSizeBytes = 2L * 1024 * 1024 * 1024;
+
     private ExportTarget _target = ExportTarget.Json;
     private bool _includeAssets = true;
     private Guid _projectId;
     private List<ModuleCount>? _counts;
 
+    private List<ExportSnapshot> _snapshots = [];
+    private bool _snapshotIncludeAssets = true;
+    private bool _creatingSnapshot;
+
+    private IBrowserFile? _importFile;
+    private bool _replaceExisting;
+    private bool _importing;
+    private ImportResult? _importResult;
+
+    private string _diffLeft = CurrentStateKey;
+    private string _diffRight = CurrentStateKey;
+    private bool _diffing;
+    private SnapshotDiff? _diff;
+
     protected override async Task OnInitializedAsync()
     {
         _projectId = await Project.GetCurrentIdAsync();
         _counts = await Statistics.GetCountsAsync(_projectId);
+        LoadSnapshots();
     }
 
     // forceLoad, damit der Browser den Endpunkt direkt aufruft — der Blazor-Router würde
@@ -89,4 +318,181 @@
     private void Download() => Nav.NavigateTo(
         $"/export/{_projectId}?target={_target.ToString().ToLowerInvariant()}&assets={(_includeAssets ? "true" : "false")}",
         forceLoad: true);
+
+    private void DownloadSnapshot(ExportSnapshot snapshot) =>
+        Nav.NavigateTo($"/export/snapshots/{snapshot.FileName}", forceLoad: true);
+
+    // ---------------------------------------------------------------------- Historie
+
+    private void LoadSnapshots()
+    {
+        _snapshots = Snapshots.List(_projectId);
+
+        // Voreinstellung des Vergleichs: jüngster aufbewahrter Stand gegen den aktuellen.
+        if (_diffLeft == CurrentStateKey && _snapshots.Count > 0)
+        {
+            _diffLeft = _snapshots[0].FileName;
+        }
+    }
+
+    private async Task CreateSnapshotAsync()
+    {
+        _creatingSnapshot = true;
+        try
+        {
+            await Snapshots.CreateAsync(_projectId, _snapshotIncludeAssets);
+            Snackbar.Add(L["SnapshotCreatedMessage"], Severity.Success);
+            LoadSnapshots();
+        }
+        catch (Exception ex) when (ex is ContentValidationException or InvalidOperationException)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _creatingSnapshot = false;
+        }
+    }
+
+    private async Task DeleteSnapshotAsync(ExportSnapshot snapshot)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["SnapshotDeleteConfirmTitle"],
+            L["SnapshotDeleteConfirmMessage", snapshot.ExportedAtUtc.ToLocalTime().ToString("g")],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            Snapshots.Delete(snapshot.FileName);
+            Snackbar.Add(L["SnapshotDeletedMessage"], Severity.Success);
+
+            // Zeigte der Vergleich auf den gelöschten Stand, fällt er auf den aktuellen zurück.
+            if (_diffLeft == snapshot.FileName)
+            {
+                _diffLeft = CurrentStateKey;
+            }
+            if (_diffRight == snapshot.FileName)
+            {
+                _diffRight = CurrentStateKey;
+            }
+
+            LoadSnapshots();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    // ------------------------------------------------------------------------ Import
+
+    private void ImportFileSelected(IBrowserFile? file)
+    {
+        _importFile = file;
+        _importResult = null;
+    }
+
+    private async Task ImportAsync()
+    {
+        if (_importFile is null)
+        {
+            return;
+        }
+
+        if (_replaceExisting)
+        {
+            var confirmed = await Dialogs.ShowMessageBoxAsync(
+                L["ImportConfirmTitle"],
+                L["ImportConfirmMessage"],
+                yesText: L["ImportConfirmYes"],
+                cancelText: L["ImportConfirmCancel"]);
+
+            if (confirmed != true)
+            {
+                return;
+            }
+        }
+
+        _importing = true;
+        _importResult = null;
+
+        try
+        {
+            await using var content = _importFile.OpenReadStream(MaxImportSizeBytes);
+            _importResult = await Importer.ImportAsync(_projectId, content, _replaceExisting);
+
+            Snackbar.Add(L["ImportedMessage", _importResult.TotalCount], Severity.Success);
+            _importFile = null;
+            _diff = null;
+            _counts = await Statistics.GetCountsAsync(_projectId);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception ex) when (ex is InvalidDataException or JsonException)
+        {
+            // Kein ZIP oder kaputtes JSON darin — für die Meldung macht das keinen Unterschied.
+            Snackbar.Add(L["ImportInvalidZip"], Severity.Error);
+        }
+        finally
+        {
+            _importing = false;
+        }
+    }
+
+    // --------------------------------------------------------------------- Vergleich
+
+    private async Task CompareAsync()
+    {
+        _diffing = true;
+        try
+        {
+            _diff = await Snapshots.DiffAsync(_projectId, FileNameOrNull(_diffLeft), FileNameOrNull(_diffRight));
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _diffing = false;
+        }
+    }
+
+    private static string? FileNameOrNull(string key) => key == CurrentStateKey ? null : key;
+
+    private string SnapshotLabel(ExportSnapshot snapshot) =>
+        L["SnapshotOption", snapshot.ExportedAtUtc.ToLocalTime().ToString("g"), snapshot.EntryCount];
+
+    private string FileLabel(SnapshotFileDiff file) =>
+        file.ModuleKey is not null ? Modules.NameOrKey(file.ModuleKey) : L[$"DiffFile_{file.File}"];
+
+    private RenderFragment DiffRow(SnapshotEntityChange change, string label, Color color) => __builder =>
+    {
+        <div class="d-flex align-center gap-2 flex-wrap">
+            <MudChip T="string" Size="Size.Small" Color="@color" Variant="Variant.Text">@label</MudChip>
+            <MudText Typo="Typo.body2">
+                @(string.IsNullOrEmpty(change.Name) ? L["DiffUnnamed"] : change.Name)
+            </MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">@change.Id</MudText>
+            @if (change.ChangedProperties.Count > 0)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    @string.Join(", ", change.ChangedProperties)
+                </MudText>
+            }
+        </div>
+    };
+
+    private string FormatSize(long bytes) =>
+        bytes >= 1024 * 1024
+            ? L["Megabytes", (bytes / 1024d / 1024d).ToString("0.#")]
+            : L["Kilobytes", (bytes / 1024d).ToString("0.#")];
 }

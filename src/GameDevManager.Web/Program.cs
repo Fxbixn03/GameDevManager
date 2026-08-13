@@ -24,6 +24,7 @@ builder.Services.AddMudServices(options =>
     options.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight);
 builder.Services.AddGameDevManagerDatabase(builder.Configuration);
 builder.Services.AddGameDevManagerAssetStorage(builder.Configuration, builder.Environment.ContentRootPath);
+builder.Services.AddGameDevManagerExportStorage(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddScoped<ProjectContext>();
 builder.Services.AddScoped<ModuleState>();
 builder.Services.AddSingleton<LocalSettingsFile>();
@@ -101,6 +102,16 @@ app.MapGet("/export/{projectId:guid}", async (
         stream => export.WriteExportAsync(projectId, exportTarget, assets ?? true, stream, ct),
         "application/zip",
         fileDownloadName: fileName);
+});
+
+// Lädt einen aufbewahrten Exportstand herunter. Der Dienst prüft den Dateinamen streng
+// (Zeitstempel plus Projekt-GUID) — alles andere ist ein 404, kein Pfad ins Dateisystem.
+app.MapGet("/export/snapshots/{fileName}", (string fileName, ExportSnapshotService snapshots) =>
+{
+    var stream = snapshots.OpenRead(fileName);
+    return stream is null
+        ? Results.NotFound()
+        : Results.Stream(stream, "application/zip", fileDownloadName: fileName);
 });
 
 // Ausstehende Migrationen beim Start anwenden (abschaltbar über "Database:AutoMigrate": false).

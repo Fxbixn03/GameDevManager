@@ -13,13 +13,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Export – GameDevManager</value>
+    <value>Import &amp; Export – GameDevManager</value>
   </data>
   <data name="Heading" xml:space="preserve">
-    <value>Export</value>
+    <value>Import &amp; Export</value>
   </data>
   <data name="Subtitle" xml:space="preserve">
-    <value>Der komplette Projektstand als ZIP: JSON je Modul plus die Asset-Dateien, alle Verweise als GUIDs.</value>
+    <value>Der komplette Projektstand als ZIP: exportieren, wieder importieren und Stände aufbewahren, um Änderungen nachzuvollziehen.</value>
   </data>
   <data name="TargetHeading" xml:space="preserve">
     <value>Ziel</value>
@@ -62,5 +62,140 @@
   </data>
   <data name="ContentHint" xml:space="preserve">
     <value>Dazu kommen Arten und Felder, Feldwerte, Bedingungen und eine README mit Hinweisen zum gewählten Ziel.</value>
+  </data>
+  <data name="HistoryHeading" xml:space="preserve">
+    <value>Exportstände</value>
+  </data>
+  <data name="HistoryIntro" xml:space="preserve">
+    <value>Aufbewahrte Stände lassen sich herunterladen, wieder importieren und miteinander vergleichen — so wird nachvollziehbar, was ein Content-Update verändert hat.</value>
+  </data>
+  <data name="KeepSnapshotButton" xml:space="preserve">
+    <value>Aktuellen Stand aufbewahren</value>
+  </data>
+  <data name="SnapshotIncludeAssets" xml:space="preserve">
+    <value>Asset-Dateien einschließen</value>
+  </data>
+  <data name="SnapshotCreatedMessage" xml:space="preserve">
+    <value>Der Stand wurde aufbewahrt.</value>
+  </data>
+  <data name="HistoryEmpty" xml:space="preserve">
+    <value>Noch keine Stände aufbewahrt.</value>
+  </data>
+  <data name="HistoryDate" xml:space="preserve">
+    <value>Zeitpunkt</value>
+  </data>
+  <data name="HistoryEntries" xml:space="preserve">
+    <value>Einträge</value>
+  </data>
+  <data name="HistorySize" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="DownloadSnapshot" xml:space="preserve">
+    <value>Herunterladen</value>
+  </data>
+  <data name="DeleteSnapshot" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="SnapshotDeleteConfirmTitle" xml:space="preserve">
+    <value>Stand löschen?</value>
+  </data>
+  <data name="SnapshotDeleteConfirmMessage" xml:space="preserve">
+    <value>Den Stand vom {0} endgültig löschen?</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="SnapshotDeletedMessage" xml:space="preserve">
+    <value>Der Stand wurde gelöscht.</value>
+  </data>
+  <data name="ImportHeading" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ImportIntro" xml:space="preserve">
+    <value>Liest ein Export-ZIP wieder ein — zum Umziehen eines Projekts oder zum Wiederherstellen einer Sicherung. Alle GUIDs bleiben dabei erhalten.</value>
+  </data>
+  <data name="SelectZipButton" xml:space="preserve">
+    <value>ZIP auswählen</value>
+  </data>
+  <data name="ReplaceExisting" xml:space="preserve">
+    <value>Vorhandene Inhalte ersetzen</value>
+  </data>
+  <data name="ReplaceExistingHint" xml:space="preserve">
+    <value>Entfernt vor dem Import sämtliche Inhalte des Projekts. Ohne diese Option ist der Import nur in ein leeres Projekt möglich.</value>
+  </data>
+  <data name="ImportButton" xml:space="preserve">
+    <value>Importieren</value>
+  </data>
+  <data name="ImportConfirmTitle" xml:space="preserve">
+    <value>Inhalte ersetzen?</value>
+  </data>
+  <data name="ImportConfirmMessage" xml:space="preserve">
+    <value>Der Import entfernt zuerst alle vorhandenen Inhalte dieses Projekts und ersetzt sie durch den Stand aus dem ZIP. Das lässt sich nicht rückgängig machen.</value>
+  </data>
+  <data name="ImportConfirmYes" xml:space="preserve">
+    <value>Ersetzen und importieren</value>
+  </data>
+  <data name="ImportConfirmCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="ImportedMessage" xml:space="preserve">
+    <value>Import abgeschlossen: {0} Einträge.</value>
+  </data>
+  <data name="ImportInvalidZip" xml:space="preserve">
+    <value>Die Datei ist kein lesbares Export-ZIP.</value>
+  </data>
+  <data name="DiffHeading" xml:space="preserve">
+    <value>Vergleich</value>
+  </data>
+  <data name="DiffIntro" xml:space="preserve">
+    <value>Stellt zwei Stände gegenüber — je Modul: was dazukam, was wegfiel und welche Eigenschaften sich geändert haben.</value>
+  </data>
+  <data name="DiffLeftLabel" xml:space="preserve">
+    <value>Alter Stand</value>
+  </data>
+  <data name="DiffRightLabel" xml:space="preserve">
+    <value>Neuer Stand</value>
+  </data>
+  <data name="DiffCurrentState" xml:space="preserve">
+    <value>Aktueller Stand</value>
+  </data>
+  <data name="SnapshotOption" xml:space="preserve">
+    <value>{0} – {1} Einträge</value>
+  </data>
+  <data name="CompareButton" xml:space="preserve">
+    <value>Vergleichen</value>
+  </data>
+  <data name="DiffNoChanges" xml:space="preserve">
+    <value>Die beiden Stände sind identisch.</value>
+  </data>
+  <data name="DiffAddedLabel" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="DiffRemovedLabel" xml:space="preserve">
+    <value>Entfernt</value>
+  </data>
+  <data name="DiffChangedLabel" xml:space="preserve">
+    <value>Geändert</value>
+  </data>
+  <data name="DiffUnnamed" xml:space="preserve">
+    <value>(ohne Namen)</value>
+  </data>
+  <data name="DiffFile_types-and-fields.json" xml:space="preserve">
+    <value>Arten &amp; Felder</value>
+  </data>
+  <data name="DiffFile_field-values.json" xml:space="preserve">
+    <value>Feldwerte</value>
+  </data>
+  <data name="DiffFile_conditions.json" xml:space="preserve">
+    <value>Bedingungen</value>
+  </data>
+  <data name="Megabytes" xml:space="preserve">
+    <value>{0} MB</value>
+  </data>
+  <data name="Kilobytes" xml:space="preserve">
+    <value>{0} KB</value>
   </data>
 </root>

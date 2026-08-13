@@ -1,11 +1,11 @@
 # ToDo
 
-Stand 12.08.2026 — alle 22 Module haben eine Oberfläche, der **Export** (JSON/ZIP inkl. Assets, Ordner-Layouts für Unity/Unreal/Godot) ist umgesetzt. Was hier steht, ist der Rest des Konzepts plus gesammelte Ideen; Details zu den Anforderungen stehen in [Konzept.md](Konzept.md).
+Stand 13.08.2026 — alle 22 Module haben eine Oberfläche, **Import und Export sind abgeschlossen**: Export als JSON/ZIP inkl. Assets (Ordner-Layouts für Unity/Unreal/Godot), Import des Export-ZIPs, aufbewahrte Exportstände mit Diff-Ansicht. Was hier steht, ist der Rest des Konzepts plus gesammelte Ideen; Details zu den Anforderungen stehen in [Konzept.md](Konzept.md).
 
-## Als Nächstes: Import/Export abschließen
+## Erledigt: Import/Export abschließen
 
-- [ ] **Import des Export-ZIPs.** Gegenstück zum Export, damit sich ein Projekt umziehen oder sichern lässt. Zu klären: Verhalten bei bereits vorhandenen GUIDs (überschreiben vs. ablehnen), Prüfung der `formatVersion` aus `project.json`, Wiederherstellen der Asset-Dateien in den Dateispeicher.
-- [ ] **Versionierte, diffbare Exporte.** Kernforderung des Konzepts („nachvollziehen, was ein Content-Update verändert hat“). Die Vorarbeit steckt schon im Export — deterministische Sortierung, derselbe Stand ergibt dasselbe ZIP. Fehlt: Exportstände aufbewahren (Historie) und zwei Stände als Diff gegenüberstellen.
+- [x] **Import des Export-ZIPs.** Umgesetzt als `ImportService` (Seite „Import & Export“). Entschiedenes Verhalten bei vorhandenen Inhalten: Der Import stellt immer einen kompletten Projektstand her — entweder in ein leeres Projekt (sonst Ablehnung) oder mit der Option „Vorhandene Inhalte ersetzen“ (kompletter Wipe + Neuaufbau, kein Teil-Merge). `formatVersion` aus `project.json` wird geprüft, Asset-Dateien werden in den Dateispeicher zurückgeschrieben, alle GUIDs bleiben erhalten.
+- [x] **Versionierte, diffbare Exporte.** Umgesetzt als `ExportSnapshotService`: Stände liegen als normale Export-ZIPs im Dateisystem (`Exports:StoragePath`, Standard `exports/` — bewusst keine Datenbanktabelle), lassen sich herunterladen, löschen und wieder importieren. Der Diff vergleicht zwei Stände (oder einen Stand gegen den aktuellen) je Modul: neu, entfernt, geändert samt geänderten Eigenschaften.
 
 ## Danach: offene Punkte aus dem Konzept
 

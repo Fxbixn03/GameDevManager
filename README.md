@@ -52,12 +52,13 @@ Man legt seine Daten strukturiert während Planungsphasen an und kann diese spä
 | SFX / Audio | Ansammlung an Audio Files |
 | Cutscenes | Sammlung von Video Files |
 
-## Export in die Game Engine
+## Import & Export
 
-Auf dem Dashboard wird es eine Import/Export-Card geben. Darüber sind zwei Wege geplant:
+Die Seite „Import &amp; Export“ deckt den kompletten Kreislauf ab:
 
-- JSON zusammen mit Bildern, Sounds und VFX als ZIP-Archiv
-- ein direkter Export nach Unity, Unreal Engine oder Godot, später eventuell weitere Engines
+- **Export** als JSON zusammen mit Bildern, Sounds und VFX als ZIP-Archiv — wahlweise im Ordner-Layout von Unity, Unreal Engine oder Godot, damit sich das Archiv direkt ins Engine-Projekt entpacken lässt
+- **Import** des Export-ZIPs, um ein Projekt umzuziehen oder eine Sicherung wiederherzustellen (alle GUID-Referenzen bleiben erhalten)
+- **Exportstände**: Stände lassen sich aufbewahren, herunterladen und paarweise — oder gegen den aktuellen Stand — vergleichen; der Diff zeigt je Modul, was dazukam, wegfiel und welche Eigenschaften sich geändert haben
 
 ## Roadmap
 
@@ -67,8 +68,8 @@ Auf dem Dashboard wird es eine Import/Export-Card geben. Darüber sind zwei Wege
 4. Darauf aufbauend: Crafting, NPCs, Loot-Tables, Karten - Ham wa drin 👌
 5. Story-Ebene: Dialoge, Story, Quests, Events - Ham wa drin 👌
 6. Erweiterung und Härtung bestehende Module
-7. Import/Export in JSON mit Sprites/Assets als ZIP
-8. Import/Export mit Engine-Anbindung
+7. Import/Export in JSON mit Sprites/Assets als ZIP, inkl. Exportständen mit Diff - Ham wa drin 👌
+8. Import/Export mit Engine-Anbindung (Ordner-Layouts für Unity/Unreal/Godot - Ham wa drin 👌; engine-native Formate wie ScriptableObjects später)
 
 ## Lizenz
 

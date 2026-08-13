@@ -1,7 +1,5 @@
 using System.IO.Compression;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using GameDevManager.Data.Assets;
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
@@ -50,14 +48,6 @@ public class ExportService(
     /// die Engine-Seite wissen, was sie vor sich haben.
     /// </summary>
     public const int FormatVersion = 1;
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver { Modifiers = { StripNonExportedProperties } }
-    };
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -244,7 +234,7 @@ public class ExportService(
         {
             var entry = archive.CreateEntry(prefix + path, CompressionLevel.Optimal);
             await using var entryStream = entry.Open();
-            await JsonSerializer.SerializeAsync(entryStream, payload, JsonOptions, ct);
+            await JsonSerializer.SerializeAsync(entryStream, payload, ExportFormat.JsonOptions, ct);
         }
 
         await WriteJsonAsync("content/items.json", new { items });
@@ -353,38 +343,5 @@ public class ExportService(
         await using var readmeStream = readmeEntry.Open();
         await using var writer = new StreamWriter(readmeStream);
         await writer.WriteAsync(readme);
-    }
-
-    /// <summary>
-    /// Entfernt aus den Domain-Entitäten, was nicht in den Export gehört: Navigationsobjekte
-    /// (die GUID-Spalten bleiben — Referenzen laufen laut Konzept ausschließlich über GUIDs)
-    /// und berechnete Nur-Lese-Eigenschaften wie <c>IsToolAsset</c> oder <c>ModuleKey</c>.
-    /// Kind-Sammlungen bleiben eingebettet. Typen außerhalb des Entitäten-Namensraums
-    /// (Manifest, Datei-Wrapper) sind nicht betroffen.
-    /// </summary>
-    private static void StripNonExportedProperties(JsonTypeInfo typeInfo)
-    {
-        if (typeInfo.Kind != JsonTypeInfoKind.Object
-            || typeInfo.Type.Namespace != typeof(ContentEntity).Namespace)
-        {
-            return;
-        }
-
-        for (var i = typeInfo.Properties.Count - 1; i >= 0; i--)
-        {
-            var property = typeInfo.Properties[i];
-            var isNavigation = property.PropertyType.IsClass
-                && property.PropertyType.Namespace == typeof(ContentEntity).Namespace;
-
-            // AssetTag.Assignments wird nie mitgeladen — die Zuordnungen stehen an den Assets.
-            // Eine immer leere Liste im Export sähe nach „keine Zuordnungen" aus.
-            var isUnloadedBackReference = typeInfo.Type == typeof(AssetTag)
-                && property.Name.Equals(nameof(AssetTag.Assignments), StringComparison.OrdinalIgnoreCase);
-
-            if (property.Set is null || isNavigation || isUnloadedBackReference)
-            {
-                typeInfo.Properties.RemoveAt(i);
-            }
-        }
     }
 }

@@ -68,6 +68,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<AssetService>();
         services.AddScoped<SearchService>();
         services.AddScoped<ExportService>();
+        services.AddScoped<ImportService>();
 
         // Je Modul eine Quelle. Referenzansicht, Auswahlfelder, Arten-Zählung und globale
         // Suche fragen sie alle ab — ein neues Modul wird hier eingetragen und ist überall da.
@@ -114,6 +115,29 @@ public static class DatabaseServiceExtensions
 
         services.AddSingleton(options);
         services.AddSingleton<IAssetStorage, FileSystemAssetStorage>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Richtet den Dateispeicher für aufbewahrte Exportstände ein — dasselbe Muster wie beim
+    /// Asset-Speicher: relativ konfigurierte Pfade werden gegen <paramref name="basePath"/>
+    /// aufgelöst, üblicherweise das Anwendungsverzeichnis.
+    /// </summary>
+    public static IServiceCollection AddGameDevManagerExportStorage(
+        this IServiceCollection services, IConfiguration configuration, string basePath)
+    {
+        var options = configuration.GetSection(ExportStorageOptions.SectionName).Get<ExportStorageOptions>()
+                      ?? new ExportStorageOptions();
+
+        options.RootPath = Path.IsPathRooted(options.StoragePath)
+            ? options.StoragePath
+            : Path.Combine(basePath, options.StoragePath);
+
+        Directory.CreateDirectory(options.RootPath);
+
+        services.AddSingleton(options);
+        services.AddScoped<ExportSnapshotService>();
 
         return services;
     }

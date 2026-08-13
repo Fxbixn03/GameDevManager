@@ -485,4 +485,25 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Unreal-Projekts: Die Inhalte la
 
 Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte landen unter `res://gamedevmanager/`. Zur Laufzeit lädst du sie mit `FileAccess.get_file_as_string()` und `JSON.parse_string()`.</value>
   </data>
+  <data name="Export_SnapshotMissing" xml:space="preserve">
+    <value>Der Exportstand wurde nicht gefunden.</value>
+  </data>
+  <data name="Export_SnapshotInvalidName" xml:space="preserve">
+    <value>Der Name des Exportstands ist ungültig.</value>
+  </data>
+  <data name="Import_ManifestMissing" xml:space="preserve">
+    <value>Das ZIP enthält kein project.json — es ist kein GameDevManager-Export.</value>
+  </data>
+  <data name="Import_FormatVersionMismatch" xml:space="preserve">
+    <value>Das Export-Format (Version {0}) wird nicht unterstützt — dieses Tool erwartet Version {1}.</value>
+  </data>
+  <data name="Import_ProjectNotEmpty" xml:space="preserve">
+    <value>Das Projekt enthält bereits Inhalte. Zum Überschreiben die Option „Vorhandene Inhalte ersetzen“ einschalten.</value>
+  </data>
+  <data name="Import_ArchiveWithoutAssetFiles" xml:space="preserve">
+    <value>Der Export wurde ohne Asset-Dateien erstellt — die Assets sind nur mit ihren Metadaten importiert.</value>
+  </data>
+  <data name="Import_AssetFileMissing" xml:space="preserve">
+    <value>Die Datei zum Asset „{0}“ fehlt im Archiv.</value>
+  </data>
 </root>
