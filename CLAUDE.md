@@ -57,7 +57,7 @@ Das Konzept verlangt in fast jedem Modul benutzerdefinierte Arten mit eigenen Fe
 
 ### Ein Modul überall bekannt machen: `IModuleEntitySource`
 
-Vier Dienste arbeiten modulübergreifend — die Referenzansicht („Find All References“), die Referenz-Auswahlfelder, die Verwendungszählung der Arten und die globale Suche. Sie fragen **nicht** jeweils einen eigenen `switch` ab, sondern alle registrierten `IModuleEntitySource`. Je Modul gibt es genau eine solche Klasse in [ModuleEntitySources.cs](src/GameDevManager.Data/Services/ModuleEntitySources.cs); für Entitäten auf `ContentEntity`-Basis erbt sie von `ModuleEntitySource<T>` und braucht nur den `DbSet`-Zugriff und die Abbildung auf Suchtreffer.
+Fünf Dienste arbeiten modulübergreifend — die Referenzansicht („Find All References“), die Referenz-Auswahlfelder, die Verwendungszählung der Arten, die globale Suche und der Inhaltsregen des Startscreens (`StartScreenService`). Sie fragen **nicht** jeweils einen eigenen `switch` ab, sondern alle registrierten `IModuleEntitySource`. Je Modul gibt es genau eine solche Klasse in [ModuleEntitySources.cs](src/GameDevManager.Data/Services/ModuleEntitySources.cs); für Entitäten auf `ContentEntity`-Basis erbt sie von `ModuleEntitySource<T>` und braucht nur den `DbSet`-Zugriff und die Abbildung auf Suchtreffer.
 
 Verweist ein Modul über **eigene Spalten** auf fremde Entitäten (Rezept-Zutaten, später Händler-Angebote und Loot-Einträge), überschreibt es zusätzlich `FindReferencesAsync`. Diese Methode ist bewusst virtuell in der Basisklasse und keine Standardimplementierung an der Schnittstelle: Die Zuordnung zur Schnittstelle entsteht in der Basisklasse, eine gleichnamige Methode in einer abgeleiteten Klasse würde sie nicht ersetzen und stillschweigend nie laufen.
 
@@ -65,7 +65,7 @@ Ein neues Modul umsetzen heißt also:
 
 1. Entität von `ContentEntity` ableiten und in `GameDevManagerDbContext.OnModelCreating` mit `ConfigureContentEntity<T>` registrieren.
 2. Einen Service nach dem Muster von `ItemService`/`CurrencyService` schreiben. Die Feldmechanik kommt komplett aus `ContentFields` (laden, Pflichtfelder prüfen, Werte in denselben `SaveChanges` einreihen, beim Löschen aufräumen) — nicht neu bauen. Beim Löschen einer Entität `AssetService.DeleteForOwnerAsync` aufrufen, sonst bleiben Sprites und Dateien liegen.
-3. Eine `ModuleEntitySource<T>` anlegen und in `AddGameDevManagerContentServices` registrieren. Damit ist das Modul in Referenzansicht, Auswahlfeldern, Arten-Zählung und Suche auf einmal da.
+3. Eine `ModuleEntitySource<T>` anlegen und in `AddGameDevManagerContentServices` registrieren. Damit ist das Modul in Referenzansicht, Auswahlfeldern, Arten-Zählung, Suche und dem Startscreen auf einmal da.
 4. Seiten unter `Components/Pages/<Modul>/` anlegen. Die Arten-Verwaltung ist eine Zeile (`<ContentTypeManager ModuleKey="…" />`), die Feldabschnitte der Maske ebenso (`<ContentFieldsPanel TEntity="…" …/>`).
 5. In `ModuleRegistry` `Implemented: true` setzen — und Name plus Beschreibung als `<key>_Name` / `<key>_Description` in [ModuleLabels.resx](src/GameDevManager.Web/Services/ModuleLabels.resx) eintragen.
 6. Je Seite eine `.resx` daneben legen (siehe „Texte“).

@@ -558,22 +558,49 @@ html {
     z-index: 1;
 }
 
-/* Ebene 1: quadratisches Raster, das langsam diagonal driftet. Der Versatz von
-   -48px entspricht genau einer Rasterzelle, damit die Schleife nahtlos ist. */
-.gdm-start-grid {
+/* Ebene 1: zwei große Farbfelder, die langsam gegeneinander ziehen und dem Anthrazit
+   Tiefe geben. Beide bestehen nur aus dem Akzentgelb und dem kühlen Info-Blau mit
+   wenigen Prozent Beimischung — der Grundton bleibt Anthrazit. */
+.gdm-start-aurora {
     position: absolute;
-    inset: -48px;
-    background-image:
-        linear-gradient(var(--mud-palette-divider) 1px, transparent 1px),
-        linear-gradient(90deg, var(--mud-palette-divider) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(ellipse 80% 70% at 50% 38%, black 25%, transparent 78%);
-    opacity: 0.45;
-    animation: gdm-start-grid-drift 90s linear infinite;
+    inset: -25%;
 }
 
-@keyframes gdm-start-grid-drift {
-    to { transform: translate(48px, 48px); }
+.gdm-start-aurora::before,
+.gdm-start-aurora::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+
+.gdm-start-aurora::before {
+    background:
+        radial-gradient(38% 34% at 24% 26%,
+            color-mix(in srgb, var(--mud-palette-primary) 13%, transparent), transparent 70%),
+        radial-gradient(34% 30% at 74% 18%,
+            color-mix(in srgb, var(--mud-palette-info) 10%, transparent), transparent 68%);
+    animation: gdm-start-aurora-a 42s ease-in-out infinite alternate;
+}
+
+.gdm-start-aurora::after {
+    background:
+        radial-gradient(42% 36% at 80% 72%,
+            color-mix(in srgb, var(--mud-palette-primary) 9%, transparent), transparent 70%),
+        radial-gradient(36% 32% at 18% 78%,
+            color-mix(in srgb, var(--mud-palette-info) 8%, transparent), transparent 66%);
+    animation: gdm-start-aurora-b 57s ease-in-out infinite alternate;
+}
+
+/* Unterschiedliche Laufzeiten und Richtungen: die beiden Felder treffen sich nie
+   wieder in derselben Stellung, das Bild wiederholt sich dadurch nicht sichtbar. */
+@keyframes gdm-start-aurora-a {
+    from { transform: translate3d(-3%, -2%, 0) scale(1); }
+    to { transform: translate3d(4%, 3%, 0) scale(1.12); }
+}
+
+@keyframes gdm-start-aurora-b {
+    from { transform: translate3d(3%, 2%, 0) scale(1.1); }
+    to { transform: translate3d(-4%, -3%, 0) scale(1); }
 }
 
 /* Ebene 2: gelber Lichtschein hinter dem Titel, der ruhig atmet. */
@@ -591,8 +618,142 @@ html {
     to { opacity: 1; }
 }
 
-/* Ebene 3: einzelne „Pixel", die wie im Spiel aufsteigen. Position, Größe und
-   Tempo variieren je Kind; zwei sind nur umrandet statt gefüllt. */
+/* Ebene 3: ein schwacher Lichtstreif, der in großen Abständen schräg durchs Bild
+   wandert — dasselbe Motiv wie der Sheen auf dem Button, nur langsam und großflächig. */
+.gdm-start-beam {
+    position: absolute;
+    top: -30%;
+    bottom: -30%;
+    left: -25%;
+    width: 18%;
+    background: linear-gradient(90deg, transparent,
+        color-mix(in srgb, var(--mud-palette-primary) 7%, transparent),
+        transparent);
+    animation: gdm-start-beam-sweep 19s ease-in-out infinite;
+}
+
+/* Die Neigung steht in jedem Schritt mit drin: eine animierte transform-Eigenschaft
+   ersetzt die statische komplett. */
+@keyframes gdm-start-beam-sweep {
+    0%, 25% { transform: translateX(0) skewX(-14deg); }
+    100% { transform: translateX(800%) skewX(-14deg); }
+}
+
+/* Ebene 4: der Inhaltsregen — angelegte Entitäten fallen quer durch alle Module durchs
+   Bild. Die Maske blendet die Kacheln hinter Titel und Button aus, damit sie den Text
+   nicht zerlegen; ohne Unterstützung für mask-composite fallen sie eben überall. */
+.gdm-start-rain {
+    position: absolute;
+    inset: 0;
+    /* Dekoration: darf niemals Klicks auf Titel oder Button abfangen. */
+    pointer-events: none;
+    mask-image:
+        radial-gradient(ellipse 46% 27% at 50% 30%, transparent 20%, black 88%),
+        radial-gradient(ellipse 24% 13% at 50% 88%, transparent 25%, black 92%);
+    mask-composite: intersect;
+    /* Der Regen kommt erst nach dem Verbinden aus der Datenbank — er soll aufblenden
+       statt zu erscheinen. */
+    animation: gdm-start-fade-in 1.6s ease both;
+}
+
+/* Bahn, Größe, Tempo und Startzeitpunkt würfelt die Seite je Tropfen aus und übergibt
+   sie als Variablen; hier steht nur, was daraus wird. */
+.gdm-start-drop {
+    position: absolute;
+    top: 0;
+    left: var(--gdm-drop-lane, 50%);
+    font-size: var(--gdm-drop-size, 0.75rem);
+    opacity: var(--gdm-drop-opacity, 0.3);
+    will-change: transform;
+    animation: gdm-start-drop-fall var(--gdm-drop-duration, 24s) linear var(--gdm-drop-delay, 0s) infinite;
+}
+
+/* Das -50% hält die Kachel mittig auf ihrer Bahn und muss deshalb in jedem Schritt stehen. */
+@keyframes gdm-start-drop-fall {
+    from { transform: translate(-50%, -30vh); }
+    to { transform: translate(-50%, 115vh); }
+}
+
+/* Die Kachel greift das Format der Modul-Cards auf: eckig, 1px-Kante, gelbe Oberkante.
+   Die Grade werden nicht von .gdm-accent-top geholt, weil die Kante hier zusammen mit
+   den übrigen Seiten in einer Regel stehen soll. */
+.gdm-start-drop-card {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    width: max-content;
+    max-width: 14em;
+    padding: 0.5em 0.75em;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-top: 2px solid var(--mud-palette-primary);
+    background-color: color-mix(in srgb, var(--mud-palette-surface) 82%, transparent);
+    /* Schaukelt um die Fallbahn, damit der Regen nicht in Spalten fällt. Der negative
+       Startzeitpunkt des Tropfens gilt auch hier — sonst schaukelten alle im Gleichtakt. */
+    animation: gdm-start-drop-sway calc(var(--gdm-drop-duration, 24s) / 3)
+        ease-in-out var(--gdm-drop-delay, 0s) infinite alternate;
+}
+
+@keyframes gdm-start-drop-sway {
+    from { transform: translateX(-0.9em) rotate(-1.5deg); }
+    to { transform: translateX(0.9em) rotate(1.5deg); }
+}
+
+/* Sprite der Entität, sonst das Icon ihres Moduls — dieselbe Kachel wie in den Listen. */
+.gdm-start-drop-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2.2em;
+    height: 2.2em;
+    border: 1px solid var(--mud-palette-lines-default);
+    background-color: var(--mud-palette-background-gray);
+    overflow: hidden;
+}
+
+.gdm-start-drop-icon img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+/* Das Icon soll mit der Kachel skalieren — MudBlazor setzt sonst eine feste Größe. */
+.gdm-start-drop-icon .mud-icon-root {
+    font-size: 1.3em;
+}
+
+.gdm-start-drop-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.gdm-start-drop-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--mud-palette-text-primary);
+}
+
+.gdm-start-drop-module {
+    font-size: 0.8em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mud-palette-text-secondary);
+}
+
+/* Auf schmalen Bildschirmen liegen die Bahnen zu dicht beieinander — dort fällt nur
+   jede zweite Kachel. */
+@media (max-width: 700px) {
+    .gdm-start-drop:nth-child(2n) {
+        display: none;
+    }
+}
+
+/* Ebene 5: einzelne „Pixel", die wie im Spiel aufsteigen — der Gegenlauf zum Regen.
+   Position, Größe und Tempo variieren je Kind; zwei sind nur umrandet statt gefüllt. */
 .gdm-start-pixels {
     position: absolute;
     inset: 0;
@@ -624,6 +785,42 @@ html {
 .gdm-start-pixel:nth-child(7) { left: 76%; width: 5px; height: 5px; animation-duration: 14s; animation-delay: 11s; }
 .gdm-start-pixel:nth-child(8) { left: 86%; animation-duration: 20s; animation-delay: 5s;  --gdm-pixel-opacity: 0.22; }
 .gdm-start-pixel:nth-child(9) { left: 93%; width: 10px; height: 10px; background-color: transparent; border: 1px solid var(--mud-palette-divider); animation-duration: 22s; animation-delay: 8s; --gdm-pixel-opacity: 0.5; }
+
+/* Ebene 6: Abdunklung zum Rand. Sie hält den Blick in der Mitte und schneidet die
+   bewegten Ebenen weich gegen den Bildschirmrand ab. */
+.gdm-start-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 85% at 50% 40%, transparent 40%,
+        color-mix(in srgb, var(--mud-palette-background-gray) 80%, transparent) 100%);
+}
+
+/* Ebene 7: Eckklammern wie an einem Werkzeugfenster — 1px, gelb, blenden beim Öffnen auf.
+   Die Deckkraft steht am Kind, das Aufblenden am Rahmen: eine Animation mit „both" würde
+   den Wert am Kind sonst auf ihren Endwert festnageln. */
+.gdm-start-frame {
+    position: absolute;
+    inset: clamp(0.75rem, 2vw, 1.75rem);
+    animation: gdm-start-fade-in 0.8s ease 0.7s both;
+}
+
+.gdm-start-frame span {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border: 0 solid var(--mud-palette-primary);
+    opacity: 0.5;
+}
+
+.gdm-start-frame span:nth-child(1) { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.gdm-start-frame span:nth-child(2) { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+.gdm-start-frame span:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+.gdm-start-frame span:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+
+@keyframes gdm-start-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 
 /* Gestaffelter Auftritt von Icon, Titel, Tagline und Button. */
 .gdm-start-enter {
@@ -713,8 +910,11 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .gdm-start-grid,
+    .gdm-start-aurora::before,
+    .gdm-start-aurora::after,
     .gdm-start-glow,
+    .gdm-start-beam,
+    .gdm-start-frame,
     .gdm-start-enter,
     .gdm-start-icon,
     .gdm-start-rule,
@@ -722,7 +922,10 @@ html {
         animation: none;
     }
 
-    .gdm-start-pixel {
+    /* Beide leben von der Bewegung: stillgestellt lägen die Tropfen als Stapel am oberen
+       Rand. Ohne Bewegung bleiben nur die ruhigen Farbebenen. */
+    .gdm-start-pixel,
+    .gdm-start-rain {
         display: none;
     }
 

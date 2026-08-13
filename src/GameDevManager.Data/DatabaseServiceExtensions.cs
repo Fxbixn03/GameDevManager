@@ -69,6 +69,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ReferenceService>();
         services.AddScoped<AssetService>();
         services.AddScoped<SearchService>();
+        services.AddScoped<StartScreenService>();
         services.AddScoped<ExportService>();
         services.AddScoped<ImportService>();
 

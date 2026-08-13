@@ -41,6 +41,15 @@ public interface IModuleEntitySource
     Task<SearchHit?> FindByIdAsync(GameDevManagerDbContext db, Guid projectId, Guid id, CancellationToken ct);
 
     /// <summary>
+    /// Eine Stichprobe der Entitäten des Moduls — bisher für die Dekoration des Startscreens.
+    /// Sortiert wird nach GUID und nicht nach Namen: die Reihenfolge ist damit beliebig statt
+    /// alphabetisch, sonst käme immer nur der Anfang des Alphabets heraus. Gemischt wird beim
+    /// Aufrufer, weil keiner der vier Provider eine gemeinsame Zufallssortierung kennt.
+    /// </summary>
+    Task<List<SearchHit>> SampleAsync(
+        GameDevManagerDbContext db, Guid projectId, int limit, CancellationToken ct);
+
+    /// <summary>
     /// Stellen, an denen dieses Modul über eigene Spalten auf eine fremde Entität verweist —
     /// also nicht über Feldwerte. Rezept-Zutaten sind der erste Fall; Händler-Angebote und
     /// Loot-Einträge kommen so dazu. Module ohne solche Verweise geben nichts zurück.
@@ -115,6 +124,15 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
             .AsNoTracking()
             .Where(entity => entity.Id == id && entity.GameProjectId == projectId))
         .FirstOrDefaultAsync(ct);
+
+    public Task<List<SearchHit>> SampleAsync(
+        GameDevManagerDbContext db, Guid projectId, int limit, CancellationToken ct) =>
+        Project(db, Set(db)
+            .AsNoTracking()
+            .Where(entity => entity.GameProjectId == projectId)
+            .OrderBy(entity => entity.Id)
+            .Take(limit))
+        .ToListAsync(ct);
 
     /// <summary>
     /// Standardfall: Das Modul verweist nur über benutzerdefinierte Referenzfelder auf andere

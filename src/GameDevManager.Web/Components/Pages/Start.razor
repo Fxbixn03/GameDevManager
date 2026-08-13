@@ -2,18 +2,63 @@
 @layout StartLayout
 @inject NavigationManager Navigation
 @inject IStringLocalizer<Start> L
+@inject ProjectContext Project
+@inject StartScreenService StartScreen
+@inject ModuleLabels Modules
+@using System.Globalization
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
 <div class="gdm-start-screen">
-    @* Rein dekorative Hintergrundebenen: driftendes Raster, Lichtschein, aufsteigende Pixel. *@
-    <div class="gdm-start-grid" aria-hidden="true"></div>
+    @* Rein dekorative Hintergrundebenen, von hinten nach vorn: ziehende Farbfelder,
+       Lichtschein hinter dem Titel, wandernder Lichtstreif, der Inhaltsregen,
+       aufsteigende Pixel, Abdunklung zum Rand und der Eckrahmen. *@
+    <div class="gdm-start-aurora" aria-hidden="true"></div>
     <div class="gdm-start-glow" aria-hidden="true"></div>
+    <div class="gdm-start-beam" aria-hidden="true"></div>
+
+    @* Der Inhaltsregen: angelegte Entitäten des Projekts fallen quer durch alle Module
+       durchs Bild. Bahn, Größe, Tempo und Startzeitpunkt stehen als CSS-Variablen am
+       Element, die Bewegung selbst macht app.css. Die Ebene entsteht erst mit den
+       Tropfen — so beginnt ihr Aufblenden genau dann, wenn es etwas zu sehen gibt. *@
+    @if (_drops.Count > 0)
+    {
+        <div class="gdm-start-rain" aria-hidden="true">
+            @foreach (var drop in _drops)
+            {
+                <div class="gdm-start-drop" style="@drop.Style">
+                    <div class="gdm-start-drop-card">
+                        <span class="gdm-start-drop-icon">
+                            @if (drop.Hit.PrimaryAssetId is { } assetId)
+                            {
+                                <img src="@($"/assets/{assetId}")" alt="" loading="lazy" />
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@drop.Icon" Color="Color.Primary" />
+                            }
+                        </span>
+                        <span class="gdm-start-drop-text">
+                            <span class="gdm-start-drop-name">@drop.Hit.Name</span>
+                            <span class="gdm-start-drop-module">@drop.Module</span>
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
     <div class="gdm-start-pixels" aria-hidden="true">
         @for (var i = 0; i < PixelCount; i++)
         {
             <span class="gdm-start-pixel"></span>
         }
+    </div>
+
+    <div class="gdm-start-vignette" aria-hidden="true"></div>
+
+    <div class="gdm-start-frame" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
     </div>
 
     <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="gdm-start-brand">
@@ -42,5 +87,92 @@
 @code {
     private const int PixelCount = 9;
 
+    /// <summary>
+    /// Wie viele Entitäten höchstens gleichzeitig fallen. Mehr wird unruhig und verdeckt den
+    /// Titel, weniger wirkt wie ein Versehen statt wie Regen.
+    /// </summary>
+    private const int MaxDrops = 16;
+
+    private IReadOnlyList<RainDrop> _drops = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Erst nach dem Verbinden laden: beim Vorabrendern liefe die Abfrage ein zweites Mal
+        // und der Regen würde neu ausgewürfelt sichtbar springen. Fehlt die Datenbank oder ist
+        // das Projekt leer, bleibt der Startscreen ohne Regen — er ist reine Dekoration.
+        if (!RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            _drops = BuildDrops(await StartScreen.SampleEntitiesAsync(projectId, MaxDrops));
+        }
+        catch (Exception)
+        {
+            _drops = [];
+        }
+    }
+
+    /// <summary>
+    /// Verteilt die Entitäten auf Bahnen und würfelt je Tropfen die Tiefe aus: was größer und
+    /// heller ist, fällt schneller — daraus entsteht die räumliche Staffelung. Der negative
+    /// Startzeitpunkt sorgt dafür, dass der Regen beim Öffnen schon läuft, statt erst von oben
+    /// einzusetzen.
+    /// </summary>
+    private List<RainDrop> BuildDrops(IReadOnlyList<SearchHit> entities)
+    {
+        if (entities.Count == 0)
+        {
+            return [];
+        }
+
+        // Bei einem frischen Projekt mit wenigen Entitäten fallen dieselben mehrfach — sonst
+        // wären es zwei einsame Kacheln. Ab genug Inhalt fällt jede Entität nur einmal.
+        var count = Math.Min(MaxDrops, entities.Count * 3);
+
+        // Die Bahnen bleiben zwischen 6 % und 94 %: eine am Rand halb abgeschnittene Kachel
+        // sieht nach Layoutfehler aus und nicht nach Regen.
+        var lane = 88.0 / count;
+        var drops = new List<RainDrop>(count);
+
+        for (var i = 0; i < count; i++)
+        {
+            var hit = entities[i % entities.Count];
+            var depth = Random.Shared.NextDouble();
+            var duration = 30.0 - depth * 13.0;
+
+            // Je Bahn ein eigener Streifen mit etwas Spiel: gleichmäßig verteilt, aber nicht
+            // sichtbar in Spalten ausgerichtet.
+            var left = 6.0 + lane * (i + 0.2 + Random.Shared.NextDouble() * 0.6);
+
+            drops.Add(new RainDrop(
+                hit,
+                Modules.NameOrKey(hit.ModuleKey),
+                ModuleRegistry.Find(hit.ModuleKey)?.Icon ?? Icons.Material.Filled.Category,
+                Style(
+                    left,
+                    size: 0.62 + depth * 0.3,
+                    opacity: 0.16 + depth * 0.28,
+                    duration,
+                    delay: -Random.Shared.NextDouble() * duration)));
+        }
+
+        return drops;
+    }
+
+    /// <summary>
+    /// Die ausgewürfelten Werte als CSS-Variablen. Zwingend invariant formatiert: mit
+    /// deutscher Kultur stünde dort „0,75rem", und das ist kein gültiger CSS-Wert.
+    /// </summary>
+    private static string Style(double lane, double size, double opacity, double duration, double delay) =>
+        string.Create(CultureInfo.InvariantCulture,
+            $"--gdm-drop-lane:{lane:0.##}%;--gdm-drop-size:{size:0.###}rem;--gdm-drop-opacity:{opacity:0.###};--gdm-drop-duration:{duration:0.#}s;--gdm-drop-delay:{delay:0.#}s");
+
     private void Enter() => Navigation.NavigateTo("/dashboard");
+
+    /// <summary>Eine fallende Entität samt ihrer ausgewürfelten Bahn.</summary>
+    private sealed record RainDrop(SearchHit Hit, string Module, string Icon, string Style);
 }
