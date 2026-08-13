@@ -533,6 +533,204 @@ html {
     }
 }
 
+/* -------------------------------------------------------------- Startscreen */
+
+/* Titel oben im Drittel, Button unten — dazwischen ist der Platz für die spätere
+   Anmeldemaske reserviert. Alle Effekte sind reines CSS und respektieren
+   prefers-reduced-motion (ganz unten in diesem Abschnitt). */
+.gdm-start-screen {
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14vh 1.5rem 12vh;
+    background-color: var(--mud-palette-background);
+}
+
+/* Der Inhalt liegt über den dekorativen Ebenen. */
+.gdm-start-brand,
+.gdm-start-cta {
+    position: relative;
+    z-index: 1;
+}
+
+/* Ebene 1: quadratisches Raster, das langsam diagonal driftet. Der Versatz von
+   -48px entspricht genau einer Rasterzelle, damit die Schleife nahtlos ist. */
+.gdm-start-grid {
+    position: absolute;
+    inset: -48px;
+    background-image:
+        linear-gradient(var(--mud-palette-divider) 1px, transparent 1px),
+        linear-gradient(90deg, var(--mud-palette-divider) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 38%, black 25%, transparent 78%);
+    opacity: 0.45;
+    animation: gdm-start-grid-drift 90s linear infinite;
+}
+
+@keyframes gdm-start-grid-drift {
+    to { transform: translate(48px, 48px); }
+}
+
+/* Ebene 2: gelber Lichtschein hinter dem Titel, der ruhig atmet. */
+.gdm-start-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(60% 45% at 50% 30%,
+        color-mix(in srgb, var(--mud-palette-primary) 9%, transparent),
+        transparent 70%);
+    animation: gdm-start-glow-breathe 7s ease-in-out infinite alternate;
+}
+
+@keyframes gdm-start-glow-breathe {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+}
+
+/* Ebene 3: einzelne „Pixel", die wie im Spiel aufsteigen. Position, Größe und
+   Tempo variieren je Kind; zwei sind nur umrandet statt gefüllt. */
+.gdm-start-pixels {
+    position: absolute;
+    inset: 0;
+}
+
+.gdm-start-pixel {
+    position: absolute;
+    bottom: -16px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--mud-palette-primary);
+    opacity: 0;
+    animation: gdm-start-pixel-rise 16s linear infinite;
+}
+
+@keyframes gdm-start-pixel-rise {
+    0% { transform: translateY(0); opacity: 0; }
+    12% { opacity: var(--gdm-pixel-opacity, 0.35); }
+    85% { opacity: var(--gdm-pixel-opacity, 0.35); }
+    100% { transform: translateY(-108vh); opacity: 0; }
+}
+
+.gdm-start-pixel:nth-child(1) { left: 8%;  animation-duration: 19s; animation-delay: 0s;  --gdm-pixel-opacity: 0.25; }
+.gdm-start-pixel:nth-child(2) { left: 18%; width: 5px; height: 5px; animation-duration: 13s; animation-delay: 4s; }
+.gdm-start-pixel:nth-child(3) { left: 29%; animation-duration: 22s; animation-delay: 9s;  --gdm-pixel-opacity: 0.2; }
+.gdm-start-pixel:nth-child(4) { left: 41%; width: 4px; height: 4px; animation-duration: 12s; animation-delay: 2s; }
+.gdm-start-pixel:nth-child(5) { left: 55%; animation-duration: 16s; animation-delay: 7s; }
+.gdm-start-pixel:nth-child(6) { left: 66%; width: 12px; height: 12px; background-color: transparent; border: 1px solid var(--mud-palette-primary); animation-duration: 24s; animation-delay: 1s; --gdm-pixel-opacity: 0.3; }
+.gdm-start-pixel:nth-child(7) { left: 76%; width: 5px; height: 5px; animation-duration: 14s; animation-delay: 11s; }
+.gdm-start-pixel:nth-child(8) { left: 86%; animation-duration: 20s; animation-delay: 5s;  --gdm-pixel-opacity: 0.22; }
+.gdm-start-pixel:nth-child(9) { left: 93%; width: 10px; height: 10px; background-color: transparent; border: 1px solid var(--mud-palette-divider); animation-duration: 22s; animation-delay: 8s; --gdm-pixel-opacity: 0.5; }
+
+/* Gestaffelter Auftritt von Icon, Titel, Tagline und Button. */
+.gdm-start-enter {
+    animation: gdm-start-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.gdm-start-enter-1 { animation-delay: 0.05s; }
+.gdm-start-enter-2 { animation-delay: 0.15s; }
+.gdm-start-enter-3 { animation-delay: 0.4s; }
+.gdm-start-enter-4 { animation-delay: 0.55s; }
+
+@keyframes gdm-start-rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Das Icon schwebt nach dem Auftritt sanft weiter. */
+.gdm-start-icon {
+    font-size: 3.5rem;
+    animation: gdm-start-float 4.5s ease-in-out 1.2s infinite;
+}
+
+@keyframes gdm-start-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+}
+
+.gdm-start-title {
+    font-size: clamp(2.75rem, 7vw, 4.5rem);
+    text-shadow: 0 0 40px color-mix(in srgb, var(--mud-palette-primary) 40%, transparent);
+}
+
+/* Akzentlinie unter dem Titel, die sich von der Mitte aus aufzieht. */
+.gdm-start-rule {
+    width: 88px;
+    height: 2px;
+    background-color: var(--mud-palette-primary);
+    transform-origin: center;
+    animation: gdm-start-draw 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.35s both;
+}
+
+@keyframes gdm-start-draw {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+.gdm-start-tagline {
+    color: var(--mud-palette-text-secondary);
+}
+
+/* Button: alle paar Sekunden läuft ein Lichtstreif durch; beim Hover rückt er
+   schräg heraus und wirft einen harten, eckigen Schatten — passend zu den Kanten. */
+.gdm-start-button {
+    position: relative;
+    overflow: hidden;
+    min-width: 220px;
+    padding: 0.75rem 2.5rem;
+    font-size: 1.125rem;
+    transition: transform 120ms linear, box-shadow 120ms linear;
+}
+
+.gdm-start-button:hover,
+.gdm-start-button:focus-visible {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 color-mix(in srgb, var(--mud-palette-primary) 35%, transparent);
+}
+
+.gdm-start-button::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -60%;
+    width: 40%;
+    transform: skewX(-20deg);
+    background: linear-gradient(90deg,
+        transparent,
+        color-mix(in srgb, var(--mud-palette-white) 30%, transparent),
+        transparent);
+    pointer-events: none;
+    animation: gdm-start-sheen 4.5s ease-in-out 2s infinite;
+}
+
+@keyframes gdm-start-sheen {
+    0%, 55% { left: -60%; }
+    75%, 100% { left: 120%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gdm-start-grid,
+    .gdm-start-glow,
+    .gdm-start-enter,
+    .gdm-start-icon,
+    .gdm-start-rule,
+    .gdm-start-button::after {
+        animation: none;
+    }
+
+    .gdm-start-pixel {
+        display: none;
+    }
+
+    .gdm-start-button {
+        transition: none;
+    }
+}
+
 /* ------------------------------------------------------------------- Fehler */
 
 .blazor-error-boundary {

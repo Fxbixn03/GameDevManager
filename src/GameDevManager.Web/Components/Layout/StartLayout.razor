@@ -1,0 +1,11 @@
+@inherits LayoutComponentBase
+
+@* Rahmenloses Layout für den Startscreen (später das Anmeldefenster): keine Appbar,
+   keine Modulleiste — nur das Theme und die volle Fläche. Die Provider müssen auch
+   hier stehen, weil je Seite nur ein Layout aktiv ist. *@
+<MudThemeProvider Theme="GameDevManagerTheme.Instance" IsDarkMode="true" DefaultScrollbar="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+@Body

@@ -1,0 +1,46 @@
+@page "/"
+@layout StartLayout
+@inject NavigationManager Navigation
+@inject IStringLocalizer<Start> L
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<div class="gdm-start-screen">
+    @* Rein dekorative Hintergrundebenen: driftendes Raster, Lichtschein, aufsteigende Pixel. *@
+    <div class="gdm-start-grid" aria-hidden="true"></div>
+    <div class="gdm-start-glow" aria-hidden="true"></div>
+    <div class="gdm-start-pixels" aria-hidden="true">
+        @for (var i = 0; i < PixelCount; i++)
+        {
+            <span class="gdm-start-pixel"></span>
+        }
+    </div>
+
+    <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="gdm-start-brand">
+        <div class="gdm-start-enter gdm-start-enter-1">
+            <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Color="Color.Primary" Class="gdm-start-icon" />
+        </div>
+        <MudText Typo="Typo.h1" Align="Align.Center" Color="Color.Primary"
+                 Class="gdm-start-title gdm-start-enter gdm-start-enter-2">@L["Title"]</MudText>
+        <div class="gdm-start-rule" aria-hidden="true"></div>
+        <MudText Typo="Typo.subtitle1" Align="Align.Center"
+                 Class="gdm-start-tagline gdm-start-enter gdm-start-enter-3">@L["Tagline"]</MudText>
+    </MudStack>
+
+    @* Hier kommt später die Anmeldemaske hin; der Button wird dann zu „Anmelden".
+       Der Wrapper trägt die Eingangsanimation, damit deren Transform nicht mit dem
+       Hover-Transform des Buttons kollidiert. *@
+    <div class="gdm-start-cta gdm-start-enter gdm-start-enter-4">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Large"
+                   Class="gdm-start-button"
+                   OnClick="Enter">@L["StartButton"]</MudButton>
+    </div>
+</div>
+
+@code {
+    private const int PixelCount = 9;
+
+    private void Enter() => Navigation.NavigateTo("/dashboard");
+}

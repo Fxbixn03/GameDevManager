@@ -68,7 +68,7 @@
         }
 
         await Project.SetCurrentAsync(projectId);
-        Navigation.NavigateTo("/", forceLoad: true);
+        Navigation.NavigateTo("/dashboard", forceLoad: true);
     }
 
     private void OnProjectChanged() => _ = InvokeAsync(async () =>
