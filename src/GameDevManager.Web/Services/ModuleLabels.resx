@@ -150,4 +150,25 @@
   <data name="statistics_Description" xml:space="preserve">
     <value>Kennzahlen und Health Checks über alle Module</value>
   </data>
+  <data name="Group_World_Name" xml:space="preserve">
+    <value>Welt</value>
+  </data>
+  <data name="Group_Content_Name" xml:space="preserve">
+    <value>Inhalte</value>
+  </data>
+  <data name="Group_Characters_Name" xml:space="preserve">
+    <value>Figuren</value>
+  </data>
+  <data name="Group_Narrative_Name" xml:space="preserve">
+    <value>Erzählung</value>
+  </data>
+  <data name="Group_Progress_Name" xml:space="preserve">
+    <value>Fortschritt</value>
+  </data>
+  <data name="Group_Production_Name" xml:space="preserve">
+    <value>Produktion</value>
+  </data>
+  <data name="Group_Tools_Name" xml:space="preserve">
+    <value>Auswertung</value>
+  </data>
 </root>

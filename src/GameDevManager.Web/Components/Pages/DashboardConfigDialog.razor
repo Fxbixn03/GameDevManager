@@ -1,8 +1,9 @@
 @inject IStringLocalizer<DashboardConfigDialog> L
 
 @*
-    Anpassen des Dashboards: Reihenfolge und Sichtbarkeit der Cards. Die Import/Export-Card
-    fehlt hier bewusst — sie ist laut Konzept immer fest sichtbar.
+    Anpassen des Dashboards: Reihenfolge und Sichtbarkeit der Bänder. Anders als früher stehen
+    hier keine Modul-Karten mehr — die Module erreicht man über die Leiste der Topbar, das
+    Dashboard zeigt den Projektstand.
 *@
 
 <MudDialog>
@@ -17,10 +18,10 @@
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">@L["Hint"]</MudText>
 
         <div>
-            @for (var i = 0; i < Cards.Count; i++)
+            @for (var i = 0; i < Bands.Count; i++)
             {
                 var index = i;
-                var row = Cards[index];
+                var row = Bands[index];
                 <div class="pa-2 gdm-field-row">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                         <MudIcon Icon="@row.Icon" Size="Size.Small" />
@@ -32,7 +33,7 @@
                                        OnClick="@(() => Move(index, -1))" />
                         <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown"
                                        Size="Size.Small"
-                                       Disabled="@(index == Cards.Count - 1)"
+                                       Disabled="@(index == Bands.Count - 1)"
                                        aria-label="@L["MoveDownAria"]"
                                        OnClick="@(() => Move(index, +1))" />
                         <MudTooltip Text="@(row.Visible ? L["VisibleTooltip"] : L["HiddenTooltip"])">
@@ -51,8 +52,8 @@
 </MudDialog>
 
 @code {
-    /// <summary>Eine Card im Dialog — veränderlich, weil Reihenfolge und Schalter direkt daran hängen.</summary>
-    public sealed class CardRow(string key, string title, string icon, bool visible)
+    /// <summary>Ein Band im Dialog — veränderlich, weil Reihenfolge und Schalter direkt daran hängen.</summary>
+    public sealed class BandRow(string key, string title, string icon, bool visible)
     {
         public string Key { get; } = key;
         public string Title { get; } = title;
@@ -64,13 +65,13 @@
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter, EditorRequired]
-    public required List<CardRow> Cards { get; set; }
+    public required List<BandRow> Bands { get; set; }
 
     private void Move(int index, int offset)
     {
         var other = index + offset;
-        (Cards[index], Cards[other]) = (Cards[other], Cards[index]);
+        (Bands[index], Bands[other]) = (Bands[other], Bands[index]);
     }
 
-    private void Submit() => MudDialog.Close(DialogResult.Ok(Cards));
+    private void Submit() => MudDialog.Close(DialogResult.Ok(Bands));
 }

@@ -35,7 +35,10 @@
                             }
                             else
                             {
-                                <MudIcon Icon="@drop.Icon" Color="Color.Primary" />
+                                @* Ohne Farbe, weil die Kachel sie setzt: Color.Primary käme
+                                   mit !important und ließe sich von der Seltenheit nicht
+                                   überschreiben. *@
+                                <MudIcon Icon="@drop.Icon" />
                             }
                         </span>
                         <span class="gdm-start-drop-text">
@@ -122,7 +125,7 @@
     /// Startzeitpunkt sorgt dafür, dass der Regen beim Öffnen schon läuft, statt erst von oben
     /// einzusetzen.
     /// </summary>
-    private List<RainDrop> BuildDrops(IReadOnlyList<SearchHit> entities)
+    private List<RainDrop> BuildDrops(IReadOnlyList<StartScreenEntity> entities)
     {
         if (entities.Count == 0)
         {
@@ -140,7 +143,8 @@
 
         for (var i = 0; i < count; i++)
         {
-            var hit = entities[i % entities.Count];
+            var entity = entities[i % entities.Count];
+            var hit = entity.Hit;
             var depth = Random.Shared.NextDouble();
             var duration = 30.0 - depth * 13.0;
 
@@ -157,7 +161,8 @@
                     size: 0.62 + depth * 0.3,
                     opacity: 0.16 + depth * 0.28,
                     duration,
-                    delay: -Random.Shared.NextDouble() * duration)));
+                    delay: -Random.Shared.NextDouble() * duration,
+                    entity.RarityColor)));
         }
 
         return drops;
@@ -166,10 +171,21 @@
     /// <summary>
     /// Die ausgewürfelten Werte als CSS-Variablen. Zwingend invariant formatiert: mit
     /// deutscher Kultur stünde dort „0,75rem", und das ist kein gültiger CSS-Wert.
+    /// <para>
+    /// Die Seltenheitsfarbe wird nur gesetzt, wenn die Entität eine trägt — ohne sie bleibt
+    /// die Variable ungesetzt, und die Kachel fällt in app.css auf das Akzentgelb zurück.
+    /// </para>
     /// </summary>
-    private static string Style(double lane, double size, double opacity, double duration, double delay) =>
-        string.Create(CultureInfo.InvariantCulture,
+    private static string Style(
+        double lane, double size, double opacity, double duration, double delay, string? rarityColor)
+    {
+        var style = string.Create(CultureInfo.InvariantCulture,
             $"--gdm-drop-lane:{lane:0.##}%;--gdm-drop-size:{size:0.###}rem;--gdm-drop-opacity:{opacity:0.###};--gdm-drop-duration:{duration:0.#}s;--gdm-drop-delay:{delay:0.#}s");
+
+        return string.IsNullOrWhiteSpace(rarityColor)
+            ? style
+            : $"{style};--gdm-drop-color:{rarityColor}";
+    }
 
     private void Enter() => Navigation.NavigateTo("/dashboard");
 

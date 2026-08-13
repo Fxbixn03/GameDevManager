@@ -533,6 +533,177 @@ html {
     }
 }
 
+/* ---------------------------------------------------------------- Dashboard */
+/* Die Bänder des Dashboards. Alles steht auf .gdm-panel — hier stehen nur die Anordnungen,
+   die MudBlazor nicht mitbringt: die Kennzahlenzeile, die Zeile im „Weiterarbeiten“ und der
+   Zahlen-Chip des Inhaltsbestands. */
+
+/* Projektleiste: Name links, Kennzahlen rechts daneben, durch 1px getrennt statt durch
+   eigene Kästen. Bricht auf schmalen Anzeigen um, die Trennlinie wandert dann nach oben. */
+.gdm-projectbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.gdm-projectbar-identity {
+    flex: 1 1 240px;
+    min-width: 0;
+    padding: 0.875rem 1.125rem;
+}
+
+.gdm-projectbar-stat {
+    flex: 0 0 auto;
+    min-width: 150px;
+    padding: 0.875rem 1.125rem;
+    border-left: 1px solid var(--mud-palette-lines-default);
+}
+
+@media (max-width: 700px) {
+    .gdm-projectbar-stat {
+        flex: 1 1 100%;
+        border-left: 0;
+        border-top: 1px solid var(--mud-palette-lines-default);
+    }
+}
+
+/* Eine zuletzt bearbeitete Entität. Der Hover markiert die linke Kante gelb, statt die Zeile
+   zu füllen — dieselbe Zurückhaltung wie bei .gdm-card-link. */
+.gdm-recent-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.375rem 0.875rem;
+    border-left: 2px solid transparent;
+    transition: border-color 120ms linear, background-color 120ms linear;
+}
+
+.gdm-recent-row + .gdm-recent-row {
+    border-top: 1px solid var(--mud-palette-lines-default);
+}
+
+.gdm-recent-row:hover {
+    border-left-color: var(--mud-palette-primary);
+    background-color: var(--mud-palette-background-gray);
+}
+
+/* Trägt den Namen und die Modulzeile und muss schrumpfen dürfen, damit die Zeitangabe
+   rechts stehen bleibt und der Name gekürzt wird statt sie zu verdrängen. */
+.gdm-recent-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Eine Prüfung im Zustandsband. Sauberes bleibt lesbar, tritt aber zurück — sonst müsste man
+   die Liste nach dem einen orangen Eintrag absuchen. */
+.gdm-health-row {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.3125rem 0.875rem;
+    transition: background-color 120ms linear;
+}
+
+.gdm-health-row + .gdm-health-row {
+    border-top: 1px solid var(--mud-palette-lines-default);
+}
+
+.gdm-health-row:hover {
+    background-color: var(--mud-palette-background-gray);
+}
+
+/* Der Name der Prüfung nimmt den Platz, die Zahl bleibt rechts. */
+.gdm-health-row > .mud-typography:first-of-type {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.gdm-health-clean {
+    color: var(--mud-palette-text-secondary);
+}
+
+/* Ein Arbeitsfeld im Inhaltsbestand: Überschrift in fester Spalte, Chips daneben. */
+.gdm-inventory-group {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.5rem 0.875rem;
+}
+
+.gdm-inventory-group + .gdm-inventory-group {
+    border-top: 1px solid var(--mud-palette-lines-default);
+}
+
+.gdm-inventory-label {
+    flex: 0 0 96px;
+}
+
+.gdm-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Modul mit seiner Anzahl — zugleich Navigation und Auskunft, deshalb ersetzt er die
+   Linkkarten des früheren Dashboards. */
+.gdm-count-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    padding: 0.125rem 0.5rem;
+    border: 1px solid var(--mud-palette-lines-default);
+    background-color: var(--mud-palette-background);
+    font-size: 0.75rem;
+    transition: border-color 120ms linear;
+}
+
+.gdm-count-chip:hover {
+    border-color: var(--mud-palette-primary);
+}
+
+/* Modul ohne Inhalt: gestrichelt wie der Leerzustand einer Liste. */
+.gdm-count-chip-empty {
+    border-style: dashed;
+    color: var(--mud-palette-text-secondary);
+}
+
+/* Die Einstiege des leeren Projekts, nebeneinander und nur durch 1px getrennt. */
+.gdm-starter {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.gdm-starter-step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1.125rem;
+    border-left: 1px solid var(--mud-palette-lines-default);
+    transition: background-color 120ms linear;
+}
+
+.gdm-starter-step:first-child {
+    border-left: 0;
+}
+
+.gdm-starter-step:hover {
+    background-color: var(--mud-palette-background-gray);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .gdm-recent-row,
+    .gdm-health-row,
+    .gdm-count-chip,
+    .gdm-starter-step {
+        transition: none;
+    }
+}
+
 /* -------------------------------------------------------------- Startscreen */
 
 /* Titel oben im Drittel, Button unten — dazwischen ist der Platz für die spätere
@@ -676,7 +847,9 @@ html {
 
 /* Die Kachel greift das Format der Modul-Cards auf: eckig, 1px-Kante, gelbe Oberkante.
    Die Grade werden nicht von .gdm-accent-top geholt, weil die Kante hier zusammen mit
-   den übrigen Seiten in einer Regel stehen soll. */
+   den übrigen Seiten in einer Regel stehen soll.
+   Trägt die Entität eine Seltenheit, übergibt die Seite deren Farbe als --gdm-drop-color;
+   ohne Seltenheit greift überall der Rückfall auf das Akzentgelb. */
 .gdm-start-drop-card {
     display: flex;
     align-items: center;
@@ -685,7 +858,7 @@ html {
     max-width: 14em;
     padding: 0.5em 0.75em;
     border: 1px solid var(--mud-palette-lines-default);
-    border-top: 2px solid var(--mud-palette-primary);
+    border-top: 2px solid var(--gdm-drop-color, var(--mud-palette-primary));
     background-color: color-mix(in srgb, var(--mud-palette-surface) 82%, transparent);
     /* Schaukelt um die Fallbahn, damit der Regen nicht in Spalten fällt. Der negative
        Startzeitpunkt des Tropfens gilt auch hier — sonst schaukelten alle im Gleichtakt. */
@@ -698,7 +871,9 @@ html {
     to { transform: translateX(0.9em) rotate(1.5deg); }
 }
 
-/* Sprite der Entität, sonst das Icon ihres Moduls — dieselbe Kachel wie in den Listen. */
+/* Sprite der Entität, sonst das Icon ihres Moduls — dieselbe Kachel wie in den Listen.
+   Der Rahmen nimmt die Seltenheitsfarbe gedämpft auf, damit auch Tropfen mit Sprite
+   ihre Stufe zeigen. */
 .gdm-start-drop-icon {
     display: flex;
     align-items: center;
@@ -706,7 +881,7 @@ html {
     flex: 0 0 auto;
     width: 2.2em;
     height: 2.2em;
-    border: 1px solid var(--mud-palette-lines-default);
+    border: 1px solid var(--gdm-drop-color, var(--mud-palette-lines-default));
     background-color: var(--mud-palette-background-gray);
     overflow: hidden;
 }
@@ -718,9 +893,12 @@ html {
     image-rendering: pixelated;
 }
 
-/* Das Icon soll mit der Kachel skalieren — MudBlazor setzt sonst eine feste Größe. */
+/* Das Icon soll mit der Kachel skalieren — MudBlazor setzt sonst eine feste Größe.
+   Die Farbe steht hier und nicht als Color.Primary an der Komponente: MudBlazor setzt
+   sie dort mit !important, und die Seltenheit käme nicht mehr dagegen an. */
 .gdm-start-drop-icon .mud-icon-root {
     font-size: 1.3em;
+    color: var(--gdm-drop-color, var(--mud-palette-primary));
 }
 
 .gdm-start-drop-text {
@@ -734,7 +912,7 @@ html {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: var(--mud-palette-text-primary);
+    color: var(--gdm-drop-color, var(--mud-palette-text-primary));
 }
 
 .gdm-start-drop-module {

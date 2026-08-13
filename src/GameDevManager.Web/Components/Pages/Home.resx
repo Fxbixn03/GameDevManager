@@ -12,6 +12,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Dashboard – GameDevManager</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
   <data name="ConfigureTooltip" xml:space="preserve">
     <value>Dashboard anpassen</value>
   </data>
@@ -21,21 +27,82 @@
   <data name="ConfigureTitle" xml:space="preserve">
     <value>Dashboard anpassen</value>
   </data>
-  <data name="PageTitle" xml:space="preserve">
-    <value>Dashboard – GameDevManager</value>
+  <data name="NoConnection" xml:space="preserve">
+    <value>Keine Verbindung: {0}</value>
   </data>
-  <data name="Heading" xml:space="preserve">
-    <value>Dashboard</value>
+
+  <!-- Projektleiste -->
+  <data name="TotalLabel" xml:space="preserve">
+    <value>Inhalte</value>
   </data>
-  <data name="ImportExportTitle" xml:space="preserve">
+  <data name="FilledModules" xml:space="preserve">
+    <value>{0} von {1} Modulen belegt</value>
+  </data>
+  <data name="HealthLabel" xml:space="preserve">
+    <value>Zustand</value>
+  </data>
+  <data name="HealthChecking" xml:space="preserve">
+    <value>prüft …</value>
+  </data>
+  <data name="HealthClean" xml:space="preserve">
+    <value>sauber</value>
+  </data>
+  <data name="HealthFindings" xml:space="preserve">
+    <value>{0} Funde</value>
+  </data>
+  <data name="LastExportLabel" xml:space="preserve">
+    <value>Letzter Exportstand</value>
+  </data>
+  <data name="LastExportNever" xml:space="preserve">
+    <value>noch keiner</value>
+  </data>
+
+  <!-- Weiterarbeiten -->
+  <data name="RecentHeading" xml:space="preserve">
+    <value>Weiterarbeiten</value>
+  </data>
+  <data name="RecentEmpty" xml:space="preserve">
+    <value>Noch nichts bearbeitet. Was du zuletzt angelegt oder geändert hast, steht hier.</value>
+  </data>
+
+  <!-- Zustand -->
+  <data name="HealthHeading" xml:space="preserve">
+    <value>Zustand</value>
+  </data>
+  <data name="ToStatistics" xml:space="preserve">
+    <value>Zur Statistik</value>
+  </data>
+  <data name="Check_deadItems" xml:space="preserve">
+    <value>Items ohne Bezugsquelle</value>
+  </data>
+  <data name="Check_craftingCycles" xml:space="preserve">
+    <value>Zyklische Rezepte</value>
+  </data>
+  <data name="Check_questsWithoutCompletion" xml:space="preserve">
+    <value>Quests ohne Abschluss</value>
+  </data>
+  <data name="Check_dialogueDeadEnds" xml:space="preserve">
+    <value>Dialog-Sackgassen</value>
+  </data>
+  <data name="Check_overfullLoot" xml:space="preserve">
+    <value>Loot über 100 %</value>
+  </data>
+  <data name="Check_orphanedAssets" xml:space="preserve">
+    <value>Verwaiste Sprites</value>
+  </data>
+  <data name="Check_impossibleConditions" xml:space="preserve">
+    <value>Unerfüllbare Bedingungen</value>
+  </data>
+
+  <!-- Inhaltsbestand -->
+  <data name="InventoryHeading" xml:space="preserve">
+    <value>Inhaltsbestand</value>
+  </data>
+  <data name="ToExport" xml:space="preserve">
     <value>Import / Export</value>
   </data>
-  <data name="ImportExportDescription" xml:space="preserve">
-    <value>Export als JSON/ZIP inkl. Assets, später direkter Export nach Unity, Unreal Engine und Godot. Versioniert und diffbar.</value>
-  </data>
-  <data name="DatabaseTitle" xml:space="preserve">
-    <value>Datenbank</value>
-  </data>
+
+  <!-- Datenbank -->
   <data name="ProviderLabel" xml:space="preserve">
     <value>Provider:</value>
   </data>
@@ -45,10 +112,61 @@
   <data name="ProjectCountLabel" xml:space="preserve">
     <value>Angelegte Spielprojekte:</value>
   </data>
-  <data name="OpenButton" xml:space="preserve">
-    <value>Öffnen</value>
+
+  <!-- Leeres Projekt -->
+  <data name="StarterHeading" xml:space="preserve">
+    <value>Womit anfangen</value>
   </data>
-  <data name="NoConnection" xml:space="preserve">
-    <value>Keine Verbindung: {0}</value>
+  <data name="StarterItemsTitle" xml:space="preserve">
+    <value>Items anlegen</value>
+  </data>
+  <data name="StarterItemsHint" xml:space="preserve">
+    <value>Die meisten Module verweisen früher oder später auf Items — der übliche Anfang.</value>
+  </data>
+  <data name="StarterAssetsTitle" xml:space="preserve">
+    <value>Sprites hochladen</value>
+  </data>
+  <data name="StarterAssetsHint" xml:space="preserve">
+    <value>Bilder zuerst: die Listen zeigen danach Icons statt Platzhalter.</value>
+  </data>
+  <data name="StarterImportTitle" xml:space="preserve">
+    <value>Bestand importieren</value>
+  </data>
+  <data name="StarterImportHint" xml:space="preserve">
+    <value>Export-ZIP aus einem anderen Projekt oder einer Sicherung einlesen.</value>
+  </data>
+
+  <!-- Zeitangaben im Weiterarbeiten -->
+  <data name="TimeJustNow" xml:space="preserve">
+    <value>gerade eben</value>
+  </data>
+  <data name="TimeMinutes" xml:space="preserve">
+    <value>vor {0} Min.</value>
+  </data>
+  <data name="TimeHours" xml:space="preserve">
+    <value>vor {0} Std.</value>
+  </data>
+  <data name="TimeYesterday" xml:space="preserve">
+    <value>gestern, {0}</value>
+  </data>
+  <data name="TimeDays" xml:space="preserve">
+    <value>vor {0} Tagen</value>
+  </data>
+
+  <!-- Namen der Bänder im Anpassen-Dialog -->
+  <data name="Band_project" xml:space="preserve">
+    <value>Projektleiste</value>
+  </data>
+  <data name="Band_recent" xml:space="preserve">
+    <value>Weiterarbeiten</value>
+  </data>
+  <data name="Band_health" xml:space="preserve">
+    <value>Zustand</value>
+  </data>
+  <data name="Band_inventory" xml:space="preserve">
+    <value>Inhaltsbestand</value>
+  </data>
+  <data name="Band_database" xml:space="preserve">
+    <value>Datenbank</value>
   </data>
 </root>

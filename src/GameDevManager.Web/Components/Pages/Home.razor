@@ -6,9 +6,19 @@
 @inject ModuleState ModuleState
 @inject ProjectContext Project
 @inject DashboardService Dashboard
+@inject DashboardOverviewService Overview
+@inject StatisticsService Statistics
+@inject ExportSnapshotService Snapshots
 @inject IDialogService Dialogs
 @implements IDisposable
 @using Microsoft.EntityFrameworkCore
+
+@*
+    Das Dashboard beantwortet drei Fragen und wiederholt bewusst nicht die Modulleiste der
+    Topbar: wie steht das Projekt (Projektleiste), wo war ich und was ist kaputt
+    (Weiterarbeiten/Zustand), was ist überhaupt da (Inhaltsbestand). Welche Bänder erscheinen
+    und in welcher Reihenfolge, steht je Projekt in DashboardBands/DashboardService.
+*@
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -21,103 +31,247 @@
     </MudTooltip>
 </MudStack>
 
-<MudGrid Spacing="3">
-
-    @* Fixe Card: Import/Export ist immer sichtbar *@
-    <MudItem xs="12" sm="6" md="4" lg="3">
-        <MudCard Elevation="0" Class="gdm-accent-top" Style="height:100%;">
-            <MudCardHeader>
-                <CardHeaderAvatar>
-                    <MudIcon Icon="@Icons.Material.Filled.ImportExport" Color="Color.Primary" />
-                </CardHeaderAvatar>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">@L["ImportExportTitle"]</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudText Typo="Typo.body2">
-                    @L["ImportExportDescription"]
-                </MudText>
-            </MudCardContent>
-            <MudCardActions>
-                <MudButton Href="/export" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">@L["OpenButton"]</MudButton>
-            </MudCardActions>
-        </MudCard>
-    </MudItem>
-
-    @foreach (var key in VisibleCardKeys)
-    {
-        @if (key == DashboardCard.DatabaseCardKey)
+@if (_loadError is not null)
+{
+    <MudAlert Severity="Severity.Error" Square="true" Elevation="0">@_loadError</MudAlert>
+}
+else if (_counts is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid Spacing="3">
+        @foreach (var band in _bands.Where(Shows))
         {
-            @* Status-Card: zeigt, dass die Datenbankverbindung steht *@
-            <MudItem xs="12" sm="6" md="4" lg="3">
-                <MudCard Elevation="0" Style="height:100%;">
-                    <MudCardHeader>
-                        <CardHeaderAvatar>
-                            <MudIcon Icon="@Icons.Material.Filled.Storage" Color="@(_dbError is null ? Color.Success : Color.Error)" />
-                        </CardHeaderAvatar>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">@L["DatabaseTitle"]</MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudText Typo="Typo.body2">@L["ProviderLabel"] <b>@DbOptions.Provider</b></MudText>
-                        @if (_dbError is null)
+            <MudItem xs="12" md="@WidthFor(band.BandKey)">
+
+                @* ------------------------------------------------------- Projektleiste *@
+                @if (band.BandKey == DashboardBands.Project)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-accent-top">
+                        <div class="gdm-projectbar">
+                            <div class="gdm-projectbar-identity">
+                                <MudText Typo="Typo.h5" Class="gdm-ellipsis">@_projectName</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@FilledModulesLabel</MudText>
+                            </div>
+
+                            <div class="gdm-projectbar-stat">
+                                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["TotalLabel"]</MudText>
+                                <MudText Typo="Typo.h6" Class="gdm-mono">@TotalEntities.ToString("N0")</MudText>
+                            </div>
+
+                            <div class="gdm-projectbar-stat">
+                                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["HealthLabel"]</MudText>
+                                @if (_health is null)
+                                {
+                                    <MudText Typo="Typo.h6" Color="Color.Secondary">@L["HealthChecking"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudIcon Icon="@StatusIcon(_health.IsClean)"
+                                                 Color="@StatusColor(_health.IsClean)"
+                                                 Size="Size.Small" />
+                                        <MudText Typo="Typo.h6" Color="@StatusColor(_health.IsClean)">
+                                            @(_health.IsClean ? L["HealthClean"] : L["HealthFindings", _health.TotalFindings])
+                                        </MudText>
+                                    </MudStack>
+                                }
+                            </div>
+
+                            <div class="gdm-projectbar-stat">
+                                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["LastExportLabel"]</MudText>
+                                <MudLink Href="/export" Typo="Typo.h6" Underline="Underline.None" Color="Color.Inherit">
+                                    @(_lastExportUtc is { } exportedAt ? RelativeTime(exportedAt) : L["LastExportNever"].Value)
+                                </MudLink>
+                            </div>
+                        </div>
+                    </MudPaper>
+                }
+
+                @* ------------------------------------------------------ Weiterarbeiten *@
+                else if (band.BandKey == DashboardBands.Recent)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel" Style="height:100%;">
+                        <div class="gdm-panel-head pa-3">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["RecentHeading"]</MudText>
+                        </div>
+
+                        @if (_recent.Count == 0)
                         {
-                            <MudText Typo="Typo.body2" Color="Color.Success">@L["ConnectionOk"]</MudText>
-                            <MudText Typo="Typo.body2">@L["ProjectCountLabel"] @(_projectCount?.ToString() ?? "…")</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-3">@L["RecentEmpty"]</MudText>
                         }
                         else
                         {
-                            <MudText Typo="Typo.body2" Color="Color.Error">@_dbError</MudText>
+                            @foreach (var entry in _recent)
+                            {
+                                <MudLink Href="@RouteFor(entry)" Underline="Underline.None" Color="Color.Inherit"
+                                         Class="gdm-recent-row">
+                                    <AssetThumbnail AssetId="entry.Hit.PrimaryAssetId"
+                                                    Size="Size.Small"
+                                                    Alt="@entry.Hit.Name"
+                                                    FallbackIcon="@IconFor(entry.Hit.ModuleKey)" />
+                                    <span class="gdm-recent-body">
+                                        <MudText Typo="Typo.body2" Class="gdm-ellipsis">@entry.Hit.Name</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-ellipsis">
+                                            @SubtitleFor(entry)
+                                        </MudText>
+                                    </span>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @RelativeTime(entry.UpdatedAtUtc)
+                                    </MudText>
+                                </MudLink>
+                            }
                         }
-                    </MudCardContent>
-                </MudCard>
+                    </MudPaper>
+                }
+
+                @* ------------------------------------------------------------ Zustand *@
+                else if (band.BandKey == DashboardBands.Health)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel" Style="height:100%;">
+                        <div class="gdm-panel-head pa-3 d-flex align-center justify-space-between">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["HealthHeading"]</MudText>
+                            <MudLink Href="/modules/statistics" Typo="Typo.caption">@L["ToStatistics"]</MudLink>
+                        </div>
+
+                        @if (_healthError is not null)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Error" Class="pa-3">@_healthError</MudText>
+                        }
+                        else if (_health is null)
+                        {
+                            @* Die Prüfungen laufen über den gesamten Bestand mehrerer Module und
+                               werden erst nach dem ersten Rendern nachgeladen. *@
+                            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-3">@L["HealthChecking"]</MudText>
+                        }
+                        else
+                        {
+                            @foreach (var check in _health.Checks)
+                            {
+                                var clean = check.Findings == 0;
+                                <MudLink Href="@RouteFor(check)" Underline="Underline.None" Color="Color.Inherit"
+                                         Class="@(clean ? "gdm-health-row gdm-health-clean" : "gdm-health-row")">
+                                    <MudIcon Icon="@StatusIcon(clean)" Color="@StatusColor(clean)" Size="Size.Small" />
+                                    <MudText Typo="Typo.body2" Class="gdm-ellipsis">@L[$"Check_{check.CheckKey}"]</MudText>
+                                    <MudText Typo="Typo.body2" Class="gdm-mono"
+                                             Color="@(clean ? Color.Secondary : Color.Warning)">
+                                        @(clean ? "—" : check.Findings.ToString())
+                                    </MudText>
+                                </MudLink>
+                            }
+                        }
+                    </MudPaper>
+                }
+
+                @* ----------------------------------------------------- Inhaltsbestand *@
+                else if (band.BandKey == DashboardBands.Inventory)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel">
+                        <div class="gdm-panel-head pa-3 d-flex align-center justify-space-between">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["InventoryHeading"]</MudText>
+                            <MudLink Href="/export" Typo="Typo.caption">@L["ToExport"]</MudLink>
+                        </div>
+
+                        @foreach (var group in ModuleRegistry.ContentGroups)
+                        {
+                            var modules = ModulesIn(group);
+                            if (modules.Count == 0)
+                            {
+                                continue;
+                            }
+
+                            <div class="gdm-inventory-group">
+                                <MudText Typo="Typo.overline" Color="Color.Secondary" Class="gdm-inventory-label">
+                                    @Modules.GroupName(group)
+                                </MudText>
+                                <div class="gdm-chips">
+                                    @foreach (var module in modules)
+                                    {
+                                        var count = CountOf(module.Id);
+                                        <MudLink Href="@module.Route" Underline="Underline.None" Color="Color.Inherit"
+                                                 Class="@(count == 0 ? "gdm-count-chip gdm-count-chip-empty" : "gdm-count-chip")">
+                                            <span>@Modules.Name(module)</span>
+                                            <span class="gdm-mono">@(count == 0 ? "—" : count.ToString("N0"))</span>
+                                        </MudLink>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </MudPaper>
+                }
+
+                @* ---------------------------------------------------------- Datenbank *@
+                else if (band.BandKey == DashboardBands.Database)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap">
+                            <MudIcon Icon="@Icons.Material.Filled.Storage"
+                                     Color="@(_dbError is null ? Color.Success : Color.Error)"
+                                     Size="Size.Small" />
+                            <MudText Typo="Typo.body2">@L["ProviderLabel"] <b>@DbOptions.Provider</b></MudText>
+                            @if (_dbError is null)
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Success">@L["ConnectionOk"]</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    @L["ProjectCountLabel"] <span class="gdm-mono">@(_projectCount?.ToString() ?? "…")</span>
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Error">@_dbError</MudText>
+                            }
+                        </MudStack>
+                    </MudPaper>
+                }
             </MudItem>
         }
-        else
-        {
-            var module = ModuleRegistry.Get(key);
-            <MudItem xs="12" sm="6" md="4" lg="3">
-                <MudCard Elevation="0" Class="gdm-card-link" Style="height:100%;">
-                    <MudCardHeader>
-                        <CardHeaderAvatar>
-                            <MudIcon Icon="@module.Icon" />
-                        </CardHeaderAvatar>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">@Modules.Name(module)</MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudText Typo="Typo.body2">@Modules.Description(module)</MudText>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Href="@module.Route" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">@L["OpenButton"]</MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-        }
+    </MudGrid>
+
+    @if (IsEmptyProject)
+    {
+        @* Ein frisches Projekt hat keine Änderungen, keine Funde und überall null. Statt drei
+           leerer Kästen die Wege, mit denen ein Projekt üblicherweise anfängt. *@
+        <MudPaper Elevation="0" Class="gdm-panel mt-3">
+            <div class="gdm-panel-head pa-3">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["StarterHeading"]</MudText>
+            </div>
+            <div class="gdm-starter">
+                @foreach (var step in StarterSteps)
+                {
+                    <MudLink Href="@step.Route" Underline="Underline.None" Color="Color.Inherit"
+                             Class="gdm-starter-step">
+                        <MudIcon Icon="@step.Icon" Color="Color.Primary" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2">@step.Title</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@step.Hint</MudText>
+                    </MudLink>
+                }
+            </div>
+        </MudPaper>
     }
-</MudGrid>
+}
 
 @code {
+    /// <summary>Wie viele zuletzt bearbeitete Entitäten das Band zeigt.</summary>
+    private const int RecentCount = 8;
+
+    private List<DashboardBandState> _bands = [];
+    private List<ModuleCount>? _counts;
+    private List<RecentEntry> _recent = [];
+    private HealthSummary? _health;
+    private DateTime? _lastExportUtc;
+    private string _projectName = string.Empty;
     private int? _projectCount;
     private string? _dbError;
-    private Dictionary<string, DashboardCard> _cards = [];
+    private string? _healthError;
+    private string? _loadError;
+    private Guid _projectId;
 
-    // Standard: Datenbank-Card zuerst, dann die Module in Registry-Reihenfolge. Angepasste
-    // Cards sortieren sich über ihren gespeicherten Platz ein, versteckte fallen raus.
-    // Bewusst je Rendern berechnet — schaltet der Nutzer ein Modul ab, folgt das Dashboard
-    // ohne eigenes Nachladen.
-    private IEnumerable<string> VisibleCardKeys => OrderCards(DefaultCardKeys())
-        .Where(key => !(_cards.TryGetValue(key, out var card) && card.IsHidden));
+    private int TotalEntities => _counts?.Sum(count => count.Count) ?? 0;
 
-    private List<string> DefaultCardKeys() =>
-        [DashboardCard.DatabaseCardKey, .. ModuleState.EnabledModules.Select(m => m.Id)];
-
-    private IEnumerable<string> OrderCards(List<string> keys) => keys
-        .OrderBy(key => _cards.TryGetValue(key, out var card) ? card.SortOrder : int.MaxValue)
-        .ThenBy(keys.IndexOf);
+    private bool IsEmptyProject => _counts is not null && TotalEntities == 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,47 +280,260 @@
 
         try
         {
-            _cards = await Dashboard.GetCardsAsync(await Project.GetCurrentIdAsync());
+            var project = await Project.GetCurrentAsync();
+            _projectId = project.Id;
+            _projectName = project.Name;
 
+            _bands = await Dashboard.GetBandsAsync(_projectId);
+            _lastExportUtc = Snapshots.FindLatestExportedAtUtc(_projectId);
+
+            // Doppelt so viele holen wie angezeigt werden: Treffer aus abgeschalteten Modulen
+            // fallen wie in der globalen Suche heraus, und die Liste soll trotzdem voll werden.
+            _recent =
+            [
+                .. (await Overview.GetRecentlyEditedAsync(_projectId, RecentCount * 2))
+                    .Where(entry => ModuleState.IsEnabled(entry.Hit.ModuleKey))
+                    .Take(RecentCount)
+            ];
+
+            // Zuletzt: erst damit gilt die Seite als geladen.
+            _counts = await Statistics.GetCountsAsync(_projectId);
+        }
+        catch (Exception ex)
+        {
+            _loadError = L["NoConnection", ex.Message];
+            return;
+        }
+
+        // Die Zahl der Projekte gehört nicht zum aktiven Projekt — sie darf das Laden der Seite
+        // nicht aufhalten und einen Fehler nur im eigenen Band melden.
+        try
+        {
             await using var db = await DbFactory.CreateDbContextAsync();
             _projectCount = await db.GameProjects.CountAsync();
         }
         catch (Exception ex)
         {
-            _dbError = L["NoConnection", ex.Message];
+            _dbError = ex.Message;
+        }
+    }
+
+    /// <summary>
+    /// Die Health Checks laufen über den gesamten Bestand mehrerer Module — sie kommen erst
+    /// nach dem ersten Rendern, damit das Dashboard nicht auf die langsamste Prüfung wartet.
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _loadError is not null || _health is not null)
+        {
+            return;
+        }
+
+        try
+        {
+            _health = await Overview.GetHealthAsync(_projectId);
+        }
+        catch (Exception ex)
+        {
+            _healthError = ex.Message;
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Im leeren Projekt bleiben die inhaltlichen Bänder weg: „nichts bearbeitet“, „nichts zu
+    /// beanstanden“ und 22 Striche nebeneinander sind drei Arten, dasselbe Nichts zu zeigen.
+    /// Es bleiben die Projektleiste und die Einstiege darunter.
+    /// </summary>
+    private bool Shows(DashboardBandState band) =>
+        band.IsVisible
+        && (!IsEmptyProject || band.BandKey is DashboardBands.Project or DashboardBands.Database);
+
+    /// <summary>
+    /// „Weiterarbeiten“ und „Zustand“ teilen sich eine Zeile, solange beide sichtbar sind —
+    /// unabhängig davon, in welcher Reihenfolge sie stehen. Fehlt eines, nimmt das andere die
+    /// volle Breite, statt eine halbleere Zeile zu hinterlassen.
+    /// </summary>
+    private int WidthFor(string bandKey) => bandKey switch
+    {
+        DashboardBands.Recent => IsVisible(DashboardBands.Health) ? 8 : 12,
+        DashboardBands.Health => IsVisible(DashboardBands.Recent) ? 4 : 12,
+        _ => 12
+    };
+
+    private bool IsVisible(string bandKey) =>
+        _bands.Any(band => band.BandKey == bandKey && band.IsVisible);
+
+    private int CountOf(string moduleKey) =>
+        _counts?.FirstOrDefault(count => count.ModuleKey == moduleKey)?.Count ?? 0;
+
+    /// <summary>
+    /// Die Module eines Arbeitsfelds, größter Bestand zuerst — so steht oben, woran gerade
+    /// gearbeitet wird. Module ohne Kennzahl (die Statistik zählt sich nicht selbst) und
+    /// abgeschaltete Module fehlen.
+    /// </summary>
+    private List<ModuleDefinition> ModulesIn(ModuleGroup group)
+    {
+        var registryOrder = ModuleRegistry.All;
+
+        return
+        [
+            .. registryOrder
+                .Select((module, position) => (Module: module, Position: position))
+                .Where(entry => entry.Module.Group == group
+                    && entry.Module.Implemented
+                    && ModuleState.IsEnabled(entry.Module)
+                    && _counts?.Any(count => count.ModuleKey == entry.Module.Id) == true)
+                .OrderByDescending(entry => CountOf(entry.Module.Id))
+                .ThenBy(entry => entry.Position)
+                .Select(entry => entry.Module)
+        ];
+    }
+
+    private string FilledModulesLabel
+    {
+        get
+        {
+            var modules = ModuleRegistry.ContentGroups.SelectMany(ModulesIn).ToList();
+            return L["FilledModules", modules.Count(module => CountOf(module.Id) > 0), modules.Count];
+        }
+    }
+
+    private static string IconFor(string moduleKey) =>
+        ModuleRegistry.Find(moduleKey)?.Icon ?? Icons.Material.Filled.Category;
+
+    private string SubtitleFor(RecentEntry entry) =>
+        string.IsNullOrWhiteSpace(entry.Hit.Subtitle)
+            ? Modules.NameOrKey(entry.Hit.ModuleKey)
+            : $"{Modules.NameOrKey(entry.Hit.ModuleKey)} · {entry.Hit.Subtitle}";
+
+    private static string StatusIcon(bool clean) =>
+        clean ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.ReportProblem;
+
+    private static Color StatusColor(bool clean) => clean ? Color.Success : Color.Warning;
+
+    /// <summary>Dasselbe Ziel wie in der globalen Suche — die Bearbeitungsmaske der Entität.</summary>
+    private static string RouteFor(RecentEntry entry)
+    {
+        var module = ModuleRegistry.Find(entry.Hit.ModuleKey);
+        return module is { Implemented: true } ? $"{module.Route}/{entry.Hit.Id}" : "/dashboard";
+    }
+
+    /// <summary>
+    /// Sprungziel einer Prüfung: das Modul, in dem sich der Fund beheben lässt. Prüfungen ohne
+    /// eigenes Modul — Bedingungen hängen an Entitäten aller Module — führen auf die
+    /// Statistik-Seite, die sie einzeln auflistet.
+    /// </summary>
+    private static string RouteFor(HealthCheckResult check) =>
+        check.ModuleKey is { } moduleKey && ModuleRegistry.Find(moduleKey) is { Implemented: true } module
+            ? module.Route
+            : ModuleRegistry.Get(ModuleKeys.Statistics).Route;
+
+    /// <summary>
+    /// Zeitangabe der letzten Bearbeitung. In der ersten Stunde minutengenau, danach gröber —
+    /// beim Wiedereinsteigen ist „vor 3 Tagen“ die brauchbarere Angabe als ein Datum. Ab einer
+    /// Woche steht wieder das Datum, weil „vor 23 Tagen“ niemand umrechnet.
+    /// </summary>
+    private string RelativeTime(DateTime utc)
+    {
+        var local = utc.ToLocalTime();
+        var elapsed = DateTime.Now - local;
+
+        // Zeitstempel in der Zukunft (verstellte Uhr, Import aus einer anderen Zeitzone) nicht
+        // als „vor -2 Min." anzeigen.
+        if (elapsed < TimeSpan.Zero)
+        {
+            elapsed = TimeSpan.Zero;
+        }
+
+        if (elapsed < TimeSpan.FromMinutes(1))
+        {
+            return L["TimeJustNow"];
+        }
+
+        if (elapsed < TimeSpan.FromHours(1))
+        {
+            return L["TimeMinutes", (int)elapsed.TotalMinutes];
+        }
+
+        if (local.Date == DateTime.Today)
+        {
+            return L["TimeHours", (int)elapsed.TotalHours];
+        }
+
+        if (local.Date == DateTime.Today.AddDays(-1))
+        {
+            return L["TimeYesterday", local.ToString("HH:mm")];
+        }
+
+        return elapsed < TimeSpan.FromDays(7)
+            ? L["TimeDays", (int)elapsed.TotalDays].Value
+            : local.ToString("dd.MM.yyyy");
+    }
+
+    private List<StarterStep> StarterSteps
+    {
+        get
+        {
+            var steps = new List<StarterStep>();
+
+            void Add(string moduleKey, string titleKey, string hintKey)
+            {
+                var module = ModuleRegistry.Find(moduleKey);
+                if (module is { Implemented: true } && ModuleState.IsEnabled(module))
+                {
+                    steps.Add(new StarterStep(module.Route, module.Icon, L[titleKey], L[hintKey]));
+                }
+            }
+
+            Add(ModuleKeys.Items, "StarterItemsTitle", "StarterItemsHint");
+            Add(ModuleKeys.Assets, "StarterAssetsTitle", "StarterAssetsHint");
+
+            steps.Add(new StarterStep(
+                "/export", Icons.Material.Filled.Download, L["StarterImportTitle"], L["StarterImportHint"]));
+
+            return steps;
         }
     }
 
     private async Task ConfigureAsync()
     {
-        var defaults = DefaultCardKeys();
-        var rows = OrderCards(defaults)
-            .Select(key => new DashboardConfigDialog.CardRow(
-                key,
-                key == DashboardCard.DatabaseCardKey ? L["DatabaseTitle"] : Modules.Name(ModuleRegistry.Get(key)),
-                key == DashboardCard.DatabaseCardKey ? Icons.Material.Filled.Storage : ModuleRegistry.Get(key).Icon,
-                !(_cards.TryGetValue(key, out var card) && card.IsHidden)))
+        var rows = _bands
+            .Select(band => new DashboardConfigDialog.BandRow(
+                band.BandKey, L[$"Band_{band.BandKey}"], BandIcon(band.BandKey), band.IsVisible))
             .ToList();
 
-        var parameters = new DialogParameters<DashboardConfigDialog> { { d => d.Cards, rows } };
+        var parameters = new DialogParameters<DashboardConfigDialog> { { d => d.Bands, rows } };
         var reference = await Dialogs.ShowAsync<DashboardConfigDialog>(
             L["ConfigureTitle"], parameters,
             new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
 
         var result = await reference.Result;
-        if (result is null || result.Canceled || result.Data is not List<DashboardConfigDialog.CardRow> edited)
+        if (result is null || result.Canceled || result.Data is not List<DashboardConfigDialog.BandRow> edited)
         {
             return;
         }
 
-        var projectId = await Project.GetCurrentIdAsync();
-        await Dashboard.SaveCardsAsync(
-            projectId,
-            edited.Select(row => new DashboardCardOrder(row.Key, !row.Visible)).ToList());
-        _cards = await Dashboard.GetCardsAsync(projectId);
+        await Dashboard.SaveBandsAsync(
+            _projectId,
+            edited.Select(row => new DashboardBandOrder(row.Key, !row.Visible)).ToList());
+        _bands = await Dashboard.GetBandsAsync(_projectId);
     }
+
+    private static string BandIcon(string bandKey) => bandKey switch
+    {
+        DashboardBands.Project => Icons.Material.Filled.Flag,
+        DashboardBands.Recent => Icons.Material.Filled.History,
+        DashboardBands.Health => Icons.Material.Filled.HealthAndSafety,
+        DashboardBands.Inventory => Icons.Material.Filled.GridView,
+        _ => Icons.Material.Filled.Storage
+    };
 
     private void OnModulesChanged() => InvokeAsync(StateHasChanged);
 
     public void Dispose() => ModuleState.Changed -= OnModulesChanged;
+
+    /// <summary>Ein Einstieg für das leere Projekt.</summary>
+    private sealed record StarterStep(string Route, string Icon, string Title, string Hint);
 }

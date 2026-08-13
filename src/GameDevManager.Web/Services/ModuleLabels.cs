@@ -27,4 +27,7 @@ public sealed class ModuleLabels(IStringLocalizer<ModuleLabels> localizer)
 
     /// <summary>Name des Moduls zu einem Schlüssel, der auch unbekannt sein darf.</summary>
     public string NameOrKey(string? moduleKey) => Name(moduleKey ?? string.Empty);
+
+    /// <summary>Name eines Arbeitsfelds — die Überschriften im Inhaltsbestand des Dashboards.</summary>
+    public string GroupName(ModuleGroup group) => localizer[$"Group_{group}_Name"];
 }

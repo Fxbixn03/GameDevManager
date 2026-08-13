@@ -43,10 +43,18 @@ public interface IModuleEntitySource
     /// <summary>
     /// Eine Stichprobe der Entitäten des Moduls — bisher für die Dekoration des Startscreens.
     /// Sortiert wird nach GUID und nicht nach Namen: die Reihenfolge ist damit beliebig statt
-    /// alphabetisch, sonst käme immer nur der Anfang des Alphabets heraus. Gemischt wird beim
-    /// Aufrufer, weil keiner der vier Provider eine gemeinsame Zufallssortierung kennt.
+    /// alphabetisch, sonst käme immer nur der Anfang des Alphabets heraus. Welcher Ausschnitt
+    /// gezogen wird, entscheidet der Zufall — jede Entität des Moduls muss drankommen können.
     /// </summary>
     Task<List<SearchHit>> SampleAsync(
+        GameDevManagerDbContext db, Guid projectId, int limit, CancellationToken ct);
+
+    /// <summary>
+    /// Die zuletzt bearbeiteten Entitäten des Moduls, jüngste zuerst — das „Weiterarbeiten“
+    /// des Dashboards. Wie bei <see cref="SampleAsync"/> genügt eine Methode je Modul, damit
+    /// ein neues Modul von selbst mitkommt.
+    /// </summary>
+    Task<List<RecentEntry>> RecentAsync(
         GameDevManagerDbContext db, Guid projectId, int limit, CancellationToken ct);
 
     /// <summary>
@@ -125,14 +133,75 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
             .Where(entity => entity.Id == id && entity.GameProjectId == projectId))
         .FirstOrDefaultAsync(ct);
 
-    public Task<List<SearchHit>> SampleAsync(
-        GameDevManagerDbContext db, Guid projectId, int limit, CancellationToken ct) =>
-        Project(db, Set(db)
+    /// <summary>
+    /// Gezogen wird ein zufällig gesetztes Fenster über der GUID-Reihenfolge, nicht deren
+    /// Anfang: sonst regneten aus einem Modul mit hundert Einträgen immer dieselben acht, und
+    /// der Rest wäre nie zu sehen. Ein Fenster statt einzeln gewürfelter Zeilen, weil keiner
+    /// der vier Provider eine gemeinsame Zufallssortierung kennt — und weil GUIDs ohnehin
+    /// beliebig sortieren, ist ein zusammenhängender Ausschnitt schon eine gemischte Auswahl.
+    /// </summary>
+    public async Task<List<SearchHit>> SampleAsync(
+        GameDevManagerDbContext db, Guid projectId, int limit, CancellationToken ct)
+    {
+        var total = await Set(db).CountAsync(entity => entity.GameProjectId == projectId, ct);
+
+        if (total == 0)
+        {
+            return [];
+        }
+
+        var offset = total > limit ? Random.Shared.Next(total - limit + 1) : 0;
+
+        return await Project(db, Set(db)
             .AsNoTracking()
             .Where(entity => entity.GameProjectId == projectId)
             .OrderBy(entity => entity.Id)
+            .Skip(offset)
             .Take(limit))
         .ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Zwei Abfragen statt einer, weil <see cref="Project"/> den Zeitstempel nicht mitführt:
+    /// erst die jüngsten GUIDs samt Zeit, dann dieselbe Abbildung, die auch Suche und
+    /// Startscreen benutzen. So bleibt es bei einer Umsetzung je Modul, und Untertitel wie
+    /// Vorschaubild stimmen überall überein.
+    /// </summary>
+    public async Task<List<RecentEntry>> RecentAsync(
+        GameDevManagerDbContext db, Guid projectId, int limit, CancellationToken ct)
+    {
+        // Nach GUID als zweitem Kriterium: bei einem Import tragen alle Entitäten denselben
+        // Zeitstempel, und ohne festen zweiten Schlüssel wäre die Auswahl von Lauf zu Lauf
+        // eine andere.
+        var stamps = await Set(db)
+            .AsNoTracking()
+            .Where(entity => entity.GameProjectId == projectId)
+            .OrderByDescending(entity => entity.UpdatedAtUtc)
+            .ThenBy(entity => entity.Id)
+            .Take(limit)
+            .Select(entity => new { entity.Id, entity.UpdatedAtUtc })
+            .ToListAsync(ct);
+
+        if (stamps.Count == 0)
+        {
+            return [];
+        }
+
+        var ids = stamps.Select(stamp => stamp.Id).ToList();
+        var hits = await Project(db, Set(db)
+                .AsNoTracking()
+                .Where(entity => ids.Contains(entity.Id)))
+            .ToListAsync(ct);
+
+        var byId = hits.ToDictionary(hit => hit.Id);
+
+        return
+        [
+            .. stamps
+                .Where(stamp => byId.ContainsKey(stamp.Id))
+                .Select(stamp => new RecentEntry(byId[stamp.Id], stamp.UpdatedAtUtc))
+        ];
+    }
 
     /// <summary>
     /// Standardfall: Das Modul verweist nur über benutzerdefinierte Referenzfelder auf andere

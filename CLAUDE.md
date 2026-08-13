@@ -27,7 +27,7 @@ $env:Database__Provider="SqlServer"; dotnet ef migrations add <Name> --project s
 # ebenso mit PostgreSql, MySql, Sqlite
 ```
 
-`dotnet test` führt das Testprojekt [tests/GameDevManager.Tests](tests/GameDevManager.Tests) aus: echte Dienste aus demselben DI-Aufbau wie die Anwendung, gegen SQLite im Speicher (`TestDatabase`) — keine externen Abhängigkeiten. Getestet sind die JSON-Regeln des Exportformats, der Crafting-Graph (Zyklen, Grundstoff-Rechnung) und die Health Checks (Bedingungen, Dialog-Sackgassen, Loot über 100 %).
+`dotnet test` führt das Testprojekt [tests/GameDevManager.Tests](tests/GameDevManager.Tests) aus: echte Dienste aus demselben DI-Aufbau wie die Anwendung, gegen SQLite im Speicher (`TestDatabase`) — keine externen Abhängigkeiten. Getestet sind die JSON-Regeln des Exportformats, der Crafting-Graph (Zyklen, Grundstoff-Rechnung), die Health Checks (Bedingungen, Dialog-Sackgassen, Loot über 100 %), die Stichprobe des Startscreens und die Bänder des Dashboards (modulübergreifendes „Weiterarbeiten“, Zustandszusammenfassung, gespeicherte Anordnung).
 
 ## Architektur
 
@@ -57,7 +57,7 @@ Das Konzept verlangt in fast jedem Modul benutzerdefinierte Arten mit eigenen Fe
 
 ### Ein Modul überall bekannt machen: `IModuleEntitySource`
 
-Fünf Dienste arbeiten modulübergreifend — die Referenzansicht („Find All References“), die Referenz-Auswahlfelder, die Verwendungszählung der Arten, die globale Suche und der Inhaltsregen des Startscreens (`StartScreenService`). Sie fragen **nicht** jeweils einen eigenen `switch` ab, sondern alle registrierten `IModuleEntitySource`. Je Modul gibt es genau eine solche Klasse in [ModuleEntitySources.cs](src/GameDevManager.Data/Services/ModuleEntitySources.cs); für Entitäten auf `ContentEntity`-Basis erbt sie von `ModuleEntitySource<T>` und braucht nur den `DbSet`-Zugriff und die Abbildung auf Suchtreffer.
+Sechs Dienste arbeiten modulübergreifend — die Referenzansicht („Find All References“), die Referenz-Auswahlfelder, die Verwendungszählung der Arten, die globale Suche, der Inhaltsregen des Startscreens (`StartScreenService`) und das „Weiterarbeiten“ des Dashboards (`DashboardOverviewService`). Sie fragen **nicht** jeweils einen eigenen `switch` ab, sondern alle registrierten `IModuleEntitySource`. Je Modul gibt es genau eine solche Klasse in [ModuleEntitySources.cs](src/GameDevManager.Data/Services/ModuleEntitySources.cs); für Entitäten auf `ContentEntity`-Basis erbt sie von `ModuleEntitySource<T>` und braucht nur den `DbSet`-Zugriff und die Abbildung auf Suchtreffer.
 
 Verweist ein Modul über **eigene Spalten** auf fremde Entitäten (Rezept-Zutaten, später Händler-Angebote und Loot-Einträge), überschreibt es zusätzlich `FindReferencesAsync`. Diese Methode ist bewusst virtuell in der Basisklasse und keine Standardimplementierung an der Schnittstelle: Die Zuordnung zur Schnittstelle entsteht in der Basisklasse, eine gleichnamige Methode in einer abgeleiteten Klasse würde sie nicht ersetzen und stillschweigend nie laufen.
 
@@ -188,7 +188,22 @@ Alle Inhalte hängen an einem `GameProject`. Welches aktiv ist, hält die Single
 
 Verwaltet werden Projekte unter `/projekte` (`ProjectService`): Namen sind installationsweit eindeutig, das aktive und das letzte Projekt lassen sich nicht löschen. **Das Löschen nutzt denselben Wipe wie der ersetzende Import** (`ImportService.WipeProjectAsync`, deshalb `internal`) — Feldwerte, individuelle Felder, Bedingungen und Assets hängen ohne Fremdschlüssel am Projekt und blieben bei einem bloßen Löschen der Projektzeile als Waisen zurück.
 
-Das Dashboard ist konfigurierbar: `DashboardCard` speichert je Projekt Sichtbarkeit und Reihenfolge einer Card (`CardKey` = Modul-Schlüssel oder `database`). Zeilen entstehen erst beim Anpassen — Cards ohne Zeile zeigt das Dashboard mit dem Standard, und die Import/Export-Card ist laut Konzept immer fest sichtbar und deshalb nicht konfigurierbar. Wie die Moduleinstellungen ist das Werkzeug-Konfiguration: nicht im Export, übersteht den ersetzenden Import.
+**Das Dashboard zeigt den Projektstand und wiederholt bewusst nicht die Navigation.** Die Modulleiste der Appbar erreicht jedes Modul von jeder Seite aus — ein Kartenraster mit einer „Öffnen“-Karte je Modul kostete einen ganzen Bildschirm und sagte nichts. Stattdessen fünf **Bänder** (`DashboardBands`), jedes mit einer eigenen Frage:
+
+- **Projektleiste** — Name, Gesamtzahl der Inhalte, Zustand als eine Zahl, Zeitpunkt des letzten Exportstands.
+- **Weiterarbeiten** — die zuletzt bearbeiteten Entitäten quer über alle Module, jüngste zuerst. `UpdatedAtUtc` steht auf jeder `ContentEntity` und wird von allen Modul-Services gepflegt; geladen wird über `IModuleEntitySource.RecentAsync` — ein neues Modul erscheint dadurch von selbst, wie beim Inhaltsregen des Startscreens.
+- **Zustand** — dieselben Health Checks wie auf der Statistik-Seite, aber nur als Fundzahl mit Sprungziel. Funde stehen oben, Geprüftes-ohne-Fund darunter.
+- **Inhaltsbestand** — alle Module als Zahlen-Chips, gruppiert nach `ModuleGroup` (Welt, Inhalte, Figuren, Erzählung, Fortschritt, Produktion), innerhalb einer Gruppe der größte Bestand zuerst. Der Chip ist Navigation **und** Auskunft und ersetzt damit die früheren Linkkarten. Die Reihenfolge in `ModuleRegistry.All` bleibt davon unberührt — sie ist die Umsetzungsreihenfolge und trägt die Modulleiste.
+- **Datenbank** — Provider und Verbindung. Einrichtungsdiagnose, deshalb als einziges Band **standardmäßig aus** (`DashboardBands.IsHiddenByDefault`).
+
+Zwei Dinge, die man beim Ändern kennen muss:
+
+- **Die Health Checks lädt `Home.razor` erst in `OnAfterRenderAsync`**, nicht in `OnInitializedAsync`: sieben Prüfungen laufen über den gesamten Bestand mehrerer Module (`CraftingService.FindCyclesAsync` löst den ganzen Rezeptgraphen auf). Bis sie da sind, zeigen Band und Projektleiste „prüft …“. Das Dashboard darf nicht auf die langsamste Prüfung warten.
+- **Ein leeres Projekt bekommt eine eigene Ansicht**: Projektleiste plus die drei Einstiege (Items, Sprites, Import). „Nichts bearbeitet“, „nichts zu beanstanden“ und 22 Striche nebeneinander wären drei Arten, dasselbe Nichts zu zeigen.
+
+Konfigurierbar sind Sichtbarkeit und Reihenfolge der Bänder: `DashboardCard` speichert sie je Projekt (`CardKey` = Band-Schlüssel). Zeilen entstehen erst beim Anpassen; Bänder ohne Zeile zeigt das Dashboard mit dem Standard. Die Tabelle heißt weiter `DashboardCard`, weil eine Umbenennung eine Migration in allen vier Providern verlangte — in Bestandsprojekten stehen dort noch die Modul-Schlüssel des alten Kartenrasters, die werden übergangen und beim ersten Speichern entfernt. Wie die Moduleinstellungen ist das Werkzeug-Konfiguration: nicht im Export, übersteht den ersetzenden Import.
+
+Für die Projektleiste liest `ExportSnapshotService.FindLatestExportedAtUtc` den Zeitpunkt **aus den Dateinamen** der Exportstände statt über `List` jedes ZIP zu öffnen — derselbe Zeitstempel, den auch das Manifest trägt, aber ohne Archivzugriff bei jedem Seitenaufruf.
 
 ### Import & Export
 

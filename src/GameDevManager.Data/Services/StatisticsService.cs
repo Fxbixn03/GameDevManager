@@ -27,6 +27,7 @@ public class StatisticsService(
             new(ModuleKeys.Items, await db.Items.CountAsync(e => e.GameProjectId == projectId, ct)),
             new(ModuleKeys.Crafting, await db.Recipes.CountAsync(e => e.GameProjectId == projectId, ct)),
             new(ModuleKeys.Currencies, await db.Currencies.CountAsync(e => e.GameProjectId == projectId, ct)),
+            new(ModuleKeys.Rarities, await db.Rarities.CountAsync(e => e.GameProjectId == projectId, ct)),
             new(ModuleKeys.Npcs, await db.Npcs.CountAsync(e => e.GameProjectId == projectId, ct)),
             new(ModuleKeys.Factions, await db.Factions.CountAsync(e => e.GameProjectId == projectId, ct)),
             new(ModuleKeys.Diplomacy, await db.DiplomaticRelations.CountAsync(e => e.GameProjectId == projectId, ct)),

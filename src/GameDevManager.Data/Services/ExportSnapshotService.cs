@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -106,6 +107,50 @@ public partial class ExportSnapshotService(
                 .OrderByDescending(snapshot => snapshot.ExportedAtUtc)
                 .ThenByDescending(snapshot => snapshot.FileName)
         ];
+    }
+
+    /// <summary>
+    /// Der Zeitpunkt des jüngsten aufbewahrten Standes, oder <c>null</c> wenn es keinen gibt.
+    /// <para>
+    /// Anders als <see cref="List"/> wird dafür kein Archiv geöffnet: der Zeitstempel steht
+    /// bereits im Dateinamen, und er ist derselbe, den das Manifest trägt — beide entstehen in
+    /// <see cref="CreateAsync"/> aus <see cref="DateTime.UtcNow"/>. Für die Projektleiste des
+    /// Dashboards, die bei jedem Aufruf lädt, wäre das Öffnen jedes ZIPs unangemessen teuer.
+    /// </para>
+    /// </summary>
+    public DateTime? FindLatestExportedAtUtc(Guid projectId)
+    {
+        if (!Directory.Exists(options.RootPath))
+        {
+            return null;
+        }
+
+        DateTime? latest = null;
+
+        foreach (var path in Directory.EnumerateFiles(options.RootPath, $"*{projectId:N}.zip"))
+        {
+            var fileName = Path.GetFileName(path);
+            if (!IsValidFileName(fileName))
+            {
+                continue;
+            }
+
+            // Der Name beginnt immer mit „yyyyMMdd-HHmmss" — das stellt die Prüfung oben sicher.
+            if (!DateTime.TryParseExact(
+                    fileName[..15], "yyyyMMdd-HHmmss",
+                    CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                    out var exportedAt))
+            {
+                continue;
+            }
+
+            if (latest is null || exportedAt > latest)
+            {
+                latest = exportedAt;
+            }
+        }
+
+        return latest;
     }
 
     /// <summary>

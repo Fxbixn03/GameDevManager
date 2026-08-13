@@ -12,6 +12,13 @@ public class ContentValidationException(string message) : Exception(message);
 public sealed record EntitySummary(Guid Id, string ModuleKey, string Name, string? TypeName);
 
 /// <summary>
+/// Eine zuletzt bearbeitete Entität für das „Weiterarbeiten“ des Dashboards. Der Treffer ist
+/// derselbe wie in Suche und Startscreen — er trägt Name, Modul, Untertitel und Sprite bereits;
+/// hinzu kommt allein der Zeitpunkt, den <see cref="SearchHit"/> bewusst nicht führt.
+/// </summary>
+public sealed record RecentEntry(SearchHit Hit, DateTime UpdatedAtUtc);
+
+/// <summary>
 /// Eine Fundstelle der Referenzansicht: eine Entität, die über ein Feld auf die gesuchte
 /// GUID verweist.
 /// </summary>

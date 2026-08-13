@@ -43,6 +43,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ContentTypeService>();
         services.AddScoped<ModuleSettingsService>();
         services.AddScoped<DashboardService>();
+        services.AddScoped<DashboardOverviewService>();
         services.AddScoped<ItemService>();
         services.AddScoped<CraftingService>();
         services.AddScoped<CurrencyService>();

@@ -16,7 +16,7 @@
     <value>Dashboard anpassen</value>
   </data>
   <data name="Hint" xml:space="preserve">
-    <value>Reihenfolge über die Pfeile, Sichtbarkeit über den Schalter. Die Import/Export-Card bleibt immer sichtbar.</value>
+    <value>Reihenfolge über die Pfeile, Sichtbarkeit über den Schalter. „Weiterarbeiten“ und „Zustand“ teilen sich eine Zeile, solange beide sichtbar sind.</value>
   </data>
   <data name="MoveUpAria" xml:space="preserve">
     <value>Nach oben</value>
