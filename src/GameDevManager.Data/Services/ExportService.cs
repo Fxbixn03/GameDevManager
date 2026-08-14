@@ -67,9 +67,11 @@ public class ExportService(
     /// in dem das Feld in der Maske steht. Version 11: dieselben tragen <c>minValue</c>,
     /// <c>maxValue</c> und <c>pattern</c> — die Grenzen einer Zahl und das Muster eines Textes.
     /// Version 12: dieselben tragen <c>isMultiValue</c> — Referenzfelder mit mehreren Zielen,
-    /// deren Wert semikolongetrennt in <c>content/field-values.json</c> steht.
+    /// deren Wert semikolongetrennt in <c>content/field-values.json</c> steht. Version 13:
+    /// Inhalte tragen einen <c>status</c> (Entwurf, in Arbeit, im Review, fertig); das Manifest
+    /// nennt unter <c>minimumStatus</c> den Mindeststand, auf den ein Export eingeschränkt war.
     /// </remarks>
-    public const int FormatVersion = 12;
+    public const int FormatVersion = 13;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -81,21 +83,23 @@ public class ExportService(
     /// </para>
     /// </summary>
     public async Task WriteExportAsync(
-        Guid projectId, ExportTarget target, bool includeAssets, Stream output, CancellationToken ct = default)
+        Guid projectId, ExportTarget target, bool includeAssets, Stream output,
+        ContentStatus? minimumStatus = null, CancellationToken ct = default)
     {
         var tempPath = Path.Combine(Path.GetTempPath(), $"gdm-export-{Guid.NewGuid():N}.zip");
         await using var temp = new FileStream(
             tempPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920,
             FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 
-        await BuildArchiveAsync(projectId, target, includeAssets, temp, ct);
+        await BuildArchiveAsync(projectId, target, includeAssets, temp, minimumStatus, ct);
 
         temp.Position = 0;
         await temp.CopyToAsync(output, ct);
     }
 
     private async Task BuildArchiveAsync(
-        Guid projectId, ExportTarget target, bool includeAssets, Stream zipStream, CancellationToken ct)
+        Guid projectId, ExportTarget target, bool includeAssets, Stream zipStream,
+        ContentStatus? minimumStatus, CancellationToken ct)
     {
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -104,9 +108,12 @@ public class ExportService(
             ?? throw new InvalidOperationException(missingProject);
 
         // ------------------------------------------------------------------ Inhalte laden
+        // „Nur Fertiges“ ist ein Mindeststand und kein einzelner: Wer im Review Stehendes
+        // mitgeben will, meint damit auch das Abgenommene.
         async Task<List<T>> LoadContentAsync<T>(IQueryable<T> query) where T : ContentEntity =>
             await query.AsNoTracking()
                 .Where(e => e.GameProjectId == projectId)
+                .Where(e => minimumStatus == null || e.Status >= minimumStatus)
                 .OrderBy(e => e.Name).ThenBy(e => e.Id)
                 .ToListAsync(ct);
 
@@ -405,6 +412,8 @@ public class ExportService(
             exportedAtUtc = DateTime.UtcNow,
             target = target.ToString().ToLowerInvariant(),
             includesAssetFiles = includeAssets,
+            // Steht im Manifest, damit ein Diff nicht als „alles gelöscht“ missverstanden wird.
+            minimumStatus = minimumStatus?.ToString(),
             project = new { project.Id, project.Name, project.Description, project.CreatedAtUtc },
             counts,
             missingAssetFiles

@@ -92,6 +92,40 @@ public class BulkEditService(
     }
 
     /// <summary>
+    /// Setzt den Bearbeitungsstand aller gewählten Entitäten. Der Stand ist die eine Angabe,
+    /// die man fast nie einzeln pflegt — „alle NPCs des Prologs sind fertig“ ist ein Satz und
+    /// keine vierzig Klicks.
+    /// </summary>
+    public async Task<BulkEditResult> SetStatusAsync(
+        Guid projectId, string moduleKey, IReadOnlyCollection<Guid> entityIds, ContentStatus status,
+        CancellationToken ct = default)
+    {
+        if (entityIds.Count == 0)
+        {
+            return new BulkEditResult(0, 0);
+        }
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var entities = await Source(moduleKey).LoadForBulkAsync(db, projectId, entityIds, ct);
+        var changed = 0;
+
+        foreach (var entity in entities.Where(entity => entity.Status != status))
+        {
+            entity.Status = status;
+            entity.UpdatedAtUtc = DateTime.UtcNow;
+            changed++;
+        }
+
+        if (changed > 0)
+        {
+            await db.SaveChangesAsync(ct);
+        }
+
+        return new BulkEditResult(changed, entityIds.Count - changed);
+    }
+
+    /// <summary>
     /// Setzt denselben Feldwert an allen gewählten Entitäten. Ein leerer Wert löscht ihn —
     /// „überall zurücksetzen“ ist derselbe Vorgang wie „überall setzen“.
     /// <para>

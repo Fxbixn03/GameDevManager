@@ -112,6 +112,18 @@
   <data name="TypeHint" xml:space="preserve">
     <value>Ohne Auswahl wird die Art entfernt. Feldwerte, die zur neuen Art nicht mehr gehören, fallen dabei weg.</value>
   </data>
+  <data name="ConfirmStatusMessage" xml:space="preserve">
+    <value>{0} Einträge auf „{1}“ setzen?</value>
+  </data>
+  <data name="TabStatus" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>Bearbeitungsstand</value>
+  </data>
+  <data name="StatusHint" xml:space="preserve">
+    <value>Der Stand gilt in allen Inhaltsmodulen und entscheidet beim Export, was mit hinausgeht.</value>
+  </data>
   <data name="TabTags" xml:space="preserve">
     <value>Tags</value>
   </data>

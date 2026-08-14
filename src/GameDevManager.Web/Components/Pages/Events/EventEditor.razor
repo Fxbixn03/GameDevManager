@@ -221,6 +221,9 @@ else
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@L["LabelGuid"]</MudText>
                     <EntityIdChip Id="_context.Entity.Id" />
 
+                    <MudDivider Class="my-3" />
+                    <EntityStatusSelect Entity="_context.Entity" OnChanged="MarkDirty" />
+
                     @if (!_context.IsNew)
                     {
                         <MudDivider Class="my-3" />

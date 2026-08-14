@@ -49,6 +49,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -59,6 +62,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Achievements");
                 });
@@ -347,6 +352,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -357,6 +365,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("CharacterClasses");
                 });
@@ -385,6 +395,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -395,6 +408,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Collectibles");
                 });
@@ -705,6 +720,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<string>("Symbol")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
@@ -719,6 +737,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Currencies");
                 });
@@ -750,6 +770,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<Guid?>("StoryEntryId")
                         .HasColumnType("uniqueidentifier");
 
@@ -767,6 +790,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("Name");
 
                     b.HasIndex("StoryEntryId");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Cutscenes");
                 });
@@ -853,6 +878,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -863,6 +891,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Dialogues");
                 });
@@ -982,6 +1012,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<int>("Stance")
                         .HasColumnType("int");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -996,6 +1029,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("DiplomaticRelations");
                 });
@@ -1158,6 +1193,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -1168,6 +1206,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Factions");
                 });
@@ -1367,6 +1407,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -1377,6 +1420,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("GameEffects");
                 });
@@ -1411,6 +1456,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<Guid?>("RewardLootTableId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -1423,6 +1471,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("Name");
 
                     b.HasIndex("RewardLootTableId");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("GameEvents");
                 });
@@ -1451,6 +1501,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -1461,6 +1514,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Maps");
                 });
@@ -1512,6 +1567,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -1522,6 +1580,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Items");
                 });
@@ -1672,6 +1732,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<int>("RollMode")
                         .HasColumnType("int");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -1682,6 +1745,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("LootTables");
                 });
@@ -1842,6 +1907,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<string>("Traits")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
@@ -1864,6 +1932,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("Name");
 
                     b.HasIndex("GameProjectId", "Kind");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Npcs");
                 });
@@ -1995,6 +2065,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<Guid?>("StoryEntryId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2016,6 +2089,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("StoryEntryId");
 
                     b.HasIndex("GameProjectId", "Kind");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Quests");
                 });
@@ -2078,6 +2153,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -2088,6 +2166,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Rarities");
                 });
@@ -2116,6 +2196,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -2126,6 +2209,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Recipes");
                 });
@@ -2223,6 +2308,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<Guid?>("SkillTreeId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -2239,6 +2327,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("ParentSkillId");
 
                     b.HasIndex("SkillTreeId");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Skills");
                 });
@@ -2292,6 +2382,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -2302,6 +2395,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("SoundEffects");
                 });
@@ -2352,6 +2447,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<Guid?>("TargetMapId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2372,6 +2470,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("TargetMapId");
 
                     b.HasIndex("GameProjectId", "SortOrder");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("StoryEntries");
                 });
@@ -2592,6 +2692,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -2602,6 +2705,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.HasIndex("GameProjectId", "Kind", "SortOrder");
 

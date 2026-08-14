@@ -329,7 +329,7 @@ aufzugeben.
 
 ## D. Zusammenarbeit und Prozess
 
-### F20 — Bearbeitungsstatus je Entität
+### F20 — Bearbeitungsstatus je Entität ✅ weitgehend umgesetzt
 
 > **Als** Teammitglied **möchte ich** an jeder Entität sehen, ob sie Entwurf, in Arbeit, im Review
 > oder fertig ist, und danach filtern, **damit** ich weiß, worauf ich mich verlassen kann.
@@ -341,6 +341,13 @@ Option „nur Fertiges" — das ist der eigentliche Zweck: einen halbfertigen NP
 ins Spiel zu liefern.
 
 *Aufwand: M · Migration: ja · Format: +1*
+
+**Umgesetzt.** `ContentStatus` als Spalte an `ContentEntity`, Migration `ContentStatus` in allen
+vier Providern, `FormatVersion` auf **13**. Auswahl in jeder Bearbeitungsmaske
+(`EntityStatusSelect` im Referenz-Panel), Massenbearbeitung über `BulkEditService.SetStatusAsync`,
+Dashboard-Band „Bearbeitungsstand“ und der Export-Filter als **Mindeststand**.
+**Offen bleibt** der Filter in den einzelnen Modul-Listen und in der globalen Suche: Beide
+filtern heute je Modul selbst — das gehört zum einheitlichen Filter-Aufbau aus F27.
 
 ### F21 — Kommentare an Entitäten
 

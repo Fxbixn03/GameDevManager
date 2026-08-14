@@ -1,6 +1,32 @@
 namespace GameDevManager.Domain.Entities;
 
 /// <summary>
+/// Wie weit eine Entität ist. Eine echte Spalte an <see cref="ContentEntity"/> und keine Art
+/// und kein benutzerdefiniertes Feld: Das Tool filtert danach, der Export kennt sie, und sie
+/// bedeutet in jedem der Inhaltsmodule dasselbe — genau das kann eine nutzerdefinierte Art
+/// nicht leisten.
+/// <para>
+/// Die Zahlen stehen in der Datenbank und dürfen sich nicht mehr ändern. <b>Entwurf</b> ist die
+/// Null und damit der Stand alles Bestehenden — was vor dieser Erweiterung angelegt wurde, ist
+/// ausdrücklich noch nicht als fertig erklärt worden.
+/// </para>
+/// </summary>
+public enum ContentStatus
+{
+    /// <summary>Angelegt, aber noch nicht ausgearbeitet.</summary>
+    Draft = 0,
+
+    /// <summary>Wird gerade bearbeitet.</summary>
+    InProgress = 1,
+
+    /// <summary>Fertig aus Sicht des Autors, wartet auf Durchsicht.</summary>
+    InReview = 2,
+
+    /// <summary>Abgenommen — worauf sich alle verlassen können.</summary>
+    Done = 3
+}
+
+/// <summary>
 /// Gemeinsame Basis aller fachlichen Inhalte (Items, NPCs, Quests, …).
 /// <para>
 /// Jedes Modul bekommt seine eigene Tabelle, weil die Module später sehr unterschiedliche
@@ -26,6 +52,12 @@ public abstract class ContentEntity : IChangeLogged
     public required string Name { get; set; }
 
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Bearbeitungsstand — Entwurf, in Arbeit, im Review, fertig. Gilt in allen Inhaltsmodulen
+    /// auf einmal, weil die Spalte an dieser Basis hängt.
+    /// </summary>
+    public ContentStatus Status { get; set; } = ContentStatus.Draft;
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 

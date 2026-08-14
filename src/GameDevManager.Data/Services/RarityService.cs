@@ -97,6 +97,7 @@ public class RarityService(
         stored.Color = Normalize(rarity.Color);
         stored.SortOrder = rarity.SortOrder;
         stored.Description = Normalize(rarity.Description);
+        stored.Status = rarity.Status;
         stored.UpdatedAtUtc = now;
 
         await db.SaveChangesAsync(ct);

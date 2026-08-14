@@ -121,7 +121,7 @@ public class ProjectService(
         try
         {
             await using var exported = CreateTempFile("copy-source");
-            await export.WriteExportAsync(sourceId, ExportTarget.Json, includeAssets: true, exported, ct);
+            await export.WriteExportAsync(sourceId, ExportTarget.Json, includeAssets: true, exported, ct: ct);
             exported.Position = 0;
 
             await using var rewritten = CreateTempFile("copy-target");

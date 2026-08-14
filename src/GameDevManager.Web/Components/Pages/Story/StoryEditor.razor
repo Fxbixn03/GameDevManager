@@ -366,6 +366,9 @@ else
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     <MudDivider Class="my-3" />
+                    <EntityStatusSelect Entity="_context.Entity" OnChanged="MarkDirty" />
+
+                    <MudDivider Class="my-3" />
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@L["TimelinePosition"]</MudText>
                     <MudText Typo="Typo.body2">@(_context.Entity.SortOrder + 1)</MudText>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">

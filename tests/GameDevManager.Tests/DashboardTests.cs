@@ -225,13 +225,16 @@ public class DashboardTests
 
         var bands = await service.GetBandsAsync(test.ProjectId);
 
+        // Ein später hinzugekommenes Band hat keine Zeile und steht deshalb hinten — die
+        // gespeicherte Anordnung der übrigen bleibt davon unberührt.
         Assert.Equal(
             [
                 DashboardBands.Health,
                 DashboardBands.Project,
                 DashboardBands.Recent,
                 DashboardBands.Inventory,
-                DashboardBands.Database
+                DashboardBands.Database,
+                DashboardBands.Status
             ],
             bands.Select(band => band.BandKey).ToArray());
 

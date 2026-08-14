@@ -1,0 +1,51 @@
+@inject ContentStatusLabels Statuses
+@inject IStringLocalizer<EntityStatusSelect> L
+
+@*
+    Der Bearbeitungsstand einer Entität. Eine Zeile in jeder Maske, weil die Spalte an
+    ContentEntity hängt und damit in allen Inhaltsmodulen auf einmal gilt — dieselbe
+    Überlegung wie beim Feldabschnitt und beim Sprite-Abschnitt.
+
+    Sie steht im Referenz-Panel neben GUID und Zeitstempeln: Der Stand ist keine Eigenschaft
+    des Spielinhalts, sondern eine Aussage über die Arbeit daran.
+*@
+
+<MudSelect T="ContentStatus"
+           Value="Entity.Status"
+           ValueChanged="ChangeAsync"
+           Label="@L["Label"]"
+           Variant="Variant.Outlined"
+           Margin="Margin.Dense"
+           Dense="true">
+    @foreach (var status in ContentStatusLabels.All)
+    {
+        <MudSelectItem T="ContentStatus" Value="@status">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@ContentStatusLabels.Icon(status)"
+                         Size="Size.Small"
+                         Color="@ContentStatusLabels.Accent(status)" />
+                <MudText Typo="Typo.body2">@Statuses.Describe(status)</MudText>
+            </MudStack>
+        </MudSelectItem>
+    }
+</MudSelect>
+
+@code {
+    /// <summary>
+    /// Die Entität, deren Stand gesetzt wird — bewusst die nicht-generische Basis: Der Stand
+    /// steht dort, und so braucht die Komponente keinen Typparameter und damit auch nicht den
+    /// Umweg über einen eigenen Marker für den Localizer.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public required ContentEntity Entity { get; set; }
+
+    /// <summary>Meldet der Maske, dass es etwas zu speichern gibt.</summary>
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private async Task ChangeAsync(ContentStatus status)
+    {
+        Entity.Status = status;
+        await OnChanged.InvokeAsync();
+    }
+}

@@ -1,4 +1,5 @@
 using GameDevManager.Domain;
+using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameDevManager.Data.Services;
@@ -79,6 +80,32 @@ public class DashboardOverviewService(
                 .ThenBy(entry => entry.Hit.Name, StringComparer.CurrentCultureIgnoreCase)
                 .Take(count)
         ];
+    }
+
+    /// <summary>
+    /// Wie viel Inhalt in welchem Bearbeitungsstand steht, über alle Module zusammen.
+    /// <para>
+    /// Gezählt wird über die <see cref="IModuleEntitySource"/> und nicht über einen
+    /// <c>switch</c>: Die Spalte hängt an <see cref="ContentEntity"/> und gilt damit in jedem
+    /// Inhaltsmodul — auch in einem künftigen, das dann von selbst mitzählt.
+    /// </para>
+    /// </summary>
+    public async Task<Dictionary<ContentStatus, int>> GetStatusCountsAsync(
+        Guid projectId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var counts = new Dictionary<ContentStatus, int>();
+
+        foreach (var source in sources)
+        {
+            foreach (var entity in await source.LoadAllAsync(db, projectId, ct))
+            {
+                counts[entity.Status] = counts.GetValueOrDefault(entity.Status) + 1;
+            }
+        }
+
+        return counts;
     }
 
     /// <summary>

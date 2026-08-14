@@ -126,6 +126,10 @@ public class EventService(
 
         await EntityCleanup.DeleteForEntitiesAsync(db, removedSpawnIds, ct);
 
+        // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier
+        // gesetzt und nicht in jedem Zweig der Fallunterscheidung darüber.
+        stored.Status = context.Entity.Status;
+
         await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 

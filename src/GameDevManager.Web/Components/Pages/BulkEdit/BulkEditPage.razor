@@ -5,6 +5,7 @@
 @inject BulkEditService Bulk
 @inject ProjectContext Project
 @inject ModuleLabels Modules
+@inject ContentStatusLabels Statuses
 @inject IUserPermissionsProvider PermissionsProvider
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogs
@@ -142,6 +143,30 @@ else
                         </MudButton>
                     </MudTabPanel>
 
+                    @* Der Stand ist die Angabe, die man am seltensten einzeln pflegt — „alle
+                       NPCs des Prologs sind fertig“ ist ein Satz und keine vierzig Klicks. *@
+                    <MudTabPanel Text="@L["TabStatus"]">
+                        <MudSelect T="ContentStatus"
+                                   @bind-Value="_status"
+                                   Label="@L["StatusLabel"]"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense">
+                            @foreach (var status in ContentStatusLabels.All)
+                            {
+                                <MudSelectItem T="ContentStatus" Value="@status">@Statuses.Describe(status)</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">@L["StatusHint"]</MudText>
+
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Class="mt-4"
+                                   Disabled="@CannotApply"
+                                   OnClick="ApplyStatusAsync">
+                            @L["ApplyButton"]
+                        </MudButton>
+                    </MudTabPanel>
+
                     <MudTabPanel Text="@L["TabTags"]">
                         @if (_tags.Count == 0)
                         {
@@ -239,6 +264,8 @@ else
     private bool _working;
 
     private Guid? _typeId;
+
+    private ContentStatus _status = ContentStatus.Done;
     private Guid? _tagId;
     private bool _tagAssign = true;
     private Guid? _fieldId;
@@ -366,6 +393,11 @@ else
         await ApplyAsync(
             L["ConfirmTypeMessage", _selected.Count],
             (projectId, ids) => Bulk.AssignTypeAsync(projectId, _moduleKey!, ids, _typeId));
+
+    private async Task ApplyStatusAsync() =>
+        await ApplyAsync(
+            L["ConfirmStatusMessage", _selected.Count, Statuses.Describe(_status)],
+            (projectId, ids) => Bulk.SetStatusAsync(projectId, _moduleKey!, ids, _status));
 
     private async Task ApplyTagAsync() =>
         await ApplyAsync(

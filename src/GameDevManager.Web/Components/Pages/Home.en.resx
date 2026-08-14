@@ -193,6 +193,18 @@
   <data name="Band_health" xml:space="preserve">
     <value>State</value>
   </data>
+  <data name="Band_status" xml:space="preserve">
+    <value>Editing status</value>
+  </data>
+  <data name="StatusHeading" xml:space="preserve">
+    <value>Editing status</value>
+  </data>
+  <data name="StatusHint" xml:space="preserve">
+    <value>Counted across all content modules. Bulk editing sets the status of many entries at once.</value>
+  </data>
+  <data name="ToBulkEdit" xml:space="preserve">
+    <value>Bulk editing</value>
+  </data>
   <data name="Band_inventory" xml:space="preserve">
     <value>Content inventory</value>
   </data>

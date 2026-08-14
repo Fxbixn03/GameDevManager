@@ -51,6 +51,12 @@
   <data name="IncludeAssets" xml:space="preserve">
     <value>Asset-Dateien einschließen</value>
   </data>
+  <data name="MinimumStatusLabel" xml:space="preserve">
+    <value>Mindest-Bearbeitungsstand</value>
+  </data>
+  <data name="MinimumStatusHint" xml:space="preserve">
+    <value>Leer heißt: alles geht hinaus. Sonst kommt nur mit, was mindestens diesen Stand hat — Achtung, ein ausgelassener Eintrag kann anderswo referenziert sein.</value>
+  </data>
   <data name="IncludeAssetsHint" xml:space="preserve">
     <value>Sprites, Sounds und alle anderen hochgeladenen Dateien wandern mit ins ZIP. Ohne sie enthält der Export nur die Metadaten der Assets.</value>
   </data>

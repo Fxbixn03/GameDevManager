@@ -163,6 +163,18 @@
   <data name="Band_health" xml:space="preserve">
     <value>Zustand</value>
   </data>
+  <data name="Band_status" xml:space="preserve">
+    <value>Bearbeitungsstand</value>
+  </data>
+  <data name="StatusHeading" xml:space="preserve">
+    <value>Bearbeitungsstand</value>
+  </data>
+  <data name="StatusHint" xml:space="preserve">
+    <value>Gezählt über alle Inhaltsmodule. Den Stand vieler Einträge auf einmal setzt die Massenbearbeitung.</value>
+  </data>
+  <data name="ToBulkEdit" xml:space="preserve">
+    <value>Massenbearbeitung</value>
+  </data>
   <data name="Band_inventory" xml:space="preserve">
     <value>Inhaltsbestand</value>
   </data>

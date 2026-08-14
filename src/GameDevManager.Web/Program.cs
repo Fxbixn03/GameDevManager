@@ -44,6 +44,7 @@ builder.Services.AddSingleton<ModuleLabels>();
 builder.Services.AddSingleton<ConditionLabels>();
 builder.Services.AddSingleton<FieldTypeLabels>();
 builder.Services.AddSingleton<ChangeActionLabels>();
+builder.Services.AddSingleton<ContentStatusLabels>();
 builder.Services.AddSingleton<AccountLabels>();
 builder.Services.AddSingleton<ISystemUserName>(sp => sp.GetRequiredService<AccountLabels>());
 
@@ -139,7 +140,7 @@ app.MapGet("/assets/{id:guid}", async (Guid id, AssetService assets, HttpContext
 // SignalR-Verbindung von Blazor Server lässt sich keine Datei ausliefern, der Browser
 // lädt hier direkt herunter. Die Export-Seite baut nur die URL auf diesen Endpunkt.
 app.MapGet("/export/{projectId:guid}", async (
-    Guid projectId, string? target, bool? assets, ExportService export,
+    Guid projectId, string? target, bool? assets, string? minimumStatus, ExportService export,
     IDbContextFactory<GameDevManagerDbContext> dbFactory, HttpContext http, CancellationToken ct) =>
 {
     // Der Export ist ein eigenes Recht — ohne läuft auch der direkte Aufruf der URL ins Leere.
@@ -159,12 +160,17 @@ app.MapGet("/export/{projectId:guid}", async (
         ? parsed
         : ExportTarget.Json;
 
+    // Ohne Angabe geht alles hinaus — der Filter ist eine Einschränkung, keine Vorgabe.
+    ContentStatus? floor = Enum.TryParse<ContentStatus>(minimumStatus, ignoreCase: true, out var status)
+        ? status
+        : null;
+
     // Der Projektname wird Teil des Dateinamens — unzulässige Zeichen fliegen raus.
     var safeName = string.Join("-", project.Name.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
     var fileName = $"{safeName}-{exportTarget.ToString().ToLowerInvariant()}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.zip";
 
     return Results.Stream(
-        stream => export.WriteExportAsync(projectId, exportTarget, assets ?? true, stream, ct),
+        stream => export.WriteExportAsync(projectId, exportTarget, assets ?? true, stream, floor, ct),
         "application/zip",
         fileDownloadName: fileName);
 }).RequireAuthorization();

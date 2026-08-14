@@ -3,6 +3,7 @@
 @inject GameDevManager.Data.DatabaseOptions DbOptions
 @inject IStringLocalizer<Home> L
 @inject ModuleLabels Modules
+@inject ContentStatusLabels Statuses
 @inject ModuleState ModuleState
 @inject ProjectContext Project
 @inject DashboardService Dashboard
@@ -167,6 +168,35 @@ else
                     </MudPaper>
                 }
 
+                @* ------------------------------------------------------ Bearbeitungsstand *@
+                else if (band.BandKey == DashboardBands.Status)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel">
+                        <div class="gdm-panel-head pa-3 d-flex align-center justify-space-between">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["StatusHeading"]</MudText>
+                            <MudLink Href="/modules/bulk-edit" Typo="Typo.caption">@L["ToBulkEdit"]</MudLink>
+                        </div>
+
+                        <div class="gdm-chips pa-3">
+                            @foreach (var status in ContentStatusLabels.All)
+                            {
+                                var count = _statusCounts?.GetValueOrDefault(status) ?? 0;
+                                <div class="@(count == 0 ? "gdm-count-chip gdm-count-chip-empty" : "gdm-count-chip")">
+                                    <MudIcon Icon="@ContentStatusLabels.Icon(status)"
+                                             Size="Size.Small"
+                                             Color="@ContentStatusLabels.Accent(status)" />
+                                    <span>@Statuses.Describe(status)</span>
+                                    <span class="gdm-mono">@(count == 0 ? "—" : count.ToString("N0"))</span>
+                                </div>
+                            }
+                        </div>
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="px-3 pb-3 d-block">
+                            @L["StatusHint"]
+                        </MudText>
+                    </MudPaper>
+                }
+
                 @* ----------------------------------------------------- Inhaltsbestand *@
                 else if (band.BandKey == DashboardBands.Inventory)
                 {
@@ -262,6 +292,8 @@ else
     private List<ModuleCount>? _counts;
     private List<RecentEntry> _recent = [];
     private HealthSummary? _health;
+
+    private Dictionary<ContentStatus, int>? _statusCounts;
     private DateTime? _lastExportUtc;
     private string _projectName = string.Empty;
     private int? _projectCount;
@@ -301,6 +333,8 @@ else
                         && _permissions.CanAccessModule(entry.Hit.ModuleKey))
                     .Take(RecentCount)
             ];
+
+            _statusCounts = await Overview.GetStatusCountsAsync(_projectId);
 
             // Zuletzt: erst damit gilt die Seite als geladen.
             _counts = await Statistics.GetCountsAsync(_projectId);
@@ -533,6 +567,7 @@ else
         DashboardBands.Project => Icons.Material.Filled.Flag,
         DashboardBands.Recent => Icons.Material.Filled.History,
         DashboardBands.Health => Icons.Material.Filled.HealthAndSafety,
+        DashboardBands.Status => Icons.Material.Filled.Rule,
         DashboardBands.Inventory => Icons.Material.Filled.GridView,
         _ => Icons.Material.Filled.Storage
     };

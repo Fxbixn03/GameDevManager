@@ -44,6 +44,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -54,6 +57,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Achievements");
                 });
@@ -342,6 +347,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -352,6 +360,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("CharacterClasses");
                 });
@@ -380,6 +390,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -390,6 +403,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Collectibles");
                 });
@@ -700,6 +715,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Symbol")
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
@@ -714,6 +732,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Currencies");
                 });
@@ -745,6 +765,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid?>("StoryEntryId")
                         .HasColumnType("TEXT");
 
@@ -762,6 +785,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("Name");
 
                     b.HasIndex("StoryEntryId");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Cutscenes");
                 });
@@ -848,6 +873,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -858,6 +886,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Dialogues");
                 });
@@ -977,6 +1007,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("Stance")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -991,6 +1024,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("DiplomaticRelations");
                 });
@@ -1153,6 +1188,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -1163,6 +1201,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Factions");
                 });
@@ -1362,6 +1402,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -1372,6 +1415,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("GameEffects");
                 });
@@ -1406,6 +1451,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<Guid?>("RewardLootTableId")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -1418,6 +1466,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("Name");
 
                     b.HasIndex("RewardLootTableId");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("GameEvents");
                 });
@@ -1446,6 +1496,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -1456,6 +1509,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Maps");
                 });
@@ -1507,6 +1562,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -1517,6 +1575,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Items");
                 });
@@ -1667,6 +1727,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("RollMode")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -1677,6 +1740,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("LootTables");
                 });
@@ -1837,6 +1902,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Traits")
                         .HasMaxLength(400)
                         .HasColumnType("TEXT");
@@ -1859,6 +1927,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("Name");
 
                     b.HasIndex("GameProjectId", "Kind");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Npcs");
                 });
@@ -1990,6 +2060,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid?>("StoryEntryId")
                         .HasColumnType("TEXT");
 
@@ -2011,6 +2084,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("StoryEntryId");
 
                     b.HasIndex("GameProjectId", "Kind");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Quests");
                 });
@@ -2073,6 +2148,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -2083,6 +2161,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Rarities");
                 });
@@ -2111,6 +2191,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -2121,6 +2204,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Recipes");
                 });
@@ -2218,6 +2303,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<Guid?>("SkillTreeId")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -2234,6 +2322,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("ParentSkillId");
 
                     b.HasIndex("SkillTreeId");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("Skills");
                 });
@@ -2287,6 +2377,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -2297,6 +2390,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("SoundEffects");
                 });
@@ -2347,6 +2442,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid?>("TargetMapId")
                         .HasColumnType("TEXT");
 
@@ -2367,6 +2465,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("TargetMapId");
 
                     b.HasIndex("GameProjectId", "SortOrder");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.ToTable("StoryEntries");
                 });
@@ -2587,6 +2687,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -2597,6 +2700,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("GameProjectId");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("GameProjectId", "Status");
 
                     b.HasIndex("GameProjectId", "Kind", "SortOrder");
 

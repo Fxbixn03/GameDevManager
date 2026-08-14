@@ -126,6 +126,9 @@ else
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidCaption"]</MudText>
                     <EntityIdChip Id="_rarity.Id" />
 
+                    <MudDivider Class="my-3" />
+                    <EntityStatusSelect Entity="_rarity" OnChanged="@(() => Touch(() => { }))" />
+
                     @if (!_isNew)
                     {
                         <MudDivider Class="my-3" />

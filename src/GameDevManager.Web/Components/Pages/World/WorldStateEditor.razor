@@ -133,6 +133,9 @@ else
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     <MudDivider Class="my-3" />
+                    <EntityStatusSelect Entity="_context.Entity" OnChanged="MarkDirty" />
+
+                    <MudDivider Class="my-3" />
                     <MudText Typo="Typo.body2" Color="Color.Secondary">@L["UsageHint"]</MudText>
 
                     @if (!_context.IsNew)

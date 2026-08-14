@@ -98,7 +98,7 @@ public partial class ExportSnapshotService(
 
         await using (var file = File.Create(path))
         {
-            await export.WriteExportAsync(projectId, ExportTarget.Json, includeAssets, file, ct);
+            await export.WriteExportAsync(projectId, ExportTarget.Json, includeAssets, file, ct: ct);
         }
 
         var snapshot = ReadSnapshotInfo(path)
@@ -406,7 +406,7 @@ public partial class ExportSnapshotService(
 
         try
         {
-            await export.WriteExportAsync(projectId, ExportTarget.Json, includeAssets: false, temp, ct);
+            await export.WriteExportAsync(projectId, ExportTarget.Json, includeAssets: false, temp, ct: ct);
             temp.Position = 0;
             return temp;
         }

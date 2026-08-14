@@ -21,6 +21,9 @@ public static class DashboardBands
     /// <summary>Die Health Checks als Liste mit Fundzahl.</summary>
     public const string Health = "health";
 
+    /// <summary>Wie viel Inhalt in welchem Bearbeitungsstand steht — Entwurf bis fertig.</summary>
+    public const string Status = "status";
+
     /// <summary>Alle Module als Zahlen-Chips, nach Arbeitsfeld gruppiert.</summary>
     public const string Inventory = "inventory";
 
@@ -28,7 +31,8 @@ public static class DashboardBands
     public const string Database = "database";
 
     /// <summary>Voreingestellte Reihenfolge: von dringlich nach nachschlagend.</summary>
-    public static readonly IReadOnlyList<string> All = [Project, Recent, Health, Inventory, Database];
+    public static readonly IReadOnlyList<string> All =
+        [Project, Recent, Health, Status, Inventory, Database];
 
     /// <summary>
     /// Bänder, die ohne eigene Zeile <b>nicht</b> erscheinen. Bisher nur die Datenbank: Provider

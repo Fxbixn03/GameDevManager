@@ -1024,6 +1024,10 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.HasIndex(e => e.GameProjectId);
             entity.HasIndex(e => e.ContentTypeId);
             entity.HasIndex(e => e.Name);
+
+            // Jede Modul-Liste filtert danach, das Dashboard zählt darüber, und der Export
+            // kann darauf einschränken — immer innerhalb eines Projekts.
+            entity.HasIndex(e => new { e.GameProjectId, e.Status });
         });
     }
 

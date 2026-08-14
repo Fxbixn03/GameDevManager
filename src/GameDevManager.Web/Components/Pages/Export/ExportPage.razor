@@ -3,6 +3,7 @@
 @inject ProjectContext Project
 @inject StatisticsService Statistics
 @inject ModuleLabels Modules
+@inject ContentStatusLabels Statuses
 @inject NavigationManager Nav
 @inject ExportSnapshotService Snapshots
 @inject ExportStorageOptions ExportStorage
@@ -47,6 +48,23 @@
 
             <MudSwitch T="bool" @bind-Value="_includeAssets" Color="Color.Primary" Label="@L["IncludeAssets"]" />
             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-4">@L["IncludeAssetsHint"]</MudText>
+
+            @* „Nur Fertiges“ als Mindeststand: Wer im Review Stehendes mitgeben will, meint
+               damit auch das Abgenommene. Ohne Wahl geht alles hinaus — der Filter ist eine
+               Einschränkung, keine Vorgabe. *@
+            <MudSelect T="ContentStatus?"
+                       @bind-Value="_minimumStatus"
+                       Label="@L["MinimumStatusLabel"]"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Clearable="true"
+                       Style="max-width:320px;">
+                @foreach (var status in ContentStatusLabels.All.Where(s => s != ContentStatus.Draft))
+                {
+                    <MudSelectItem T="ContentStatus?" Value="@status">@Statuses.Describe(status)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-4">@L["MinimumStatusHint"]</MudText>
 
             @* Die offenen Health-Check-Funde als Hinweis, nicht als Sperre — dieselbe Linie
                wie beim Loot-Check: nachschauen, nicht verbieten. Ein Zwischenstand mit
@@ -437,6 +455,8 @@
 
     private ExportTarget _target = ExportTarget.Json;
     private bool _includeAssets = true;
+
+    private ContentStatus? _minimumStatus;
     private Guid _projectId;
     private List<ModuleCount>? _counts;
 
@@ -531,7 +551,8 @@
     // forceLoad, damit der Browser den Endpunkt direkt aufruft — der Blazor-Router würde
     // die Navigation sonst abfangen. Die Antwort ist ein Download, die Seite bleibt stehen.
     private void Download() => Nav.NavigateTo(
-        $"/export/{_projectId}?target={_target.ToString().ToLowerInvariant()}&assets={(_includeAssets ? "true" : "false")}",
+        $"/export/{_projectId}?target={_target.ToString().ToLowerInvariant()}&assets={(_includeAssets ? "true" : "false")}"
+            + (_minimumStatus is { } floor ? $"&minimumStatus={floor}" : string.Empty),
         forceLoad: true);
 
     private void DownloadSnapshot(ExportSnapshot snapshot) =>
