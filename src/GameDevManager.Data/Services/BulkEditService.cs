@@ -134,6 +134,14 @@ public class BulkEditService(
 
         var clearing = template.IsEmpty;
 
+        // Grenzen und Muster gelten hier wie beim Speichern einer einzelnen Entität — sonst
+        // wäre die Massenbearbeitung der Weg, sie zu umgehen. Geprüft wird einmal, nicht je
+        // Entität: Es ist ein Wert für alle.
+        if (!clearing)
+        {
+            ContentFields.ValidateValue(field, template, messages);
+        }
+
         // Welche Felder an welcher Entität überhaupt gelten, hängt an ihrer Art. Ein Feld an
         // einer Entität zu setzen, die es gar nicht führt, erzeugte unsichtbaren Inhalt.
         var applicable = await ApplicableFieldsAsync(db, projectId, moduleKey, entities, ct);

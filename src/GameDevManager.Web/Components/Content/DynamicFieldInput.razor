@@ -23,7 +23,7 @@
                       Value="Value.TextValue"
                       ValueChanged="SetText"
                       Label="@Label"
-                      HelperText="@Definition.Description"
+                      HelperText="@TextHelperText"
                       Variant="Variant.Outlined"
                       Immediate="false"
                       Adornment="@(string.IsNullOrWhiteSpace(Definition.Unit) ? Adornment.None : Adornment.End)"
@@ -35,19 +35,24 @@
                       Value="Value.TextValue"
                       ValueChanged="SetText"
                       Label="@Label"
-                      HelperText="@Definition.Description"
+                      HelperText="@TextHelperText"
                       Variant="Variant.Outlined"
                       Lines="4" />
         break;
 
+    @* Min/Max stehen am Eingabefeld und nicht nur im Hilfetext: Das Feld hält den Wert damit
+       schon beim Tippen in der Spanne, statt erst beim Speichern zu meckern. Geprüft wird
+       trotzdem in der Datenschicht — die Maske ist nicht die einzige Quelle von Werten. *@
     case ContentFieldType.Integer:
         <MudNumericField T="int?"
                          Value="IntegerValue"
                          ValueChanged="SetInteger"
                          Label="@Label"
-                         HelperText="@Definition.Description"
+                         HelperText="@NumberHelperText"
                          Variant="Variant.Outlined"
                          Clearable="true"
+                         Min="@IntegerMinimum"
+                         Max="@IntegerMaximum"
                          Adornment="@(string.IsNullOrWhiteSpace(Definition.Unit) ? Adornment.None : Adornment.End)"
                          AdornmentText="@Definition.Unit" />
         break;
@@ -57,9 +62,11 @@
                          Value="Value.NumberValue"
                          ValueChanged="SetDecimal"
                          Label="@Label"
-                         HelperText="@Definition.Description"
+                         HelperText="@NumberHelperText"
                          Variant="Variant.Outlined"
                          Clearable="true"
+                         Min="@Definition.MinValue"
+                         Max="@Definition.MaxValue"
                          Adornment="@(string.IsNullOrWhiteSpace(Definition.Unit) ? Adornment.None : Adornment.End)"
                          AdornmentText="@Definition.Unit" />
         break;
@@ -192,6 +199,43 @@
         string.IsNullOrWhiteSpace(Definition.Description)
             ? L["ReferenceHelper", ReferenceModuleName]
             : Definition.Description;
+
+    /// <summary>
+    /// Der Hilfetext einer Zahl nennt zusätzlich die zulässige Spanne — die Grenze steht sonst
+    /// nur in der Felddefinition, und wer den Wert erfasst, sieht sie erst beim Speichern.
+    /// </summary>
+    private string? NumberHelperText => Describe(RangeText);
+
+    /// <summary>Dasselbe für das Muster eines Textfeldes.</summary>
+    private string? TextHelperText =>
+        Describe(string.IsNullOrWhiteSpace(Definition.Pattern) ? null : L["PatternHint", Definition.Pattern]);
+
+    private string? Describe(string? addition) => (Definition.Description, addition) switch
+    {
+        ({ } text, { } extra) when !string.IsNullOrWhiteSpace(text) => $"{text} — {extra}",
+        (_, { } extra) => extra,
+        var (text, _) => text
+    };
+
+    private string? RangeText => (Definition.MinValue, Definition.MaxValue) switch
+    {
+        ({ } minimum, { } maximum) => L["RangeBoth", Number(minimum), Number(maximum)].Value,
+        ({ } minimum, null) => L["RangeMinimum", Number(minimum)].Value,
+        (null, { } maximum) => L["RangeMaximum", Number(maximum)].Value,
+        _ => null
+    };
+
+    /// <summary>
+    /// Grenzen erscheinen in der Anzeige in der Sprache des Nutzers — anders als im Export und
+    /// in den Meldungen der Datenschicht, die feste Kultur brauchen.
+    /// </summary>
+    private static string Number(double value) => value.ToString("0.####");
+
+    private int? IntegerMinimum =>
+        Definition.MinValue is { } minimum ? (int)Math.Ceiling(minimum) : null;
+
+    private int? IntegerMaximum =>
+        Definition.MaxValue is { } maximum ? (int)Math.Floor(maximum) : null;
 
     private int? IntegerValue =>
         Value.NumberValue is null ? null : (int)Math.Round(Value.NumberValue.Value);

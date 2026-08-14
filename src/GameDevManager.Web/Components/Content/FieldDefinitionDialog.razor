@@ -102,6 +102,34 @@
                               HelperText="@L["UnitHelper"]" />
             }
 
+            @* Grenzen gelten nur an Zahlen: An einem Text oder einem Schalter wäre „mindestens 5“
+               keine Prüfung, sondern eine Frage. *@
+            @if (Field.UsesRange)
+            {
+                <MudStack Row="true" Spacing="3">
+                    <MudNumericField T="double?"
+                                     @bind-Value="Field.MinValue"
+                                     Label="@L["MinLabel"]"
+                                     Variant="Variant.Outlined"
+                                     Clearable="true" />
+                    <MudNumericField T="double?"
+                                     @bind-Value="Field.MaxValue"
+                                     Label="@L["MaxLabel"]"
+                                     Variant="Variant.Outlined"
+                                     Clearable="true" />
+                </MudStack>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["RangeHelper"]</MudText>
+            }
+
+            @if (Field.UsesPattern)
+            {
+                <MudTextField @bind-Value="Field.Pattern"
+                              Label="@L["PatternLabel"]"
+                              Variant="Variant.Outlined"
+                              Class="gdm-mono"
+                              HelperText="@L["PatternHelper"]" />
+            }
+
             @* Stichwörter gibt es nur im Textfeld — die anderen Typen tragen je einen Wert. *@
             @if (Field.Type == ContentFieldType.Text)
             {
@@ -194,6 +222,18 @@
         if (type != ContentFieldType.Text)
         {
             Field.IsTagList = false;
+        }
+
+        // Dasselbe für Grenzen und Muster — sie gehören zu Zahl bzw. Text.
+        if (!Field.UsesRange)
+        {
+            Field.MinValue = null;
+            Field.MaxValue = null;
+        }
+
+        if (!Field.UsesPattern)
+        {
+            Field.Pattern = null;
         }
 
         if (type != ContentFieldType.Select)

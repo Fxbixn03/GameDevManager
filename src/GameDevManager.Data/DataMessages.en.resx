@@ -70,6 +70,21 @@
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>The required field “{0}” is empty.</value>
   </data>
+  <data name="FieldBelowMinimum" xml:space="preserve">
+    <value>“{0}” is below the allowed minimum of {1}.</value>
+  </data>
+  <data name="FieldAboveMaximum" xml:space="preserve">
+    <value>“{0}” is above the allowed maximum of {1}.</value>
+  </data>
+  <data name="FieldPatternMismatch" xml:space="preserve">
+    <value>“{0}” does not match the required pattern {1}.</value>
+  </data>
+  <data name="FieldRangeInvalid" xml:space="preserve">
+    <value>The minimum must not be greater than the maximum.</value>
+  </data>
+  <data name="FieldPatternInvalid" xml:space="preserve">
+    <value>The pattern is not a valid regular expression.</value>
+  </data>
   <data name="TypeNameRequired" xml:space="preserve">
     <value>The type needs a name.</value>
   </data>

@@ -1220,6 +1220,12 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Property<bool>("IsTagList")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<double?>("MaxValue")
+                        .HasColumnType("double");
+
+                    b.Property<double?>("MinValue")
+                        .HasColumnType("double");
+
                     b.Property<string>("ModuleKey")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1232,6 +1238,10 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
                     b.Property<Guid?>("OwnerEntityId")
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("Pattern")
+                        .HasMaxLength(400)
+                        .HasColumnType("varchar(400)");
 
                     b.Property<string>("ReferenceModuleKey")
                         .HasMaxLength(50)

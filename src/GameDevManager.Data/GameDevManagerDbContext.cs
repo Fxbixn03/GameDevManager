@@ -237,6 +237,7 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.Property(f => f.Description).HasMaxLength(2000);
             entity.Property(f => f.Unit).HasMaxLength(30);
             entity.Property(f => f.GroupName).HasMaxLength(100);
+            entity.Property(f => f.Pattern).HasMaxLength(400);
             entity.Property(f => f.ReferenceModuleKey).HasMaxLength(ModuleKeyLength);
             entity.Ignore(f => f.IsIndividual);
             entity.Ignore(f => f.IsKeywordField);

@@ -24,6 +24,21 @@
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>Das Pflichtfeld „{0}“ ist nicht gefüllt.</value>
   </data>
+  <data name="FieldBelowMinimum" xml:space="preserve">
+    <value>„{0}“ liegt unter dem zulässigen Mindestwert {1}.</value>
+  </data>
+  <data name="FieldAboveMaximum" xml:space="preserve">
+    <value>„{0}“ liegt über dem zulässigen Höchstwert {1}.</value>
+  </data>
+  <data name="FieldPatternMismatch" xml:space="preserve">
+    <value>„{0}“ entspricht nicht dem vorgegebenen Muster {1}.</value>
+  </data>
+  <data name="FieldRangeInvalid" xml:space="preserve">
+    <value>Der Mindestwert darf nicht über dem Höchstwert liegen.</value>
+  </data>
+  <data name="FieldPatternInvalid" xml:space="preserve">
+    <value>Das Muster ist kein gültiger regulärer Ausdruck.</value>
+  </data>
   <data name="TypeNameRequired" xml:space="preserve">
     <value>Die Art braucht einen Namen.</value>
   </data>

@@ -61,6 +61,29 @@ public class FieldDefinition
     public string? Unit { get; set; }
 
     /// <summary>
+    /// Untere Grenze eines Zahlenfeldes; <c>null</c> heißt „nach unten offen“. Wie
+    /// <see cref="FieldValue.NumberValue"/> ein <c>double</c>, weil SQLite keinen Dezimaltyp
+    /// kennt — die Grenze muss denselben Typ haben wie das, was sie begrenzt.
+    /// </summary>
+    public double? MinValue { get; set; }
+
+    /// <summary>Obere Grenze eines Zahlenfeldes; <c>null</c> heißt „nach oben offen“.</summary>
+    public double? MaxValue { get; set; }
+
+    /// <summary>
+    /// Regulärer Ausdruck, dem der Wert eines Textfeldes genügen muss — leer heißt „keine
+    /// Prüfung“. Geprüft wird der ganze Wert, nicht ein Teil davon; bei einer Stichwortliste
+    /// muss jedes Stichwort für sich passen.
+    /// </summary>
+    public string? Pattern { get; set; }
+
+    /// <summary>Trägt dieses Feld eine Zahl, an der eine Grenze überhaupt etwas bedeutet?</summary>
+    public bool UsesRange => Type is ContentFieldType.Integer or ContentFieldType.Decimal;
+
+    /// <summary>Trägt dieses Feld einen Text, den ein Muster prüfen kann?</summary>
+    public bool UsesPattern => Type is ContentFieldType.Text or ContentFieldType.MultilineText;
+
+    /// <summary>
     /// Nur bei <see cref="ContentFieldType.EntityReference"/>: Modul, auf dessen Entitäten das Feld
     /// verweisen darf — siehe <see cref="ModuleKeys"/>.
     /// </summary>
@@ -102,6 +125,9 @@ public class FieldDefinition
         IsRequired = IsRequired,
         IsTagList = IsTagList,
         Unit = Unit,
+        MinValue = MinValue,
+        MaxValue = MaxValue,
+        Pattern = Pattern,
         ReferenceModuleKey = ReferenceModuleKey,
         SortOrder = SortOrder,
         GroupName = GroupName,

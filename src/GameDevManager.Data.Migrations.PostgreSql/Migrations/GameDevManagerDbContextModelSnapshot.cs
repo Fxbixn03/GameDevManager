@@ -1223,6 +1223,12 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.Property<bool>("IsTagList")
                         .HasColumnType("boolean");
 
+                    b.Property<double?>("MaxValue")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("MinValue")
+                        .HasColumnType("double precision");
+
                     b.Property<string>("ModuleKey")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1235,6 +1241,10 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
 
                     b.Property<Guid?>("OwnerEntityId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Pattern")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
 
                     b.Property<string>("ReferenceModuleKey")
                         .HasMaxLength(50)

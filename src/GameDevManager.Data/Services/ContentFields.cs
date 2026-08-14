@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -45,19 +47,117 @@ public static class ContentFields
         return values.ToDictionary(v => v.FieldDefinitionId);
     }
 
-    /// <summary>Wirft, sobald ein Pflichtfeld leer geblieben ist.</summary>
+    /// <summary>
+    /// Wirft, sobald ein Pflichtfeld leer geblieben ist oder ein Wert außerhalb dessen liegt,
+    /// was am Feld festgelegt ist — Grenzen an Zahlen, ein Muster an Texten.
+    /// <para>
+    /// Ein leeres Feld wird über die Pflichtprüfung hinaus <b>nicht</b> beanstandet: „nicht
+    /// ausgefüllt“ ist kein falscher Wert, und ob es ausgefüllt sein muss, sagt allein
+    /// <see cref="FieldDefinition.IsRequired"/>.
+    /// </para>
+    /// </summary>
     public static void ValidateRequired<TEntity>(
         ContentEditContext<TEntity> context, IStringLocalizer<DataMessages> messages)
         where TEntity : ContentEntity
     {
-        foreach (var field in context.ApplicableFields.Where(f => f.IsRequired))
+        foreach (var field in context.ApplicableFields)
         {
-            if (Canonicalize(field, context.ValueFor(field)).IsEmpty)
+            var value = Canonicalize(field, context.ValueFor(field));
+
+            if (value.IsEmpty)
             {
-                throw new ContentValidationException(messages["RequiredFieldEmpty", field.Name]);
+                if (field.IsRequired)
+                {
+                    throw new ContentValidationException(messages["RequiredFieldEmpty", field.Name]);
+                }
+
+                continue;
+            }
+
+            ValidateValue(field, value, messages);
+        }
+    }
+
+    /// <summary>
+    /// Die Grenzen und das Muster eines einzelnen, gefüllten Wertes. Getrennt von der Schleife,
+    /// weil die Massenbearbeitung denselben Wert auf viele Entitäten schreibt und dabei
+    /// dieselbe Prüfung braucht.
+    /// </summary>
+    internal static void ValidateValue(
+        FieldDefinition field, FieldValue value, IStringLocalizer<DataMessages> messages)
+    {
+        if (field.UsesRange && value.NumberValue is { } number)
+        {
+            if (field.MinValue is { } minimum && number < minimum)
+            {
+                throw new ContentValidationException(
+                    messages["FieldBelowMinimum", field.Name, Format(minimum)]);
+            }
+
+            if (field.MaxValue is { } maximum && number > maximum)
+            {
+                throw new ContentValidationException(
+                    messages["FieldAboveMaximum", field.Name, Format(maximum)]);
+            }
+        }
+
+        if (!field.UsesPattern || string.IsNullOrWhiteSpace(field.Pattern) || value.TextValue is null)
+        {
+            return;
+        }
+
+        // Bei einer Stichwortliste muss jedes Stichwort für sich passen — das Muster
+        // beschreibt einen Wert, nicht die kommagetrennte Zeile.
+        var parts = field.IsKeywordField
+            ? KeywordList.Parse(value.TextValue)
+            : [value.TextValue];
+
+        foreach (var part in parts)
+        {
+            if (!Matches(field.Pattern, part))
+            {
+                throw new ContentValidationException(
+                    messages["FieldPatternMismatch", field.Name, field.Pattern]);
             }
         }
     }
+
+    /// <summary>
+    /// Prüft den <b>ganzen</b> Wert gegen das Muster, nicht einen Teil davon: „Zahl mit drei
+    /// Stellen“ soll nicht auch auf einen Text zutreffen, in dem drei Ziffern irgendwo stehen.
+    /// <para>
+    /// Ein kaputtes Muster gilt als erfüllt statt als Verstoß — es ist ein Fehler an der
+    /// Felddefinition und nicht am erfassten Wert; wer ihn ausbaden müsste, käme sonst an
+    /// seinem eigenen Datensatz nicht mehr vorbei. Die Zeitgrenze fängt Ausdrücke ab, die sich
+    /// an einer langen Eingabe festfressen.
+    /// </para>
+    /// </summary>
+    private static bool Matches(string pattern, string candidate)
+    {
+        try
+        {
+            return Regex.IsMatch(
+                candidate,
+                $"^(?:{pattern})$",
+                RegexOptions.CultureInvariant,
+                TimeSpan.FromMilliseconds(250));
+        }
+        catch (ArgumentException)
+        {
+            return true;
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Grenzen erscheinen in Meldungen in fester Kultur — dieselbe Regel wie bei den
+    /// Kurvenausdrücken; die Zahl steht so auch im Export.
+    /// </summary>
+    private static string Format(double value) =>
+        value.ToString("0.####", CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Trägt die Werte der Maske in den DbContext ein — ohne zu speichern, damit der Aufrufer

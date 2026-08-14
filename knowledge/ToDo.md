@@ -69,7 +69,7 @@ verhält sich alles wie heute.
 `FieldGroups` in allen vier Providern, `FormatVersion` auf **10**. Die Maske baut je Abschnitt
 einen aufgeklappten `MudExpansionPanel`, Felder ohne Abschnitt stehen wie bisher oben.
 
-### F4 — Wertebereiche und Formatprüfung an Feldern
+### F4 — Wertebereiche und Formatprüfung an Feldern ✅ umgesetzt
 
 > **Als** Nutzer **möchte ich** an einem Zahlenfeld Minimum und Maximum festlegen und an einem
 > Textfeld ein Muster, **damit** ein Tippfehler beim Erfassen auffällt und nicht erst im Spiel.
@@ -81,6 +81,11 @@ Die Einheit ist reine Anzeige (Suffix im Eingabefeld und in der Liste), aber sie
 häufigste Frage an einer Zahl: Sekunden oder Millisekunden?
 
 *Aufwand: S · Migration: ja · Format: +1*
+
+**Umgesetzt.** `Unit` gab es bereits; hinzu kamen `MinValue`, `MaxValue` und `Pattern`,
+Migration `FieldValidation` in allen vier Providern, `FormatVersion` auf **11**. Geprüft wird in
+`ContentFields.ValidateRequired` und in der Massenbearbeitung; ein kaputtes Muster wird schon
+beim Speichern des Feldes abgewiesen.
 
 ### F5 — Varianten: eine Entität erbt von einer anderen
 

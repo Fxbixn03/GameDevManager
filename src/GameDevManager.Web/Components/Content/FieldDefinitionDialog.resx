@@ -63,6 +63,21 @@
   <data name="UnitHelper" xml:space="preserve">
     <value>Reine Anzeige, z. B. „kg“, „s“ oder „%“.</value>
   </data>
+  <data name="MinLabel" xml:space="preserve">
+    <value>Mindestwert</value>
+  </data>
+  <data name="MaxLabel" xml:space="preserve">
+    <value>Höchstwert</value>
+  </data>
+  <data name="RangeHelper" xml:space="preserve">
+    <value>Leer heißt „offen“. Beim Speichern einer Entität wird geprüft, ob der Wert dazwischen liegt.</value>
+  </data>
+  <data name="PatternLabel" xml:space="preserve">
+    <value>Muster (regulärer Ausdruck)</value>
+  </data>
+  <data name="PatternHelper" xml:space="preserve">
+    <value>Der ganze Wert muss passen, z. B. „[A-Z]{2}-[0-9]{3}“. Bei einer Stichwortliste gilt das Muster je Stichwort.</value>
+  </data>
   <data name="GroupLabel" xml:space="preserve">
     <value>Abschnitt (optional)</value>
   </data>

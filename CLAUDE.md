@@ -55,6 +55,16 @@ Das Konzept verlangt in fast jedem Modul benutzerdefinierte Arten mit eigenen Fe
 
 `FieldValue` und individuelle `FieldDefinition`s haben bewusst **keinen** Fremdschlüssel auf die Entität — sie sind modulübergreifend und referenzieren über die GUID, so wie das Konzept es für alles vorsieht. Beim Löschen einer Entität muss der Modul-Service deshalb selbst aufräumen (siehe `ItemService.DeleteItemAsync`).
 
+#### Wertebereiche und Muster
+
+`MinValue`/`MaxValue` begrenzen eine Zahl, `Pattern` prüft einen Text, `Unit` steht als Suffix daneben (reine Anzeige, beantwortet aber die häufigste Frage an einer Zahl: Sekunden oder Millisekunden?). Geprüft wird in `ContentFields.ValidateRequired` — derselben Methode, durch die jeder Modul-Dienst ohnehin läuft. Fünf Dinge:
+
+- **Ein leeres Feld verstößt gegen nichts.** „Nicht ausgefüllt“ ist kein falscher Wert; ob es ausgefüllt sein muss, sagt allein `IsRequired`. Sonst wäre jede Grenze zugleich eine Pflicht.
+- **Das Muster gilt für den ganzen Wert** (`^(?:…)$`): „drei Ziffern“ soll nicht auch auf einen Text zutreffen, in dem drei Ziffern irgendwo stehen. Bei einer **Stichwortliste** gilt es je Stichwort — das Muster beschreibt einen Wert, nicht die kommagetrennte Zeile.
+- **Ein kaputtes Muster gilt beim Erfassen als erfüllt**, mit Zeitgrenze gegen Ausdrücke, die sich festfressen. Es ist ein Fehler an der Felddefinition und nicht am erfassten Wert; wer ihn ausbaden müsste, käme sonst an seinem eigenen Datensatz nicht mehr vorbei. Abgewiesen wird es dort, wo es entsteht: `ContentTypeService.Validate` lehnt ein ungültiges Muster und eine verdrehte Spanne beim Speichern des **Feldes** ab.
+- **Grenzen und Muster verschwinden beim Typwechsel** (`ResolveMinimum`/`ResolveMaximum`/`ResolvePattern`) — dieselbe Regel wie beim Stichwort-Schalter: An einem Textfeld stehen gebliebene Grenzen wirkten bei der Rückkehr zur Zahl unbemerkt weiter.
+- **Die Massenbearbeitung prüft dasselbe** (`ContentFields.ValidateValue`, dafür `internal`) — sonst wäre sie der Weg, die Grenze zu umgehen. Einmal für alle, nicht je Entität: Es ist ein Wert für alle.
+
 #### Feldgruppen
 
 `FieldDefinition.GroupName` fasst Felder in der Maske unter einer Überschrift zusammen („Kampfwerte“, „Wirtschaft“, „Darstellung“) — eine Art aus 25 Feldern bleibt damit lesbar. Vier Entscheidungen:
@@ -439,7 +449,7 @@ Für die Projektleiste liest `ExportSnapshotService.FindLatestExportedAtUtc` den
 Drei Entscheidungen, die man kennen muss:
 
 - **Serialisiert werden die Domain-Entitäten selbst**, kein DTO-Satz. Ein `JsonTypeInfo`-Modifier entfernt Navigationsobjekte (Referenzen bleiben als GUID-Spalten — die Regel des Konzepts) und berechnete Nur-Lese-Eigenschaften; Kind-Sammlungen bleiben eingebettet. Wer eine neue Kind-Sammlung lädt, muss sie im Service auch `Include`n und stabil sortieren — nicht geladene Sammlungen erschienen sonst als leere Listen im Export. Sammlungen, die trotz ihrer Form **nicht** ins Archiv gehören, stehen in `IsUnloadedCollection`: `AssetTag.Assignments` (die Zuordnungen stehen an den Assets), `ContentType.InheritedFields` (nur zusammengetragen) und `ContentType.Children` (die Unterarten stehen ohnehin als eigene Einträge in derselben Liste).
-- **Alle Listen sind stabil sortiert** (Name bzw. SortOrder, dann GUID): derselbe Stand ergibt denselben Export — die Grundlage der Diff-Ansicht. `FormatVersion` bei jeder Format-Änderung erhöhen; sie steht auf **10**, seit Felddefinitionen einen `groupName` tragen (davor **9** für die `objectives` der Quests, **8** für die Texte der Teilobjekte in den Zeichenketten-Tabellen unter `localization/`, **7** für die Lokalisierung selbst, **6** für den `isTagList`-Schalter der Felddefinitionen, **5** für NPC-Beziehungen, Karten-Ebenen und die erweiterten Story-Abschnitte, **4** für die `points` der Karten-Markierungen, **3** für `content/world.json`, **2** für die `parentId` der Arten).
+- **Alle Listen sind stabil sortiert** (Name bzw. SortOrder, dann GUID): derselbe Stand ergibt denselben Export — die Grundlage der Diff-Ansicht. `FormatVersion` bei jeder Format-Änderung erhöhen; sie steht auf **11**, seit Felddefinitionen `minValue`, `maxValue` und `pattern` tragen (davor **10** für ihren `groupName`, **9** für die `objectives` der Quests, **8** für die Texte der Teilobjekte in den Zeichenketten-Tabellen unter `localization/`, **7** für die Lokalisierung selbst, **6** für den `isTagList`-Schalter der Felddefinitionen, **5** für NPC-Beziehungen, Karten-Ebenen und die erweiterten Story-Abschnitte, **4** für die `points` der Karten-Markierungen, **3** für `content/world.json`, **2** für die `parentId` der Arten).
 - **Das ZIP entsteht in einer Temp-Datei** (`DeleteOnClose`) und wird dann in den Response kopiert: `ZipArchive` schließt Einträge synchron ab, und der Response-Stream von ASP.NET Core verbietet synchrone Schreibzugriffe.
 
 Was Export, Import und Diff gemeinsam über den Aufbau des Archivs wissen (JSON-Regeln samt `JsonTypeInfo`-Modifier, Manifest-Suche über alle Engine-Präfixe, Zuordnung Inhaltsdatei → Modul), steht in [ExportFormat.cs](src/GameDevManager.Data/Services/ExportFormat.cs).
@@ -463,7 +473,7 @@ Die Export-Seite zeigt außerdem die offenen **Health-Check-Funde** über dem Do
 
 ## Neuere Erweiterungen (14.08.2026)
 
-Was man beim Weiterarbeiten an den neuen Teilen wissen muss — die Migration dazu heißt in allen vier Providern `NpcRelationsMapLayersStoryAndBoards` (danach kam `FieldTagList` für die Stichwortfelder), die `FormatVersion` des Exports steht inzwischen auf **10**:
+Was man beim Weiterarbeiten an den neuen Teilen wissen muss — die Migration dazu heißt in allen vier Providern `NpcRelationsMapLayersStoryAndBoards` (danach kam `FieldTagList` für die Stichwortfelder), die `FormatVersion` des Exports steht inzwischen auf **11**:
 
 - **NPC-Beziehungen** (`NpcRelationType` + `NpcRelation`): Die Beziehungsart ist ein Bezeichnungspaar (Richtung/Gegenrichtung), bewusst keine `ContentType`-Art — sie trägt keine Felder. Beziehungen sind gerichtete Kind-Sammlungen des Quell-NPCs (Export eingebettet in `npcs.json`, die Arten daneben als `relationTypes`); die Gegenseite hängt als GUID ohne Fremdschlüssel daran, `NpcService.DeleteNpcAsync` räumt eingehende Beziehungen selbst ab. Die Arten hängen per Restrict-Fremdschlüssel an den Beziehungen — beim Projekt-Wipe deshalb **erst die NPCs, dann die Arten** löschen. `DeleteRelationTypeAsync` ist ein reiner `ExecuteDelete`-Pfad und prüft den `PermissionGuard` selbst.
 - **Wesenszüge/Vorlieben/Persönlichkeit am NPC**: Textspalten, keine Tabellen — Vorlieben/Persönlichkeit kommagetrennt (kanonisch über `KeywordList.Normalize`, dieselbe Hilfe wie bei den Stichwortfeldern), Wesenszüge kanonisch über `NpcTraits.Parse/Format` (feste Schlüssel, feste Reihenfolge — derselbe Stand ergibt denselben Export). UI: `ChipListInput` und `TraitBarEditor` unter `Components/Content`.

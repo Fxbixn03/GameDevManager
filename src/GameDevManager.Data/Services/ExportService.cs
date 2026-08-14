@@ -64,9 +64,10 @@ public class ExportService(
     /// der GUID des Abschnitts). Version 9: Quests tragen ihre <c>objectives</c> — die
     /// einzelnen Ziele, deren Abschlussbedingung als Bedingungssatz an ihrer eigenen GUID hängt.
     /// Version 10: Felddefinitionen tragen einen <c>groupName</c> — den benannten Abschnitt,
-    /// in dem das Feld in der Maske steht.
+    /// in dem das Feld in der Maske steht. Version 11: dieselben tragen <c>minValue</c>,
+    /// <c>maxValue</c> und <c>pattern</c> — die Grenzen einer Zahl und das Muster eines Textes.
     /// </remarks>
-    public const int FormatVersion = 10;
+    public const int FormatVersion = 11;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.

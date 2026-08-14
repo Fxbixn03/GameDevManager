@@ -18,6 +18,18 @@
   <data name="KeywordHelper" xml:space="preserve">
     <value>Mit Komma oder Enter bestätigen.</value>
   </data>
+  <data name="RangeBoth" xml:space="preserve">
+    <value>zulässig: {0} bis {1}</value>
+  </data>
+  <data name="RangeMinimum" xml:space="preserve">
+    <value>mindestens {0}</value>
+  </data>
+  <data name="RangeMaximum" xml:space="preserve">
+    <value>höchstens {0}</value>
+  </data>
+  <data name="PatternHint" xml:space="preserve">
+    <value>Muster: {0}</value>
+  </data>
   <data name="ReferenceHelper" xml:space="preserve">
     <value>Verweist auf: {0}</value>
   </data>

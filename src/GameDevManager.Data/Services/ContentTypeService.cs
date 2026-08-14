@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using GameDevManager.Domain;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -261,6 +262,9 @@ public class ContentTypeService(
                 IsRequired = field.IsRequired,
                 IsTagList = ResolveTagList(field),
                 Unit = Normalize(field.Unit),
+                MinValue = ResolveMinimum(field),
+                MaxValue = ResolveMaximum(field),
+                Pattern = ResolvePattern(field),
                 ReferenceModuleKey = ResolveReferenceModule(field),
                 SortOrder = field.SortOrder,
                 GroupName = Normalize(field.GroupName),
@@ -296,6 +300,9 @@ public class ContentTypeService(
         stored.IsRequired = field.IsRequired;
         stored.IsTagList = ResolveTagList(field);
         stored.Unit = Normalize(field.Unit);
+        stored.MinValue = ResolveMinimum(field);
+        stored.MaxValue = ResolveMaximum(field);
+        stored.Pattern = ResolvePattern(field);
         stored.ReferenceModuleKey = ResolveReferenceModule(field);
         stored.SortOrder = field.SortOrder;
         stored.GroupName = Normalize(field.GroupName);
@@ -485,6 +492,31 @@ public class ContentTypeService(
         {
             throw new ContentValidationException(messages["FieldOptionsNotEmpty"]);
         }
+
+        // Eine verdrehte Spanne ließe kein einziges Feld mehr speichern — der Fehler gehört
+        // dorthin, wo er entsteht, und nicht in jede Maske, die das Feld benutzt.
+        if (field.UsesRange
+            && field.MinValue is { } minimum
+            && field.MaxValue is { } maximum
+            && minimum > maximum)
+        {
+            throw new ContentValidationException(messages["FieldRangeInvalid"]);
+        }
+
+        // Dasselbe für ein kaputtes Muster: Beim Erfassen gilt es als erfüllt, damit niemand an
+        // seinem eigenen Datensatz hängenbleibt — hier abgewiesen zu werden ist die Stelle, an
+        // der man es beheben kann.
+        if (field.UsesPattern && !string.IsNullOrWhiteSpace(field.Pattern))
+        {
+            try
+            {
+                _ = Regex.Match(string.Empty, field.Pattern);
+            }
+            catch (ArgumentException)
+            {
+                throw new ContentValidationException(messages["FieldPatternInvalid"]);
+            }
+        }
     }
 
     /// <summary>
@@ -506,6 +538,20 @@ public class ContentTypeService(
     /// </summary>
     private static bool ResolveTagList(FieldDefinition field) =>
         field.Type == ContentFieldType.Text && field.IsTagList;
+
+    /// <summary>
+    /// Grenzen gelten nur an Zahlen, ein Muster nur an Texten. Wie beim Stichwort-Schalter wird
+    /// beim Typwechsel hier gelöscht und nicht bloß in der Maske ausgeblendet — sonst stünde
+    /// die Grenze noch an einem Textfeld und käme bei der Rückkehr zur Zahl unbemerkt wieder.
+    /// </summary>
+    private static double? ResolveMinimum(FieldDefinition field) =>
+        field.UsesRange ? field.MinValue : null;
+
+    private static double? ResolveMaximum(FieldDefinition field) =>
+        field.UsesRange ? field.MaxValue : null;
+
+    private static string? ResolvePattern(FieldDefinition field) =>
+        field.UsesPattern ? Normalize(field.Pattern) : null;
 
     private static string? Normalize(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
