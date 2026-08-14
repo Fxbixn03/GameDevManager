@@ -49,9 +49,10 @@ public class ExportService(
     /// </summary>
     /// <remarks>
     /// Version 2: Arten tragen eine <c>parentId</c> — Unterarten erben die Felder ihrer
-    /// Eltern-Art.
+    /// Eltern-Art. Version 4: Karten-Markierungen tragen <c>points</c> — Gebiete als Polygon
+    /// statt nur als Kreis.
     /// </remarks>
-    public const int FormatVersion = 3;
+    public const int FormatVersion = 4;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.

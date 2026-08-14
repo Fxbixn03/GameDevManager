@@ -165,6 +165,23 @@ public class MapService(
                 throw new ContentValidationException(messages["MapRadiusRange"]);
             }
 
+            if (marker.IsPolygon)
+            {
+                // Unlesbare Punktlisten kommen als leere Liste zurück und laufen in dieselbe
+                // Meldung — ein halbes Polygon zu speichern wäre schlimmer als keines.
+                var corners = marker.GetPolygonPoints();
+
+                if (corners.Count < 3)
+                {
+                    throw new ContentValidationException(messages["MapPolygonTooFewPoints"]);
+                }
+
+                if (corners.Any(corner => corner.X is < 0 or > 1 || corner.Y is < 0 or > 1))
+                {
+                    throw new ContentValidationException(messages["MapPolygonRange"]);
+                }
+            }
+
             // Eine Karte, die auf sich selbst verweist, führt beim Klick nirgendwohin.
             if (marker.TargetModuleKey == ModuleKeys.Maps && marker.TargetEntityId == map.Id)
             {
@@ -201,7 +218,8 @@ public class MapService(
                     MapId = stored.Id,
                     X = marker.X,
                     Y = marker.Y,
-                    Radius = marker.Radius,
+                    Radius = marker.IsPolygon ? null : marker.Radius,
+                    Points = NormalizePoints(marker),
                     Label = Normalize(marker.Label),
                     TargetModuleKey = marker.TargetEntityId is null ? null : marker.TargetModuleKey,
                     TargetEntityId = marker.TargetEntityId,
@@ -214,7 +232,8 @@ public class MapService(
             {
                 target.X = marker.X;
                 target.Y = marker.Y;
-                target.Radius = marker.Radius;
+                target.Radius = marker.IsPolygon ? null : marker.Radius;
+                target.Points = NormalizePoints(marker);
                 target.Label = Normalize(marker.Label);
                 target.TargetModuleKey = marker.TargetEntityId is null ? null : marker.TargetModuleKey;
                 target.TargetEntityId = marker.TargetEntityId;
@@ -256,4 +275,11 @@ public class MapService(
 
     private static string? Normalize(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    /// <summary>
+    /// Kanonische Schreibweise der Punktliste (feste Kultur, feste Rundung) — derselbe Stand
+    /// ergibt so denselben Export. Ein Kreis oder Punkt bleibt <c>null</c>.
+    /// </summary>
+    private static string? NormalizePoints(MapMarker marker) =>
+        MapMarker.FormatPoints(MapMarker.ParsePoints(marker.Points));
 }

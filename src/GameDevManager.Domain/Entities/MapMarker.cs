@@ -1,7 +1,9 @@
+using System.Globalization;
+
 namespace GameDevManager.Domain.Entities;
 
 /// <summary>
-/// Eine Markierung auf einer Karte: ein Punkt oder ein Bereich.
+/// Eine Markierung auf einer Karte: ein Punkt, ein Kreis-Bereich oder ein Polygon-Gebiet.
 /// <para>
 /// Position und Radius sind <b>relativ</b> zur Bildgröße (0 bis 1) und nicht in Pixeln. Damit
 /// bleiben die Markierungen richtig, egal wie groß die Karte gerade dargestellt wird — und
@@ -33,6 +35,16 @@ public class MapMarker
     /// </summary>
     public double? Radius { get; set; }
 
+    /// <summary>
+    /// Eckpunkte eines Polygon-Gebiets — das „Gebiete der Fraktionen einzeichnen“ aus dem
+    /// Konzept, für das der Kreis nur eine Näherung war. Relativ zur Bildgröße wie
+    /// <see cref="X"/> und <see cref="Y"/>, als Text <c>"x,y;x,y;…"</c> in fester Kultur:
+    /// So geht die Liste ohne eigene Tabelle durch Export, Import und Duplizieren.
+    /// <c>null</c> heißt Punkt oder Kreis-Bereich; ein Polygon braucht mindestens drei Punkte
+    /// und schließt den <see cref="Radius"/> aus. X und Y bleiben der Anker der Beschriftung.
+    /// </summary>
+    public string? Points { get; set; }
+
     public string? Label { get; set; }
 
     /// <summary>Modul der Zielentität — siehe <see cref="ModuleKeys"/>. <c>null</c> bei reinen Notizen.</summary>
@@ -52,9 +64,58 @@ public class MapMarker
 
     public int SortOrder { get; set; }
 
-    /// <summary>Ein Bereich statt eines Punktes.</summary>
+    /// <summary>Ein Kreis-Bereich statt eines Punktes.</summary>
     public bool IsArea => Radius is > 0;
+
+    /// <summary>Ein Polygon-Gebiet — siehe <see cref="Points"/>.</summary>
+    public bool IsPolygon => !string.IsNullOrWhiteSpace(Points);
 
     /// <summary>Zeigt auf eine andere Karte — das ist die Verknüpfung aus dem Konzept.</summary>
     public bool IsMapLink => TargetModuleKey == ModuleKeys.Maps && TargetEntityId is not null;
+
+    /// <summary>Die Eckpunkte aus <see cref="Points"/>; leer, wenn keine gesetzt sind.</summary>
+    public List<MapPoint> GetPolygonPoints() => ParsePoints(Points);
+
+    /// <summary>
+    /// Liest die Punktliste. Ein unlesbarer Eintrag macht die ganze Liste leer — die
+    /// Validierung behandelt das wie „zu wenige Punkte“, statt ein halbes Polygon zu zeigen.
+    /// </summary>
+    public static List<MapPoint> ParsePoints(string? points)
+    {
+        if (string.IsNullOrWhiteSpace(points))
+        {
+            return [];
+        }
+
+        var result = new List<MapPoint>();
+
+        foreach (var pair in points.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var parts = pair.Split(',');
+
+            if (parts.Length != 2
+                || !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
+                || !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var y))
+            {
+                return [];
+            }
+
+            result.Add(new MapPoint(x, y));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Schreibt die Punktliste in fester Kultur und fester Rundung — derselbe Stand ergibt
+    /// so denselben Export, die Grundlage der Diff-Ansicht.
+    /// </summary>
+    public static string? FormatPoints(IReadOnlyCollection<MapPoint> points) =>
+        points.Count == 0
+            ? null
+            : string.Join(';', points.Select(p =>
+                string.Create(CultureInfo.InvariantCulture, $"{p.X:0.####},{p.Y:0.####}")));
 }
+
+/// <summary>Ein Eckpunkt eines Polygon-Gebiets, relativ zur Bildgröße (0 bis 1).</summary>
+public readonly record struct MapPoint(double X, double Y);

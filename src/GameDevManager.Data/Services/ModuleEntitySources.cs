@@ -255,7 +255,7 @@ public sealed class MapEntitySource(IStringLocalizer<DataMessages> messages)
                 marker.MapId,
                 ModuleKeys.Maps,
                 marker.Map!.Name,
-                marker.Radius > 0 ? mapArea : mapMarker))
+                marker.Radius > 0 || marker.Points != null ? mapArea : mapMarker))
             .ToListAsync(ct);
     }
 }

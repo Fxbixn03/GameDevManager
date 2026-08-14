@@ -9,7 +9,6 @@ Stand 13.08.2026 — **die offenen Punkte aus dem Konzept sind abgearbeitet.** D
 - [ ] **Massenbearbeitung.** Mehrere Entitäten markieren und gemeinsam Art zuweisen, Tags vergeben oder einen Feldwert setzen — bei hunderten Items lohnt das schnell.
 - [ ] **CSV-Import/-Export je Modul.** Balancing wird oft in Tabellen gepflegt; ein Spalten-Mapping auf die Felder der Art (Import aktualisiert über die GUID- oder Namensspalte) würde den Weg Tabelle ↔ Tool schließen.
 - [ ] **Lokalisierung der Spielinhalte.** Item-Namen, Beschreibungen, Dialog- und Quest-Texte in mehreren Sprachen pflegen und mit exportieren. Das größte der Ideen-Themen (eigene Übersetzungstabelle je Text, Sprachwahl im Export, Fortschrittsanzeige „was ist noch unübersetzt“) — für jedes Spiel mit mehr als einer Sprache aber zentral.
-- [ ] **Fraktionsgebiete als Polygone.** Das Konzept nennt „Gebiete der Fraktionen einzeichnen“; der Kreis-Bereich der Marker ist dafür nur eine Näherung. Polygon-Zeichnen im Karten-Editor (Punktliste statt Radius am `MapMarker`).
 - [ ] **Änderungsprotokoll je Entität in der Maske.** `ChangeLogService.GetForEntityAsync` liefert die Geschichte einer einzelnen Entität bereits — es fehlt nur ein Abschnitt neben der Referenzansicht, der sie zeigt.
 - [ ] **Kurven vergleichen.** Zwei Levelkurven übereinander zeichnen (Spieler gegen Gegner, Klasse A gegen B) — das Diagramm kann heute nur eine.
 

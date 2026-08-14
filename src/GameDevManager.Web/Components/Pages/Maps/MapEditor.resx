@@ -51,6 +51,21 @@
   <data name="SetMarker" xml:space="preserve">
     <value>Markierung setzen</value>
   </data>
+  <data name="DrawArea" xml:space="preserve">
+    <value>Gebiet zeichnen</value>
+  </data>
+  <data name="ClickToDraw" xml:space="preserve">
+    <value>Auf die Karte klicken, um Eckpunkte zu setzen</value>
+  </data>
+  <data name="ClickToExtend" xml:space="preserve">
+    <value>Auf die Karte klicken, um Punkte anzufügen</value>
+  </data>
+  <data name="FinishArea" xml:space="preserve">
+    <value>Gebiet übernehmen ({0})</value>
+  </data>
+  <data name="DiscardArea" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
   <data name="NewMapHint" xml:space="preserve">
     <value>Kartenbild und Markierungen hängen an der GUID der Karte — beides lässt sich anlegen, sobald sie einmal gespeichert wurde.</value>
   </data>
@@ -108,6 +123,18 @@
   <data name="AreaSwitchLabel" xml:space="preserve">
     <value>Bereich statt Punkt</value>
   </data>
+  <data name="PolygonPointCount" xml:space="preserve">
+    <value>Polygon mit {0} Eckpunkten</value>
+  </data>
+  <data name="ExtendPolygon" xml:space="preserve">
+    <value>Punkte anfügen</value>
+  </data>
+  <data name="RemoveLastPoint" xml:space="preserve">
+    <value>Letzten Punkt entfernen</value>
+  </data>
+  <data name="DissolvePolygon" xml:space="preserve">
+    <value>In Punkt umwandeln</value>
+  </data>
   <data name="RadiusLabel" xml:space="preserve">
     <value>Radius: {0} % der Breite</value>
   </data>
@@ -158,6 +185,9 @@
   </data>
   <data name="MarkerFallbackArea" xml:space="preserve">
     <value>Bereich</value>
+  </data>
+  <data name="MarkerFallbackPolygon" xml:space="preserve">
+    <value>Gebiet</value>
   </data>
   <data name="MarkerFallback" xml:space="preserve">
     <value>Markierung</value>

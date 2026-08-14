@@ -18,6 +18,9 @@
   <data name="Area" xml:space="preserve">
     <value>Bereich</value>
   </data>
+  <data name="Polygon" xml:space="preserve">
+    <value>Gebiet</value>
+  </data>
   <data name="Marker" xml:space="preserve">
     <value>Markierung</value>
   </data>

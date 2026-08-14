@@ -24,6 +24,38 @@
         </div>
     }
 
+    @if (Markers.Any(m => m.IsPolygon) || DraftPoints.Count > 0)
+    {
+        @* Polygone als SVG-Overlay: der viewBox 0–100 macht die relativen Koordinaten zu
+           Prozenten, non-scaling-stroke hält die Linienstärke beim Strecken konstant. *@
+        <svg class="gdm-map-polygons" viewBox="0 0 100 100" preserveAspectRatio="none">
+            @foreach (var marker in Markers.Where(m => m.IsPolygon))
+            {
+                <polygon points="@PolygonPointList(marker)"
+                         class="gdm-map-polygon @(marker.Id == SelectedId ? "gdm-map-polygon-selected" : null)"
+                         style="@PolygonStyle(marker)"
+                         vector-effect="non-scaling-stroke"
+                         @onclick="@(args => SelectAsync(marker, args))"
+                         @onclick:stopPropagation="true">
+                    <title>@Describe(marker)</title>
+                </polygon>
+            }
+
+            @if (DraftPoints.Count > 0)
+            {
+                <polyline points="@DraftPointList()"
+                          class="gdm-map-draft"
+                          vector-effect="non-scaling-stroke" />
+
+                @* Schon der erste Klick soll sichtbar sein — eine Linie braucht erst zwei. *@
+                @foreach (var point in DraftPoints)
+                {
+                    <circle cx="@Percent(point.X)" cy="@Percent(point.Y)" r="0.7" class="gdm-map-draft-point" />
+                }
+            }
+        </svg>
+    }
+
     @foreach (var marker in Markers)
     {
         @if (marker.IsArea)
@@ -72,6 +104,10 @@
     [Parameter]
     public Guid? SelectedId { get; set; }
 
+    /// <summary>Die Eckpunkte eines gerade entstehenden Polygons — gezeichnet, aber noch kein Marker.</summary>
+    [Parameter]
+    public IReadOnlyList<MapPoint> DraftPoints { get; set; } = [];
+
     /// <summary>Der nächste Klick auf die Karte setzt eine Markierung statt nur auszuwählen.</summary>
     [Parameter]
     public bool Placing { get; set; }
@@ -115,9 +151,24 @@
     private static string MarkerColor(MapMarker marker) =>
         string.IsNullOrWhiteSpace(marker.Color) ? "var(--mud-palette-primary)" : marker.Color;
 
+    private static string PolygonStyle(MapMarker marker) =>
+        $"--gdm-marker-color:{MarkerColor(marker)};";
+
+    private static string PolygonPointList(MapMarker marker) =>
+        ToPointList(marker.GetPolygonPoints());
+
+    private string DraftPointList() => ToPointList(DraftPoints);
+
+    /// <summary>Relative Punkte als SVG-Punktliste im viewBox-Maß 0–100.</summary>
+    private static string ToPointList(IReadOnlyList<MapPoint> points) =>
+        string.Join(' ', points.Select(p => $"{Percent(p.X)},{Percent(p.Y)}"));
+
+    private static string Percent(double relative) =>
+        (relative * 100).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+
     private string Describe(MapMarker marker) =>
         string.IsNullOrWhiteSpace(marker.Label)
-            ? marker.IsArea ? L["Area"].Value : L["Marker"].Value
+            ? marker.IsPolygon ? L["Polygon"].Value : marker.IsArea ? L["Area"].Value : L["Marker"].Value
             : marker.Label;
 
     /// <summary>Rückgabe der JS-Hilfe.</summary>

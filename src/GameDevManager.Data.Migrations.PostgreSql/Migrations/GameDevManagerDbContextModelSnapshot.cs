@@ -1392,6 +1392,9 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.Property<Guid>("MapId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Points")
+                        .HasColumnType("text");
+
                     b.Property<double?>("Radius")
                         .HasColumnType("double precision");
 

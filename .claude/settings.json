@@ -99,7 +99,15 @@
       "PowerShell(dotnet tool restore; $env:Database__Provider=\"Sqlite\"; dotnet ef migrations add UserPermissions --project src/GameDevManager.Data.Migrations.Sqlite --startup-project src/GameDevManager.Web)",
       "PowerShell($env:Database__Provider=\"SqlServer\"; dotnet ef migrations add UserPermissions --project src/GameDevManager.Data.Migrations.SqlServer --startup-project src/GameDevManager.Web)",
       "PowerShell($env:Database__Provider=\"PostgreSql\"; dotnet ef migrations add UserPermissions --project src/GameDevManager.Data.Migrations.PostgreSql --startup-project src/GameDevManager.Web)",
-      "PowerShell($env:Database__Provider=\"MySql\"; dotnet ef migrations add UserPermissions --project src/GameDevManager.Data.Migrations.MySql --startup-project src/GameDevManager.Web)"
+      "PowerShell($env:Database__Provider=\"MySql\"; dotnet ef migrations add UserPermissions --project src/GameDevManager.Data.Migrations.MySql --startup-project src/GameDevManager.Web)",
+      "Read(//c/Users/FabianStangl/.nuget/packages/mudblazor/**)",
+      "PowerShell(Select-String -Path \"$env:USERPROFILE\\\\.nuget\\\\packages\\\\mudblazor\\\\9.8.0\\\\lib\\\\net9.0\\\\MudBlazor.xml\" -Pattern 'Filled.Pentagon\"|Filled.Polyline\"|Filled.Hexagon\"' | Select-Object -First 6 | ForEach-Object { $_.Line.Trim\\(\\) })",
+      "PowerShell($bytes = [IO.File]::ReadAllBytes\\(\"$env:USERPROFILE\\\\.nuget\\\\packages\\\\mudblazor\\\\9.8.0\\\\lib\\\\net10.0\\\\MudBlazor.dll\"\\); $text = [Text.Encoding]::ASCII.GetString\\($bytes\\); foreach \\($name in 'Pentagon','Polyline','Hexagon','PentagonOutlined'\\) { \"$name : $\\($text.Contains\\($name\\)\\)\" })",
+      "PowerShell(dotnet build 2>&1 | Select-String -Pattern 'error|warn|Build succeeded|Fehler|erfolgreich' | Select-Object -First 30 | ForEach-Object { $_.Line.Trim\\(\\) })",
+      "PowerShell(dotnet tool restore; foreach \\($p in 'SqlServer','PostgreSql','MySql','Sqlite'\\) { $env:Database__Provider = $p; Write-Output \"--- $p ---\"; dotnet ef migrations add MapMarkerPolygon --project \"src/GameDevManager.Data.Migrations.$p\" --startup-project src/GameDevManager.Web 2>&1 | Select-Object -Last 3 })",
+      "PowerShell($env:Database__Provider = $null; git status --short | Select-Object -First 40)",
+      "PowerShell(dotnet test 2>&1 | Select-String -Pattern 'error|Fehler|fehlgeschlagen|bestanden|Passed|Failed|Zusammenfassung' | Select-Object -Last 15 | ForEach-Object { $_.Line.Trim\\(\\) })",
+      "PowerShell(dotnet build 2>&1 | Select-String -Pattern 'error|Fehler' | Select-Object -First 10 | ForEach-Object { $_.Line.Trim\\(\\) }; dotnet test 2>&1 | Select-String -Pattern 'Bestanden|Fehler|Failed' | Select-Object -Last 3 | ForEach-Object { $_.Line.Trim\\(\\) })"
     ],
     "deny": [
       "Bash(rm:*)",

@@ -1387,6 +1387,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<Guid>("MapId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Points")
+                        .HasColumnType("TEXT");
+
                     b.Property<double?>("Radius")
                         .HasColumnType("REAL");
 

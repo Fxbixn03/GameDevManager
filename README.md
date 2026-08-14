@@ -35,7 +35,7 @@ Man legt seine Daten strukturiert während Planungsphasen an und kann diese spä
 | NPCs | NPCs und Mobs mit Arten, Händler- und Quest-Rollen, Shop-Sortiment mit Preisen, Lagerbestand und Auffüllzeiten, Spawn-Orte auf der Karte |
 | Fraktionen | Fraktionen mit Rollen und Rängen für zugeordnete NPCs |
 | Diplomatie | Beziehungen zwischen Fraktionen (Allianzen, Feindschaften) als Graph |
-| Karten | Welt-, Höhlen- und Gebäudekarten als Bilder; Marker für NPCs und Fraktionsgebiete; verlinkte Karten, etwa ein Hausinnenraum auf der Weltkarte |
+| Karten | Welt-, Höhlen- und Gebäudekarten als Bilder; Marker für NPCs, Fraktionsgebiete als Kreis oder gezeichnetes Polygon; verlinkte Karten, etwa ein Hausinnenraum auf der Weltkarte |
 | Dialoge | Dialoge zwischen NPCs und Spieler mit Antwortmöglichkeiten und Bedingungen; Gespräche zusätzlich als Graph, in dem Verzweigungen und unerreichbare Zeilen sichtbar werden; auch ambiente Sprechblasen |
 | Story | Storyline auf einem Zeitstrahl, verknüpft mit NPCs, Fraktionen und Orten |
 | Quests | Haupt- und Nebenmissionen sowie Events, an Story und Dialoge angelehnt, mit Bedingungen |

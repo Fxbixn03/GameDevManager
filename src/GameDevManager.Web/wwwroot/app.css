@@ -383,6 +383,47 @@ html {
     outline-offset: 2px;
 }
 
+/* Polygon-Gebiete: das SVG liegt über dem Bild, nur die Polygone selbst fangen Klicks —
+   sonst käme kein Klick mehr an der Karte darunter an. */
+.gdm-map-polygons {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.gdm-map-polygon {
+    pointer-events: auto;
+    cursor: pointer;
+    fill: color-mix(in srgb, var(--gdm-marker-color) 18%, transparent);
+    stroke: var(--gdm-marker-color);
+    stroke-width: 2px;
+}
+
+/* Beim Setzen, Zeichnen oder Verschieben darf ein Polygon den Klick nicht schlucken. */
+.gdm-map-placing .gdm-map-polygon {
+    pointer-events: none;
+}
+
+.gdm-map-polygon-selected {
+    stroke: var(--mud-palette-white);
+    stroke-width: 3px;
+}
+
+.gdm-map-draft {
+    fill: none;
+    stroke: var(--mud-palette-primary);
+    stroke-width: 2px;
+    stroke-dasharray: 6 4;
+    pointer-events: none;
+}
+
+.gdm-map-draft-point {
+    fill: var(--mud-palette-primary);
+    pointer-events: none;
+}
+
 /* Karten sind Bilder — die Übersicht zeigt sie als Kacheln statt als Tabellenzeilen. */
 .gdm-map-grid {
     display: grid;

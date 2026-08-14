@@ -1389,6 +1389,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Property<Guid>("MapId")
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("Points")
+                        .HasColumnType("longtext");
+
                     b.Property<double?>("Radius")
                         .HasColumnType("double");
 

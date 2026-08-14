@@ -657,6 +657,7 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.Property(m => m.TargetModuleKey).HasMaxLength(ModuleKeyLength);
             entity.Property(m => m.Color).HasMaxLength(20);
             entity.Ignore(m => m.IsArea);
+            entity.Ignore(m => m.IsPolygon);
             entity.Ignore(m => m.IsMapLink);
 
             entity.HasOne(m => m.Map)

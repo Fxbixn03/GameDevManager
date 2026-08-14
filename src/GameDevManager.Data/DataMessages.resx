@@ -288,6 +288,12 @@
   <data name="MapSelfLink" xml:space="preserve">
     <value>Eine Karte kann nicht auf sich selbst verweisen.</value>
   </data>
+  <data name="MapPolygonTooFewPoints" xml:space="preserve">
+    <value>Ein Gebiet braucht mindestens drei lesbare Eckpunkte.</value>
+  </data>
+  <data name="MapPolygonRange" xml:space="preserve">
+    <value>Eckpunkte eines Gebiets liegen relativ zum Bild zwischen 0 und 1.</value>
+  </data>
   <data name="NpcNameRequired" xml:space="preserve">
     <value>Der NPC braucht einen Namen.</value>
   </data>

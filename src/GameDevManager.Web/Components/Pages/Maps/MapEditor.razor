@@ -71,19 +71,44 @@ else
                                 @if (_mode != PlaceMode.None)
                                 {
                                     <MudText Typo="Typo.caption" Color="Color.Primary">
-                                        @(_mode == PlaceMode.Add
-                                            ? L["ClickToPlace"]
-                                            : L["ClickToMove"])
+                                        @ModeCaption
                                     </MudText>
                                 }
-                                <MudButton Size="Size.Small"
-                                           Variant="@(_mode == PlaceMode.Add ? Variant.Filled : Variant.Outlined)"
-                                           Color="Color.Primary"
-                                           StartIcon="@Icons.Material.Filled.AddLocationAlt"
-                                           Disabled="@(_imageAssetId is null)"
-                                           OnClick="ToggleAdd">
-                                    @(_mode == PlaceMode.Add ? L["PlacingDone"] : L["SetMarker"])
-                                </MudButton>
+                                @if (_mode == PlaceMode.Draw)
+                                {
+                                    <MudButton Size="Size.Small"
+                                               Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Filled.Check"
+                                               Disabled="@(_draftPoints.Count < 3)"
+                                               OnClick="CommitDraft">
+                                        @L["FinishArea", _draftPoints.Count]
+                                    </MudButton>
+                                    <MudButton Size="Size.Small"
+                                               Variant="Variant.Outlined"
+                                               OnClick="CancelDraft">
+                                        @L["DiscardArea"]
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton Size="Size.Small"
+                                               Variant="@(_mode == PlaceMode.Add ? Variant.Filled : Variant.Outlined)"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Filled.AddLocationAlt"
+                                               Disabled="@(_imageAssetId is null)"
+                                               OnClick="ToggleAdd">
+                                        @(_mode == PlaceMode.Add ? L["PlacingDone"] : L["SetMarker"])
+                                    </MudButton>
+                                    <MudButton Size="Size.Small"
+                                               Variant="Variant.Outlined"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Filled.Polyline"
+                                               Disabled="@(_imageAssetId is null)"
+                                               OnClick="StartDraft">
+                                        @L["DrawArea"]
+                                    </MudButton>
+                                }
                             </MudStack>
                         }
                     </MudStack>
@@ -107,6 +132,7 @@ else
                                    Alt="@_context.Entity.Name"
                                    Markers="_context.Entity.Markers"
                                    SelectedId="_selected?.Id"
+                                   DraftPoints="_draftPoints"
                                    Placing="@(_mode != PlaceMode.None)"
                                    OnPointPicked="OnPointPickedAsync"
                                    OnMarkerSelected="SelectMarker" />
@@ -248,23 +274,55 @@ else
                                 }
                             }
 
-                            <MudSwitch T="bool"
-                                       Value="marker.IsArea"
-                                       ValueChanged="ToggleArea"
-                                       Color="Color.Primary"
-                                       Label="@L["AreaSwitchLabel"]" />
-
-                            @if (marker.IsArea)
+                            @if (marker.IsPolygon)
                             {
-                                <MudSlider T="double"
-                                           Value="@((marker.Radius ?? 0.05) * 100)"
-                                           ValueChanged="@((double v) => Touch(() => marker.Radius = v / 100))"
-                                           Min="1"
-                                           Max="50"
-                                           Step="0.5"
-                                           Color="Color.Primary">
-                                    @L["RadiusLabel", ((marker.Radius ?? 0) * 100).ToString("0.#")]
-                                </MudSlider>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @L["PolygonPointCount", marker.GetPolygonPoints().Count]
+                                </MudText>
+
+                                <MudStack Row="true" Spacing="2">
+                                    <MudButton Size="Size.Small"
+                                               Variant="@(_mode == PlaceMode.Extend ? Variant.Filled : Variant.Outlined)"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Filled.Add"
+                                               OnClick="ToggleExtend">
+                                        @(_mode == PlaceMode.Extend ? L["PlacingDone"] : L["ExtendPolygon"])
+                                    </MudButton>
+                                    <MudButton Size="Size.Small"
+                                               Variant="Variant.Outlined"
+                                               Disabled="@(marker.GetPolygonPoints().Count <= 3)"
+                                               OnClick="RemoveLastPoint">
+                                        @L["RemoveLastPoint"]
+                                    </MudButton>
+                                </MudStack>
+
+                                <MudButton Size="Size.Small"
+                                           Variant="Variant.Text"
+                                           StartIcon="@Icons.Material.Filled.Place"
+                                           OnClick="DissolvePolygon">
+                                    @L["DissolvePolygon"]
+                                </MudButton>
+                            }
+                            else
+                            {
+                                <MudSwitch T="bool"
+                                           Value="marker.IsArea"
+                                           ValueChanged="ToggleArea"
+                                           Color="Color.Primary"
+                                           Label="@L["AreaSwitchLabel"]" />
+
+                                @if (marker.IsArea)
+                                {
+                                    <MudSlider T="double"
+                                               Value="@((marker.Radius ?? 0.05) * 100)"
+                                               ValueChanged="@((double v) => Touch(() => marker.Radius = v / 100))"
+                                               Min="1"
+                                               Max="50"
+                                               Step="0.5"
+                                               Color="Color.Primary">
+                                        @L["RadiusLabel", ((marker.Radius ?? 0) * 100).ToString("0.#")]
+                                    </MudSlider>
+                                }
                             }
 
                             <MudSelect T="Guid?"
@@ -385,7 +443,13 @@ else
     {
         None,
         Add,
-        Move
+        Move,
+
+        /// <summary>Ein neues Polygon-Gebiet entsteht: jeder Klick setzt einen Eckpunkt.</summary>
+        Draw,
+
+        /// <summary>Jeder Klick hängt einen Eckpunkt an das ausgewählte Polygon an.</summary>
+        Extend
     }
 
     [Parameter]
@@ -395,6 +459,7 @@ else
     private ReferencesPanel? _referencesPanel;
     private MapMarker? _selected;
     private PlaceMode _mode = PlaceMode.None;
+    private readonly List<MapPoint> _draftPoints = [];
     private Guid? _imageAssetId;
     private List<AssetLibraryEntry> _markerIcons = [];
     private readonly Dictionary<string, List<EntitySummary>> _targets = [];
@@ -402,6 +467,15 @@ else
     private bool _notFound;
     private bool _saving;
     private bool _dirty;
+
+    private string ModeCaption => _mode switch
+    {
+        PlaceMode.Add => L["ClickToPlace"],
+        PlaceMode.Move => L["ClickToMove"],
+        PlaceMode.Draw => L["ClickToDraw"],
+        PlaceMode.Extend => L["ClickToExtend"],
+        _ => string.Empty
+    };
 
     private string PageHeading => _context switch
     {
@@ -431,6 +505,7 @@ else
         _context = null;
         _selected = null;
         _mode = PlaceMode.None;
+        _draftPoints.Clear();
 
         var projectId = await Project.GetCurrentIdAsync();
         _context = await Maps.LoadForEditAsync(projectId, Id);
@@ -520,24 +595,68 @@ else
 
     // ------------------------------------------------------------------- Markierungen
 
-    private void ToggleAdd()
+    /// <summary>Wechselt den Modus; eine angefangene Polygon-Zeichnung verfällt dabei.</summary>
+    private void SetMode(PlaceMode mode)
     {
-        _mode = _mode == PlaceMode.Add ? PlaceMode.None : PlaceMode.Add;
+        if (_mode == PlaceMode.Draw && mode != PlaceMode.Draw)
+        {
+            _draftPoints.Clear();
+        }
+
+        _mode = mode;
     }
 
-    private void ToggleMove()
+    private void ToggleAdd() =>
+        SetMode(_mode == PlaceMode.Add ? PlaceMode.None : PlaceMode.Add);
+
+    private void ToggleMove() =>
+        SetMode(_mode == PlaceMode.Move ? PlaceMode.None : PlaceMode.Move);
+
+    private void ToggleExtend() =>
+        SetMode(_mode == PlaceMode.Extend ? PlaceMode.None : PlaceMode.Extend);
+
+    private void StartDraft()
     {
-        _mode = _mode == PlaceMode.Move ? PlaceMode.None : PlaceMode.Move;
+        _draftPoints.Clear();
+        _mode = PlaceMode.Draw;
+    }
+
+    private void CancelDraft() => SetMode(PlaceMode.None);
+
+    private void CommitDraft()
+    {
+        if (_context is null || _draftPoints.Count < 3)
+        {
+            return;
+        }
+
+        // Der Anker (X/Y) trägt Beschriftung und Symbol — der Schwerpunkt ist dafür der
+        // natürliche Startwert, verschieben lässt er sich danach wie jeder Punkt.
+        var marker = new MapMarker
+        {
+            MapId = _context.Entity.Id,
+            Points = MapMarker.FormatPoints(_draftPoints),
+            X = _draftPoints.Average(p => p.X),
+            Y = _draftPoints.Average(p => p.Y),
+            SortOrder = _context.Entity.Markers.Count
+        };
+
+        _context.Entity.Markers.Add(marker);
+        _selected = marker;
+        _draftPoints.Clear();
+        _mode = PlaceMode.None;
+        MarkDirty();
     }
 
     private void SelectMarker(MapMarker marker)
     {
+        var changed = !ReferenceEquals(_selected, marker);
         _selected = marker;
 
-        // Beim Auswählen soll nicht versehentlich verschoben werden.
-        if (_mode == PlaceMode.Move)
+        // Beim Auswählen soll nicht versehentlich verschoben oder angefügt werden.
+        if (_mode == PlaceMode.Move || (_mode == PlaceMode.Extend && changed))
         {
-            _mode = PlaceMode.None;
+            SetMode(PlaceMode.None);
         }
     }
 
@@ -565,14 +684,85 @@ else
                 break;
 
             case PlaceMode.Move when _selected is not null:
-                _selected.X = point.X;
-                _selected.Y = point.Y;
-                _mode = PlaceMode.None;
+                MoveSelected(point);
+                SetMode(PlaceMode.None);
+                MarkDirty();
+                break;
+
+            case PlaceMode.Draw:
+                // Noch kein Marker — erst „Gebiet übernehmen“ macht aus dem Entwurf einen.
+                _draftPoints.Add(new MapPoint(point.X, point.Y));
+                break;
+
+            case PlaceMode.Extend when _selected is { IsPolygon: true }:
+                var corners = _selected.GetPolygonPoints();
+                corners.Add(new MapPoint(point.X, point.Y));
+                _selected.Points = MapMarker.FormatPoints(corners);
                 MarkDirty();
                 break;
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>Verschiebt den Anker — bei einem Polygon wandern alle Eckpunkte mit.</summary>
+    private void MoveSelected((double X, double Y) point)
+    {
+        if (_selected is null)
+        {
+            return;
+        }
+
+        if (_selected.IsPolygon)
+        {
+            var dx = point.X - _selected.X;
+            var dy = point.Y - _selected.Y;
+
+            _selected.Points = MapMarker.FormatPoints([.. _selected.GetPolygonPoints()
+                .Select(corner => new MapPoint(
+                    Math.Clamp(corner.X + dx, 0, 1),
+                    Math.Clamp(corner.Y + dy, 0, 1)))]);
+        }
+
+        _selected.X = point.X;
+        _selected.Y = point.Y;
+    }
+
+    private void RemoveLastPoint()
+    {
+        if (_selected is not { IsPolygon: true })
+        {
+            return;
+        }
+
+        var corners = _selected.GetPolygonPoints();
+
+        // Unter drei Punkten ist es kein Gebiet mehr — dafür gibt es „In Punkt umwandeln“.
+        if (corners.Count <= 3)
+        {
+            return;
+        }
+
+        corners.RemoveAt(corners.Count - 1);
+        _selected.Points = MapMarker.FormatPoints(corners);
+        MarkDirty();
+    }
+
+    private void DissolvePolygon()
+    {
+        if (_selected is null)
+        {
+            return;
+        }
+
+        _selected.Points = null;
+
+        if (_mode == PlaceMode.Extend)
+        {
+            SetMode(PlaceMode.None);
+        }
+
+        MarkDirty();
     }
 
     private void RemoveMarker(MapMarker marker)
@@ -594,6 +784,7 @@ else
 
     private static string MarkerIcon(MapMarker marker) =>
         marker.IsMapLink ? Icons.Material.Filled.Map
+        : marker.IsPolygon ? Icons.Material.Filled.Pentagon
         : marker.IsArea ? Icons.Material.Filled.RadioButtonUnchecked
         : Icons.Material.Filled.Place;
 
@@ -613,7 +804,9 @@ else
             }
         }
 
-        return marker.IsArea ? L["MarkerFallbackArea"] : L["MarkerFallback"];
+        return marker.IsPolygon ? L["MarkerFallbackPolygon"]
+            : marker.IsArea ? L["MarkerFallbackArea"]
+            : L["MarkerFallback"];
     }
 
     // ------------------------------------------------------------------------ Speichern
