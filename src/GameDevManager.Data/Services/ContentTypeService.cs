@@ -259,6 +259,7 @@ public class ContentTypeService(
                 Description = Normalize(field.Description),
                 Type = field.Type,
                 IsRequired = field.IsRequired,
+                IsTagList = ResolveTagList(field),
                 Unit = Normalize(field.Unit),
                 ReferenceModuleKey = ResolveReferenceModule(field),
                 SortOrder = field.SortOrder,
@@ -292,6 +293,7 @@ public class ContentTypeService(
         stored.Description = Normalize(field.Description);
         stored.Type = field.Type;
         stored.IsRequired = field.IsRequired;
+        stored.IsTagList = ResolveTagList(field);
         stored.Unit = Normalize(field.Unit);
         stored.ReferenceModuleKey = ResolveReferenceModule(field);
         stored.SortOrder = field.SortOrder;
@@ -494,6 +496,14 @@ public class ContentTypeService(
         ContentFieldType.Rarity => ModuleKeys.Rarities,
         _ => null
     };
+
+    /// <summary>
+    /// Stichwörter gibt es nur im Textfeld. Der Schalter wird beim Typwechsel hier gelöscht und
+    /// nicht bloß in der Maske ausgeblendet — sonst stünde er noch an einem Zahlenfeld, und die
+    /// Rückkehr zum Text brächte ihn unbemerkt wieder mit.
+    /// </summary>
+    private static bool ResolveTagList(FieldDefinition field) =>
+        field.Type == ContentFieldType.Text && field.IsTagList;
 
     private static string? Normalize(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();

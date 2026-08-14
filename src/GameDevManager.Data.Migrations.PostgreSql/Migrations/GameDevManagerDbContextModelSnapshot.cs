@@ -1008,6 +1008,9 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.Property<bool>("IsRequired")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsTagList")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("ModuleKey")
                         .IsRequired()
                         .HasMaxLength(50)

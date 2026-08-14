@@ -52,7 +52,7 @@ public static class ContentFields
     {
         foreach (var field in context.ApplicableFields.Where(f => f.IsRequired))
         {
-            if (context.ValueFor(field).IsEmpty)
+            if (Canonicalize(field, context.ValueFor(field)).IsEmpty)
             {
                 throw new ContentValidationException(messages["RequiredFieldEmpty", field.Name]);
             }
@@ -91,7 +91,7 @@ public static class ContentFields
                 continue;
             }
 
-            var edited = context.ValueFor(field);
+            var edited = Canonicalize(field, context.ValueFor(field));
             if (edited.IsEmpty)
             {
                 db.FieldValues.Remove(existing);
@@ -110,7 +110,7 @@ public static class ContentFields
                 continue;
             }
 
-            var edited = context.ValueFor(field);
+            var edited = Canonicalize(field, context.ValueFor(field));
             if (edited.IsEmpty)
             {
                 continue;
@@ -192,6 +192,26 @@ public static class ContentFields
     /// </para>
     /// </summary>
     private const double StorageRoundingMillis = 1;
+
+    /// <summary>
+    /// Bringt den Wert eines Stichwortfeldes auf seine kanonische Form — getrimmt, ohne
+    /// Leereinträge und Dubletten (siehe <see cref="KeywordList"/>).
+    /// <para>
+    /// Bewusst hier und nicht erst in <see cref="CopyValues"/>: Erst danach steht fest, ob ein
+    /// Wert leer ist. Eine Eingabe aus lauter Kommas trüge sonst Text, hätte aber kein einziges
+    /// Stichwort — ein Pflichtfeld gälte als ausgefüllt und in der Datenbank landete eine Zeile
+    /// ohne Inhalt.
+    /// </para>
+    /// </summary>
+    private static FieldValue Canonicalize(FieldDefinition field, FieldValue value)
+    {
+        if (field.IsKeywordField)
+        {
+            value.TextValue = KeywordList.Normalize(value.TextValue);
+        }
+
+        return value;
+    }
 
     /// <summary>Überträgt die Wertspalten, ohne Id und Zuordnung anzufassen.</summary>
     private static void CopyValues(FieldValue source, FieldValue target)

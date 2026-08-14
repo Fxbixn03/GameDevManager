@@ -9,6 +9,15 @@
 
 @switch (Definition.Type)
 {
+    @* Stichwortliste vor dem gewöhnlichen Textfeld: Beides ist Typ „Text“, die Bedienung
+       unterscheidet der Schalter an der Felddefinition. *@
+    case ContentFieldType.Text when Definition.IsTagList:
+        <ChipListInput Value="Value.TextValue"
+                       ValueChanged="SetText"
+                       Label="@Label"
+                       HelperText="@KeywordHelperText" />
+        break;
+
     case ContentFieldType.Text:
         <MudTextField T="string"
                       Value="Value.TextValue"
@@ -171,6 +180,13 @@
         Modules.NameOrKey(Definition.ReferenceModuleKey)
         ?? Definition.ReferenceModuleKey
         ?? "—";
+
+    /// <summary>
+    /// Ohne eigene Beschreibung erklärt der Hilfetext die Bedienung — dass Komma und Enter ein
+    /// Stichwort abschließen, sieht man dem Feld sonst nicht an.
+    /// </summary>
+    private string KeywordHelperText =>
+        string.IsNullOrWhiteSpace(Definition.Description) ? L["KeywordHelper"] : Definition.Description;
 
     private string ReferenceHelperText =>
         string.IsNullOrWhiteSpace(Definition.Description)

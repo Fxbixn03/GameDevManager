@@ -1008,6 +1008,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<bool>("IsRequired")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsTagList")
+                        .HasColumnType("bit");
+
                     b.Property<string>("ModuleKey")
                         .IsRequired()
                         .HasMaxLength(50)

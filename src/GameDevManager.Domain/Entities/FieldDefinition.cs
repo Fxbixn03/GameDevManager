@@ -41,6 +41,22 @@ public class FieldDefinition
 
     public bool IsRequired { get; set; }
 
+    /// <summary>
+    /// Nur bei <see cref="ContentFieldType.Text"/>: Das Feld nimmt statt eines einzelnen Textes
+    /// mehrere Stichwörter auf (Elemente eines Zaubers, Schadensarten einer Waffe). Erfasst
+    /// werden sie als Chips, gespeichert kanonisch kommagetrennt in
+    /// <see cref="FieldValue.TextValue"/> — siehe <see cref="KeywordList"/>.
+    /// <para>
+    /// Bewusst ein Schalter am Textfeld und kein eigener <see cref="ContentFieldType"/>: Der
+    /// Wert bleibt Text und damit durchsuchbar, und ein bestehendes Textfeld lässt sich ohne
+    /// Verlust seiner Werte umstellen — ein Typwechsel löscht sie.
+    /// </para>
+    /// </summary>
+    public bool IsTagList { get; set; }
+
+    /// <summary>Trägt dieses Feld eine Stichwortliste? Nur Textfelder können das.</summary>
+    public bool IsKeywordField => IsTagList && Type == ContentFieldType.Text;
+
     /// <summary>Einheit zur reinen Anzeige, z. B. „kg", „s" oder „%".</summary>
     public string? Unit { get; set; }
 
@@ -72,6 +88,7 @@ public class FieldDefinition
         Description = Description,
         Type = Type,
         IsRequired = IsRequired,
+        IsTagList = IsTagList,
         Unit = Unit,
         ReferenceModuleKey = ReferenceModuleKey,
         SortOrder = SortOrder,

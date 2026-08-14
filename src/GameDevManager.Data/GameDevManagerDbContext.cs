@@ -225,6 +225,7 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.Property(f => f.Unit).HasMaxLength(30);
             entity.Property(f => f.ReferenceModuleKey).HasMaxLength(ModuleKeyLength);
             entity.Ignore(f => f.IsIndividual);
+            entity.Ignore(f => f.IsKeywordField);
 
             // Art-Felder verschwinden mit ihrer Art; individuelle Felder hängen an keiner
             // Fremdschlüsselbeziehung und werden vom ContentService mit der Entität entfernt.

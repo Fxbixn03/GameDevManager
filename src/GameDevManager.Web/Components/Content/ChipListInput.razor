@@ -51,10 +51,9 @@
 
     private string? _draft;
 
-    private List<string> Entries =>
-        (Value ?? string.Empty)
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToList();
+    // Lesen und Schreiben der Textspalte gehören der Domäne (KeywordList) — dieselbe Regel,
+    // nach der die Datenschicht den Wert kanonisch ablegt.
+    private List<string> Entries => KeywordList.Parse(Value);
 
     private async Task OnKeyUp(KeyboardEventArgs args)
     {
@@ -74,14 +73,7 @@
         }
 
         var entries = Entries;
-
-        foreach (var part in _draft.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (!entries.Contains(part, StringComparer.OrdinalIgnoreCase))
-            {
-                entries.Add(part);
-            }
-        }
+        entries.AddRange(KeywordList.Parse(_draft));
 
         _draft = null;
         await PublishAsync(entries);
@@ -96,7 +88,9 @@
 
     private Task PublishAsync(List<string> entries)
     {
-        Value = entries.Count == 0 ? null : string.Join(", ", entries);
+        // Format wirft Dubletten heraus — auch die, die eben erst durch das Anhängen des
+        // Entwurfs entstanden sind.
+        Value = KeywordList.Format(entries);
         return ValueChanged.InvokeAsync(Value);
     }
 }

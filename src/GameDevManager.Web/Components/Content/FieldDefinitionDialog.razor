@@ -102,6 +102,17 @@
                               HelperText="@L["UnitHelper"]" />
             }
 
+            @* Stichwörter gibt es nur im Textfeld — die anderen Typen tragen je einen Wert. *@
+            @if (Field.Type == ContentFieldType.Text)
+            {
+                <div>
+                    <MudSwitch @bind-Value="Field.IsTagList"
+                               Color="Color.Primary"
+                               Label="@L["TagListLabel"]" />
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["TagListHelper"]</MudText>
+                </div>
+            }
+
             <MudSwitch @bind-Value="Field.IsRequired"
                        Color="Color.Primary"
                        Label="@L["RequiredLabel"]" />
@@ -147,6 +158,13 @@
             ContentFieldType.Rarity => ModuleKeys.Rarities,
             _ => null
         };
+
+        // Der Stichwort-Schalter gehört zum Textfeld: Bleibt er an einem Zahlenfeld stehen, wirkt
+        // er beim Zurückwechseln unbemerkt weiter. Die Datenschicht räumt ihn ebenso ab.
+        if (type != ContentFieldType.Text)
+        {
+            Field.IsTagList = false;
+        }
 
         if (type != ContentFieldType.Select)
         {

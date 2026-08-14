@@ -149,8 +149,8 @@ public class NpcService(
         stored.IsQuestGiver = npc.IsQuestGiver;
         stored.LootTableId = npc.LootTableId;
         stored.CharacterClassId = npc.CharacterClassId;
-        stored.Preferences = NormalizeKeywords(npc.Preferences);
-        stored.Personality = NormalizeKeywords(npc.Personality);
+        stored.Preferences = KeywordList.Normalize(npc.Preferences);
+        stored.Personality = KeywordList.Normalize(npc.Personality);
         // Über den Umweg Parse/Format wird die Spalte kanonisch — derselbe Stand ergibt
         // denselben Export.
         stored.Traits = NpcTraits.Format(NpcTraits.Parse(npc.Traits));
@@ -232,25 +232,6 @@ public class NpcService(
         {
             throw new ContentValidationException(messages["NpcRelationDuplicate"]);
         }
-    }
-
-    /// <summary>
-    /// Kommagetrennte Stichwörter (Vorlieben, Persönlichkeit) aufgeräumt speichern:
-    /// getrimmt, Leereinträge und Dubletten raus — derselbe Stand ergibt denselben Export.
-    /// </summary>
-    private static string? NormalizeKeywords(string? keywords)
-    {
-        if (string.IsNullOrWhiteSpace(keywords))
-        {
-            return null;
-        }
-
-        var parts = keywords
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        return parts.Count == 0 ? null : string.Join(", ", parts);
     }
 
     private static void SyncOffers(

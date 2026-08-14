@@ -434,6 +434,11 @@ else
     {
         var parts = new List<string> { FieldTypes.Describe(field.Type) };
 
+        if (field.IsKeywordField)
+        {
+            parts.Add(L["TagListNote"]);
+        }
+
         if (field.Type == ContentFieldType.EntityReference)
         {
             parts.Add(L["ReferenceTarget", Modules.NameOrKey(field.ReferenceModuleKey)]);

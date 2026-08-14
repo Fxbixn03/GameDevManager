@@ -141,4 +141,7 @@
   <data name="UnitFormat" xml:space="preserve">
     <value>in {0}</value>
   </data>
+  <data name="TagListNote" xml:space="preserve">
+    <value>Stichwörter</value>
+  </data>
 </root>

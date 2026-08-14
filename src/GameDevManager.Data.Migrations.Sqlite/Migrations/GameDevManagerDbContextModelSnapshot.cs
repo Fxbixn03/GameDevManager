@@ -1003,6 +1003,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<bool>("IsRequired")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsTagList")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("ModuleKey")
                         .IsRequired()
                         .HasMaxLength(50)

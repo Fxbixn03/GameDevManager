@@ -15,6 +15,9 @@
   <data name="RequiredLabel" xml:space="preserve">
     <value>{0} *</value>
   </data>
+  <data name="KeywordHelper" xml:space="preserve">
+    <value>Mit Komma oder Enter bestätigen.</value>
+  </data>
   <data name="ReferenceHelper" xml:space="preserve">
     <value>Verweist auf: {0}</value>
   </data>

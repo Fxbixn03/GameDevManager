@@ -63,6 +63,12 @@
   <data name="UnitHelper" xml:space="preserve">
     <value>Reine Anzeige, z. B. „kg“, „s“ oder „%“.</value>
   </data>
+  <data name="TagListLabel" xml:space="preserve">
+    <value>Als Stichwörter</value>
+  </data>
+  <data name="TagListHelper" xml:space="preserve">
+    <value>Mehrere Werte statt eines Textes, z. B. Elemente: mit Komma oder Enter bestätigen.</value>
+  </data>
   <data name="RequiredLabel" xml:space="preserve">
     <value>Pflichtfeld</value>
   </data>

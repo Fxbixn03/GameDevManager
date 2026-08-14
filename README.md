@@ -15,7 +15,7 @@
 
 Ein Verwaltungstool für die Spieleentwicklung. Damit baust du vor und während der Entwicklung ein strukturiertes Wiki für deine Spielwelt auf und exportierst die Inhalte später in deine Game Engine.
 
-**Status: Alle Module umgesetzt.** Sämtliche Punkte des Konzepts sind gebaut — zuletzt Benutzeranmeldung und Änderungsprotokoll, der Freischaltungs-Baum, das Welt-Modul (Tageszeit/Wetter/Biome) und der Feldtyp „Formel/Kurve“ für Levelkurven und Schadensformeln.
+**Status: Alle Module umgesetzt.** Sämtliche Punkte des Konzepts sind gebaut — zuletzt Benutzeranmeldung und Änderungsprotokoll, der Freischaltungs-Baum, das Welt-Modul (Tageszeit/Wetter/Biome), der Feldtyp „Formel/Kurve“ für Levelkurven und Schadensformeln sowie Textfelder, die als **Stichwortliste** mehrere Werte aufnehmen (Elemente, Schadensarten).
 
 ## Worum geht es?
 
@@ -29,7 +29,7 @@ Man legt seine Daten strukturiert während Planungsphasen an und kann diese spä
 
 | Modul | Beschreibung |
 |---|---|
-| Items | Items mit Name, Sprite und Werten definieren; Item-Arten mit eigenen Feldern und Unterarten, die diese Felder erben |
+| Items | Items mit Name, Sprite und Werten definieren; Item-Arten mit eigenen Feldern (auch Stichwortlisten für mehrere Werte in einem Feld) und Unterarten, die diese Felder erben |
 | Crafting | Rezepte aus Ziel-Items, benötigten Items und einer Rezept-Art; filterbare Rezeptliste, Crafting-Trees als Graph |
 | Währungen | Beliebig viele Ingame-Währungen, die Händler akzeptieren |
 | NPCs | NPCs und Mobs mit Arten, Händler- und Quest-Rollen, Shop-Sortiment mit Preisen, Lagerbestand und Auffüllzeiten, Spawn-Orte auf der Karte |

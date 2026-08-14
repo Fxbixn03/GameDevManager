@@ -54,9 +54,11 @@ public class ExportService(
     /// <c>content/npcs.json</c> sowie Einzigartig-Schalter, Vorlieben, Persönlichkeit und
     /// Wesenszüge; Karten tragen <c>layers</c>, Markierungen eine <c>layerId</c>;
     /// Story-Abschnitte tragen Stimmung, Spieldatum, Dauer, Ort, Karten-Verknüpfung
-    /// und <c>links</c> auf andere Abschnitte.
+    /// und <c>links</c> auf andere Abschnitte. Version 6: Felddefinitionen tragen
+    /// <c>isTagList</c> — Textfelder mit mehreren Stichwörtern, deren Wert kommagetrennt in
+    /// <c>content/field-values.json</c> steht.
     /// </remarks>
-    public const int FormatVersion = 5;
+    public const int FormatVersion = 6;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
