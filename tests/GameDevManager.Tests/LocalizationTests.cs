@@ -247,6 +247,134 @@ public class LocalizationTests
     }
 
     [Fact]
+    public async Task Die_Arbeitsliste_zeigt_Dialogzeilen_und_Antwortmoeglichkeiten()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+
+        Guid lineId;
+        Guid choiceId;
+
+        await using (var db = database.CreateContext())
+        {
+            var dialogue = new Dialogue
+            {
+                GameProjectId = database.ProjectId,
+                Name = "Torwache",
+                Kind = DialogueKind.Conversation,
+                IncludesPlayer = true
+            };
+
+            var line = new DialogueLine { DialogueId = dialogue.Id, Text = "Halt!", SortOrder = 0 };
+            var choice = new DialogueChoice { DialogueLineId = line.Id, Text = "Wer bist du?" };
+
+            line.Choices.Add(choice);
+            dialogue.Lines.Add(line);
+
+            db.Dialogues.Add(dialogue);
+            await db.SaveChangesAsync();
+
+            lineId = line.Id;
+            choiceId = choice.Id;
+        }
+
+        var rows = await database.GetService<LocalizationService>()
+            .GetRowsAsync(database.ProjectId, ModuleKeys.Dialogs, "en");
+
+        // Die Zeile hängt an ihrer eigenen GUID, nicht an der des Dialogs.
+        var lineRow = Assert.Single(rows, row => row.OwnerEntityId == lineId);
+        Assert.Equal("Halt!", lineRow.SourceText);
+        Assert.Equal(TranslationSlots.Text, lineRow.Slot);
+        Assert.Equal("Torwache", lineRow.OwnerName);
+
+        var choiceRow = Assert.Single(rows, row => row.OwnerEntityId == choiceId);
+        Assert.Equal("Wer bist du?", choiceRow.SourceText);
+
+        // Name des Dialogs, dann seine Zeile, dann die Antwort daran — beieinander.
+        Assert.Equal(
+            new[] { "Torwache", "Halt!", "Wer bist du?" },
+            rows.Select(row => row.SourceText));
+    }
+
+    [Fact]
+    public async Task Die_Arbeitsliste_zeigt_den_Story_Text()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+
+        Guid entryId;
+
+        await using (var db = database.CreateContext())
+        {
+            var entry = new StoryEntry
+            {
+                GameProjectId = database.ProjectId,
+                Name = "Der Aufbruch",
+                Body = "Sie zogen nach Norden."
+            };
+
+            db.StoryEntries.Add(entry);
+            await db.SaveChangesAsync();
+
+            entryId = entry.Id;
+        }
+
+        var rows = await database.GetService<LocalizationService>()
+            .GetRowsAsync(database.ProjectId, ModuleKeys.Story, "en");
+
+        var body = Assert.Single(rows, row => row.Slot == TranslationSlots.Body);
+
+        Assert.Equal(entryId, body.OwnerEntityId);
+        Assert.Equal("Sie zogen nach Norden.", body.SourceText);
+    }
+
+    [Fact]
+    public async Task Uebersetzte_Dialogzeilen_zaehlen_im_Fortschritt_und_gehen_beim_Loeschen_mit()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+
+        Guid dialogueId;
+        Guid lineId;
+
+        await using (var db = database.CreateContext())
+        {
+            var dialogue = new Dialogue
+            {
+                GameProjectId = database.ProjectId,
+                Name = "Torwache",
+                Kind = DialogueKind.Conversation
+            };
+
+            var line = new DialogueLine { DialogueId = dialogue.Id, Text = "Halt!", SortOrder = 0 };
+            dialogue.Lines.Add(line);
+
+            db.Dialogues.Add(dialogue);
+            await db.SaveChangesAsync();
+
+            dialogueId = dialogue.Id;
+            lineId = line.Id;
+        }
+
+        var service = database.GetService<LocalizationService>();
+
+        // Zwei offene Texte: der Name des Dialogs und die Zeile darin.
+        Assert.Equal(2, Assert.Single(await service.GetProgressAsync(database.ProjectId)).Total);
+
+        await service.SaveAsync(
+            database.ProjectId, lineId, ModuleKeys.Dialogs, TranslationSlots.Text, "en", "Halt!", "Halt!");
+
+        Assert.Equal(1, Assert.Single(await service.GetProgressAsync(database.ProjectId)).Translated);
+
+        // Die Zeile ist ein Teilobjekt — ihre Übersetzung hängt an einer GUID, die es nach
+        // dem Löschen des Dialogs nicht mehr gibt.
+        await database.GetService<DialogueService>().DeleteDialogueAsync(dialogueId);
+
+        await using var check = database.CreateContext();
+        Assert.Empty(await check.ContentTranslations.ToListAsync());
+    }
+
+    [Fact]
     public async Task Sprachen_und_Uebersetzungen_ueberstehen_Export_und_Import()
     {
         using var database = new TestDatabase();

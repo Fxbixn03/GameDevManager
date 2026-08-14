@@ -57,9 +57,13 @@ public class ExportService(
     /// Story-Abschnitte tragen Stimmung, Spieldatum, Dauer, Ort, Karten-Verknüpfung
     /// und <c>links</c> auf andere Abschnitte. Version 6: Felddefinitionen tragen
     /// <c>isTagList</c> — Textfelder mit mehreren Stichwörtern, deren Wert kommagetrennt in
-    /// <c>content/field-values.json</c> steht.
+    /// <c>content/field-values.json</c> steht. Version 8: Die Zeichenketten-Tabellen unter
+    /// <c>localization/</c> tragen zusätzlich die Texte der Teilobjekte — Dialogzeilen und
+    /// ihre Antwortmöglichkeiten (Slot <c>text</c>, adressiert über die GUID der Zeile bzw.
+    /// der Antwort), Cutscene-Einstellungen (ebenso) und den Story-Text (Slot <c>body</c> an
+    /// der GUID des Abschnitts).
     /// </remarks>
-    public const int FormatVersion = 7;
+    public const int FormatVersion = 8;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.

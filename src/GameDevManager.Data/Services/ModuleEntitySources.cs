@@ -225,6 +225,50 @@ public sealed class DialogueEntitySource(IStringLocalizer<DataMessages> messages
 
         return hits;
     }
+
+    /// <summary>
+    /// Die gesprochenen Zeilen und die Antwortmöglichkeiten daran. Beide haben eigene GUIDs
+    /// und tragen ihre Übersetzung deshalb selbst — dieselbe Adressierung wie ihre
+    /// Bedingungen, und <c>DeleteDialogueAsync</c> räumt sie längst mit ab.
+    /// </summary>
+    public override async Task<List<TranslatableText>> GetTranslatableTextsAsync(
+        GameDevManagerDbContext db, Guid projectId, CancellationToken ct)
+    {
+        var lines = await db.DialogueLines
+            .AsNoTracking()
+            .Where(line => line.Dialogue!.GameProjectId == projectId)
+            .OrderBy(line => line.Dialogue!.Name)
+            .ThenBy(line => line.SortOrder)
+            .Select(line => new
+            {
+                line.Id,
+                line.Text,
+                line.SortOrder,
+                line.DialogueId,
+                DialogueName = line.Dialogue!.Name,
+                Choices = line.Choices
+                    .OrderBy(choice => choice.SortOrder)
+                    .Select(choice => new { choice.Id, choice.Text, choice.SortOrder })
+                    .ToList()
+            })
+            .ToListAsync(ct);
+
+        var texts = new List<TranslatableText>();
+
+        foreach (var line in lines)
+        {
+            texts.Add(new TranslatableText(
+                line.Id, line.DialogueId, line.DialogueName, TranslationSlots.Text,
+                Messages["Translate_DialogueLine", line.SortOrder + 1].Value, line.Text));
+
+            texts.AddRange(line.Choices.Select(choice => new TranslatableText(
+                choice.Id, line.DialogueId, line.DialogueName, TranslationSlots.Text,
+                Messages["Translate_DialogueChoice", line.SortOrder + 1, choice.SortOrder + 1].Value,
+                choice.Text)));
+        }
+
+        return texts;
+    }
 }
 
 /// <summary>
@@ -458,6 +502,29 @@ public sealed class StoryEntrySource(IStringLocalizer<DataMessages> messages)
             .ToListAsync(ct));
 
         return hits;
+    }
+
+    /// <summary>
+    /// Der ausgeschriebene Story-Text. Er hängt an der Entität selbst — die geerbte
+    /// Beschreibung bleibt daneben die Kurzfassung und wird ohnehin schon übersetzt.
+    /// </summary>
+    public override async Task<List<TranslatableText>> GetTranslatableTextsAsync(
+        GameDevManagerDbContext db, Guid projectId, CancellationToken ct)
+    {
+        var entries = await db.StoryEntries
+            .AsNoTracking()
+            .Where(entry => entry.GameProjectId == projectId && entry.Body != null && entry.Body != "")
+            .OrderBy(entry => entry.SortOrder)
+            .Select(entry => new { entry.Id, entry.Name, entry.Body })
+            .ToListAsync(ct);
+
+        var label = Messages["Translate_StoryBody"].Value;
+
+        return
+        [
+            .. entries.Select(entry => new TranslatableText(
+                entry.Id, entry.Id, entry.Name, TranslationSlots.Body, label, entry.Body!))
+        ];
     }
 }
 
@@ -804,6 +871,33 @@ public sealed class CutsceneEntitySource(IStringLocalizer<DataMessages> messages
             .ToListAsync(ct));
 
         return hits;
+    }
+
+    /// <summary>Die Einstellungen des Storyboards — jede mit eigener GUID.</summary>
+    public override async Task<List<TranslatableText>> GetTranslatableTextsAsync(
+        GameDevManagerDbContext db, Guid projectId, CancellationToken ct)
+    {
+        var shots = await db.CutsceneShots
+            .AsNoTracking()
+            .Where(shot => shot.Cutscene!.GameProjectId == projectId)
+            .OrderBy(shot => shot.Cutscene!.Name)
+            .ThenBy(shot => shot.SortOrder)
+            .Select(shot => new
+            {
+                shot.Id,
+                shot.Text,
+                shot.SortOrder,
+                shot.CutsceneId,
+                CutsceneName = shot.Cutscene!.Name
+            })
+            .ToListAsync(ct);
+
+        return
+        [
+            .. shots.Select(shot => new TranslatableText(
+                shot.Id, shot.CutsceneId, shot.CutsceneName, TranslationSlots.Text,
+                Messages["Translate_CutsceneShot", shot.SortOrder + 1].Value, shot.Text))
+        ];
     }
 }
 

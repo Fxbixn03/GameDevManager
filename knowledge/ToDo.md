@@ -123,7 +123,7 @@ sollte, nicht die Formel — die Engine soll nicht parsen müssen.
 
 ## B. Erzählung und Lokalisierung
 
-### F8 — Übersetzbare Kind-Sammlungen (Dialogzeilen!)
+### F8 — Übersetzbare Kind-Sammlungen (Dialogzeilen!) ✅ umgesetzt
 
 > **Als** Lokalisierer **möchte ich** Dialogzeilen, Antwortmöglichkeiten und Cutscene-Einstellungen
 > übersetzen, **damit** das Spiel in einer zweiten Sprache mehr kann als Item-Namen.
@@ -139,6 +139,10 @@ Story. Damit ist auch jedes künftige Modul dabei — dasselbe Muster wie bei `F
 Die Zeichenketten-Tabelle unter `localization/<code>.json` bekommt die Zeilen ohne weiteres Zutun.
 
 *Aufwand: M · Migration: nein · Format: +1 (mehr Schlüssel in der Tabelle)*
+
+**Umgesetzt.** `IModuleEntitySource.GetTranslatableTextsAsync` liefert die Zusatztexte je Modul;
+überschrieben von Dialog (Zeilen und Antworten, Slot `text` an ihrer eigenen GUID), Cutscene
+(Einstellungen) und Story (`Body`, Slot `body` an der Entität). `FormatVersion` steht auf **8**.
 
 ### F9 — Übersetzungen als CSV heraus und wieder herein
 

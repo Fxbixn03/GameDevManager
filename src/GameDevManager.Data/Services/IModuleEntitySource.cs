@@ -111,6 +111,18 @@ public interface IModuleEntitySource
     /// </summary>
     Task<List<EntityReferenceHit>> FindReferencesAsync(
         GameDevManagerDbContext db, Guid entityId, CancellationToken ct);
+
+    /// <summary>
+    /// Texte des Moduls, die <b>nicht</b> in Name, Beschreibung oder einem benutzerdefinierten
+    /// Feld stehen — Dialogzeilen, Antwortmöglichkeiten, Cutscene-Einstellungen, der Story-Text.
+    /// <para>
+    /// Ohne diesen Weg erfasste die Lokalisierung ausgerechnet die textlastigsten Inhalte des
+    /// Tools nicht. Dasselbe Muster wie bei <see cref="FindReferencesAsync"/>: Wer nichts
+    /// zusätzlich hat, meldet nichts, und ein künftiges Modul ist von selbst dabei.
+    /// </para>
+    /// </summary>
+    Task<List<TranslatableText>> GetTranslatableTextsAsync(
+        GameDevManagerDbContext db, Guid projectId, CancellationToken ct);
 }
 
 /// <summary>
@@ -358,6 +370,15 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
     public virtual Task<List<EntityReferenceHit>> FindReferencesAsync(
         GameDevManagerDbContext db, Guid entityId, CancellationToken ct) =>
         Task.FromResult(new List<EntityReferenceHit>());
+
+    /// <summary>
+    /// Standardfall: Das Modul trägt seine Texte in Name, Beschreibung und benutzerdefinierten
+    /// Feldern — die kennt der <see cref="LocalizationService"/> bereits. Virtuell aus
+    /// demselben Grund wie <see cref="FindReferencesAsync"/>.
+    /// </summary>
+    public virtual Task<List<TranslatableText>> GetTranslatableTextsAsync(
+        GameDevManagerDbContext db, Guid projectId, CancellationToken ct) =>
+        Task.FromResult(new List<TranslatableText>());
 
     /// <summary>
     /// Bildet Entitäten auf Suchtreffer ab. Je Modul eigen, weil Untertitel und Vorschaubild

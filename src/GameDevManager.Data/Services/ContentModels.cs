@@ -39,6 +39,25 @@ public sealed record EntityReferenceHit(
     string SourceName,
     string FieldName);
 
+/// <summary>
+/// Ein übersetzbarer Text, den ein Modul <b>zusätzlich</b> zu Name, Beschreibung und den
+/// Textwerten der benutzerdefinierten Felder mitbringt — die gesprochenen Zeilen eines Dialogs,
+/// die Antwortmöglichkeiten, die Einstellungen einer Cutscene, der Story-Text.
+/// <para>
+/// <see cref="OwnerEntityId"/> ist die GUID, an der die Übersetzung hängt: bei einem Teilobjekt
+/// dessen eigene, sonst die der Entität. <see cref="EntityId"/> und <see cref="EntityName"/>
+/// benennen die Entität, zu der der Text gehört — an ihr stehen die Zeilen in der Arbeitsliste
+/// beieinander; <see cref="SlotLabel"/> sagt daneben, welcher Text gemeint ist („Zeile 3“).
+/// </para>
+/// </summary>
+public sealed record TranslatableText(
+    Guid OwnerEntityId,
+    Guid EntityId,
+    string EntityName,
+    string Slot,
+    string SlotLabel,
+    string Text);
+
 /// <summary>Eine Zeile der Item-Übersicht — bewusst nur die Spalten, die die Liste zeigt.</summary>
 public sealed record ItemListRow(
     Guid Id,

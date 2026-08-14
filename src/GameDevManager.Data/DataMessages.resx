@@ -465,6 +465,18 @@
   <data name="Search_ShotCount" xml:space="preserve">
     <value> Einstellung(en)</value>
   </data>
+  <data name="Translate_DialogueLine" xml:space="preserve">
+    <value>Zeile {0}</value>
+  </data>
+  <data name="Translate_DialogueChoice" xml:space="preserve">
+    <value>Antwort {0}.{1}</value>
+  </data>
+  <data name="Translate_CutsceneShot" xml:space="preserve">
+    <value>Einstellung {0}</value>
+  </data>
+  <data name="Translate_StoryBody" xml:space="preserve">
+    <value>Story-Text</value>
+  </data>
   <data name="Reference_FactionMember" xml:space="preserve">
     <value>Mitglied</value>
   </data>

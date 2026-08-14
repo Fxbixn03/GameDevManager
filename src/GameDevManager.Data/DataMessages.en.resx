@@ -511,6 +511,18 @@
   <data name="Search_ShotCount" xml:space="preserve">
     <value> shot(s)</value>
   </data>
+  <data name="Translate_DialogueLine" xml:space="preserve">
+    <value>Line {0}</value>
+  </data>
+  <data name="Translate_DialogueChoice" xml:space="preserve">
+    <value>Choice {0}.{1}</value>
+  </data>
+  <data name="Translate_CutsceneShot" xml:space="preserve">
+    <value>Shot {0}</value>
+  </data>
+  <data name="Translate_StoryBody" xml:space="preserve">
+    <value>Story text</value>
+  </data>
   <data name="Reference_FactionMember" xml:space="preserve">
     <value>Member</value>
   </data>

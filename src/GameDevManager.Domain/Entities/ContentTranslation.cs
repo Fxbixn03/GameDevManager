@@ -58,6 +58,20 @@ public static class TranslationSlots
 
     public const string Description = "description";
 
+    /// <summary>
+    /// Der Text eines Teilobjekts mit eigener GUID — die gesprochene Zeile, die
+    /// Antwortmöglichkeit, die Einstellung eines Storyboards. Der Besitzer ist dann das
+    /// Teilobjekt selbst und nicht die Entität, deshalb genügt <b>ein</b> Schlüssel für alle
+    /// drei Fälle: Zwei Texte am selben Teilobjekt gibt es nicht.
+    /// </summary>
+    public const string Text = "text";
+
+    /// <summary>
+    /// Der ausgeschriebene Story-Text. Er hängt an der Entität selbst und braucht deshalb
+    /// einen eigenen Schlüssel neben <see cref="Description"/>.
+    /// </summary>
+    public const string Body = "body";
+
     /// <summary>Ob der Slot ein benutzerdefiniertes Feld meint statt der Stammdaten.</summary>
     public static bool IsField(string slot) => Guid.TryParse(slot, out _);
 

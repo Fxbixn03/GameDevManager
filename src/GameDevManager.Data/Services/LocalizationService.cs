@@ -185,7 +185,12 @@ public class LocalizationService(
         await using var db = await factory.CreateDbContextAsync(ct);
 
         var entities = await source.LoadAllAsync(db, projectId, ct);
-        if (entities.Count == 0)
+
+        // Die zusätzlichen Texte des Moduls hängen an eigenen GUIDs — sie stehen also auch
+        // dann da, wenn die Entität selbst nichts Übersetzbares mehr hätte.
+        var extra = await source.GetTranslatableTextsAsync(db, projectId, ct);
+
+        if (entities.Count == 0 && extra.Count == 0)
         {
             return [];
         }
@@ -204,32 +209,44 @@ public class LocalizationService(
             .Where(value => ids.Contains(value.OwnerEntityId) && value.TextValue != null)
             .ToListAsync(ct);
 
+        // Über beide Mengen zusammen: Die Teilobjekte tragen ihre Übersetzung unter ihrer
+        // eigenen GUID, und die steht in keiner Entitätenliste.
+        var owners = ids.Concat(extra.Select(text => text.OwnerEntityId)).Distinct().ToList();
+
         var stored = await db.ContentTranslations
             .AsNoTracking()
             .Where(t => t.GameProjectId == projectId
                 && t.LanguageCode == languageCode
-                && ids.Contains(t.OwnerEntityId))
+                && owners.Contains(t.OwnerEntityId))
             .ToListAsync(ct);
 
         var byKey = stored.ToDictionary(t => (t.OwnerEntityId, t.Slot));
         var rows = new List<TranslationRow>();
 
-        TranslationRow Row(ContentEntity entity, string slot, string label, string text)
+        // Die Zusatztexte stehen bei ihrer Entität und nicht hinten am Stück: Wer einen Dialog
+        // übersetzt, will Name, Beschreibung und die Zeilen daran beieinander haben.
+        var extraByEntity = extra
+            .GroupBy(text => text.EntityId)
+            .ToDictionary(group => group.Key, group => group.ToList());
+
+        TranslationRow Row(Guid ownerId, string ownerName, string slot, string label, string text)
         {
-            var translation = byKey.GetValueOrDefault((entity.Id, slot));
+            var translation = byKey.GetValueOrDefault((ownerId, slot));
 
             return new TranslationRow(
-                entity.Id, moduleKey, entity.Name, slot, label, text,
+                ownerId, moduleKey, ownerName, slot, label, text,
                 translation?.Text, translation?.SourceText);
         }
 
         foreach (var entity in entities)
         {
-            rows.Add(Row(entity, TranslationSlots.Name, TranslationSlots.Name, entity.Name));
+            rows.Add(Row(entity.Id, entity.Name, TranslationSlots.Name, TranslationSlots.Name, entity.Name));
 
             if (!string.IsNullOrWhiteSpace(entity.Description))
             {
-                rows.Add(Row(entity, TranslationSlots.Description, TranslationSlots.Description, entity.Description));
+                rows.Add(Row(
+                    entity.Id, entity.Name, TranslationSlots.Description,
+                    TranslationSlots.Description, entity.Description));
             }
 
             foreach (var value in values.Where(value => value.OwnerEntityId == entity.Id))
@@ -240,9 +257,21 @@ public class LocalizationService(
                     continue;
                 }
 
-                rows.Add(Row(entity, TranslationSlots.ForField(field.Id), field.Name, value.TextValue));
+                rows.Add(Row(
+                    entity.Id, entity.Name, TranslationSlots.ForField(field.Id), field.Name, value.TextValue));
+            }
+
+            if (extraByEntity.Remove(entity.Id, out var own))
+            {
+                rows.AddRange(own.Select(text =>
+                    Row(text.OwnerEntityId, text.EntityName, text.Slot, text.SlotLabel, text.Text)));
             }
         }
+
+        // Was keiner geladenen Entität zuzuordnen war, geht trotzdem nicht verloren.
+        rows.AddRange(extraByEntity.Values
+            .SelectMany(texts => texts)
+            .Select(text => Row(text.OwnerEntityId, text.EntityName, text.Slot, text.SlotLabel, text.Text)));
 
         return rows;
     }
@@ -327,6 +356,13 @@ public class LocalizationService(
         foreach (var source in sources)
         {
             var entities = await source.LoadAllAsync(db, projectId, ct);
+
+            foreach (var text in await source.GetTranslatableTextsAsync(db, projectId, ct))
+            {
+                sourceTexts[(text.OwnerEntityId, text.Slot)] = text.Text;
+                total++;
+            }
+
             if (entities.Count == 0)
             {
                 continue;
