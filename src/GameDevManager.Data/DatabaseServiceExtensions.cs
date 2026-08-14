@@ -118,6 +118,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ReferenceService>();
         services.AddScoped<AssetService>();
         services.AddScoped<SearchService>();
+        services.AddScoped<CurveService>();
         services.AddScoped<EntityDuplicationService>();
         services.AddScoped<StartScreenService>();
         services.AddScoped<ExportService>();

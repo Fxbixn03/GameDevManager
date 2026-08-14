@@ -103,4 +103,19 @@
   <data name="SampleSummary" xml:space="preserve">
     <value>{0} Stufen, von {1} bis {2}</value>
   </data>
+  <data name="CompareButton" xml:space="preserve">
+    <value>Vergleichen</value>
+  </data>
+  <data name="CompareLabel" xml:space="preserve">
+    <value>Kurven zum Vergleich</value>
+  </data>
+  <data name="CompareOption" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="CompareSelected" xml:space="preserve">
+    <value>{0} zum Vergleich</value>
+  </data>
+  <data name="CompareEmpty" xml:space="preserve">
+    <value>Im Projekt gibt es noch keine weitere gefüllte Kurve, mit der sich diese vergleichen ließe.</value>
+  </data>
 </root>

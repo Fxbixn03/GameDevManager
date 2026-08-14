@@ -1,3 +1,5 @@
+@inject CurveService Curves
+@inject ProjectContext Project
 @inject IStringLocalizer<CurveFieldEditor> L
 
 @*
@@ -69,15 +71,49 @@
         </MudItem>
     </MudGrid>
 
-    <CurveChart Points="_sample" />
+    <CurveChart Series="@ChartSeries" />
 
     <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
         <MudText Typo="Typo.caption" Color="Color.Secondary">@SampleSummary</MudText>
         <MudSpacer />
+        @if (_available is null)
+        {
+            <MudButton StartIcon="@Icons.Material.Filled.StackedLineChart"
+                       Size="Size.Small"
+                       Disabled="@_loadingComparisons"
+                       OnClick="LoadComparableAsync">
+                @L["CompareButton"]
+            </MudButton>
+        }
         <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="AddOverride">
             @L["AddOverride"]
         </MudButton>
     </MudStack>
+
+    @* Der Vergleich zweier Kurven — Spieler gegen Gegner, Klasse A gegen B. Geladen wird die
+       Auswahl erst auf Knopfdruck: Eine Maske kann mehrere Kurvenfelder tragen, und keines
+       davon soll beim Öffnen eine projektweite Abfrage auslösen. *@
+    @if (_available is { Count: 0 })
+    {
+        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CompareEmpty"]</MudText>
+    }
+    else if (_available is { Count: > 0 })
+    {
+        <MudSelect T="string"
+                   MultiSelection="true"
+                   SelectedValues="_comparisonKeys"
+                   SelectedValuesChanged="SetComparisonsAsync"
+                   Label="@L["CompareLabel"]"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Clearable="true"
+                   MultiSelectionTextFunc="@(selected => L["CompareSelected", selected.Count])">
+            @foreach (var curve in _available)
+            {
+                <MudSelectItem T="string" Value="@Key(curve)">@Describe(curve)</MudSelectItem>
+            }
+        </MudSelect>
+    }
 
     @if (_curve.Overrides.Count > 0)
     {
@@ -126,6 +162,12 @@
     private string? _expressionError;
     private Guid _loadedFor;
 
+    /// <summary>Die Kurven, die sich vergleichen ließen — <c>null</c>, solange nicht geladen.</summary>
+    private List<CurveReference>? _available;
+    private IReadOnlyCollection<string> _comparisonKeys = [];
+    private List<CurveSeries> _comparisons = [];
+    private bool _loadingComparisons;
+
     private string Label => Definition.IsRequired ? L["RequiredLabel", Definition.Name] : Definition.Name;
 
     private string ExpressionHelper =>
@@ -134,6 +176,9 @@
     private string SampleSummary => _sample.Count == 0
         ? L["NoSample"]
         : L["SampleSummary", _sample.Count, Fmt(_sample[0].Y), Fmt(_sample[^1].Y)];
+
+    /// <summary>Die bearbeitete Kurve zuerst, danach die zum Vergleich gewählten.</summary>
+    private List<CurveSeries> ChartSeries => [new CurveSeries(Definition.Name, _sample), .. _comparisons];
 
     protected override void OnParametersSet()
     {
@@ -146,8 +191,64 @@
 
         _loadedFor = Definition.Id;
         _curve = CurveDefinition.Parse(Value.TextValue) ?? new CurveDefinition();
+
+        // Der Vergleich gehört zum Feld, auf das er gewählt wurde — beim Wechsel fällt er weg.
+        _available = null;
+        _comparisonKeys = [];
+        _comparisons = [];
+
         Recalculate();
     }
+
+    // ------------------------------------------------------------------------- Vergleich
+
+    private async Task LoadComparableAsync()
+    {
+        _loadingComparisons = true;
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            var curves = await Curves.GetCurvesAsync(projectId);
+
+            // Die gerade bearbeitete Kurve fällt heraus: In der Liste stünde ihr zuletzt
+            // gespeicherter Stand — sie mit sich selbst von vorhin zu vergleichen, verwirrt
+            // mehr, als es zeigt.
+            _available =
+            [
+                .. curves.Where(curve =>
+                    curve.FieldDefinitionId != Definition.Id || curve.OwnerEntityId != Value.OwnerEntityId)
+            ];
+        }
+        finally
+        {
+            _loadingComparisons = false;
+        }
+    }
+
+    private Task SetComparisonsAsync(IReadOnlyCollection<string>? keys)
+    {
+        _comparisonKeys = keys is null ? [] : [.. keys];
+
+        // Einmal beim Umschalten ausrechnen und nicht bei jedem Zeichnen: Eine Kurve kann
+        // 500 Stützstellen haben, und die Vorschau zeichnet bei jeder Eingabe neu.
+        _comparisons =
+        [
+            .. _comparisonKeys
+                .Select(key => (_available ?? []).FirstOrDefault(curve => Key(curve) == key))
+                .Where(curve => curve is not null)
+                .Select(curve => (Curve: curve!, Parsed: CurveDefinition.Parse(curve!.Stored)))
+                .Where(entry => entry.Parsed is not null)
+                .Select(entry => new CurveSeries(Describe(entry.Curve), entry.Parsed!.Sample()))
+        ];
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Besitzer und Feld — der Name allein sagt bei „Erfahrung“ nicht, wessen.</summary>
+    private string Describe(CurveReference curve) => L["CompareOption", curve.OwnerName, curve.FieldName];
+
+    private static string Key(CurveReference curve) =>
+        $"{curve.OwnerEntityId:N}:{curve.FieldDefinitionId:N}";
 
     private Task SetExpression(string? expression) =>
         Apply(() => _curve.Expression = Trim(expression));

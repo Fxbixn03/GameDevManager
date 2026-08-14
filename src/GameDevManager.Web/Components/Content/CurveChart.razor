@@ -2,11 +2,15 @@
 
 @*
     Das Vorschau-Diagramm einer Levelkurve. Gezeichnet als SVG ohne JavaScript und ohne
-    Diagrammbibliothek — wie der Diplomatie- und der Dialog-Graph. Eine Linie mit Achsen und
-    ein paar Beschriftungen ist genau das, was hier gebraucht wird.
+    Diagrammbibliothek — wie der Diplomatie- und der Dialog-Graph. Ein paar Linien mit Achsen
+    und Beschriftungen ist genau das, was hier gebraucht wird.
+
+    Mehrere Linien liegen übereinander: die bearbeitete Kurve zuerst, danach die zum Vergleich
+    gewählten (Spieler gegen Gegner, Klasse A gegen B). Alle teilen sich eine Skala — sonst
+    verglichen sie nichts, sondern sähen nur ähnlich aus.
 *@
 
-@if (Points.Count == 0)
+@if (Drawable.Count == 0)
 {
     <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Empty"]</MudText>
 }
@@ -16,23 +20,32 @@ else
          width="100%"
          style="max-width:@(Width)px;display:block;"
          role="img"
-         aria-label="@L["Aria", Points.Count, Fmt(MinY), Fmt(MaxY)]">
+         aria-label="@L["Aria", Drawable[0].Points.Count, Fmt(MinY), Fmt(MaxY)]">
 
-        @* Achsen zuerst, damit die Kurve darüber liegt. *@
+        @* Achsen zuerst, damit die Kurven darüber liegen. *@
         <line x1="@Fmt(PadLeft)" y1="@Fmt(PadTop)" x2="@Fmt(PadLeft)" y2="@Fmt(BaseY)"
               stroke="var(--mud-palette-lines-default)" stroke-width="1" />
         <line x1="@Fmt(PadLeft)" y1="@Fmt(BaseY)" x2="@Fmt(Width - PadRight)" y2="@Fmt(BaseY)"
               stroke="var(--mud-palette-lines-default)" stroke-width="1" />
 
-        <polyline points="@Polyline"
-                  fill="none"
-                  stroke="var(--mud-palette-primary)"
-                  stroke-width="2" />
-
-        @* Stützstellen nur, solange sie sich nicht zur Fläche verdichten. *@
-        @if (Points.Count <= 40)
+        @for (var index = 0; index < Drawable.Count; index++)
         {
-            @foreach (var point in Points)
+            var series = Drawable[index];
+
+            <polyline points="@Polyline(series)"
+                      fill="none"
+                      stroke="@Stroke(index)"
+                      stroke-dasharray="@Dashes(index)"
+                      stroke-width="2">
+                <title>@series.Name</title>
+            </polyline>
+        }
+
+        @* Stützstellen nur bei einer einzelnen Kurve: Übereinander gelegt verdichten sich die
+           Punkte mehrerer Linien zu einem Teppich, in dem keine mehr zu verfolgen ist. *@
+        @if (Drawable.Count == 1 && Drawable[0].Points.Count <= 40)
+        {
+            @foreach (var point in Drawable[0].Points)
             {
                 <circle cx="@Fmt(ScaleX(point.X))" cy="@Fmt(ScaleY(point.Y))" r="2.5"
                         fill="var(--mud-palette-primary)">
@@ -58,6 +71,28 @@ else
             @Fmt(MaxX)
         </text>
     </svg>
+
+    @* Die Legende erst ab der zweiten Linie: Bei einer einzelnen sagt sie nichts, was nicht
+       schon über dem Diagramm stünde. *@
+    @if (Drawable.Count > 1)
+    {
+        <MudStack Row="true" Spacing="3" Wrap="Wrap.Wrap" Class="mt-1">
+            @for (var index = 0; index < Drawable.Count; index++)
+            {
+                var series = Drawable[index];
+
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <svg width="22" height="10" role="presentation" style="flex:none;">
+                        <line x1="0" y1="5" x2="22" y2="5"
+                              stroke="@Stroke(index)"
+                              stroke-dasharray="@Dashes(index)"
+                              stroke-width="2" />
+                    </svg>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@series.Name</MudText>
+                </MudStack>
+            }
+        </MudStack>
+    }
 }
 
 @code {
@@ -68,21 +103,63 @@ else
     private const double PadTop = 12;
     private const double PadBottom = 24;
 
+    /// <summary>
+    /// Die Farben der Vergleichskurven — eine feste Liste und keine Palette des Themes: Wo
+    /// mehrere Dinge nebeneinander auseinanderzuhalten sein müssen, reicht sie nicht (dieselbe
+    /// Ausnahme wie bei den Fraktionsringen und den Wesenszügen). Die erste Kurve behält das
+    /// Akzentgelb — sie ist die, die gerade bearbeitet wird.
+    /// </summary>
+    private static readonly string[] ComparisonColors =
+        ["#4C9AFF", "#38B24A", "#E4572E", "#9B5DE5", "#00A3A3", "#D89B00"];
+
+    /// <summary>
+    /// Zusätzlich zur Farbe ein eigenes Strichmuster je Linie: Zwei Kurven, die sich nur in
+    /// der Farbe unterscheiden, sind auf einem Ausdruck oder mit einer Farbsehschwäche
+    /// dieselbe Linie.
+    /// </summary>
+    private static readonly string[] DashPatterns = ["none", "6 3", "2 3", "8 3 2 3"];
+
     [Parameter, EditorRequired]
-    public IReadOnlyList<CurvePoint> Points { get; set; } = [];
+    public IReadOnlyList<CurveSeries> Series { get; set; } = [];
+
+    /// <summary>Was wirklich gezeichnet wird — leere Kurven haben keine Linie.</summary>
+    private List<CurveSeries> Drawable = [];
+
+    private double MinX;
+    private double MaxX;
+    private double MinY;
+    private double MaxY;
 
     private double BaseY => Height - PadBottom;
 
-    private double MinX => Points.Count == 0 ? 0 : Points.Min(point => point.X);
+    /// <summary>
+    /// Auswahl und Skala einmal je Zustandsänderung statt bei jedem Zugriff: Beide Achsen
+    /// werden für jeden einzelnen Punkt gebraucht, und bei 500 Stützstellen mal mehreren
+    /// Kurven liefe eine Eigenschaft dafür über den ganzen Bestand zurück.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        Drawable = [.. Series.Where(series => series.Points.Count > 0)];
 
-    private double MaxX => Points.Count == 0 ? 0 : Points.Max(point => point.X);
+        var points = Drawable.SelectMany(series => series.Points).ToList();
 
-    private double MinY => Points.Count == 0 ? 0 : Math.Min(0, Points.Min(point => point.Y));
+        MinX = points.Count == 0 ? 0 : points.Min(point => point.X);
+        MaxX = points.Count == 0 ? 0 : points.Max(point => point.X);
+        // Die Grundlinie liegt bei null, solange die Kurve nicht darunter geht — sonst
+        // sähe eine Kurve von 1000 bis 1010 aus wie ein Sprung ins Unermessliche.
+        MinY = points.Count == 0 ? 0 : Math.Min(0, points.Min(point => point.Y));
+        MaxY = points.Count == 0 ? 0 : points.Max(point => point.Y);
+    }
 
-    private double MaxY => Points.Count == 0 ? 0 : Points.Max(point => point.Y);
+    private string Polyline(CurveSeries series) =>
+        string.Join(" ", series.Points.Select(point => $"{Fmt(ScaleX(point.X))},{Fmt(ScaleY(point.Y))}"));
 
-    private string Polyline =>
-        string.Join(" ", Points.Select(point => $"{Fmt(ScaleX(point.X))},{Fmt(ScaleY(point.Y))}"));
+    private static string Stroke(int index) =>
+        index == 0
+            ? "var(--mud-palette-primary)"
+            : ComparisonColors[(index - 1) % ComparisonColors.Length];
+
+    private static string Dashes(int index) => DashPatterns[index % DashPatterns.Length];
 
     /// <summary>
     /// Eine waagerechte Kurve (alle Werte gleich) hätte eine Spanne von null und läge sonst

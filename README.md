@@ -15,7 +15,7 @@
 
 Ein Verwaltungstool für die Spieleentwicklung. Damit baust du vor und während der Entwicklung ein strukturiertes Wiki für deine Spielwelt auf und exportierst die Inhalte später in deine Game Engine.
 
-**Status: Alle Module umgesetzt.** Sämtliche Punkte des Konzepts sind gebaut — zuletzt Benutzeranmeldung und Änderungsprotokoll, der Freischaltungs-Baum, das Welt-Modul (Tageszeit/Wetter/Biome), der Feldtyp „Formel/Kurve“ für Levelkurven und Schadensformeln sowie Textfelder, die als **Stichwortliste** mehrere Werte aufnehmen (Elemente, Schadensarten).
+**Status: Alle Module umgesetzt.** Sämtliche Punkte des Konzepts sind gebaut — zuletzt Benutzeranmeldung und Änderungsprotokoll, der Freischaltungs-Baum, das Welt-Modul (Tageszeit/Wetter/Biome), der Feldtyp „Formel/Kurve“ für Levelkurven und Schadensformeln — dessen Diagramm zeichnet inzwischen mehrere Kurven aus dem Projekt übereinander, damit sich Spieler gegen Gegner oder Klasse A gegen B **vergleichen** lässt — sowie Textfelder, die als **Stichwortliste** mehrere Werte aufnehmen (Elemente, Schadensarten).
 
 ## Worum geht es?
 
