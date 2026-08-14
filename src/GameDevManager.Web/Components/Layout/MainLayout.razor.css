@@ -1,17 +1,40 @@
-/* Modul-Leiste in der Appbar: Sie nimmt den ganzen Platz zwischen Projektauswahl und den
-   Knöpfen rechts ein. Bewusst flex-basis 0 und kein MudSpacer daneben — ihre Breite darf
-   nicht an der Anzahl der Knöpfe hängen, sonst geriete die Messung im Browser in eine
-   Schleife (weniger Knöpfe → schmalere Leiste → weniger Platz → …).
+/* Modul-Leiste in der Appbar, dreiteilig: die Leiste (.gdm-module-bar) nimmt den ganzen Platz
+   zwischen Projektauswahl und den Knöpfen rechts ein, darin die Modul-Symbole (.gdm-module-strip)
+   und daneben der Aufklapp-Knopf (.gdm-module-more).
 
-   overflow: hidden ist nur das Netz für den ersten Frame, in dem noch ungemessen alles
-   gerendert wird; danach passt die Leiste sich selbst an. */
+   Abgeschnitten wird nur der mittlere Teil. Läge der Aufklapp-Knopf darin, träfe ihn als
+   letztes Element jede zu großzügige Messung zuerst — und mit ihm wären alle übrigen Module
+   unerreichbar. So kostet eine Fehlmessung höchstens ein angeschnittenes Symbol.
 
-.gdm-module-strip {
+   Bewusst flex-basis 0 an der Leiste und kein MudSpacer daneben: Ihre Breite darf nicht an der
+   Anzahl der Knöpfe hängen, sonst geriete die Messung im Browser in eine Schleife (weniger
+   Knöpfe → schmalere Leiste → weniger Platz → …). */
+
+.gdm-module-bar {
     display: flex;
     align-items: center;
     flex: 1 1 0;
+    /* Untergrenze für zwei Knöpfe (je 48px): das geöffnete Modul und den Aufklapp-Knopf.
+       Ohne sie schrumpft die Leiste als einziges wachsendes Flex-Kind ungebremst gegen 0 —
+       bei knapp 800px Fensterbreite blieben 62px übrig, und die Module wären über die
+       Topbar gar nicht mehr erreichbar. Ab hier gibt stattdessen die Suche nach
+       (flex: 0 1 320px in app.css). */
+    min-width: 96px;
+}
+
+/* Nur die Modul-Symbole werden abgeschnitten — der Aufklapp-Knopf daneben nie. */
+.gdm-module-strip {
+    display: flex;
+    align-items: center;
+    flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
+}
+
+.gdm-module-more {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
 }
 
 /* Das Flex-Kind je Modul — seine Breite ist der Maßstab der Messung (gdm-topbar.js). */

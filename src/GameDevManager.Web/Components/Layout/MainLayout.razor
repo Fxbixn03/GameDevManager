@@ -30,29 +30,36 @@
 
         @* Die Leiste nimmt den Platz bis zu den Knöpfen rechts ein und wird nicht mehr
            gescrollt: Was nicht hineinpasst, sammelt der Aufklapp-Knopf am rechten Ende.
-           Wie viele Knöpfe hineinpassen, misst der Browser (siehe SetCapacity). *@
+           Wie breit die Leiste und ein Knopf sind, misst der Browser (siehe SetMetrics).
+
+           Der Aufklapp-Knopf steht bewusst *neben* dem abgeschnittenen Bereich und nicht
+           darin: Er ist das letzte Element, also träfe ihn jede Fehlmessung zuerst — und mit
+           ihm wären alle übrigen Module unerreichbar. So kostet ein zu knapp gerechneter
+           Platz höchstens ein angeschnittenes Modul-Symbol. *@
         @{
             var strip = BuildStrip();
         }
-        <div class="gdm-module-strip" @ref="_stripElement">
-            @foreach (var module in strip.Visible)
-            {
-                @* Eigenes div um Tooltip und Knopf: Es ist das Flex-Kind, dessen Breite die
-                   Messung im Browser als Maßstab nimmt — ohne es hinge sie am Aufbau der
-                   MudBlazor-Komponenten. *@
-                <div class="gdm-module-item">
-                    <MudTooltip Text="@Modules.Name(module)">
-                        <MudIconButton Icon="@module.Icon"
-                                       Href="@module.Route"
-                                       Class="@(IsActive(module) ? "gdm-module-active" : null)"
-                                       Color="@(IsActive(module) ? Color.Primary : Color.Inherit)" />
-                    </MudTooltip>
-                </div>
-            }
+        <div class="gdm-module-bar" @ref="_barElement">
+            <div class="gdm-module-strip">
+                @foreach (var module in strip.Visible)
+                {
+                    @* Eigenes div um Tooltip und Knopf: Es ist das Flex-Kind, dessen Breite die
+                       Messung im Browser als Maßstab nimmt — ohne es hinge sie am Aufbau der
+                       MudBlazor-Komponenten. *@
+                    <div class="gdm-module-item">
+                        <MudTooltip Text="@Modules.Name(module)">
+                            <MudIconButton Icon="@module.Icon"
+                                           Href="@module.Route"
+                                           Class="@(IsActive(module) ? "gdm-module-active" : null)"
+                                           Color="@(IsActive(module) ? Color.Primary : Color.Inherit)" />
+                        </MudTooltip>
+                    </div>
+                }
+            </div>
 
             @if (strip.Overflow.Count > 0)
             {
-                <div class="gdm-module-item">
+                <div class="gdm-module-more">
                     <MudMenu Icon="@Icons.Material.Filled.MoreHoriz"
                              Color="Color.Inherit"
                              AriaLabel="@L["MoreModules", strip.Overflow.Count]"
@@ -145,15 +152,12 @@
 @code {
     private UserPermissions _permissions = UserPermissions.Full;
 
-    private ElementReference _stripElement;
+    private ElementReference _barElement;
     private DotNetObjectReference<MainLayout>? _jsReference;
 
-    /// <summary>
-    /// Wie viele Modul-Knöpfe nebeneinander Platz haben — gemessen im Browser.
-    /// <c>null</c> vor der ersten Messung, negativ, wenn nichts zu messen war; in beiden
-    /// Fällen zeigt die Leiste alles.
-    /// </summary>
-    private int? _capacity;
+    /// <summary>Breite der Leiste und eines Modul-Knopfes in CSS-Pixeln, gemessen im Browser.</summary>
+    private double _available;
+    private double _unit;
 
     protected override async Task OnInitializedAsync()
     {
@@ -176,22 +180,26 @@
         }
 
         _jsReference = DotNetObjectReference.Create(this);
-        await JS.InvokeVoidAsync("gdmTopbar.observe", _stripElement, _jsReference);
+        await JS.InvokeVoidAsync("gdmTopbar.observe", _barElement, _jsReference);
     }
 
     /// <summary>
-    /// Meldung des Browsers, wie viele Knöpfe in die Leiste passen. Nur die Geometrie kommt
-    /// von dort; welche Module das betrifft, entscheidet <see cref="BuildStrip"/>.
+    /// Maße aus dem Browser: verfügbare Breite der Leiste und Breite eines Modul-Knopfes.
+    /// Nur die Geometrie kommt von dort; wie viele Module das ergibt und welche in den
+    /// Aufklapp-Knopf wandern, entscheidet <see cref="BuildStrip"/>.
     /// </summary>
     [JSInvokable]
-    public void SetCapacity(int capacity)
+    public void SetMetrics(double available, double unit)
     {
-        if (_capacity == capacity)
+        // Bruchteile eines Pixels ändern nichts an der Aufteilung — sie sollen auch kein
+        // Neurendern der ganzen Appbar auslösen.
+        if (Math.Abs(_available - available) < 0.5 && Math.Abs(_unit - unit) < 0.5)
         {
             return;
         }
 
-        _capacity = capacity;
+        _available = available;
+        _unit = unit;
         InvokeAsync(StateHasChanged);
     }
 
@@ -207,14 +215,31 @@
 
         // Vor der ersten Messung steht alles in der Leiste: ein leeres Band wäre der
         // auffälligere Fehler als ein Frame mit abgeschnittenen Symbolen.
-        if (_capacity is not { } capacity || capacity < 0 || capacity >= modules.Count)
+        if (_unit <= 0)
         {
             return (modules, []);
         }
 
-        // Ein Platz gehört dem Aufklapp-Knopf selbst.
-        var visible = modules.Take(Math.Max(capacity - 1, 0)).ToList();
+        // Ein Pixel Sicherheitsabstand. Auf gebrochenen Zoomstufen (110 %, 125 %, …) rastet
+        // der Browser Kanten auf ganze Gerätepixel ein; die gemessene Knopfbreite liegt dann
+        // um Bruchteile daneben, und die Abweichung summiert sich über zwanzig Knöpfe.
+        if (Math.Floor((_available - 1) / _unit) >= modules.Count)
+        {
+            return (modules, []);
+        }
+
+        // Es passt nicht alles — ein Knopf breit gehört jetzt dem Aufklapp-Knopf.
+        var slots = Math.Max((int)Math.Floor((_available - _unit - 1) / _unit), 0);
+        var visible = modules.Take(slots).ToList();
         var overflow = modules.Skip(visible.Count).ToList();
+
+        // Bleibt nicht einmal für einen Knopf daneben Platz, zeigt die Leiste nur den
+        // Aufklapp-Knopf: Er führt zu allem, die Markierung des geöffneten Moduls nur zu
+        // einem. Die Untergrenze der Leiste (96px) hält diesen Fall von der Oberfläche fern.
+        if (slots == 0)
+        {
+            return ([], overflow);
+        }
 
         // Das geöffnete Modul steht immer in der Leiste, auch wenn es rechnerisch im Aufklapp-
         // Knopf läge — sonst verlöre die Seite, auf der man gerade ist, ihre Markierung. Es
@@ -223,14 +248,8 @@
         if (overflow.FirstOrDefault(IsActive) is { } active)
         {
             overflow.Remove(active);
-
-            if (visible.Count > 0)
-            {
-                overflow.Insert(0, visible[^1]);
-                visible.RemoveAt(visible.Count - 1);
-            }
-
-            visible.Add(active);
+            overflow.Insert(0, visible[^1]);
+            visible[^1] = active;
         }
 
         return (visible, overflow);
@@ -280,7 +299,7 @@
 
         try
         {
-            await JS.InvokeVoidAsync("gdmTopbar.unobserve", _stripElement);
+            await JS.InvokeVoidAsync("gdmTopbar.unobserve", _barElement);
         }
         catch (Exception ex) when (ex is JSDisconnectedException or TaskCanceledException)
         {
