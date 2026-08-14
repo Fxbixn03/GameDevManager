@@ -1,220 +1,474 @@
-# GameDevManager
+# GameDevManager — Konzept
+
+Dieses Dokument ist die **fachliche Quelle der Wahrheit**: Was das Tool leisten soll und nach
+welchen Regeln. Es beschreibt keine Technik — wie es gebaut ist, steht in
+[CLAUDE.md](../CLAUDE.md); was darüber hinaus noch kommen könnte, in [ToDo.md](ToDo.md).
+
+Alles, was hier steht, ist umgesetzt. Das Dokument ist im Präsens geschrieben, weil eine
+Anforderung, die erfüllt ist, eine Festlegung ist — und Festlegungen gelten weiter. Absichten,
+die noch keine Umsetzung haben, gehören nicht hierher, sondern in die ToDo.
+
+**Fortschreibung:** Wer ein Modul ergänzt, ergänzt hier einen Absatz unter der passenden Gruppe.
+Wer eine der Leitplanken bricht, muss sie hier ändern — nicht umgehen. Zahlenangaben (wie viele
+Module, wie viele Feldtypen) stehen bewusst nirgends im Text; sie wären nach dem nächsten Modul
+falsch.
+
+---
 
 ## Die Idee
 
-Ich habe ein Dashboard mit Cards, welche ich selber konfigurieren kann.
-Dazu habe ich noch eine Topbar, in welcher Icons zu sehen sind für die verschiedenen Module wie z. B. Items, Charaktere, Dörfer, Karten, usw.
-Die Topbar zeigt immer alle Module und highlightet das Modul, in welchem ich mich gerade befinde.
+Ein selbst gehostetes Verwaltungstool für das, was an einem Spiel **fachlich** ist und nicht
+technisch: Items, Figuren, Orte, Erzählung, Fortschritt. Ein strukturiertes Wiki, das die Inhalte
+nicht als Fließtext hält, sondern als verknüpfte Entitäten — und sie am Ende in die Game Engine
+exportiert.
+
+Die Oberfläche besteht aus einem Dashboard, das den Projektstand zeigt, und einer Modulleiste, die
+von jeder Seite aus in jedes Modul führt und das gerade geöffnete hervorhebt.
 
 ## Zielgruppe
 
-Indie Game Developer, welche eine Übersicht und Management für ihr Spiel benötigen. Mit dieser Software lassen sich verschiedene Bereiche abdecken und diese sauber planen.
-Alles, was eher fachlich und nicht technisch ist, kann hiermit verwaltet werden.
+Indie-Entwickler, die eine Übersicht über ihr Spiel brauchen und es sauber planen wollen — allein
+oder in einem kleinen Team. Das Tool wird selbst betrieben, auf dem eigenen Rechner oder Server.
 
-## Dashboard
+## Abgrenzung — was das Tool nicht ist
 
-Hier werden die Module als Cards angezeigt. Der Nutzer kann einstellen, welche Module angezeigt werden und wie sie angeordnet sind.
-Auf dem Dashboard wird eine Card immer fest angezeigt (**Import/Export**).
+Diese Grenzen sind Absicht und die Begründung dafür, warum bestimmte Wünsche abgelehnt werden:
 
-### Zukünftig
+- **Keine Engine und kein Editor.** Das Tool beschreibt Inhalte, es führt sie nicht aus. Es gibt
+  keinen Level-Editor, keine Physik, keine Skripte, die im Spiel laufen.
+- **Kein Asset-Werkzeug.** Bilder und Audio werden verwaltet, nicht bearbeitet.
+- **Keine Spiellogik.** Bedingungen werden erfasst und geprüft, soweit das ohne laufendes Spiel
+  möglich ist — ausgewertet werden sie im Spiel.
+- **Kein Ersatz für die Versionsverwaltung des Codes.** Nachvollziehbar sind Inhaltsänderungen
+  über das Änderungsprotokoll und die Exportstände, nicht der Quellcode des Spiels.
 
-Über den Import/Export kann zum einen einfaches JSON zusammen mit den Images, Sounds, VFX usw. als ZIP exportiert werden oder ein direkter Export aus dem GameDevManager in die Entwicklungsumgebung wie Unity, Unreal Engine und Godot erfolgen. In noch weiterer Zukunft eventuell auch weitere.
+---
 
-- Referenzierung immer über GUIDs.
-- Exporte müssen immer versioniert und diffbar sein, um zu sehen, was ein Content-Update verändert hat.
+## Leitplanken
 
-## Beschreibung der Module
+Diese Regeln gelten in **jedem** Modul, auch in jedem künftigen. Sie sind der Grund, warum ein
+neues Modul wenig kostet.
 
-### Item-Modul
+### Eigene Arten und eigene Felder
 
-Hier möchte ich Items definieren können, also den Namen, ein Bild/Sprite, eventuelle Werte für Ausrüstung.
+Das Schema ist nutzerdefiniert, nicht fest vorgegeben. In fast jedem Modul legt der Nutzer eigene
+**Arten** an (Item-Art „Waffe", NPC-Art „Händler") und definiert je Art die Felder, die gefüllt
+werden können.
 
-- Der Nutzer soll die Möglichkeit haben, bestimmte Item-Arten zu definieren (z. B. Waffe oder Rüstung) und zu einer Item-Art die Felder, welche befüllt werden können, selber definieren können.
-- Exotische Items haben einzigartige Funktionen oder Werte. Hierfür muss der Nutzer die Möglichkeit haben, für einzelne Items eigene Felder zu definieren.
+- Arten lassen sich **ineinander stecken**: „Waffe" mit den Unterarten „Nahkampf", „Fernkampf",
+  „Magie". Eine Unterart erbt die Felder ihrer übergeordneten Arten und ergänzt eigene.
+- Einzelne Entitäten können **zusätzliche Felder nur für sich** bekommen — für das exotische Item
+  mit der einzigartigen Wirkung, das keine eigene Art rechtfertigt.
+- Wo eine Angabe das Tool selbst auswerten muss, ist sie **kein** benutzerdefiniertes Feld,
+  sondern fest vorgesehen: die Preise eines Händlers, die Wahrscheinlichkeit eines Loot-Eintrags,
+  die Farbe einer Seltenheit. Alles Übrige — Herstellungsdauer, Stack-Größe, Haltbarkeit,
+  Respawn-Zeit, Mindestlevel — definiert der Nutzer als Feld an der Art. Das ist die Antwort auf
+  die meisten „könnte man nicht noch … dazunehmen"-Fragen.
 
-### Crafting-Modul
+### Referenzen ausschließlich über GUIDs
 
-Baut auf dem Item-Modul auf. Hier können z. B. definierte Items wie Holz oder Stein zu einem Crafting-Rezept zusammengeführt werden.
+Entitäten verweisen aufeinander über ihre GUID, nie über den Namen. Ein Umbenennen bricht deshalb
+nichts, und derselbe Verweis trägt über Modulgrenzen hinweg.
 
-> **Beispiel:** 3x Holz + 5x Kohle = Fackel
+### Ein Bedingungssystem für alles
 
-- Zum Schluss soll dieses Rezept in einer Liste auftauchen, in der man nach Items filtern kann.
-- Da jedes Item getrackt wird (was man benötigt, um was zu machen), sollte man sich auch ganze Crafting-Trees als Graphen anzeigen lassen können für mehrstufige Rezepte.
+Bedingungen laufen über ein einziges, modulübergreifendes System, das überall gleich funktioniert
+und gleich aussieht — siehe unten.
 
-### Währungsmodul
+### Werkzeug-Daten und Spielinhalte sind getrennt
 
-In diesem Modul können Währungen im Spiel festgelegt werden, in einer beliebigen Anzahl an Variationen.
-Diese Währungen können dann von Händlern entgegengenommen werden.
+Was das Spiel beschreibt, gehört in den Export. Was die **Arbeit am Spiel** beschreibt — Kanban-
+Karten, Whiteboards, das Änderungsprotokoll, Dashboard-Anordnung, Benutzer und ihre Rechte —
+bleibt draußen und übersteht auch einen ersetzenden Import. Bei jeder neuen Datenart ist das die
+erste zu beantwortende Frage.
 
-### NPC-Modul
+### Versionierte, diffbare Exporte
 
-Hier können einzelne NPCs konfiguriert werden, mit Namen etc.
+Ein Export muss nachvollziehbar machen, was ein Content-Update verändert hat. Derselbe Stand
+ergibt deshalb denselben Export — Byte für Byte, unabhängig von Rechner und Spracheinstellung.
 
-- Ähnlich zum Item-Modul soll der Nutzer auch hier Arten definieren können mit selbst definierten Feldern, die gefüllt werden können.
-- Manche NPCs können einzigartige Werte besitzen, deshalb sollte jeder NPC unabhängig seiner Art auch noch Zusatzfelder definieren können.
-- Außerdem kann angegeben werden, ob ein NPC entweder Händler, Quest, beides oder gar nichts ist.
+### Nachvollziehbarkeit
 
-**Händler:**
+Jede Änderung wird mit Benutzer, Zeitpunkt und geänderten Angaben protokolliert. Auch Löschungen —
+gerade die.
 
-- Sollte ein NPC ein Händler sein, dann sollte der Nutzer die Items, die er zum Verkauf anbietet, auch konfigurieren können.
-- Der Nutzer kann auch konfigurieren, in welcher Währung und zu welchem Preis ein Händler Ware verkauft/ankauft.
-- Dazu soll zu einem Händler auch angegeben werden können, wie hoch der Lagerbestand ist und wie hoch die Auffüllzeiten sind, ab wann die Items wieder verfügbar sind.
-- Manche Shops und teilweise auch nur Items aus einem Shop sind nur nach einer Bedingung verfügbar. Der Nutzer soll angeben können, welche Bedingung/Bedingungen erfüllt sein müssen.
+### Selbst gehostet, ohne Außenverbindung
 
-**NPCs und Mobs:**
+Das Tool läuft ohne Internet. Keine externen Dienste, keine CDNs, keine Telemetrie. Die Datenbank
+wählt der Betreiber (SQL Server, PostgreSQL, MySQL oder SQLite); alle verhalten sich gleich.
 
-- Im NPC-Modul sollten NPCs und Mobs (gegnerische Entitäten) zusammen sein, aber man soll zwischen ihnen filtern können.
-- Der Nutzer soll angeben können, wo welcher NPC/Mob spawnt. Manche NPCs gibt es nur einmal und haben einen festen Spawn, andere sind auch nur einmal vorhanden, aber zufällig auf der Karte.
-- Andere NPCs/Mobs gibt es häufiger und spawnen nur in bestimmten Bereichen. Der Nutzer soll angeben können, wo welcher NPC/Mob auf der Karte spawnt, und kann sich dies in der Karte anzeigen lassen.
+---
 
-### Fraktionsmodul
+## Der Rahmen
 
-Dieses Modul baut auf dem NPC-Modul auf. Hier können Fraktionen definiert werden.
+### Projekte
 
-- Der Nutzer soll auch hier wieder Arten mit bestimmten Feldern definieren können und jede angelegte Fraktion soll auch wieder eigene Felder ergänzen können.
-- Ein NPC kann zu einer Fraktion hinzugefügt werden. Dies wird dann auch zu einem NPC in dem NPC-Modul angezeigt.
-- Eine Fraktion kann Rollen an NPCs vergeben, welchen Rang sie in einer Fraktion haben.
+Alle Inhalte hängen an einem **Projekt** — ein Spiel, ein Prototyp, ein Add-on. Es lassen sich
+beliebig viele anlegen; eines ist das aktive, und es wird über die Kopfleiste gewechselt. Ein
+Projekt lässt sich kopieren (alles inklusive Dateien, mit neuen GUIDs), exportieren, importieren
+und löschen. Vor dem Löschen und vor einem ersetzenden Import legt das Tool selbsttätig einen
+Exportstand als Sicherheitsnetz an.
 
-### Diplomatie-Modul
+### Anmeldung, Benutzer und Berechtigungen
 
-Hier können diplomatische Angelegenheiten zwischen Fraktionen definiert werden und auch die Freundschaften/Allianzen oder auch Feindschaften zwischen Dörfern als Graphen angezeigt werden.
+Das Tool liegt hinter einer Anmeldung — anders ließe sich nicht protokollieren, wer etwas geändert
+hat. Ein ausgeliefertes Standardkonto gibt es nicht: Beim ersten Start wird das erste Konto
+angelegt, und es ist Verwalter.
 
-### Karten-Modul
+Je Benutzer wird eingestellt, was er darf:
 
-Hier kann der Nutzer seine Karten anlegen, wie z. B. die Welt-Map oder auch Maps von Höhlen und Häusern.
+- **Lesen oder auch schreiben.**
+- **Welche Module er sieht** — gesperrte Module verschwinden aus Modulleiste, Suche und Dashboard
+  und sind auch über die eingetippte Adresse nicht erreichbar.
+- **Ob Export und Import offenstehen** — getrennt, denn Herausgeben und Überschreiben sind zwei
+  verschiedene Vertrauensfragen.
+- **Verwalter** dürfen alles, verwalten die Benutzer und die Schlüssel der Programmierschnittstelle
+  und dürfen das Änderungsprotokoll kürzen. Der letzte Verwalter kann sich nicht selbst
+  entmachten, sperren oder löschen.
 
-- Hochgeladenes Format sind Image-Dateien.
-- Dieses Modul baut auf den bisherigen Modulen auf.
-- Hier können auf den einzelnen Karten jeweils Positionen von NPCs oder Fraktionen markiert werden und auch die Gebiete der Fraktionen eingezeichnet werden.
-- Hier sollen auch einzelne Karten verknüpft werden. Z. B. eine Karte eines Haus-Innenraums kann auf der Weltkarte verlinkt werden, um diese dann mit einem Klick wechseln zu können.
+Die Passwortregeln (Mindestlänge, Ziffer, Sonderzeichen) stellt der Verwalter ein. Wer allein
+arbeitet, kann Passwörter auch ganz abschalten; die Anmeldung mit dem Namen bleibt, damit das
+Protokoll seinen Urheber behält.
 
-### Dialogmodul
+### Dashboard
 
-Dieses Modul baut auf dem NPC-Modul auf. Hier können Dialoge definiert werden, die entweder als Sprechblasen zufällig in der Open World bei NPCs zu sehen sind.
+Das Dashboard beantwortet die Frage „Wie steht mein Projekt da?" — es **wiederholt bewusst nicht
+die Navigation**, denn die Modulleiste erreicht ohnehin jedes Modul von jeder Seite. Statt einer
+Kachel je Modul stehen dort Bänder, jedes mit einer eigenen Frage:
 
-- Aber auch Dialoge mit dem Spieler definieren. Hier können dann Texte und Antwortmöglichkeiten zu einem NPC definiert werden.
-- Ein Dialog kann zwischen einem NPC und dem Spieler sein, aber auch mehrere NPCs miteinander oder auch mehrere NPCs + Spieler.
-- Manche Dialoge sind nur nach einer Bedingung verfügbar. Der Nutzer soll angeben können, welche Bedingung/Bedingungen erfüllt sein müssen.
+- **Projektleiste** — Name, Gesamtzahl der Inhalte, Zustand als eine Zahl, Zeitpunkt des letzten
+  Exportstands.
+- **Weiterarbeiten** — die zuletzt bearbeiteten Einträge quer über alle Module.
+- **Zustand** — die Health Checks als Fundzahl mit Sprungziel.
+- **Inhaltsbestand** — jedes Modul mit seiner Anzahl, gruppiert nach Arbeitsfeld. Auskunft und
+  Absprung in einem.
+- **Datenbank** — Provider und Verbindung. Einrichtungsdiagnose, deshalb standardmäßig aus.
 
-### Story-Modul
+Welche Bänder erscheinen und in welcher Reihenfolge, stellt der Nutzer je Projekt ein. Ein leeres
+Projekt bekommt stattdessen die Einstiege, mit denen man anfängt.
 
-In diesem Modul kann die Storyline definiert werden. Hier kann die Story geschrieben werden und in einem Zeitstreifen angezeigt werden.
-Der Nutzer kann angeben, welche NPCs beteiligt sind und welche Fraktionen/Dörfer und Locations auf der Karte. Diese Entitäten werden dann per Referenz verknüpft.
+### Modulleiste
+
+Die Modulleiste steht auf jeder Seite und ist der Weg, der **jedes Modul von überall** erreicht;
+das geöffnete ist hervorgehoben. Zwei Zugeständnisse an die Wirklichkeit, die diesen Satz nicht
+aufgeben:
+
+- Die **Reihenfolge** ist einstellbar.
+- Was **nicht mehr hineinpasst**, sammelt ein Aufklapp-Knopf am Ende der Leiste. Erreichbar
+  bleibt alles; nur nicht alles gleichzeitig sichtbar.
 
-### Quest-Modul
+Module, die ein Benutzer nicht sehen darf, stehen nicht in der Leiste — sie sind für ihn nicht
+vorhanden.
 
-Dieses Modul baut auf dem Story-Modul auf. Hier können Quests/Missionen definiert werden, die der Spieler von NPCs erhalten kann.
-Diese können an die Story angelehnt werden und auch mit dieser und den NPCs verknüpft.
+### Globale Suche
 
-Es wird unterschieden zwischen:
+Ein Suchfeld in der Kopfleiste durchsucht alle Module auf einmal: Namen und Beschreibungen, die
+Textwerte der benutzerdefinierten Felder, gesprochene Dialogzeilen, dazu Assets und Arten. Eine
+eingefügte GUID führt direkt zu ihrer Entität. Ein Treffer, der nicht am Namen liegt, sagt dazu,
+woran er liegt.
 
-- **Hauptmission** — definiert den Storyverlauf
-- **Nebenmission** — Nebenhandlungen, die kleine Belohnungen bieten
-- **Events** — treten zufällig auf
+### Oberfläche
+
+Deutsch und Englisch, umstellbar in den Einstellungen; dazu ein helles und ein dunkles
+Erscheinungsbild. Häufige Handgriffe sind über Tastatur erreichbar (Suche, Speichern, Modulwechsel),
+und wo eine eigene Auswahl danebensteht, gibt es ein Rechtsklick-Menü — überall sonst bleibt das
+Menü des Browsers stehen, weil es Kopieren, Einfügen und Rechtschreibprüfung anbietet.
+
+---
 
-Der Nutzer soll zusätzlich die Möglichkeit haben, eigene Arten mit eigenen Feldern zu definieren.
+## Die Module
+
+Die Module sind nach Arbeitsfeldern gruppiert. Wo unten nichts anderes steht, gilt für jedes:
+eigene Arten mit eigenen Feldern, individuelle Felder je Eintrag, mehrere Sprites mit einem
+primären als Icon, Tags, Bedingungen, Referenzansicht, Kopieren, CSV-Austausch und Export.
+
+### Welt
 
-- Eine Quest kann zu einem Dialog verknüpft sein, da diese über eine Interaktion mit einem NPC stammen kann.
-- Manche Quests sind nur nach einer Bedingung verfügbar. Der Nutzer soll angeben können, welche Bedingung/Bedingungen erfüllt sein müssen.
+**Karten** — Welt-, Höhlen- und Innenraumkarten als Bilddateien. Auf einer Karte werden Punkte,
+kreisförmige Bereiche und **Polygon-Gebiete** eingezeichnet; jede Markierung kann auf eine beliebige
+Entität zeigen — den Spawn-Ort eines NPCs, das Gebiet einer Fraktion, den Schauplatz eines
+Story-Abschnitts. Karten lassen sich untereinander verknüpfen: Das Haus auf der Weltkarte führt mit
+einem Klick auf die Karte seines Innenraums. Markierungen liegen auf **Ebenen**, die sich einzeln
+ein- und ausblenden lassen. Positionen sind relativ gespeichert und sitzen deshalb in jeder
+Darstellungsgröße richtig — auch wenn dasselbe Bild später in höherer Auflösung neu hochgeladen wird.
 
-### Asset-/Sprite-Bibliotheks-Modul
+**Fraktionen** — Gruppen, denen NPCs angehören. Je Mitglied wird die **Rolle** festgehalten, die es
+in der Fraktion hat (Anführer, Späher, Handelsmeister); die Zugehörigkeit ist auch am NPC zu sehen.
 
-Hier werden alle Sprites zu allen Entitäten aus allen Modulen nach Modul gruppiert angezeigt. Es gibt Filter, um nach Modulen zu suchen oder auch um Items o. Ä. zu filtern.
+**Diplomatie** — die Verhältnisse zwischen Fraktionen: Allianzen, Freundschaften, Feindschaften,
+dargestellt als Graph.
 
-- Hier können unter anderem auch die Sprites hochgeladen oder gelöscht werden.
-- Geltend für alle Entitäten aller Module: Jede Entität kann mehrere Sprites besitzen, z. B. für Animationen. In der Asset-Bibliothek kann auch ein primärer Sprite angegeben werden, welcher dann als Icon in den Modulen angezeigt wird.
-- Auch Assets, welche nur für dieses Management-Tool verwendet werden, können hier hochgeladen werden, wie z. B. Marker für die Karten/Maps.
-- Pro Sprite zu einer Entität können Tags vergeben werden wie Prio, Animation, Alternative Design, usw. Hier gibt es per Default keine Vorgaben, sie können aber vom Nutzer selber definiert werden.
+**Welt** — Tageszeiten, Wetterlagen und Biome. Ein benannter Zustand mit Reihenfolge und Farbe, an
+dem Bedingungen hängen („nur nachts", „nicht bei Regen", „nur in der Wüste"). Alles Weitere — die
+Dauer einer Tageszeit, die Sichtweite bei Nebel — ist ein Feld der Art.
 
-### Spieler-Modul
+### Inhalte
 
-Hier kann die Spielerfigur definiert werden. Zusätzlich können hier Skilltrees definiert und verwaltet werden.
+**Items** — der Ausgangspunkt: Name, Beschreibung, Sprite, dazu die Werte, die der Nutzer über
+Arten und Felder selbst festlegt. Für exotische Items gibt es Felder nur für dieses eine Item.
 
-- Skilltrees brauchen eine Grundlage, wie man diese als Spieler erreicht — ob dafür Punkte oder Ressourcen ausgegeben werden müssen — und was dieser Skill macht und heißt.
-- Zusätzlich soll der Nutzer eigene Felder für Skills definieren können.
+**Crafting** — Rezepte auf Basis der Items: benötigte Items, Ziel-Items, Rezept-Art. *3× Holz +
+5× Kohle = Fackel.* Mehrere Ziele sind der Normalfall für Nebenprodukte („1× Barren + 2× Schlacke").
+Ein Rezept trägt keinen eigenen Namen — er entsteht aus seinen Zielen. Weil jedes Item verfolgt
+wird, lassen sich mehrstufige Rezepte als **Crafting-Tree** aufklappen und auf ihre Grundstoffe
+herunterrechnen, die Ausbeute je Stufe eingerechnet. Was ein Rezept sonst noch braucht — Werkbank,
+Dauer, Mindestlevel — sind Felder der Rezept-Art.
 
-### Klassen-Modul
+**Währungen** — beliebig viele nebeneinander, jede mit ihrem Symbol. Händler nehmen sie entgegen.
 
-Der Nutzer soll Klassen definieren können, welche dann auf die Spielerfigur und die NPCs gemappt werden können.
-Klassen haben jeweils besondere Fähigkeiten, Namen, passive Fähigkeiten und so weiter. Der Nutzer soll eigene Felder definieren können.
+**Seltenheiten** — Gewöhnlich, Selten, Episch, … Einmal je Projekt festgelegt mit Name, Farbe und
+Rang, danach über ein Feld in jedem Modul verwendbar. Das einzige Modul **ohne** eigene Arten und
+Felder: Eine Seltenheit ist ein Nachschlagewert, und ihre Farbe muss jede Ansicht zuverlässig
+finden.
 
-### Changelog
+**Loot-Tables** — welche Items mit welcher Wahrscheinlichkeit in welcher Menge fallen, auf den
+echten Item-Entitäten. Dasselbe Item darf mehrfach vorkommen — „zu 50 % eine Münze, zu 5 % gleich
+zwanzig" ist ein üblicher Fall. Zwei Auswertungsarten, weil die Prozentzahlen je nach Verfahren
+etwas anderes bedeuten: **einzeln gewürfelt** (eine Summe über 100 % ist normal) oder **ein
+Treffer aus allen** (dort wären die hinteren Einträge über 100 % hinaus unerreichbar). NPCs und
+Events wählen eine Loot-Table aus.
 
-Es werden laufend Änderungen stattfinden. Damit vereinfacht wird, dies nachzuvollziehen, soll geloggt werden, welcher angemeldete Benutzer welche Änderungen getan hat.
+### Figuren
 
-### Loot-Table-Modul
+**NPCs** — Figuren und Gegner in einem Modul, unterschieden über eine Filter-Angabe statt über die
+Art, damit beides nebeneinander gepflegt und getrennt betrachtet werden kann. Ein NPC ist
+**Händler**, **Questgeber**, beides oder nichts davon.
 
-Loot-Tables können hier definiert werden: welche Items zu welcher Wahrscheinlichkeit in welcher Quantität gedroppt werden.
+- Als Händler führt er Waren: Item, Währung, Verkaufs- und Ankaufspreis, Lagerbestand und
+  Auffüllzeit. Das Angebot als Ganzes **und jeder einzelne Posten** kann an eine Bedingung geknüpft
+  sein.
+- Sein Vorkommen auf der Karte kommt aus dem Karten-Modul, sein Loot aus dem Loot-Modul.
+- **Einzigartig** ist ein Schalter für die Figur, die es nur einmal gibt.
+- **Beziehungen** verbinden NPCs untereinander. Die Beziehungsart ist ein frei definierbares
+  Bezeichnungspaar für Hin- und Rückrichtung („Vater" / „Kind", „Mentor" / „Schüler").
+- **Vorlieben, Persönlichkeit und Wesenszüge** beschreiben die Figur als Figur — Stichwortlisten
+  und Regler, nicht Freitext, damit sich danach vergleichen lässt.
 
-- Diese Loot-Tables sollen dann im NPC-Modul auswählbar sein (welcher NPC welchen Loot-Table hat).
-- Das Loot-Table-Modul nutzt die echten Item-Entitäten, um so eine direkte Verknüpfung zwischen Items und Loot-Table zu haben.
+**Skilltrees** — Skilltrees und die Skills darin: wie ein Skill heißt, was er bewirkt, was er
+kostet (Skillpunkte **oder** eine Menge eines Items) und welcher Skill ihm vorausgeht — daraus
+entsteht der Baum. Dazu eigene Arten und Felder. **Die Spielerfigur ist ein NPC** und steht im
+NPC-Modul: Sie hat Beziehungen, Dialoge, Fraktionen und Auftritte in der Story wie jede andere
+Figur — sie doppelt zu führen hieße, jede dieser Verknüpfungen zweimal zu bauen.
 
-### Effekt-Modul
+**Klassen** — Klassen für Spielerfiguren und NPCs, mit ihren Fähigkeiten, passiven Fähigkeiten und
+eigenen Feldern.
 
-In diesem Modul sollen Effekte und deren Wirkung definiert werden können.
+**Effekte** — Wirkungen und ihre Beschreibung. *Verbrennung — das Ziel erleidet X Brandschaden für
+X Sekunden.* Effekte werden Items, Skills und Klassen über Referenzfelder zugewiesen.
 
-> **Beispiel:** Verbrennung — das Ziel erleidet X Brandschaden für X Sekunden, wenn betroffen.
+### Erzählung
 
-Diese Effekte können dann Items zugewiesen werden, wie z. B. einem Feuerschwert.
+**Dialoge** — zwei Formen: **Sprechblasen**, deren Zeilen unabhängig nebeneinander stehen und
+zufällig erscheinen, und **Gespräche** mit Verlauf, Antwortmöglichkeiten und Verzweigungen.
+Beteiligt sind beliebig viele NPCs und wahlweise der Spieler — damit sind NPC + Spieler, mehrere
+NPCs untereinander und mehrere NPCs + Spieler abgedeckt. Ein Gespräch lässt sich als Graph
+anzeigen; Zeilen, die von keiner Antwort erreicht werden, fallen dort auf. Dialoge können an
+Bedingungen hängen.
 
-### Achievement-Modul
+**Story** — die Storyline als Zeitstreifen, mit Reihenfolge per Drag & Drop. Je Abschnitt: der
+Text, die beteiligten NPCs, Fraktionen und der Ort auf der Karte, dazu Stimmung, Spielzeitpunkt,
+Dauer und Schauplatz. Abschnitte lassen sich **untereinander verknüpfen** (Vorgeschichte,
+Parallelhandlung, Folge).
 
-Hier können Achievements definiert werden, welche der Spieler erreichen kann, z. B. sowas wie die Steam-Achievements.
+**Quests** — Haupt- und Nebenmissionen, angelehnt an die Story und mit ihr, den NPCs und den
+Dialogen verknüpft, aus denen sie stammen. Verfügbarkeit und Abschluss sind zwei getrennte
+Bedingungssätze, weil beide gleichzeitig an derselben Quest hängen.
 
-### Sammelobjekte-Modul
+**Events** — was zufällig geschieht, aus dem Quest-Modul herausgelöst und eigenständig: welche
+Mobs in welcher Zahl auftauchen, welche Loot-Table die Belohnung ist und wie wahrscheinlich es ist.
+Wo es geschehen kann, wird im Karten-Modul markiert — eine Markierung, die auf das Event zeigt,
+statt einer zweiten Ortsangabe am Event selbst.
 
-Hier können Sammelobjekte definiert werden, wie Statuen, die der Spieler sammeln kann, oder Notizen, etc.
-Hier sollen auf jeden Fall eigene Felder vom Nutzer definiert werden können.
+**Cutscenes** — als Storyboard aus Einstellungen, verknüpft mit dem Story-Abschnitt und dem Dialog,
+zu dem sie gehören.
 
-### Event-Modul
+### Fortschritt
 
-Events aus dem Quest-Modul herauslösen und Events noch anpassbarer machen:
+**Achievements** — Erfolge nach Art der Steam-Achievements, jeder mit der Bedingung, unter der er
+freigeschaltet wird, und einem Schalter für die verborgenen.
 
-- Welche Mobs spawnen beim Event?
-- Was ist der Loot-Table als Belohnung?
-- Wie hoch ist die Wahrscheinlichkeit?
-- Wo auf der Karte kann dieses Event passieren? Nur in Höhlen oder überall?
+**Sammelobjekte** — Statuen, Notizen und alles andere, was der Spieler zusammensucht.
 
-### Tag-Modul
+### Produktion
 
-Lässt Tags/Labels/Stichwörter in einem eigenen Modul definieren, bei welchen dann eingestellt werden kann, in welchen anderen Modulen und Bereichen sie verfügbar sind.
+**Assets** — die Sprite-Bibliothek über alle Module, nach Modul gruppiert und filterbar. Hier wird
+hochgeladen und gelöscht. Jede Entität darf **mehrere** Sprites haben (Animationsphasen,
+alternative Entwürfe); eines davon ist das primäre und erscheint als Icon in den Modul-Listen.
+Auch Dateien, die nur das Tool selbst braucht — Kartenmarker etwa —, liegen hier. Je Sprite lassen
+sich Stichwörter vergeben (Prio, Animation, Alternative); vorgegeben ist keines.
 
-### SFX-/Audio-Modul
+**Tags** — modulübergreifende Labels. Je Tag wird eingestellt, in welchen Modulen es zur Verfügung
+steht.
 
-*(noch offen)*
+**SFX/Audio** — Sounds und Musik mit ihren Audiodateien.
 
-### Cutscene-Modul
+### Auswertung
 
-*(noch offen)*
+Module ohne eigene Inhalte: Sie zeigen, was die anderen Module ohnehin schon tragen. Deshalb
+stehen sie nicht im Inhaltsbestand und können nicht veralten.
 
-### Statistik-Modul
+**Statistik** — Kennzahlen über alle Module und die Health Checks (siehe unten).
 
-Zeigt z. B. die Anzahl der angelegten Items an, oder wie viele NPCs es gibt, oder wie viele NPCs feindlich sind, usw.
+**Freischaltungen** — der Tech-Tree: was was freischaltet, gelesen aus dem Bedingungssystem und
+gezeichnet als Graph. Eine eigene Datenhaltung hätte dieselbe Aussage ein zweites Mal gespeichert
+und wäre ab der ersten Änderung falsch.
 
-**Erweiterung um Health Checks:**
+**Verbindungen** — NPCs und ihre Beziehungen als Netz, eingefärbt nach Fraktion.
+
+**Änderungen** — das Änderungsprotokoll: wer wann was geändert hat, über alle Module und je
+Entität in deren Maske. Ein Import ist **ein** Eintrag und nicht tausend. Wie lange und wie viel
+aufbewahrt wird, stellt der Verwalter ein.
+
+**Massenbearbeitung** — viele Einträge auf einmal ändern: Art zuweisen, Tags vergeben oder
+entziehen, einen Feldwert setzen oder leeren. Eine Seite für alle Module statt einer Mehrfachauswahl
+in jeder Liste. Ein Wert landet nur dort, wo das Feld gilt; der Rest wird als übersprungen gemeldet
+statt stillschweigend geschrieben.
+
+**Lokalisierung** — siehe unten.
+
+**Engine-Presets** — siehe unten.
+
+**ToDo** und **Whiteboard** — die Arbeit am Spiel, nicht das Spiel: Kanban-Boards und
+Skizzenflächen, mehrere je Projekt, mit sofortiger Aktualisierung für alle, die gerade zusehen.
+Werkzeug-Daten, also nicht im Export.
+
+---
+
+## Felder
+
+Ein Feld hat einen Namen, einen Datentyp und wahlweise die Kennzeichnung als **Pflichtfeld**. Zur
+Auswahl stehen: einzeiliger Text, mehrzeiliger Text, ganze Zahl, Kommazahl, Ja/Nein, Datum,
+Auswahlliste, Farbe, **Verweis auf eine andere Entität** (das Zielmodul steht am Feld), **Verweis
+auf eine Seltenheit** und **Formel/Kurve**.
+
+Zwei Besonderheiten:
+
+- **Stichwortliste** — ein Textfeld lässt sich auf „Liste" umstellen: die Elemente eines Zaubers,
+  die Schadensarten einer Waffe. Erfasst wird sie als Kette von Stichwörtern statt als Freitext,
+  bleibt aber Text und damit auffindbar.
+- **Formel/Kurve** — für Stat- und Schadensformeln und für Levelkurven: ein Ausdruck über `x`
+  (`100 * x ^ 1.5`), eine Spanne und eine Wertetabelle. Beides zusammen, nicht entweder-oder:
+  Einzelne Stufen lassen sich überschreiben, ohne die Formel zu verlieren — der Boss auf Stufe 50,
+  der einen Sprung bekommt. Eine Vorschau zeichnet die Kurve, und Kurven aus dem ganzen Projekt
+  lassen sich zum Vergleich darüberlegen.
+
+---
+
+## Bedingungssystem
+
+Ein einziges System, über alle Module hinweg verknüpfbar, damit sich Bedingungen an Story, Quests,
+Dialoge, Händler und alles Weitere binden lassen. Es sieht überall gleich aus und funktioniert
+überall gleich.
+
+Ein Bedingungssatz hängt an einer Entität — **oder an einem Teil davon**: an einem einzelnen
+Händler-Posten, nicht nur am Angebot als Ganzem. Mehrere Sätze an derselben Entität werden über
+ihren Zweck unterschieden: „ist verfügbar, wenn …", „das Warenangebot erscheint, wenn …", „gilt
+als abgeschlossen, wenn …", „wird freigeschaltet, wenn …". Innerhalb eines Satzes gilt entweder
+**alles** oder **eines**.
+
+Eine einzelne Bedingung ist eine der folgenden Arten: Item besitzen, Währung besitzen, Zustand
+einer Quest, NPC besiegt, gesetzter Schalter, Spielerlevel, Tageszeit, Wetter, Biom,
+freigeschaltet — dazu **frei formuliert** für alles, was das Tool noch nicht kennt. Je nach Art
+tragen ein Vergleich mit einer Zahl, ein Ja/Nein oder der Verweis auf eine andere Entität die
+Aussage; das Zielmodul ergibt sich meist aus der Art selbst, nur bei „freigeschaltet" wird es
+gewählt — freischalten lässt sich ein Skill, ein Rezept, ein Gebiet.
+
+Ein leerer Satz wird nicht gespeichert: „keine Bedingung" soll nichts hinterlassen.
+
+---
+
+## Health Checks
+
+Prüfungen, die den Bestand auf Widersprüche und toten Inhalt durchsehen. Sie stehen auf der
+Statistik-Seite und als Zusammenfassung auf dem Dashboard:
 
 - Zyklische Rezepte
 - Items ohne jede Bezugsquelle (toter Content)
 - Quests ohne Abschlussbedingung
 - Dialog-Sackgassen
-- Loot-Wahrscheinlichkeiten über 100 %
+- Loot-Wahrscheinlichkeiten über 100 % — nur dort, wo sie tatsächlich unerreichbare Einträge
+  bedeuten
 - Verwaiste Sprites
 - Unerfüllbare Bedingungen
+- Ringe im Freischaltungs-Graphen
 
-## Bedingungssystem
+Ein Health Check **verbietet nichts**. Er meldet, was auffällt; gespeichert und exportiert wird
+trotzdem. Beim Umbauen ist ein Zwischenstand regelmäßig unstimmig, und ein Tool, das ihn nicht
+sichern lässt, steht im Weg. Aus demselben Grund meldet ein Check nur, was sich ohne Kenntnis des
+laufenden Spiels sicher feststellen lässt.
 
-Wir brauchen ein einheitliches System, welches über alle Module hinweg verknüpfbar ist, um so sämtliche Bedingungen an Story und Quests binden zu können.
+---
 
-## Weiteres inhaltlich
+## Import, Export und Integration
 
-- Stat- und Schadensformeln
-- Levelkurven
-- Crafting-Stationen und Zeitdauer
-- Tech-Tree/Freischaltungen
-- Stack-Größen und Haltbarkeit
-- Respawn-Zeiten
-- Tageszeit/Wetter/Biome
-- Globale Suche über alle Entitäten
+### Export
+
+Der komplette Projektstand als **ZIP**: die Inhalte als JSON, je Modul eine Datei, dazu die
+Dateien — Bilder, Sounds und alles Weitere. Wahlweise neutral oder im Ordner-Layout von **Unity**,
+**Unreal Engine** oder **Godot**; der Inhalt ist derselbe, nur der Ort im Archiv unterscheidet
+sich.
+
+Das Format trägt eine **Versionsnummer**, und alle Listen sind stabil sortiert — derselbe Stand
+ergibt denselben Export. Nur so ist ein Diff aussagekräftig.
+
+### Engine-Presets
+
+Ein Preset ist ein Bauplan: „so sieht ein NPC in Unity aus". Es legt fest, wie ein Eintrag eines
+Moduls (wahlweise einer bestimmten Art) in der Engine heißt und welche Eigenschaft sich aus
+welcher Quelle füllt — Name, Beschreibung, ein Feld, ein fester Wert, die GUID, die Art oder der
+Dateiname des Icons.
+
+Beim Export in eine Engine entstehen daraus zusätzlich **engine-native Dateien**: für Unity eine
+Klasse samt Daten je Eintrag, für Unreal eine DataTable-taugliche CSV, für Godot je Eintrag eine
+Ressourcendatei. Sie ergänzen den neutralen Inhalt, sie ersetzen ihn nicht — wer die Presets nicht
+pflegt, bekommt weiterhin alles.
+
+### Exportstände und Diff
+
+Exporte lassen sich aufbewahren. Zwei Stände — oder ein Stand gegen den aktuellen Bestand —
+werden Entität für Entität verglichen: neu, entfernt, geändert samt der geänderten Angaben. Damit
+ist beantwortbar, was ein Content-Update verändert hat.
+
+Wie viele Stände und wie lange aufbewahrt werden, ist einstellbar; der jüngste bleibt in jedem
+Fall stehen.
+
+### Import
+
+Ein Export-ZIP lässt sich wieder einlesen — für den Umzug eines Projekts und für die
+Wiederherstellung. Der Import stellt immer einen **vollständigen** Projektstand her und ist
+bewusst kein Teil-Zusammenführen: Entweder ist das Ziel leer, oder der Bestand wird vorher
+ersetzt. Vorher entsteht selbsttätig ein Exportstand.
+
+### CSV je Modul
+
+Für die Pflege von Zahlenwerten in einem Tabellenprogramm: ein Modulbestand als Tabelle heraus und
+wieder herein. Der CSV-Import **aktualisiert, er ersetzt nicht** — was in keiner Zeile steht,
+bleibt unangetastet, denn eine Tabelle ist ein Ausschnitt und ein Ausschnitt darf nichts löschen.
+Eine leere Zelle löscht dagegen den Wert; sonst ließe er sich über die Tabelle nie zurücknehmen.
+
+### Lesende Programmierschnittstelle
+
+Eine HTTP-Schnittstelle liefert die Inhalte eines Projekts an eigene Werkzeuge und Engine-Plugins,
+angemeldet über einen **API-Schlüssel** statt über die Anmeldung im Browser — ein Plugin hat
+keinen Browser. Schlüssel werden vom Verwalter vergeben, lassen sich auf ein Projekt beschränken,
+stehen im Klartext genau einmal da und sind **nur lesend**: Ein schreibender Zugang wäre ein
+zweiter Weg an Rechteprüfung, Änderungsprotokoll und Konflikterkennung vorbei.
+
+### Lokalisierung der Spielinhalte
+
+Je Projekt werden die Sprachen festgelegt; eine davon ist die **Ausgangssprache** — ihre Texte
+stehen dort, wo sie ohnehin stehen, und sind keine Übersetzung. Übersetzt werden Namen,
+Beschreibungen und Textfelder; Zahlen, Schalter, Verweise und Stichwortlisten bleiben draußen, weil
+sie in jeder Sprache dieselben sind.
+
+Zu jeder Übersetzung wird der Ausgangstext festgehalten, wie er beim Übersetzen aussah. Ändert
+sich das Original, gilt die Übersetzung als **veraltet**, statt still falsch zu bleiben. Der
+Fortschritt zählt „fehlt" und „veraltet" getrennt.
+
+Im Export liegt neben dem Bestand je Sprache eine fertige Zeichenketten-Tabelle. Die Sprachwahl
+fällt damit im Spiel und nicht im Export.
+
+---
 
 ## Referenzansicht
 
@@ -228,3 +482,18 @@ Bei jeder Entität — wie „Find All References" in Visual Studio:
 > - ✓ Loot
 > - ✓ NPC
 > - ✓ Story
+
+Sie ist keine Bequemlichkeit, sondern die Voraussetzung dafür, überhaupt etwas löschen zu können:
+Ohne sie ist bei keinem Eintrag zu beantworten, was daran hängt. Ein neues Modul, das auf fremde
+Entitäten verweist, muss deshalb in dieser Ansicht auftauchen.
+
+---
+
+## Zusammenarbeit
+
+Mehrere Personen arbeiten am selben Bestand. Zwei Zusagen dazu:
+
+- **Kein stilles Überschreiben.** Wurde ein Eintrag zwischenzeitlich anderswo geändert, meldet das
+  Speichern einen Konflikt, statt die fremde Änderung zu verwerfen.
+- **Nachvollziehbarkeit statt Sperren.** Einträge werden nicht gegeneinander verriegelt; wer wann
+  was geändert hat, steht im Protokoll — auch an der Entität selbst.
