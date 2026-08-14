@@ -54,6 +54,21 @@
   <data name="DeleteColumnConfirmMessage" xml:space="preserve">
     <value>Die Spalte „{0}“ enthält noch {1} Karte(n) — sie werden mitgelöscht.</value>
   </data>
+  <data name="DeleteCardConfirmTitle" xml:space="preserve">
+    <value>Karte löschen?</value>
+  </data>
+  <data name="DeleteCardConfirmMessage" xml:space="preserve">
+    <value>Die Karte „{0}“ wird endgültig gelöscht.</value>
+  </data>
+  <data name="CardMenuEdit" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="CardMenuMoveTo" xml:space="preserve">
+    <value>Nach „{0}“ verschieben</value>
+  </data>
+  <data name="CardMenuDelete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
   <data name="DeleteYes" xml:space="preserve">
     <value>Löschen</value>
   </data>

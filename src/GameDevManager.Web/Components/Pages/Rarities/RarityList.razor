@@ -67,55 +67,61 @@ else
         <div class="gdm-item-grid">
             @foreach (var rarity in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/rarities/{rarity.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="rarity.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@rarity.Name"
-                                        FallbackIcon="@Icons.Material.Filled.Diamond" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="rarity.Id"
+                                   Name="@rarity.Name"
+                                   EditRoute="/modules/rarities"
+                                   OnDelete="@(() => DeleteAsync(rarity))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/rarities/{rarity.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="rarity.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@rarity.Name"
+                                            FallbackIcon="@Icons.Material.Filled.Diamond" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/rarities/{rarity.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@rarity.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="rarity.Id"
-                                                   Name="@rarity.Name"
-                                                   EditRoute="/modules/rarities" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(rarity))"
-                                               aria-label="@L["DeleteAria", rarity.Name]" />
-                            </MudTooltip>
-                        </MudStack>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/rarities/{rarity.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@rarity.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="rarity.Id"
+                                                       Name="@rarity.Name"
+                                                       EditRoute="/modules/rarities" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(rarity))"
+                                                   aria-label="@L["DeleteAria", rarity.Name]" />
+                                </MudTooltip>
+                            </MudStack>
 
-                        @if (!string.IsNullOrWhiteSpace(rarity.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @rarity.Description
-                            </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Class="mt-2">
-                            @* Der Rang ist die Reihenfolge der Stufen — er gehört auch auf die Kachel. *@
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="gdm-mono">
-                                @L["RankChip", rarity.SortOrder]
-                            </MudChip>
-                            @if (!string.IsNullOrWhiteSpace(rarity.Color))
+                            @if (!string.IsNullOrWhiteSpace(rarity.Description))
                             {
-                                <span class="gdm-color-dot" style="@($"background-color:{rarity.Color};")"></span>
-                                <MudText Typo="Typo.caption" Class="gdm-mono">@rarity.Color</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @rarity.Description
+                                </MudText>
                             }
-                        </MudStack>
 
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", rarity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Class="mt-2">
+                                @* Der Rang ist die Reihenfolge der Stufen — er gehört auch auf die Kachel. *@
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="gdm-mono">
+                                    @L["RankChip", rarity.SortOrder]
+                                </MudChip>
+                                @if (!string.IsNullOrWhiteSpace(rarity.Color))
+                                {
+                                    <span class="gdm-color-dot" style="@($"background-color:{rarity.Color};")"></span>
+                                    <MudText Typo="Typo.caption" Class="gdm-mono">@rarity.Color</MudText>
+                                }
+                            </MudStack>
+
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", rarity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

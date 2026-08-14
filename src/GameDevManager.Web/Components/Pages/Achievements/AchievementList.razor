@@ -86,66 +86,72 @@ else
         <div class="gdm-item-grid">
             @foreach (var achievement in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/achievements/{achievement.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="achievement.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@achievement.Name"
-                                        FallbackIcon="@Icons.Material.Filled.EmojiEvents" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="achievement.Id"
+                                   Name="@achievement.Name"
+                                   EditRoute="/modules/achievements"
+                                   OnDelete="@(() => DeleteAsync(achievement))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/achievements/{achievement.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="achievement.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@achievement.Name"
+                                            FallbackIcon="@Icons.Material.Filled.EmojiEvents" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/achievements/{achievement.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@achievement.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="achievement.Id"
-                                                   Name="@achievement.Name"
-                                                   EditRoute="/modules/achievements" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(achievement))"
-                                               aria-label="@L["DeleteAria", achievement.Name]" />
-                            </MudTooltip>
-                        </MudStack>
-
-                        @if (!string.IsNullOrWhiteSpace(achievement.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @achievement.Description
-                            </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            @if (achievement.IsSecret)
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["SecretChip"]</MudChip>
-                            }
-                            @if (!achievement.HasUnlockCondition)
-                            {
-                                <MudTooltip Text="@L["NoUnlockTooltip"]">
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning">
-                                        @L["NoUnlockChip"]
-                                    </MudChip>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/achievements/{achievement.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@achievement.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="achievement.Id"
+                                                       Name="@achievement.Name"
+                                                       EditRoute="/modules/achievements" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(achievement))"
+                                                   aria-label="@L["DeleteAria", achievement.Name]" />
                                 </MudTooltip>
-                            }
-                            @if (achievement.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@achievement.TypeName</MudChip>
-                            }
-                        </MudStack>
+                            </MudStack>
 
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", achievement.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                            @if (!string.IsNullOrWhiteSpace(achievement.Description))
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @achievement.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                @if (achievement.IsSecret)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["SecretChip"]</MudChip>
+                                }
+                                @if (!achievement.HasUnlockCondition)
+                                {
+                                    <MudTooltip Text="@L["NoUnlockTooltip"]">
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning">
+                                            @L["NoUnlockChip"]
+                                        </MudChip>
+                                    </MudTooltip>
+                                }
+                                @if (achievement.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@achievement.TypeName</MudChip>
+                                }
+                            </MudStack>
+
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", achievement.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

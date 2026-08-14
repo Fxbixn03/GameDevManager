@@ -108,70 +108,76 @@ else
         <div class="gdm-item-grid">
             @foreach (var npc in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/npcs/{npc.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="npc.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@npc.Name"
-                                        FallbackIcon="@(npc.Kind == NpcKind.Mob ? Icons.Material.Filled.Pets : Icons.Material.Filled.Person)" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="npc.Id"
+                                   Name="@npc.Name"
+                                   EditRoute="/modules/npcs"
+                                   OnDelete="@(() => DeleteAsync(npc))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/npcs/{npc.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="npc.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@npc.Name"
+                                            FallbackIcon="@(npc.Kind == NpcKind.Mob ? Icons.Material.Filled.Pets : Icons.Material.Filled.Person)" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/npcs/{npc.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@npc.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="npc.Id"
-                                                   Name="@npc.Name"
-                                                   EditRoute="/modules/npcs" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(npc))"
-                                               aria-label="@L["DeleteAria", npc.Name]" />
-                            </MudTooltip>
-                        </MudStack>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/npcs/{npc.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@npc.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="npc.Id"
+                                                       Name="@npc.Name"
+                                                       EditRoute="/modules/npcs" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(npc))"
+                                                   aria-label="@L["DeleteAria", npc.Name]" />
+                                </MudTooltip>
+                            </MudStack>
 
-                        @if (!string.IsNullOrWhiteSpace(npc.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @npc.Description
-                            </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            <MudChip T="string"
-                                     Size="Size.Small"
-                                     Variant="Variant.Text"
-                                     Color="@(npc.Kind == NpcKind.Mob ? Color.Error : Color.Default)">
-                                @(npc.Kind == NpcKind.Mob ? L["KindMob"] : L["KindNpc"])
-                            </MudChip>
-                            @if (npc.IsTrader)
+                            @if (!string.IsNullOrWhiteSpace(npc.Description))
                             {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
-                                    @L["TraderChip", npc.OfferCount]
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @npc.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                <MudChip T="string"
+                                         Size="Size.Small"
+                                         Variant="Variant.Text"
+                                         Color="@(npc.Kind == NpcKind.Mob ? Color.Error : Color.Default)">
+                                    @(npc.Kind == NpcKind.Mob ? L["KindMob"] : L["KindNpc"])
                                 </MudChip>
-                            }
-                            @if (npc.IsQuestGiver)
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["QuestChip"]</MudChip>
-                            }
-                            @if (npc.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@npc.TypeName</MudChip>
-                            }
-                        </MudStack>
+                                @if (npc.IsTrader)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
+                                        @L["TraderChip", npc.OfferCount]
+                                    </MudChip>
+                                }
+                                @if (npc.IsQuestGiver)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["QuestChip"]</MudChip>
+                                }
+                                @if (npc.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@npc.TypeName</MudChip>
+                                }
+                            </MudStack>
 
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", npc.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", npc.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

@@ -86,66 +86,72 @@ else
         <div class="gdm-item-grid">
             @foreach (var collectible in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/collectibles/{collectible.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="collectible.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@collectible.Name"
-                                        FallbackIcon="@Icons.Material.Filled.Collections" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="collectible.Id"
+                                   Name="@collectible.Name"
+                                   EditRoute="/modules/collectibles"
+                                   OnDelete="@(() => DeleteAsync(collectible))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/collectibles/{collectible.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="collectible.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@collectible.Name"
+                                            FallbackIcon="@Icons.Material.Filled.Collections" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/collectibles/{collectible.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@collectible.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="collectible.Id"
-                                                   Name="@collectible.Name"
-                                                   EditRoute="/modules/collectibles" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(collectible))"
-                                               aria-label="@L["DeleteAria", collectible.Name]" />
-                            </MudTooltip>
-                        </MudStack>
-
-                        @if (!string.IsNullOrWhiteSpace(collectible.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @collectible.Description
-                            </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            @if (collectible.PlacementCount == 0)
-                            {
-                                <MudTooltip Text="@L["NoPlacementsTooltip"]">
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["NoPlacements"]</MudChip>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/collectibles/{collectible.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@collectible.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="collectible.Id"
+                                                       Name="@collectible.Name"
+                                                       EditRoute="/modules/collectibles" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(collectible))"
+                                                   aria-label="@L["DeleteAria", collectible.Name]" />
                                 </MudTooltip>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                    @L["PlacementCountChip", collectible.PlacementCount]
-                                </MudChip>
-                            }
-                            @if (collectible.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@collectible.TypeName</MudChip>
-                            }
-                        </MudStack>
+                            </MudStack>
 
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", collectible.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                            @if (!string.IsNullOrWhiteSpace(collectible.Description))
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @collectible.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                @if (collectible.PlacementCount == 0)
+                                {
+                                    <MudTooltip Text="@L["NoPlacementsTooltip"]">
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["NoPlacements"]</MudChip>
+                                    </MudTooltip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                        @L["PlacementCountChip", collectible.PlacementCount]
+                                    </MudChip>
+                                }
+                                @if (collectible.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@collectible.TypeName</MudChip>
+                                }
+                            </MudStack>
+
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", collectible.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

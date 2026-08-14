@@ -116,72 +116,78 @@ else
             <div class="gdm-item-grid">
                 @foreach (var quest in filtered)
                 {
-                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                        <MudLink Href="@($"/modules/quests/{quest.Id}")" Underline="Underline.None">
-                            <AssetThumbnail AssetId="quest.PrimaryAssetId"
-                                            Class="gdm-item-tile"
-                                            Alt="@quest.Name"
-                                            FallbackIcon="@Icons.Material.Filled.Assignment" />
-                        </MudLink>
+                    <EntityContextMenu ModuleKey="@Module.Id"
+                                       EntityId="quest.Id"
+                                       Name="@quest.Name"
+                                       EditRoute="/modules/quests"
+                                       OnDelete="@(() => DeleteAsync(quest))">
+                        <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                            <MudLink Href="@($"/modules/quests/{quest.Id}")" Underline="Underline.None">
+                                <AssetThumbnail AssetId="quest.PrimaryAssetId"
+                                                Class="gdm-item-tile"
+                                                Alt="@quest.Name"
+                                                FallbackIcon="@Icons.Material.Filled.Assignment" />
+                            </MudLink>
 
-                        <div class="pa-3">
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                                <MudLink Href="@($"/modules/quests/{quest.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                    <b>@quest.Name</b>
-                                </MudLink>
-                                <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                       EntityId="quest.Id"
-                                                       Name="@quest.Name"
-                                                       EditRoute="/modules/quests" />
-                                <MudTooltip Text="@L["DeleteTooltip"]">
-                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteAsync(quest))"
-                                                   aria-label="@L["DeleteAria", quest.Name]" />
-                                </MudTooltip>
-                            </MudStack>
+                            <div class="pa-3">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                    <MudLink Href="@($"/modules/quests/{quest.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                        <b>@quest.Name</b>
+                                    </MudLink>
+                                    <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                           EntityId="quest.Id"
+                                                           Name="@quest.Name"
+                                                           EditRoute="/modules/quests" />
+                                    <MudTooltip Text="@L["DeleteTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeleteAsync(quest))"
+                                                       aria-label="@L["DeleteAria", quest.Name]" />
+                                    </MudTooltip>
+                                </MudStack>
 
-                            @if (!string.IsNullOrWhiteSpace(quest.Description))
-                            {
-                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                    @quest.Description
+                                @if (!string.IsNullOrWhiteSpace(quest.Description))
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                        @quest.Description
+                                    </MudText>
+                                }
+
+                                <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Variant="Variant.Text"
+                                             Color="@(quest.Kind == QuestKind.MainMission ? Color.Primary : Color.Default)">
+                                        @Quests.KindLabel(quest.Kind)
+                                    </MudChip>
+                                    @if (quest.GiverNpcId is not null)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                            @L["GiverChip", quest.GiverNpcName ?? L["DeletedNpc"].Value]
+                                        </MudChip>
+                                    }
+                                    @if (quest.StoryEntryId is not null)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                            @(quest.StoryEntryName ?? L["DeletedStoryEntry"].Value)
+                                        </MudChip>
+                                    }
+                                    @if (quest.TypeName is null)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@quest.TypeName</MudChip>
+                                    }
+                                </MudStack>
+
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                    @L["UpdatedAt", quest.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
                                 </MudText>
-                            }
-
-                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                                <MudChip T="string"
-                                         Size="Size.Small"
-                                         Variant="Variant.Text"
-                                         Color="@(quest.Kind == QuestKind.MainMission ? Color.Primary : Color.Default)">
-                                    @Quests.KindLabel(quest.Kind)
-                                </MudChip>
-                                @if (quest.GiverNpcId is not null)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                        @L["GiverChip", quest.GiverNpcName ?? L["DeletedNpc"].Value]
-                                    </MudChip>
-                                }
-                                @if (quest.StoryEntryId is not null)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                        @(quest.StoryEntryName ?? L["DeletedStoryEntry"].Value)
-                                    </MudChip>
-                                }
-                                @if (quest.TypeName is null)
-                                {
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                                }
-                                else
-                                {
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@quest.TypeName</MudChip>
-                                }
-                            </MudStack>
-
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                                @L["UpdatedAt", quest.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                            </MudText>
-                        </div>
-                    </MudPaper>
+                            </div>
+                        </MudPaper>
+                    </EntityContextMenu>
                 }
             </div>
         }

@@ -86,57 +86,63 @@ else
         <div class="gdm-item-grid">
             @foreach (var faction in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/factions/{faction.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="faction.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@faction.Name"
-                                        FallbackIcon="@Icons.Material.Filled.Flag" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="faction.Id"
+                                   Name="@faction.Name"
+                                   EditRoute="/modules/factions"
+                                   OnDelete="@(() => DeleteAsync(faction))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/factions/{faction.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="faction.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@faction.Name"
+                                            FallbackIcon="@Icons.Material.Filled.Flag" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/factions/{faction.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@faction.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="faction.Id"
-                                                   Name="@faction.Name"
-                                                   EditRoute="/modules/factions" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(faction))"
-                                               aria-label="@L["DeleteAria", faction.Name]" />
-                            </MudTooltip>
-                        </MudStack>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/factions/{faction.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@faction.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="faction.Id"
+                                                       Name="@faction.Name"
+                                                       EditRoute="/modules/factions" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(faction))"
+                                                   aria-label="@L["DeleteAria", faction.Name]" />
+                                </MudTooltip>
+                            </MudStack>
 
-                        @if (!string.IsNullOrWhiteSpace(faction.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @faction.Description
+                            @if (!string.IsNullOrWhiteSpace(faction.Description))
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @faction.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                    @L["MemberCountChip", faction.MemberCount]
+                                </MudChip>
+                                @if (faction.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@faction.TypeName</MudChip>
+                                }
+                            </MudStack>
+
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", faction.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
                             </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                @L["MemberCountChip", faction.MemberCount]
-                            </MudChip>
-                            @if (faction.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@faction.TypeName</MudChip>
-                            }
-                        </MudStack>
-
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", faction.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

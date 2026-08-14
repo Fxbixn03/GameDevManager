@@ -102,6 +102,15 @@
   <data name="RemoveAria" xml:space="preserve">
     <value>Markierung entfernen</value>
   </data>
+  <data name="MarkerMenuMove" xml:space="preserve">
+    <value>Auf der Karte verschieben</value>
+  </data>
+  <data name="MarkerMenuExtend" xml:space="preserve">
+    <value>Gebiet erweitern</value>
+  </data>
+  <data name="MarkerMenuRemove" xml:space="preserve">
+    <value>Markierung entfernen</value>
+  </data>
   <data name="MarkerLabelLabel" xml:space="preserve">
     <value>Beschriftung</value>
   </data>

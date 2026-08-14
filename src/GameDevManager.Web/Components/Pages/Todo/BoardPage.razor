@@ -82,21 +82,61 @@ else
                 <MudStack Spacing="2">
                     @foreach (var card in column.Cards)
                     {
-                        <div class="mud-paper gdm-panel pa-3"
-                             style="@(ReferenceEquals(_dragging, card) ? "opacity:0.4;cursor:grab;" : "cursor:grab;")"
-                             draggable="true"
-                             @ondragstart="@(() => _dragging = card)"
-                             @ondragend="@(() => _dragging = null)"
-                             @ondragover:preventDefault="true"
-                             @ondrop="@(() => DropOnCardAsync(column, card))"
-                             @ondrop:stopPropagation="true"
-                             @onclick="@(() => EditCardAsync(card))">
-                            <MudText Typo="Typo.body2" Style="font-weight:500;">@card.Title</MudText>
-                            @if (!string.IsNullOrWhiteSpace(card.Notes))
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@Shorten(card.Notes)</MudText>
-                            }
-                        </div>
+                        @* Rechtsklick auf eine Karte: dieselben Handgriffe wie im Dialog, nur ohne
+                           Umweg — dazu das Verschieben in eine andere Spalte für alle, die nicht
+                           ziehen wollen oder können. Aufbau wie beim EntityContextMenu der
+                           Modul-Listen: Der Aktivator bildet keinen eigenen Kasten (app.css), und
+                           das Ereignis wird angehalten, damit das eben geöffnete Menü nicht beim
+                           Aktivator von MudBlazor noch einmal ankommt und zuklappt. *@
+                        <MudMenu PositionAtCursor="true"
+                                 Dense="true"
+                                 ActivationEvent="MouseEvent.RightClick"
+                                 Class="gdm-context-menu">
+                            <ActivatorContent>
+                                <div class="gdm-context-target"
+                                     @oncontextmenu="@(args => context.OpenAsync(args))"
+                                     @oncontextmenu:preventDefault="true"
+                                     @oncontextmenu:stopPropagation="true">
+                                    <div class="mud-paper gdm-panel pa-3"
+                                         style="@(ReferenceEquals(_dragging, card) ? "opacity:0.4;cursor:grab;" : "cursor:grab;")"
+                                         draggable="true"
+                                         @ondragstart="@(() => _dragging = card)"
+                                         @ondragend="@(() => _dragging = null)"
+                                         @ondragover:preventDefault="true"
+                                         @ondrop="@(() => DropOnCardAsync(column, card))"
+                                         @ondrop:stopPropagation="true"
+                                         @onclick="@(() => EditCardAsync(card))">
+                                        <MudText Typo="Typo.body2" Style="font-weight:500;">@card.Title</MudText>
+                                        @if (!string.IsNullOrWhiteSpace(card.Notes))
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@Shorten(card.Notes)</MudText>
+                                        }
+                                    </div>
+                                </div>
+                            </ActivatorContent>
+
+                            <ChildContent>
+                                <MudMenuItem Icon="@Icons.Material.Filled.EditNote"
+                                             OnClick="@(() => EditCardAsync(card))">
+                                    @L["CardMenuEdit"]
+                                </MudMenuItem>
+
+                                @foreach (var target in _board.Columns.Where(other => other != column))
+                                {
+                                    <MudMenuItem Icon="@Icons.Material.Filled.ArrowForward"
+                                                 OnClick="@(() => MoveCardAsync(card, target))">
+                                        @L["CardMenuMoveTo", target.Name]
+                                    </MudMenuItem>
+                                }
+
+                                <MudDivider />
+                                <MudMenuItem Icon="@Icons.Material.Filled.DeleteOutline"
+                                             IconColor="Color.Error"
+                                             OnClick="@(() => DeleteCardAsync(card))">
+                                    @L["CardMenuDelete"]
+                                </MudMenuItem>
+                            </ChildContent>
+                        </MudMenu>
                     }
 
                     @if (_newCardColumnId == column.Id)
@@ -278,6 +318,26 @@ else
                 await Run(() => Kanban.UpdateCardAsync(card.Id, outcome.Title, outcome.Notes));
             }
         }
+    }
+
+    /// <summary>Aus dem Rechtsklick-Menü: die Karte ans Ende einer anderen Spalte hängen.</summary>
+    private Task MoveCardAsync(KanbanCard card, KanbanColumn target) =>
+        Run(() => Kanban.MoveCardAsync(card.Id, target.Id, target.Cards.Count));
+
+    private async Task DeleteCardAsync(KanbanCard card)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteCardConfirmTitle"],
+            L["DeleteCardConfirmMessage", card.Title],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Run(() => Kanban.DeleteCardAsync(card.Id));
     }
 
     /// <summary>Auf einer Karte losgelassen: an deren Position in deren Spalte einsortieren.</summary>

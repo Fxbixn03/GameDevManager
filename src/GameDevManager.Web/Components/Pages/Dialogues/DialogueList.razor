@@ -115,69 +115,75 @@ else
         <div class="gdm-item-grid">
             @foreach (var dialogue in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/dialogs/{dialogue.Id}")" Underline="Underline.None">
-                        <AssetThumbnail Class="gdm-item-tile"
-                                        Alt="@dialogue.Name"
-                                        FallbackIcon="@KindIcon(dialogue.Kind)" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="dialogue.Id"
+                                   Name="@dialogue.Name"
+                                   EditRoute="/modules/dialogs"
+                                   OnDelete="@(() => DeleteAsync(dialogue))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/dialogs/{dialogue.Id}")" Underline="Underline.None">
+                            <AssetThumbnail Class="gdm-item-tile"
+                                            Alt="@dialogue.Name"
+                                            FallbackIcon="@KindIcon(dialogue.Kind)" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/dialogs/{dialogue.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@dialogue.Name</b>
-                            </MudLink>
-                            @* Sprechblasen haben keinen Verlauf — für sie zeigte der Graph
-                               nur unverbundene Knoten. *@
-                            @if (dialogue.Kind == DialogueKind.Conversation && dialogue.LineCount > 0)
-                            {
-                                <MudTooltip Text="@L["GraphTooltip"]">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Hub"
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/dialogs/{dialogue.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@dialogue.Name</b>
+                                </MudLink>
+                                @* Sprechblasen haben keinen Verlauf — für sie zeigte der Graph
+                                   nur unverbundene Knoten. *@
+                                @if (dialogue.Kind == DialogueKind.Conversation && dialogue.LineCount > 0)
+                                {
+                                    <MudTooltip Text="@L["GraphTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Hub"
+                                                       Size="Size.Small"
+                                                       Href="@($"/modules/dialogs/{dialogue.Id}/graph")"
+                                                       aria-label="@L["GraphAria", dialogue.Name]" />
+                                    </MudTooltip>
+                                }
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="dialogue.Id"
+                                                       Name="@dialogue.Name"
+                                                       EditRoute="/modules/dialogs" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                    Size="Size.Small"
-                                                   Href="@($"/modules/dialogs/{dialogue.Id}/graph")"
-                                                   aria-label="@L["GraphAria", dialogue.Name]" />
+                                                   OnClick="@(() => DeleteAsync(dialogue))"
+                                                   aria-label="@L["DeleteAria", dialogue.Name]" />
                                 </MudTooltip>
-                            }
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="dialogue.Id"
-                                                   Name="@dialogue.Name"
-                                                   EditRoute="/modules/dialogs" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(dialogue))"
-                                               aria-label="@L["DeleteAria", dialogue.Name]" />
-                            </MudTooltip>
-                        </MudStack>
+                            </MudStack>
 
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                            @(dialogue.IncludesPlayer
-                                ? L["ParticipantsWithPlayer", dialogue.ParticipantCount]
-                                : L["ParticipantsNpcOnly", dialogue.ParticipantCount])
-                        </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                @(dialogue.IncludesPlayer
+                                    ? L["ParticipantsWithPlayer", dialogue.ParticipantCount]
+                                    : L["ParticipantsNpcOnly", dialogue.ParticipantCount])
+                            </MudText>
 
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                @(dialogue.Kind == DialogueKind.Bark ? L["KindBark"] : L["KindConversation"])
-                            </MudChip>
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                @L["LineCountChip", dialogue.LineCount]
-                            </MudChip>
-                            @if (dialogue.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@dialogue.TypeName</MudChip>
-                            }
-                        </MudStack>
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                    @(dialogue.Kind == DialogueKind.Bark ? L["KindBark"] : L["KindConversation"])
+                                </MudChip>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                    @L["LineCountChip", dialogue.LineCount]
+                                </MudChip>
+                                @if (dialogue.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@dialogue.TypeName</MudChip>
+                                }
+                            </MudStack>
 
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", dialogue.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", dialogue.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

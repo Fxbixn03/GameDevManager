@@ -136,7 +136,39 @@ else
                                    DraftPoints="_draftPoints"
                                    Placing="@(_mode != PlaceMode.None)"
                                    OnPointPicked="OnPointPickedAsync"
-                                   OnMarkerSelected="SelectMarker" />
+                                   OnMarkerSelected="SelectMarker"
+                                   OnMarkerContextMenu="OpenMarkerMenuAsync" />
+
+                        @* Rechtsklick auf eine Markierung: die Handgriffe der Maske daneben,
+                           nur direkt am Ort. Das Menü hat bewusst keinen eigenen Aktivator
+                           (leerer ActivatorContent) — geöffnet wird es von der Karte aus an
+                           der Mausposition, und es zeigt immer auf die eben ausgewählte
+                           Markierung. *@
+                        <MudMenu @ref="_markerMenu" PositionAtCursor="true" Dense="true">
+                            <ActivatorContent></ActivatorContent>
+                            <ChildContent>
+                                @if (_selected is { } menuMarker)
+                                {
+                                    <MudMenuItem Icon="@Icons.Material.Filled.OpenWith" OnClick="ToggleMove">
+                                        @L["MarkerMenuMove"]
+                                    </MudMenuItem>
+
+                                    @if (menuMarker.IsPolygon)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Add" OnClick="ToggleExtend">
+                                            @L["MarkerMenuExtend"]
+                                        </MudMenuItem>
+                                    }
+
+                                    <MudDivider />
+                                    <MudMenuItem Icon="@Icons.Material.Filled.DeleteOutline"
+                                                 IconColor="Color.Error"
+                                                 OnClick="@(() => RemoveMarker(menuMarker))">
+                                        @L["MarkerMenuRemove"]
+                                    </MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
                     }
                 </MudPaper>
 
@@ -553,6 +585,7 @@ else
     private ReferencesPanel? _referencesPanel;
     private EntityHistoryPanel? _historyPanel;
     private MapMarker? _selected;
+    private MudMenu? _markerMenu;
     private PlaceMode _mode = PlaceMode.None;
     private readonly List<MapPoint> _draftPoints = [];
     private Guid? _imageAssetId;
@@ -837,6 +870,10 @@ else
             SetMode(PlaceMode.None);
         }
     }
+
+    /// <summary>Die Karte meldet einen Rechtsklick — ausgewählt hat sie die Markierung schon.</summary>
+    private Task OpenMarkerMenuAsync((MapMarker Marker, MouseEventArgs Args) context) =>
+        _markerMenu?.OpenMenuAsync(context.Args) ?? Task.CompletedTask;
 
     private Task OnPointPickedAsync((double X, double Y) point)
     {

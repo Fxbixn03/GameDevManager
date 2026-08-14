@@ -126,68 +126,74 @@ else
         <div class="gdm-item-grid">
             @foreach (var recipe in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/crafting/{recipe.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="recipe.PrimaryOutput?.AssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@recipe.Name"
-                                        FallbackIcon="@Icons.Material.Filled.Construction" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="recipe.Id"
+                                   Name="@recipe.Name"
+                                   EditRoute="/modules/crafting"
+                                   OnDelete="@(() => DeleteAsync(recipe))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/crafting/{recipe.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="recipe.PrimaryOutput?.AssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@recipe.Name"
+                                            FallbackIcon="@Icons.Material.Filled.Construction" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/crafting/{recipe.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@recipe.Name</b>
-                            </MudLink>
-                            <MudStack Row="true" Spacing="0">
-                                @if (recipe.PrimaryOutput?.ItemId is { } outputId)
-                                {
-                                    <MudTooltip Text="@L["TreeTooltip"]">
-                                        <MudIconButton Icon="@Icons.Material.Filled.AccountTree"
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/crafting/{recipe.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@recipe.Name</b>
+                                </MudLink>
+                                <MudStack Row="true" Spacing="0">
+                                    @if (recipe.PrimaryOutput?.ItemId is { } outputId)
+                                    {
+                                        <MudTooltip Text="@L["TreeTooltip"]">
+                                            <MudIconButton Icon="@Icons.Material.Filled.AccountTree"
+                                                           Size="Size.Small"
+                                                           Href="@($"/modules/crafting/baum/{outputId}")"
+                                                           aria-label="@L["TreeAria"]" />
+                                        </MudTooltip>
+                                    }
+                                    <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                           EntityId="recipe.Id"
+                                                           Name="@recipe.Name"
+                                                           EditRoute="/modules/crafting" />
+                                    <MudTooltip Text="@L["DeleteTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                        Size="Size.Small"
-                                                       Href="@($"/modules/crafting/baum/{outputId}")"
-                                                       aria-label="@L["TreeAria"]" />
+                                                       OnClick="@(() => DeleteAsync(recipe))"
+                                                       aria-label="@L["DeleteAria", recipe.Name]" />
                                     </MudTooltip>
-                                }
-                                <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                       EntityId="recipe.Id"
-                                                       Name="@recipe.Name"
-                                                       EditRoute="/modules/crafting" />
-                                <MudTooltip Text="@L["DeleteTooltip"]">
-                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteAsync(recipe))"
-                                                   aria-label="@L["DeleteAria", recipe.Name]" />
-                                </MudTooltip>
+                                </MudStack>
                             </MudStack>
-                        </MudStack>
 
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                            @L["IngredientCount", recipe.IngredientCount]
-                        </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                @L["IngredientCount", recipe.IngredientCount]
+                            </MudText>
 
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            @if (recipe.Outputs.Count == 0)
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning">
-                                    @L["NoOutput"]
-                                </MudChip>
-                            }
-                            @if (recipe.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@recipe.TypeName</MudChip>
-                            }
-                        </MudStack>
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                @if (recipe.Outputs.Count == 0)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning">
+                                        @L["NoOutput"]
+                                    </MudChip>
+                                }
+                                @if (recipe.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@recipe.TypeName</MudChip>
+                                }
+                            </MudStack>
 
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", recipe.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", recipe.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

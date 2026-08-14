@@ -86,63 +86,69 @@ else
         <div class="gdm-item-grid">
             @foreach (var cutscene in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/cutscenes/{cutscene.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="cutscene.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@cutscene.Name"
-                                        FallbackIcon="@Icons.Material.Filled.Movie" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="cutscene.Id"
+                                   Name="@cutscene.Name"
+                                   EditRoute="/modules/cutscenes"
+                                   OnDelete="@(() => DeleteAsync(cutscene))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/cutscenes/{cutscene.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="cutscene.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@cutscene.Name"
+                                            FallbackIcon="@Icons.Material.Filled.Movie" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/cutscenes/{cutscene.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@cutscene.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="cutscene.Id"
-                                                   Name="@cutscene.Name"
-                                                   EditRoute="/modules/cutscenes" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(cutscene))"
-                                               aria-label="@L["DeleteAria", cutscene.Name]" />
-                            </MudTooltip>
-                        </MudStack>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/cutscenes/{cutscene.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@cutscene.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="cutscene.Id"
+                                                       Name="@cutscene.Name"
+                                                       EditRoute="/modules/cutscenes" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(cutscene))"
+                                                   aria-label="@L["DeleteAria", cutscene.Name]" />
+                                </MudTooltip>
+                            </MudStack>
 
-                        @if (!string.IsNullOrWhiteSpace(cutscene.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @cutscene.Description
-                            </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                @L["ShotCountChip", cutscene.ShotCount]
-                            </MudChip>
-                            @if (cutscene.StoryEntryId is not null)
+                            @if (!string.IsNullOrWhiteSpace(cutscene.Description))
                             {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
-                                    @(cutscene.StoryEntryName ?? L["DeletedStoryEntry"].Value)
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @cutscene.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                    @L["ShotCountChip", cutscene.ShotCount]
                                 </MudChip>
-                            }
-                            @if (cutscene.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@cutscene.TypeName</MudChip>
-                            }
-                        </MudStack>
+                                @if (cutscene.StoryEntryId is not null)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
+                                        @(cutscene.StoryEntryName ?? L["DeletedStoryEntry"].Value)
+                                    </MudChip>
+                                }
+                                @if (cutscene.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@cutscene.TypeName</MudChip>
+                                }
+                            </MudStack>
 
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", cutscene.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", cutscene.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

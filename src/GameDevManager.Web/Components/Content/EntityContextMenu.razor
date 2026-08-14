@@ -1,0 +1,136 @@
+@inject EntityDuplicationService Duplication
+@inject ProjectContext Project
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<EntityContextMenu> L
+
+@*
+    Das eigene Rechtsklick-Menü einer Kachel: öffnen, kopieren, GUID, löschen — dieselben
+    Handgriffe, die als Knöpfe schon auf der Kachel stehen, nur ohne Zielen.
+
+    Das Menü des Browsers wird bewusst nur hier verdrängt und nicht anwendungsweit: In
+    Eingabefeldern bietet es Kopieren, Einfügen und Rechtschreibprüfung an, und die kann
+    ein eigenes Menü nicht ersetzen. Weil ein Rechtsklick auf eine Kachel damit auch das
+    „Link in neuem Tab öffnen“ des Browsers verliert, steht es hier als eigener Eintrag.
+
+    Der Aktivator bildet keinen eigenen Kasten (display: contents, siehe app.css) — sonst
+    wäre er das Feld im Kachelraster und die Kachel darin nicht mehr so hoch wie ihre
+    Nachbarn. Das Ereignis wird angehalten, damit es nicht zusätzlich beim Aktivator von
+    MudBlazor ankommt und das eben geöffnete Menü wieder zuklappt.
+*@
+
+<MudMenu PositionAtCursor="true"
+         Dense="true"
+         ActivationEvent="MouseEvent.RightClick"
+         Class="gdm-context-menu">
+    <ActivatorContent>
+        <div class="gdm-context-target"
+             @oncontextmenu="@(args => context.OpenAsync(args))"
+             @oncontextmenu:preventDefault="true"
+             @oncontextmenu:stopPropagation="true">
+            @ChildContent
+        </div>
+    </ActivatorContent>
+
+    <ChildContent>
+        <MudMenuItem Icon="@Icons.Material.Filled.EditNote" Href="@EditHref">
+            @L["Open"]
+        </MudMenuItem>
+
+        <MudMenuItem Icon="@Icons.Material.Filled.OpenInNew" Href="@EditHref" Target="_blank">
+            @L["OpenInNewTab"]
+        </MudMenuItem>
+
+        @if (_canDuplicate)
+        {
+            <MudMenuItem Icon="@Icons.Material.Filled.ContentCopy" Disabled="@_busy" OnClick="DuplicateAsync">
+                @L["Duplicate"]
+            </MudMenuItem>
+        }
+
+        <MudMenuItem Icon="@Icons.Material.Filled.Tag" OnClick="CopyIdAsync">
+            @L["CopyId"]
+        </MudMenuItem>
+
+        @if (OnDelete.HasDelegate)
+        {
+            <MudDivider />
+            <MudMenuItem Icon="@Icons.Material.Filled.DeleteOutline"
+                         IconColor="Color.Error"
+                         OnClick="OnDelete">
+                @L["Delete"]
+            </MudMenuItem>
+        }
+    </ChildContent>
+</MudMenu>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string ModuleKey { get; set; }
+
+    [Parameter, EditorRequired]
+    public required Guid EntityId { get; set; }
+
+    /// <summary>Nur für die Meldung nach dem Kopieren — den Namen der Kopie bildet der Dienst.</summary>
+    [Parameter, EditorRequired]
+    public required string Name { get; set; }
+
+    /// <summary>
+    /// Route der Bearbeitungsmaske ohne GUID (z. B. <c>/modules/items</c>) — Ziel von „Öffnen“
+    /// und der Ort, an den das Kopieren springt.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public required string EditRoute { get; set; }
+
+    /// <summary>Ohne Rückruf zeigt das Menü keinen Löschen-Eintrag — die Seite bestätigt und lädt neu.</summary>
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    /// <summary>Die Kachel, über der das Menü aufgeht.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool _canDuplicate;
+    private bool _busy;
+
+    private string EditHref => $"{EditRoute}/{EntityId}";
+
+    protected override void OnParametersSet() => _canDuplicate = Duplication.CanDuplicate(ModuleKey);
+
+    private async Task DuplicateAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            var copyId = await Duplication.DuplicateAsync(projectId, ModuleKey, EntityId);
+
+            Snackbar.Add(L["CopiedMessage", Name], Severity.Success);
+            Navigation.NavigateTo($"{EditRoute}/{copyId}");
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CopyIdAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", EntityId.ToString());
+            Snackbar.Add(L["IdCopiedMessage"], Severity.Success);
+        }
+        catch (JSException)
+        {
+            // Ohne sicheren Kontext (HTTP auf einem fremden Host) gibt es keine Zwischenablage.
+            Snackbar.Add(L["IdCopyRejectedMessage"], Severity.Warning);
+        }
+    }
+}

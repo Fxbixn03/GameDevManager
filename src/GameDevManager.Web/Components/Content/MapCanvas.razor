@@ -36,7 +36,9 @@
                          style="@PolygonStyle(marker)"
                          vector-effect="non-scaling-stroke"
                          @onclick="@(args => SelectAsync(marker, args))"
-                         @onclick:stopPropagation="true">
+                         @onclick:stopPropagation="true"
+                         @oncontextmenu="@(args => ContextMenuAsync(marker, args))"
+                         @oncontextmenu:preventDefault="OnMarkerContextMenu.HasDelegate">
                     <title>@Describe(marker)</title>
                 </polygon>
             }
@@ -65,14 +67,18 @@
                  style="@AreaStyle(marker)"
                  title="@Describe(marker)"
                  @onclick="@(args => SelectAsync(marker, args))"
-                 @onclick:stopPropagation="true"></div>
+                 @onclick:stopPropagation="true"
+                 @oncontextmenu="@(args => ContextMenuAsync(marker, args))"
+                 @oncontextmenu:preventDefault="OnMarkerContextMenu.HasDelegate"></div>
         }
 
         <div class="gdm-map-marker @(marker.Id == SelectedId ? "gdm-map-selected" : null)"
              style="@MarkerStyle(marker)"
              title="@Describe(marker)"
              @onclick="@(args => SelectAsync(marker, args))"
-             @onclick:stopPropagation="true">
+             @onclick:stopPropagation="true"
+             @oncontextmenu="@(args => ContextMenuAsync(marker, args))"
+             @oncontextmenu:preventDefault="OnMarkerContextMenu.HasDelegate">
 
             @if (marker.IconAssetId is { } iconId)
             {
@@ -119,6 +125,14 @@
     [Parameter]
     public EventCallback<MapMarker> OnMarkerSelected { get; set; }
 
+    /// <summary>
+    /// Meldet einen Rechtsklick auf eine Markierung samt Mausposition — die Seite öffnet dort
+    /// ihr eigenes Menü. Ohne Rückruf bleibt es beim Menü des Browsers: Verdrängt wird es nur,
+    /// wo ein Ersatz danebensteht.
+    /// </summary>
+    [Parameter]
+    public EventCallback<(MapMarker Marker, MouseEventArgs Args)> OnMarkerContextMenu { get; set; }
+
     private ElementReference _surface;
 
     private async Task OnClickAsync(MouseEventArgs args)
@@ -139,6 +153,19 @@
 
     private Task SelectAsync(MapMarker marker, MouseEventArgs args) =>
         OnMarkerSelected.InvokeAsync(marker);
+
+    /// <summary>Rechtsklick: erst auswählen, dann melden — das Menü zeigt auf die Markierung,
+    /// über der es aufgeht, und die Maske daneben auf dieselbe.</summary>
+    private async Task ContextMenuAsync(MapMarker marker, MouseEventArgs args)
+    {
+        if (!OnMarkerContextMenu.HasDelegate)
+        {
+            return;
+        }
+
+        await OnMarkerSelected.InvokeAsync(marker);
+        await OnMarkerContextMenu.InvokeAsync((marker, args));
+    }
 
     private static string MarkerStyle(MapMarker marker) =>
         string.Create(System.Globalization.CultureInfo.InvariantCulture,

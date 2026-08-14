@@ -86,61 +86,67 @@ else
         <div class="gdm-item-grid">
             @foreach (var currency in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/currencies/{currency.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="currency.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@currency.Name"
-                                        FallbackIcon="@Icons.Material.Filled.Paid" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="currency.Id"
+                                   Name="@currency.Name"
+                                   EditRoute="/modules/currencies"
+                                   OnDelete="@(() => DeleteAsync(currency))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/currencies/{currency.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="currency.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@currency.Name"
+                                            FallbackIcon="@Icons.Material.Filled.Paid" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/currencies/{currency.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@currency.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="currency.Id"
-                                                   Name="@currency.Name"
-                                                   EditRoute="/modules/currencies" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(currency))"
-                                               aria-label="@L["DeleteAria", currency.Name]" />
-                            </MudTooltip>
-                        </MudStack>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/currencies/{currency.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@currency.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="currency.Id"
+                                                       Name="@currency.Name"
+                                                       EditRoute="/modules/currencies" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(currency))"
+                                                   aria-label="@L["DeleteAria", currency.Name]" />
+                                </MudTooltip>
+                            </MudStack>
 
-                        @if (!string.IsNullOrWhiteSpace(currency.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @currency.Description
+                            @if (!string.IsNullOrWhiteSpace(currency.Description))
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @currency.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                @* Das Zeichen trägt jede Preisangabe — es steht deshalb auch in der Übersicht. *@
+                                @if (!string.IsNullOrWhiteSpace(currency.Symbol))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="gdm-mono">
+                                        @currency.Symbol
+                                    </MudChip>
+                                }
+                                @if (currency.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@currency.TypeName</MudChip>
+                                }
+                            </MudStack>
+
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", currency.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
                             </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            @* Das Zeichen trägt jede Preisangabe — es steht deshalb auch in der Übersicht. *@
-                            @if (!string.IsNullOrWhiteSpace(currency.Symbol))
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="gdm-mono">
-                                    @currency.Symbol
-                                </MudChip>
-                            }
-                            @if (currency.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@currency.TypeName</MudChip>
-                            }
-                        </MudStack>
-
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", currency.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

@@ -574,6 +574,16 @@ html {
     }
 }
 
+/* Rechtsklick-Menü über einer Kachel (EntityContextMenu): Weder die Hülle des Menüs noch
+   das Ziel-Div dürfen einen eigenen Kasten bilden — im Kachelraster wäre sonst die Hülle
+   das Rasterfeld und die Kachel darin nicht mehr so hoch wie ihre Nachbarn. Ereignisse
+   steigen unverändert auf, und das Menü selbst liegt ohnehin absolut über der Seite.
+   Den Aktivator dazwischen stellt MudBlazor selbst schon auf display: contents. */
+.mud-menu.gdm-context-menu,
+.gdm-context-target {
+    display: contents;
+}
+
 /* ---------------------------------------------------------------- Dashboard */
 /* Die Bänder des Dashboards. Alles steht auf .gdm-panel — hier stehen nur die Anordnungen,
    die MudBlazor nicht mitbringt: die Kennzahlenzeile, die Zeile im „Weiterarbeiten“ und der

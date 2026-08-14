@@ -86,66 +86,72 @@ else
         <div class="gdm-item-grid">
             @foreach (var gameEvent in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/events/{gameEvent.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="gameEvent.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@gameEvent.Name"
-                                        FallbackIcon="@Icons.Material.Filled.Event" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="gameEvent.Id"
+                                   Name="@gameEvent.Name"
+                                   EditRoute="/modules/events"
+                                   OnDelete="@(() => DeleteAsync(gameEvent))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/events/{gameEvent.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="gameEvent.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@gameEvent.Name"
+                                            FallbackIcon="@Icons.Material.Filled.Event" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/events/{gameEvent.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@gameEvent.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="gameEvent.Id"
-                                                   Name="@gameEvent.Name"
-                                                   EditRoute="/modules/events" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(gameEvent))"
-                                               aria-label="@L["DeleteAria", gameEvent.Name]" />
-                            </MudTooltip>
-                        </MudStack>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/events/{gameEvent.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@gameEvent.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="gameEvent.Id"
+                                                       Name="@gameEvent.Name"
+                                                       EditRoute="/modules/events" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(gameEvent))"
+                                                   aria-label="@L["DeleteAria", gameEvent.Name]" />
+                                </MudTooltip>
+                            </MudStack>
 
-                        @if (!string.IsNullOrWhiteSpace(gameEvent.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @gameEvent.Description
-                            </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="gdm-mono">
-                                @L["ChanceChip", gameEvent.Chance]
-                            </MudChip>
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                @L["SpawnCountChip", gameEvent.SpawnCount]
-                            </MudChip>
-                            @if (gameEvent.RewardLootTableId is not null)
+                            @if (!string.IsNullOrWhiteSpace(gameEvent.Description))
                             {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
-                                    @(gameEvent.RewardLootTableName ?? L["DeletedLootTable"].Value)
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @gameEvent.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="gdm-mono">
+                                    @L["ChanceChip", gameEvent.Chance]
                                 </MudChip>
-                            }
-                            @if (gameEvent.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@gameEvent.TypeName</MudChip>
-                            }
-                        </MudStack>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                    @L["SpawnCountChip", gameEvent.SpawnCount]
+                                </MudChip>
+                                @if (gameEvent.RewardLootTableId is not null)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
+                                        @(gameEvent.RewardLootTableName ?? L["DeletedLootTable"].Value)
+                                    </MudChip>
+                                }
+                                @if (gameEvent.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@gameEvent.TypeName</MudChip>
+                                }
+                            </MudStack>
 
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", gameEvent.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", gameEvent.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

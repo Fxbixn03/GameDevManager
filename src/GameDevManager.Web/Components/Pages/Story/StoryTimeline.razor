@@ -52,79 +52,85 @@ else
                        loslassen — die Pfeile daneben bleiben als tastaturfreundlicher Weg.
                        Ein einfaches div statt MudPaper, weil die Drag-Direktiven
                        (:preventDefault) nur auf HTML-Elementen erlaubt sind. *@
-                    <div class="mud-paper gdm-panel pa-4 mb-2"
-                         style="@(ReferenceEquals(_dragging, entry) ? "opacity:0.4;" : _dragging is not null ? "cursor:grabbing;" : null)"
-                         draggable="true"
-                         @ondragstart="@(() => _dragging = entry)"
-                         @ondragend="@(() => _dragging = null)"
-                         @ondragover:preventDefault="true"
-                         @ondrop="@(() => DropOnAsync(entry))">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
-                            <MudIcon Icon="@Icons.Material.Filled.DragIndicator"
-                                     Size="Size.Small"
-                                     Color="Color.Secondary"
-                                     Style="cursor:grab;"
-                                     title="@L["DragHint"]" />
-                            <AssetThumbnail AssetId="entry.PrimaryAssetId"
-                                            Size="Size.Small"
-                                            Alt="@entry.Name"
-                                            FallbackIcon="@Icons.Material.Filled.AutoStories" />
+                    <EntityContextMenu ModuleKey="@Module.Id"
+                                       EntityId="entry.Id"
+                                       Name="@entry.Name"
+                                       EditRoute="/modules/story"
+                                       OnDelete="@(() => DeleteAsync(entry))">
+                        <div class="mud-paper gdm-panel pa-4 mb-2"
+                             style="@(ReferenceEquals(_dragging, entry) ? "opacity:0.4;" : _dragging is not null ? "cursor:grabbing;" : null)"
+                             draggable="true"
+                             @ondragstart="@(() => _dragging = entry)"
+                             @ondragend="@(() => _dragging = null)"
+                             @ondragover:preventDefault="true"
+                             @ondrop="@(() => DropOnAsync(entry))">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+                                <MudIcon Icon="@Icons.Material.Filled.DragIndicator"
+                                         Size="Size.Small"
+                                         Color="Color.Secondary"
+                                         Style="cursor:grab;"
+                                         title="@L["DragHint"]" />
+                                <AssetThumbnail AssetId="entry.PrimaryAssetId"
+                                                Size="Size.Small"
+                                                Alt="@entry.Name"
+                                                FallbackIcon="@Icons.Material.Filled.AutoStories" />
 
-                            <MudLink Href="@($"/modules/story/{entry.Id}")" Typo="Typo.h6">
-                                @entry.Name
-                            </MudLink>
+                                <MudLink Href="@($"/modules/story/{entry.Id}")" Typo="Typo.h6">
+                                    @entry.Name
+                                </MudLink>
 
-                            @if (entry.TypeName is not null)
+                                @if (entry.TypeName is not null)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@entry.TypeName</MudChip>
+                                }
+
+                                <MudSpacer />
+
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @L["ParticipantCount", entry.ParticipantCount]
+                                </MudText>
+
+                                <MudTooltip Text="@L["MoveUpTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
+                                                   Size="Size.Small"
+                                                   Disabled="@(entry == _entries.First())"
+                                                   OnClick="@(() => MoveAsync(entry, up: true))"
+                                                   aria-label="@L["MoveUpAria", entry.Name]" />
+                                </MudTooltip>
+                                <MudTooltip Text="@L["MoveDownTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward"
+                                                   Size="Size.Small"
+                                                   Disabled="@(entry == _entries.Last())"
+                                                   OnClick="@(() => MoveAsync(entry, up: false))"
+                                                   aria-label="@L["MoveDownAria", entry.Name]" />
+                                </MudTooltip>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="entry.Id"
+                                                       Name="@entry.Name"
+                                                       EditRoute="/modules/story" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(entry))"
+                                                   aria-label="@L["DeleteAria", entry.Name]" />
+                                </MudTooltip>
+                            </MudStack>
+
+                            @if (!string.IsNullOrWhiteSpace(entry.Description))
                             {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@entry.TypeName</MudChip>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+                                    @Shorten(entry.Description)
+                                </MudText>
                             }
 
-                            <MudSpacer />
-
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                @L["ParticipantCount", entry.ParticipantCount]
-                            </MudText>
-
-                            <MudTooltip Text="@L["MoveUpTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
-                                               Size="Size.Small"
-                                               Disabled="@(entry == _entries.First())"
-                                               OnClick="@(() => MoveAsync(entry, up: true))"
-                                               aria-label="@L["MoveUpAria", entry.Name]" />
-                            </MudTooltip>
-                            <MudTooltip Text="@L["MoveDownTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward"
-                                               Size="Size.Small"
-                                               Disabled="@(entry == _entries.Last())"
-                                               OnClick="@(() => MoveAsync(entry, up: false))"
-                                               aria-label="@L["MoveDownAria", entry.Name]" />
-                            </MudTooltip>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="entry.Id"
-                                                   Name="@entry.Name"
-                                                   EditRoute="/modules/story" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(entry))"
-                                               aria-label="@L["DeleteAria", entry.Name]" />
-                            </MudTooltip>
-                        </MudStack>
-
-                        @if (!string.IsNullOrWhiteSpace(entry.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
-                                @Shorten(entry.Description)
-                            </MudText>
-                        }
-
-                        @if (!entry.HasBody)
-                        {
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                                @L["NoBodyYet"]
-                            </MudText>
-                        }
-                    </div>
+                            @if (!entry.HasBody)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                    @L["NoBodyYet"]
+                                </MudText>
+                            }
+                        </div>
+                    </EntityContextMenu>
                 </ItemContent>
             </MudTimelineItem>
         }

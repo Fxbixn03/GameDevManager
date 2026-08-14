@@ -86,68 +86,74 @@ else
         <div class="gdm-item-grid">
             @foreach (var sound in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/audio/{sound.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="sound.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@sound.Name"
-                                        FallbackIcon="@Icons.Material.Filled.MusicNote" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="sound.Id"
+                                   Name="@sound.Name"
+                                   EditRoute="/modules/audio"
+                                   OnDelete="@(() => DeleteAsync(sound))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/audio/{sound.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="sound.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@sound.Name"
+                                            FallbackIcon="@Icons.Material.Filled.MusicNote" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/audio/{sound.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@sound.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="sound.Id"
-                                                   Name="@sound.Name"
-                                                   EditRoute="/modules/audio" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(sound))"
-                                               aria-label="@L["DeleteAria", sound.Name]" />
-                            </MudTooltip>
-                        </MudStack>
-
-                        @if (!string.IsNullOrWhiteSpace(sound.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @sound.Description
-                            </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            @if (sound.AudioFileCount == 0)
-                            {
-                                <MudTooltip Text="@L["NoAudioFilesTooltip"]">
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning">
-                                        @L["NoAudioFiles"]
-                                    </MudChip>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/audio/{sound.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@sound.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="sound.Id"
+                                                       Name="@sound.Name"
+                                                       EditRoute="/modules/audio" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(sound))"
+                                                   aria-label="@L["DeleteAria", sound.Name]" />
                                 </MudTooltip>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                    @L["AudioFileCountChip", sound.AudioFileCount]
-                                </MudChip>
-                            }
-                            @if (sound.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@sound.TypeName</MudChip>
-                            }
-                        </MudStack>
+                            </MudStack>
 
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", sound.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                            @if (!string.IsNullOrWhiteSpace(sound.Description))
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @sound.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                @if (sound.AudioFileCount == 0)
+                                {
+                                    <MudTooltip Text="@L["NoAudioFilesTooltip"]">
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning">
+                                            @L["NoAudioFiles"]
+                                        </MudChip>
+                                    </MudTooltip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                        @L["AudioFileCountChip", sound.AudioFileCount]
+                                    </MudChip>
+                                }
+                                @if (sound.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@sound.TypeName</MudChip>
+                                }
+                            </MudStack>
+
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", sound.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

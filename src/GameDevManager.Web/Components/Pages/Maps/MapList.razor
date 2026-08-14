@@ -75,61 +75,67 @@ else
     <div class="gdm-map-grid">
         @foreach (var map in Filtered)
         {
-            <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                <MudLink Href="@($"/modules/maps/{map.Id}")" Underline="Underline.None">
-                    <div class="gdm-map-tile">
-                        @if (map.ImageAssetId is { } imageId)
+            <EntityContextMenu ModuleKey="@Module.Id"
+                               EntityId="map.Id"
+                               Name="@map.Name"
+                               EditRoute="/modules/maps"
+                               OnDelete="@(() => DeleteAsync(map))">
+                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                    <MudLink Href="@($"/modules/maps/{map.Id}")" Underline="Underline.None">
+                        <div class="gdm-map-tile">
+                            @if (map.ImageAssetId is { } imageId)
+                            {
+                                <img src="@($"/assets/{imageId}")" alt="@map.Name" />
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported"
+                                         Size="Size.Large"
+                                         Color="Color.Secondary" />
+                            }
+                        </div>
+                    </MudLink>
+
+                    <div class="pa-3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                            <MudLink Href="@($"/modules/maps/{map.Id}")" Typo="Typo.h6">@map.Name</MudLink>
+                            <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                   EntityId="map.Id"
+                                                   Name="@map.Name"
+                                                   EditRoute="/modules/maps" />
+                            <MudTooltip Text="@L["DeleteTooltip"]">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteAsync(map))"
+                                               aria-label="@L["DeleteAria", map.Name]" />
+                            </MudTooltip>
+                        </MudStack>
+
+                        @if (!string.IsNullOrWhiteSpace(map.Description))
                         {
-                            <img src="@($"/assets/{imageId}")" alt="@map.Name" />
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                @map.Description
+                            </MudText>
                         }
-                        else
-                        {
-                            <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported"
-                                     Size="Size.Large"
-                                     Color="Color.Secondary" />
-                        }
-                    </div>
-                </MudLink>
 
-                <div class="pa-3">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                        <MudLink Href="@($"/modules/maps/{map.Id}")" Typo="Typo.h6">@map.Name</MudLink>
-                        <EntityDuplicateButton ModuleKey="@Module.Id"
-                                               EntityId="map.Id"
-                                               Name="@map.Name"
-                                               EditRoute="/modules/maps" />
-                        <MudTooltip Text="@L["DeleteTooltip"]">
-                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                           Size="Size.Small"
-                                           OnClick="@(() => DeleteAsync(map))"
-                                           aria-label="@L["DeleteAria", map.Name]" />
-                        </MudTooltip>
-                    </MudStack>
-
-                    @if (!string.IsNullOrWhiteSpace(map.Description))
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                            @map.Description
-                        </MudText>
-                    }
-
-                    <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                            @L["MarkerCountChip", map.MarkerCount]
-                        </MudChip>
-                        @if (map.MapLinkCount > 0)
-                        {
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
-                                @L["MapLinkCountChip", map.MapLinkCount]
+                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                @L["MarkerCountChip", map.MarkerCount]
                             </MudChip>
-                        }
-                        @if (map.TypeName is not null)
-                        {
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@map.TypeName</MudChip>
-                        }
-                    </MudStack>
-                </div>
-            </MudPaper>
+                            @if (map.MapLinkCount > 0)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
+                                    @L["MapLinkCountChip", map.MapLinkCount]
+                                </MudChip>
+                            }
+                            @if (map.TypeName is not null)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@map.TypeName</MudChip>
+                            }
+                        </MudStack>
+                    </div>
+                </MudPaper>
+            </EntityContextMenu>
         }
     </div>
 }

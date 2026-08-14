@@ -86,57 +86,63 @@ else
         <div class="gdm-item-grid">
             @foreach (var characterClass in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/classes/{characterClass.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="characterClass.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@characterClass.Name"
-                                        FallbackIcon="@Icons.Material.Filled.School" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="characterClass.Id"
+                                   Name="@characterClass.Name"
+                                   EditRoute="/modules/classes"
+                                   OnDelete="@(() => DeleteAsync(characterClass))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/classes/{characterClass.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="characterClass.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@characterClass.Name"
+                                            FallbackIcon="@Icons.Material.Filled.School" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/classes/{characterClass.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@characterClass.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="characterClass.Id"
-                                                   Name="@characterClass.Name"
-                                                   EditRoute="/modules/classes" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(characterClass))"
-                                               aria-label="@L["DeleteAria", characterClass.Name]" />
-                            </MudTooltip>
-                        </MudStack>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/classes/{characterClass.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@characterClass.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="characterClass.Id"
+                                                       Name="@characterClass.Name"
+                                                       EditRoute="/modules/classes" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(characterClass))"
+                                                   aria-label="@L["DeleteAria", characterClass.Name]" />
+                                </MudTooltip>
+                            </MudStack>
 
-                        @if (!string.IsNullOrWhiteSpace(characterClass.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @characterClass.Description
+                            @if (!string.IsNullOrWhiteSpace(characterClass.Description))
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @characterClass.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                    @L["CarriedByCount", characterClass.NpcCount, characterClass.PlayerCharacterCount]
+                                </MudChip>
+                                @if (characterClass.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@characterClass.TypeName</MudChip>
+                                }
+                            </MudStack>
+
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", characterClass.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
                             </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                @L["CarriedByCount", characterClass.NpcCount, characterClass.PlayerCharacterCount]
-                            </MudChip>
-                            @if (characterClass.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@characterClass.TypeName</MudChip>
-                            }
-                        </MudStack>
-
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", characterClass.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

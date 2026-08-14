@@ -85,71 +85,77 @@ else
         <div class="gdm-item-grid">
             @foreach (var skill in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/player/skills/{skill.Id}")" Underline="Underline.None">
-                        <AssetThumbnail AssetId="skill.PrimaryAssetId"
-                                        Class="gdm-item-tile"
-                                        Alt="@skill.Name"
-                                        FallbackIcon="@Icons.Material.Filled.Star" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="skill.Id"
+                                   Name="@skill.Name"
+                                   EditRoute="/modules/player/skills"
+                                   OnDelete="@(() => DeleteAsync(skill))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/player/skills/{skill.Id}")" Underline="Underline.None">
+                            <AssetThumbnail AssetId="skill.PrimaryAssetId"
+                                            Class="gdm-item-tile"
+                                            Alt="@skill.Name"
+                                            FallbackIcon="@Icons.Material.Filled.Star" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/player/skills/{skill.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@skill.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="skill.Id"
-                                                   Name="@skill.Name"
-                                                   EditRoute="/modules/player/skills" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(skill))"
-                                               aria-label="@L["DeleteAria", skill.Name]" />
-                            </MudTooltip>
-                        </MudStack>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/player/skills/{skill.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@skill.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="skill.Id"
+                                                       Name="@skill.Name"
+                                                       EditRoute="/modules/player/skills" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(skill))"
+                                                   aria-label="@L["DeleteAria", skill.Name]" />
+                                </MudTooltip>
+                            </MudStack>
 
-                        @if (!string.IsNullOrWhiteSpace(skill.Description))
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @skill.Description
+                            @if (!string.IsNullOrWhiteSpace(skill.Description))
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                    @skill.Description
+                                </MudText>
+                            }
+
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="gdm-mono">
+                                    @CostLabel(skill)
+                                </MudChip>
+                                @if (skill.SkillTreeId is not null)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
+                                        @(skill.SkillTreeName ?? L["DeletedTree"].Value)
+                                    </MudChip>
+                                }
+                                @if (skill.ParentSkillId is not null)
+                                {
+                                    @* Die Voraussetzung gehört in die Übersicht — sonst ist die Reihenfolge
+                                       eines Baums nur in der Maske zu sehen. *@
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                        @L["ParentChip", skill.ParentSkillName ?? L["DeletedParent"].Value]
+                                    </MudChip>
+                                }
+                                @if (skill.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@skill.TypeName</MudChip>
+                                }
+                            </MudStack>
+
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", skill.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
                             </MudText>
-                        }
-
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="gdm-mono">
-                                @CostLabel(skill)
-                            </MudChip>
-                            @if (skill.SkillTreeId is not null)
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
-                                    @(skill.SkillTreeName ?? L["DeletedTree"].Value)
-                                </MudChip>
-                            }
-                            @if (skill.ParentSkillId is not null)
-                            {
-                                @* Die Voraussetzung gehört in die Übersicht — sonst ist die Reihenfolge
-                                   eines Baums nur in der Maske zu sehen. *@
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                    @L["ParentChip", skill.ParentSkillName ?? L["DeletedParent"].Value]
-                                </MudChip>
-                            }
-                            @if (skill.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@skill.TypeName</MudChip>
-                            }
-                        </MudStack>
-
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", skill.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

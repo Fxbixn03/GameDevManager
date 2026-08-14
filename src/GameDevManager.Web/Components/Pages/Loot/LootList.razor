@@ -104,64 +104,70 @@ else
         <div class="gdm-item-grid">
             @foreach (var table in filtered)
             {
-                <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
-                    <MudLink Href="@($"/modules/loot/{table.Id}")" Underline="Underline.None">
-                        <AssetThumbnail Class="gdm-item-tile"
-                                        Alt="@table.Name"
-                                        FallbackIcon="@Icons.Material.Filled.Casino" />
-                    </MudLink>
+                <EntityContextMenu ModuleKey="@Module.Id"
+                                   EntityId="table.Id"
+                                   Name="@table.Name"
+                                   EditRoute="/modules/loot"
+                                   OnDelete="@(() => DeleteAsync(table))">
+                    <MudPaper Elevation="0" Class="gdm-panel gdm-card-link">
+                        <MudLink Href="@($"/modules/loot/{table.Id}")" Underline="Underline.None">
+                            <AssetThumbnail Class="gdm-item-tile"
+                                            Alt="@table.Name"
+                                            FallbackIcon="@Icons.Material.Filled.Casino" />
+                        </MudLink>
 
-                    <div class="pa-3">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
-                            <MudLink Href="@($"/modules/loot/{table.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                <b>@table.Name</b>
-                            </MudLink>
-                            <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                   EntityId="table.Id"
-                                                   Name="@table.Name"
-                                                   EditRoute="/modules/loot" />
-                            <MudTooltip Text="@L["DeleteTooltip"]">
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteAsync(table))"
-                                               aria-label="@L["DeleteAria", table.Name]" />
-                            </MudTooltip>
-                        </MudStack>
+                        <div class="pa-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                                <MudLink Href="@($"/modules/loot/{table.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@table.Name</b>
+                                </MudLink>
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="table.Id"
+                                                       Name="@table.Name"
+                                                       EditRoute="/modules/loot" />
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(table))"
+                                                   aria-label="@L["DeleteAria", table.Name]" />
+                                </MudTooltip>
+                            </MudStack>
 
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                            @(table.UsedByNpcCount == 0 ? L["UsedByNone"] : L["UsedByCount", table.UsedByNpcCount])
-                        </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                @(table.UsedByNpcCount == 0 ? L["UsedByNone"] : L["UsedByCount", table.UsedByNpcCount])
+                            </MudText>
 
-                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                @(table.RollMode == LootRollMode.SinglePick ? L["RollSinglePick"] : L["RollIndependent"])
-                            </MudChip>
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                @L["EntryCountChip", table.EntryCount]
-                            </MudChip>
-                            @* Über 100 % ist nur beim Einzelwurf ein Fund — deshalb hängt die Warnfarbe an IsOverfull. *@
-                            <MudChip T="string"
-                                     Size="Size.Small"
-                                     Variant="Variant.Text"
-                                     Class="gdm-mono"
-                                     Color="@(IsOverfull(table) ? Color.Warning : Color.Default)">
-                                @L["SumFormat", table.TotalChance.ToString("0.##")]
-                            </MudChip>
-                            @if (table.TypeName is null)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@table.TypeName</MudChip>
-                            }
-                        </MudStack>
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                    @(table.RollMode == LootRollMode.SinglePick ? L["RollSinglePick"] : L["RollIndependent"])
+                                </MudChip>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                    @L["EntryCountChip", table.EntryCount]
+                                </MudChip>
+                                @* Über 100 % ist nur beim Einzelwurf ein Fund — deshalb hängt die Warnfarbe an IsOverfull. *@
+                                <MudChip T="string"
+                                         Size="Size.Small"
+                                         Variant="Variant.Text"
+                                         Class="gdm-mono"
+                                         Color="@(IsOverfull(table) ? Color.Warning : Color.Default)">
+                                    @L["SumFormat", table.TotalChance.ToString("0.##")]
+                                </MudChip>
+                                @if (table.TypeName is null)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@table.TypeName</MudChip>
+                                }
+                            </MudStack>
 
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                            @L["UpdatedAt", table.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
-                        </MudText>
-                    </div>
-                </MudPaper>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["UpdatedAt", table.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+                    </MudPaper>
+                </EntityContextMenu>
             }
         </div>
     }

@@ -353,6 +353,21 @@ Für den Download gibt es `/export/csv/{projectId}/{moduleKey}` in `Program.cs` 
 - **Ein Feldwert landet nur, wo das Feld gilt.** `ApplicableFieldsAsync` fragt je Entität Art-Felder (samt geerbten) plus individuelle Felder; der Rest wird als „übersprungen“ gemeldet statt stillschweigend geschrieben.
 - **Die Wertevorlage ist ein `FieldValue`**, gefüllt von derselben `DynamicFieldInput`-Maske wie im Einzelfall — so gelten für Zahlen, Daten, Referenzen und Stichwortlisten überall dieselben Regeln. Übertragen wird mit `ContentFields.CopyValues` (dafür `internal`), damit die Spaltenliste nur an einer Stelle steht.
 
+### Rechtsklick-Menüs
+
+Das Menü des Browsers wird **nicht anwendungsweit** abgeschaltet, sondern nur dort verdrängt, wo ein eigenes danebensteht: über den Kacheln der Modul-Listen ([EntityContextMenu.razor](src/GameDevManager.Web/Components/Content/EntityContextMenu.razor)), über den Kanban-Karten und über den Markierungen des Karten-Editors. Überall sonst — vor allem in jedem Eingabefeld — bleibt es stehen, denn es bietet Kopieren, Einfügen und Rechtschreibprüfung an, und die kann ein eigenes Menü nicht ersetzen. Eine Liste bekommt ihr Menü mit einer Zeile: die Kachel in `<EntityContextMenu ModuleKey="…" EntityId="…" Name="…" EditRoute="…" OnDelete="…">` einfassen.
+
+Sechs Dinge, die man beim Ändern kennen muss:
+
+- **Ein Menü je Kachel statt eines je Seite.** MudBlazor öffnet ein `MudMenu` mit `PositionAtCursor` an der Mausposition; welche Kachel gemeint ist, steht damit im Menü selbst und nicht in einem Seitenzustand, den jede der zwanzig Listen mitführen müsste.
+- **Der Aktivator bildet keinen eigenen Kasten** (`display: contents` auf `.gdm-context-menu` und `.gdm-context-target` in [app.css](src/GameDevManager.Web/wwwroot/app.css)). Sonst wäre die Hülle des Menüs das Feld im Kachelraster und die Kachel darin nicht mehr so hoch wie ihre Nachbarn. Den Aktivator dazwischen stellt MudBlazor selbst schon so; das aufklappende Menü liegt ohnehin absolut über der Seite und ist davon unberührt.
+- **Das Ereignis wird angehalten** (`@oncontextmenu:stopPropagation`): Käme es zusätzlich beim Aktivator von MudBlazor an, klappte das eben geöffnete Menü wieder zu. Aus demselben Grund steht `ActivationEvent="MouseEvent.RightClick"` daran — ein etwaiger eingebauter Aktivator soll auf keinen Fall auf den Linksklick hören, mit dem man die Kachel öffnet.
+- **„In neuem Tab öffnen“ steht als eigener Eintrag im Menü**, weil die Kachel ein Link ist und der Rechtsklick genau diese Möglichkeit des Browser-Menüs kostet.
+- **Die Handgriffe stehen weiter als Knöpfe auf der Kachel.** Ein Rechtsklick-Menü ist mit der Tastatur nicht erreichbar; es ist die Abkürzung, nicht der einzige Weg.
+- **Ohne Rückruf kein Eintrag und keine Verdrängung**: Der Löschen-Eintrag erscheint nur mit `OnDelete`, und `MapCanvas` unterdrückt das Browser-Menü nur, wenn `OnMarkerContextMenu` gesetzt ist (`@oncontextmenu:preventDefault="OnMarkerContextMenu.HasDelegate"`). Ein unterdrücktes Menü ohne Ersatz ist schlechter als gar keines.
+
+Das Menü der Karten-Markierungen ist der Sonderfall: Es hat einen **leeren `ActivatorContent`** und wird von `MapEditor` über `@ref` an der gemeldeten Mausposition geöffnet — die Markierungen sind SVG-Polygone und absolut gesetzte `div`s, die sich nicht einfassen lassen. `MapCanvas` wählt die Markierung vor dem Melden aus, damit Menü und Maske daneben dieselbe meinen.
+
 ### Topbar
 
 Die Modulleiste steht auf jeder Seite und ist der einzige Weg, der jedes Modul von überall erreicht. Zwei Dinge macht sie einstellbar, ohne den Satz des Konzepts aufzugeben, dass immer alle Module erreichbar sind.

@@ -76,69 +76,75 @@ else
                     <MudStack Spacing="1">
                         @foreach (var (state, index) in rows.Select((state, index) => (state, index)))
                         {
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="pa-2 gdm-field-row">
-                                @* Der Farbpunkt ist die schnellste Auskunft in einer Liste
-                                   gleichartiger Namen — dasselbe Muster wie bei den Seltenheiten. *@
-                                <span style="display:inline-block;width:14px;height:14px;flex:0 0 auto;background:@(state.Color ?? "var(--mud-palette-lines-default)");"></span>
+                            <EntityContextMenu ModuleKey="@Module.Id"
+                                               EntityId="state.Id"
+                                               Name="@state.Name"
+                                               EditRoute="/modules/world"
+                                               OnDelete="@(() => DeleteAsync(state))">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="pa-2 gdm-field-row">
+                                    @* Der Farbpunkt ist die schnellste Auskunft in einer Liste
+                                       gleichartiger Namen — dasselbe Muster wie bei den Seltenheiten. *@
+                                    <span style="display:inline-block;width:14px;height:14px;flex:0 0 auto;background:@(state.Color ?? "var(--mud-palette-lines-default)");"></span>
 
-                                <MudLink Href="@($"/modules/world/{state.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
-                                    <b>@state.Name</b>
-                                </MudLink>
+                                    <MudLink Href="@($"/modules/world/{state.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                        <b>@state.Name</b>
+                                    </MudLink>
 
-                                @if (!string.IsNullOrWhiteSpace(state.Description))
-                                {
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
-                                        @state.Description
-                                    </MudText>
-                                }
+                                    @if (!string.IsNullOrWhiteSpace(state.Description))
+                                    {
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                            @state.Description
+                                        </MudText>
+                                    }
 
-                                <MudSpacer />
+                                    <MudSpacer />
 
-                                @if (state.ConditionUsageCount > 0)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                        @L["UsedInConditions", state.ConditionUsageCount]
-                                    </MudChip>
-                                }
-                                else
-                                {
-                                    <MudTooltip Text="@L["UnusedTooltip"]">
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Unused"]</MudText>
+                                    @if (state.ConditionUsageCount > 0)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                            @L["UsedInConditions", state.ConditionUsageCount]
+                                        </MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudTooltip Text="@L["UnusedTooltip"]">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Unused"]</MudText>
+                                        </MudTooltip>
+                                    }
+
+                                    @if (state.TypeName is not null)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@state.TypeName</MudChip>
+                                    }
+
+                                    <MudTooltip Text="@L["MoveUp"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
+                                                       Size="Size.Small"
+                                                       Disabled="index == 0"
+                                                       OnClick="@(() => MoveAsync(state, -1))"
+                                                       aria-label="@L["MoveUp"]" />
                                     </MudTooltip>
-                                }
+                                    <MudTooltip Text="@L["MoveDown"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward"
+                                                       Size="Size.Small"
+                                                       Disabled="index == rows.Count - 1"
+                                                       OnClick="@(() => MoveAsync(state, 1))"
+                                                       aria-label="@L["MoveDown"]" />
+                                    </MudTooltip>
 
-                                @if (state.TypeName is not null)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@state.TypeName</MudChip>
-                                }
+                                    <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                           EntityId="state.Id"
+                                                           Name="@state.Name"
+                                                           EditRoute="/modules/world" />
 
-                                <MudTooltip Text="@L["MoveUp"]">
-                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
-                                                   Size="Size.Small"
-                                                   Disabled="index == 0"
-                                                   OnClick="@(() => MoveAsync(state, -1))"
-                                                   aria-label="@L["MoveUp"]" />
-                                </MudTooltip>
-                                <MudTooltip Text="@L["MoveDown"]">
-                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward"
-                                                   Size="Size.Small"
-                                                   Disabled="index == rows.Count - 1"
-                                                   OnClick="@(() => MoveAsync(state, 1))"
-                                                   aria-label="@L["MoveDown"]" />
-                                </MudTooltip>
-
-                                <EntityDuplicateButton ModuleKey="@Module.Id"
-                                                       EntityId="state.Id"
-                                                       Name="@state.Name"
-                                                       EditRoute="/modules/world" />
-
-                                <MudTooltip Text="@L["DeleteTooltip"]">
-                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteAsync(state))"
-                                                   aria-label="@L["DeleteAria", state.Name]" />
-                                </MudTooltip>
-                            </MudStack>
+                                    <MudTooltip Text="@L["DeleteTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeleteAsync(state))"
+                                                       aria-label="@L["DeleteAria", state.Name]" />
+                                    </MudTooltip>
+                                </MudStack>
+                            </EntityContextMenu>
                         }
                     </MudStack>
                 }
