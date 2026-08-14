@@ -4,7 +4,11 @@
    Zug, von links gefüllt bis zum eingestellten Wert. Ein Klick auf ein Segment setzt den
    Wert; ein Klick auf das bereits letzte gefüllte Segment setzt auf 0 zurück — so braucht
    „kein Wert“ keinen eigenen Knopf. Gespeichert wird die kanonische Textspalte über
-   GameDevManager.Domain.Entities.NpcTraits. *@
+   GameDevManager.Domain.Entities.NpcTraits.
+
+   Jeder Zug hat seine eigene Farbe — siehe TraitColors unten. Sie trägt keine Bedeutung,
+   die nicht auch dastünde (Bezeichnung und Zahl stehen daneben), sondern macht die zehn
+   Zeilen im Überblick auseinanderhaltbar. *@
 
 <MudStack Spacing="2">
     @foreach (var key in NpcTraits.Keys)
@@ -22,7 +26,7 @@
                     var target = segment;
                     var filled = segment <= value;
 
-                    <div style="@SegmentStyle(filled)"
+                    <div style="@SegmentStyle(filled, key)"
                          title="@L["SegmentTooltip", L[$"Trait_{key}"].Value, target]"
                          @onclick="@(() => SetAsync(key, target))"></div>
                 }
@@ -60,11 +64,41 @@
         }
     }
 
-    private string SegmentStyle(bool filled) =>
+    /// <summary>
+    /// Eine feste Farbe je Wesenszug, gewählt nach der Wirkung der Farbe: Rot für Mut, Blau
+    /// für Treue, Gelb als Warnfarbe fürs Risiko, Grau für den Vorbehalt des Misstrauens.
+    /// Empathie und Mitgefühl liegen inhaltlich nah beieinander und werden deshalb bewusst
+    /// getrennt — das ruhige Türkis des Sich-Einfühlens gegen das warme Rosé der Güte.
+    /// <para>
+    /// Bewusst feste Werte und keine Theme-Farben, dieselbe Überlegung wie bei den
+    /// Fraktionsringen der Verbindungen: Es braucht zehn nebeneinander unterscheidbare Töne,
+    /// und die hat die Palette nicht. Die Helligkeit ist so gewählt, dass sie auf hellem wie
+    /// dunklem Grund trägt.
+    /// </para>
+    /// </summary>
+    private static readonly Dictionary<string, string> TraitColors = new()
+    {
+        ["empathy"] = "#4DB6AC",        // Türkis — zugewandt, ruhig
+        ["impulsiveness"] = "#FF8A65",  // Orange — Spontaneität, Bewegung
+        ["loyalty"] = "#7986CB",        // Indigo — Treue, Beständigkeit
+        ["courage"] = "#E57373",        // Rot — Mut, Tatkraft
+        ["honesty"] = "#4FC3F7",        // Hellblau — Klarheit, Offenheit
+        ["dominance"] = "#BA68C8",      // Violett — Rang, Herrschaft
+        ["patience"] = "#81C784",       // Grün — Ruhe, Wachsenlassen
+        ["distrust"] = "#90A4AE",       // Graublau — Distanz, Vorbehalt
+        ["riskTaking"] = "#FFC300",     // Gelb — Warnzeichen, Wagnis
+        ["compassion"] = "#F06292"      // Rosé — Wärme, Güte
+    };
+
+    /// <summary>Ein unbekannter Zug fällt auf den Akzent zurück — er sähe sonst wie „leer“ aus.</summary>
+    private static string ColorFor(string key) =>
+        TraitColors.GetValueOrDefault(key, "var(--mud-palette-primary)");
+
+    private string SegmentStyle(bool filled, string key) =>
         "flex:1 1 0;height:16px;box-sizing:border-box;"
         + (Disabled ? "" : "cursor:pointer;")
         + "border:1px dashed var(--mud-palette-lines-inputs);"
-        + (filled ? "background:var(--mud-palette-primary);border-style:solid;" : "background:transparent;");
+        + (filled ? $"background:{ColorFor(key)};border-style:solid;" : "background:transparent;");
 
     private async Task SetAsync(string key, int target)
     {
