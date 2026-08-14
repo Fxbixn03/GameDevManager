@@ -14,7 +14,7 @@ Stand 14.08.2026 — **die offenen Punkte aus dem Konzept sind abgearbeitet, ebe
 ### Betrieb & Sicherheit
 
 - [x] **Aufräumen alter Exportstände.** *(umgesetzt)* `Exports:MaxPerProject` (Vorgabe 20) und `Exports:MaxAgeDays` (Vorgabe aus) stehen neben `Exports:StoragePath`; aufgeräumt wird bei jedem neu angelegten Stand — dem von Hand wie dem Sicherheitsnetz — und über „Jetzt aufräumen“ auf der Export-Seite. Der jüngste Stand bleibt in jedem Fall stehen.
-- [ ] **Aufräumen des Änderungsprotokolls.** Dasselbe eine Ebene tiefer: Nach einem Jahr Arbeit stehen dort sehr viele Zeilen. Ein Höchstalter oder eine Obergrenze je Projekt wäre die passende Antwort.
+- [x] **Aufräumen des Änderungsprotokolls.** *(umgesetzt)* `ChangeLog:MaxAgeDays` (Vorgabe 365) und `ChangeLog:MaxPerProject` (Vorgabe aus); gekürzt wird von einem täglichen Wartungslauf im Hintergrund, und Verwalter können es auf der Protokollseite über „Jetzt aufräumen“ sofort anwenden.
 - [ ] **Englische Oberfläche.** Die resx-Struktur ist darauf vorbereitet (neutral = Deutsch, Satelliten-resx je Sprache plus Sprachwahl) — reine Übersetzungsarbeit, kein Umbau.
 
 ### Richtung Engine-Anbindung

@@ -29,6 +29,13 @@ public static class DatabaseServiceExtensions
 
         services.AddSingleton(options);
 
+        // Wie weit das Änderungsprotokoll zurückreicht. Steht hier und nicht in
+        // AddGameDevManagerContentServices, weil nur dieser Weg die Konfiguration kennt —
+        // dort wird die Vorgabe nur nachgetragen, falls niemand sie gesetzt hat.
+        services.AddSingleton(
+            configuration.GetSection(ChangeLogRetentionOptions.SectionName).Get<ChangeLogRetentionOptions>()
+            ?? new ChangeLogRetentionOptions());
+
         // Die Factory ist bewusst scoped und nicht — wie sonst üblich — Singleton: Der
         // ChangeLogInterceptor muss wissen, wer gerade angemeldet ist, und das steht je
         // Verbindung fest. Contexts entstehen weiterhin je Aufruf; nur die Factory selbst
@@ -65,6 +72,9 @@ public static class DatabaseServiceExtensions
         services.AddScoped<WriteGuardInterceptor>();
         services.TryAddScoped<IUserPermissionsProvider>(_ => new FullUserPermissionsProvider());
         services.AddScoped<PermissionGuard>();
+        // Ohne Konfiguration die Vorgabe — der Zustand in den Tests; im Betrieb steht sie
+        // bereits aus dem Abschnitt „ChangeLog“ registriert da.
+        services.TryAddSingleton(new ChangeLogRetentionOptions());
         services.AddScoped<ChangeLogService>();
         services.AddScoped<UserService>();
         // Die Passwortrichtlinie kommt im Betrieb aus der Web-Schicht (Konfiguration plus

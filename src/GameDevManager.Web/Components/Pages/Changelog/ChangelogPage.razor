@@ -4,6 +4,10 @@
 @inject ModuleLabels Modules
 @inject ChangeActionLabels Actions
 @inject NavigationManager Navigation
+@inject ChangeLogRetentionOptions Retention
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
 @inject IStringLocalizer<ChangelogPage> L
 
 @*
@@ -68,6 +72,32 @@
         <MudSpacer />
         <MudText Typo="Typo.body2" Color="Color.Secondary">@FilterSummary</MudText>
     </MudStack>
+
+    <MudDivider Class="my-3" />
+
+    @* Wie weit das Protokoll zurückreicht. Auch „unbegrenzt“ steht da: Sonst wäre nicht zu
+       erkennen, dass es die Einstellung überhaupt gibt. *@
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap">
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Style="flex:1 1 auto;min-width:0;">
+            @RetentionHint
+        </MudText>
+
+        @if (_permissions.IsAdministrator && Retention.HasRetentionRule)
+        {
+            <MudButton Variant="Variant.Outlined"
+                       Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.CleaningServices"
+                       Disabled="@_pruning"
+                       OnClick="PruneAsync">
+                @L["PruneButton"]
+            </MudButton>
+        }
+    </MudStack>
+
+    @if (_pruning)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-3" />
+    }
 </MudPaper>
 
 @if (!_loaded)
@@ -151,6 +181,8 @@ else
     private ChangeAction? _actionFilter;
     private int _total;
     private bool _loaded;
+    private bool _pruning;
+    private UserPermissions _permissions = UserPermissions.Full;
 
     private string Subtitle => _loaded ? L["SubtitleCount", _total] : L["Loading"];
 
@@ -162,9 +194,66 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+
         var projectId = await Project.GetCurrentIdAsync();
         _authors = await ChangeLog.GetAuthorsAsync(projectId);
         await LoadAsync();
+    }
+
+    /// <summary>Was die eingestellte Aufbewahrung bedeutet, im Klartext.</summary>
+    private string RetentionHint => (Retention.MaxAgeDays > 0, Retention.MaxPerProject > 0) switch
+    {
+        (true, true) => L["RetentionHintBoth", Retention.MaxAgeDays, Retention.MaxPerProject],
+        (true, false) => L["RetentionHintAge", Retention.MaxAgeDays],
+        (false, true) => L["RetentionHintCount", Retention.MaxPerProject],
+        _ => L["RetentionHintOff"]
+    };
+
+    /// <summary>
+    /// Räumt von Hand auf. Der Wartungslauf tut dasselbe einmal am Tag — von Hand gebraucht
+    /// wird es, wenn eine geänderte Einstellung sofort greifen soll.
+    /// </summary>
+    private async Task PruneAsync()
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["PruneConfirmTitle"],
+            L["PruneConfirmMessage", RetentionHint],
+            yesText: L["PruneConfirmYes"],
+            cancelText: L["PruneConfirmCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        _pruning = true;
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            var removed = await ChangeLog.PruneAsync(projectId);
+
+            string message = removed switch
+            {
+                0 => L["PrunedNothingMessage"],
+                1 => L["PrunedOneMessage"],
+                _ => L["PrunedMessage", removed]
+            };
+
+            Snackbar.Add(message, removed == 0 ? Severity.Info : Severity.Success);
+
+            // Die Zahlen der Benutzer-Auswahl stimmen nach dem Kürzen nicht mehr.
+            _authors = await ChangeLog.GetAuthorsAsync(projectId);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _pruning = false;
+        }
     }
 
     private async Task LoadAsync()

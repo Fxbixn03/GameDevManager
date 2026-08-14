@@ -103,4 +103,40 @@
   <data name="LoadMore" xml:space="preserve">
     <value>Weitere laden ({0})</value>
   </data>
+  <data name="RetentionHintAge" xml:space="preserve">
+    <value>Aufbewahrung: {0} Tage — ältere Einträge räumt der tägliche Wartungslauf ab.</value>
+  </data>
+  <data name="RetentionHintCount" xml:space="preserve">
+    <value>Aufbewahrung: höchstens {0} Einträge je Projekt — was darüber hinaus zurückliegt, räumt der tägliche Wartungslauf ab.</value>
+  </data>
+  <data name="RetentionHintBoth" xml:space="preserve">
+    <value>Aufbewahrung: {0} Tage und höchstens {1} Einträge je Projekt — was darüber liegt, räumt der tägliche Wartungslauf ab.</value>
+  </data>
+  <data name="RetentionHintOff" xml:space="preserve">
+    <value>Aufbewahrung: unbegrenzt — das Protokoll wächst mit jeder Änderung weiter. Ein Höchstalter oder eine Obergrenze lässt sich über „ChangeLog:MaxAgeDays“ bzw. „ChangeLog:MaxPerProject“ einstellen.</value>
+  </data>
+  <data name="PruneButton" xml:space="preserve">
+    <value>Jetzt aufräumen</value>
+  </data>
+  <data name="PruneConfirmTitle" xml:space="preserve">
+    <value>Protokoll kürzen?</value>
+  </data>
+  <data name="PruneConfirmMessage" xml:space="preserve">
+    <value>Alles, was über der Aufbewahrung liegt, wird endgültig aus dem Protokoll dieses Projekts entfernt. {0}</value>
+  </data>
+  <data name="PruneConfirmYes" xml:space="preserve">
+    <value>Aufräumen</value>
+  </data>
+  <data name="PruneConfirmCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="PrunedOneMessage" xml:space="preserve">
+    <value>Ein alter Eintrag wurde entfernt.</value>
+  </data>
+  <data name="PrunedMessage" xml:space="preserve">
+    <value>{0} alte Einträge wurden entfernt.</value>
+  </data>
+  <data name="PrunedNothingMessage" xml:space="preserve">
+    <value>Es war nichts aufzuräumen.</value>
+  </data>
 </root>

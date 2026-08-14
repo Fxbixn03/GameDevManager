@@ -51,6 +51,10 @@ public sealed class TestDatabase : IDisposable
         ExportOptions = new ExportStorageOptions { RootPath = _exportPath };
         services.AddSingleton(ExportOptions);
         services.AddScoped<ExportSnapshotService>();
+
+        // Vor den Inhaltsdiensten registriert, deren TryAdd damit die Vorgabe stehen lässt —
+        // so kann ein Test die Aufbewahrung des Protokolls umstellen.
+        services.AddSingleton(ChangeLogRetention);
         services.AddGameDevManagerContentServices();
 
         // Ersetzt die Vorgabe „System“ — so lässt sich prüfen, wer im Protokoll landet.
@@ -108,6 +112,14 @@ public sealed class TestDatabase : IDisposable
     /// Grenzen umstellen kann — im Betrieb kommen sie aus dem Abschnitt „Exports“.
     /// </summary>
     public ExportStorageOptions ExportOptions { get; }
+
+    /// <summary>
+    /// Wie weit das Änderungsprotokoll zurückreicht. Ebenfalls veränderbar — im Betrieb kommt
+    /// es aus dem Abschnitt „ChangeLog“, im Test steht die Vorgabe „unbegrenzt“, damit ein
+    /// Wartungslauf keinem anderen Test die Einträge unter den Füßen wegzieht.
+    /// </summary>
+    public ChangeLogRetentionOptions ChangeLogRetention { get; } =
+        new() { MaxAgeDays = 0, MaxPerProject = 0 };
 
     public void Dispose()
     {

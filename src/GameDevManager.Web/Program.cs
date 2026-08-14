@@ -87,6 +87,10 @@ builder.Services.Replace(
 builder.Services.Replace(ServiceDescriptor.Singleton<IPasswordPolicyProvider>(
     provider => provider.GetRequiredService<PasswordPolicySelection>()));
 
+// Kürzt das Änderungsprotokoll auf die eingestellte Aufbewahrung. Läuft nach dem Start —
+// Hintergrunddienste beginnen erst mit app.Run(), also nach den Migrationen weiter unten.
+builder.Services.AddHostedService<ChangeLogMaintenance>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

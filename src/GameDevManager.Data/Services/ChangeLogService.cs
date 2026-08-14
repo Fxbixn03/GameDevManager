@@ -30,8 +30,15 @@ public sealed record ChangeLogPage(IReadOnlyList<ChangeLogRow> Rows, int Total);
 /// Die Leseseite des Änderungsprotokolls. Geschrieben wird es an anderer Stelle — vom
 /// <see cref="ChangeLogInterceptor"/> beim Speichern und von <see cref="ChangeLog"/> beim
 /// Löschen.
+/// <para>
+/// Dazu das Aufräumen: Wie weit das Protokoll zurückreicht, sagen die
+/// <see cref="ChangeLogRetentionOptions"/> — siehe <see cref="PruneAsync"/>.
+/// </para>
 /// </summary>
-public class ChangeLogService(IDbContextFactory<GameDevManagerDbContext> factory)
+public class ChangeLogService(
+    IDbContextFactory<GameDevManagerDbContext> factory,
+    ChangeLogRetentionOptions retention,
+    PermissionGuard guard)
 {
     /// <summary>Ein Ausschnitt des Protokolls, jüngste Änderung zuerst.</summary>
     public async Task<ChangeLogPage> GetEntriesAsync(
@@ -101,6 +108,112 @@ public class ChangeLogService(IDbContextFactory<GameDevManagerDbContext> factory
 
         return await db.ChangeLogEntries
             .CountAsync(entry => entry.GameProjectId == projectId && entry.AtUtc >= sinceUtc, ct);
+    }
+
+    /// <summary>
+    /// Räumt das Protokoll eines Projekts nach der eingestellten Aufbewahrung ab und liefert
+    /// die Zahl der entfernten Einträge. Läuft von selbst über den Wartungslauf
+    /// (<see cref="PruneAllProjectsAsync"/>); von Hand gerufen wird sie, wenn eine geänderte
+    /// Einstellung sofort greifen soll.
+    /// <para>
+    /// Verlangt wird das <b>Verwalterrecht</b> und nicht bloß das Schreibrecht: Das Protokoll
+    /// ist die Auskunft darüber, wer was getan hat — wer sie kürzen darf, soll derselbe sein,
+    /// der auch die Konten verwaltet. Ein reiner <c>ExecuteDelete</c>-Pfad ist es ohnehin, den
+    /// sieht kein Interceptor.
+    /// </para>
+    /// </summary>
+    public async Task<int> PruneAsync(Guid projectId, CancellationToken ct = default)
+    {
+        await guard.EnsureAdministratorAsync(ct);
+
+        return await PruneCoreAsync(projectId, ct);
+    }
+
+    /// <summary>
+    /// Der Wartungslauf über alle Projekte, die überhaupt Einträge haben — auch über die
+    /// eines gelöschten Projekts, falls dessen Zeilen jemals verwaisen sollten.
+    /// </summary>
+    public async Task<int> PruneAllProjectsAsync(CancellationToken ct = default)
+    {
+        await guard.EnsureAdministratorAsync(ct);
+
+        if (!retention.HasRetentionRule)
+        {
+            return 0;
+        }
+
+        List<Guid> projects;
+        await using (var db = await factory.CreateDbContextAsync(ct))
+        {
+            projects = await db.ChangeLogEntries
+                .Select(entry => entry.GameProjectId)
+                .Distinct()
+                .ToListAsync(ct);
+        }
+
+        var removed = 0;
+        foreach (var projectId in projects)
+        {
+            removed += await PruneCoreAsync(projectId, ct);
+        }
+
+        return removed;
+    }
+
+    /// <summary>
+    /// Das eigentliche Aufräumen: erst das Höchstalter (ein einziges <c>DELETE</c>), dann die
+    /// Obergrenze.
+    /// <para>
+    /// Anders als bei den Exportständen bleibt hier <b>kein</b> Eintrag pflichtweise stehen:
+    /// Ein Stand ist der Weg zurück, ein Protokolleintrag ist eine Auskunft. Ein Projekt, an
+    /// dem seit über einem Jahr niemand gearbeitet hat, darf mit leerem Protokoll dastehen —
+    /// der Bestand selbst ist davon unberührt.
+    /// </para>
+    /// </summary>
+    private async Task<int> PruneCoreAsync(Guid projectId, CancellationToken ct)
+    {
+        if (!retention.HasRetentionRule)
+        {
+            return 0;
+        }
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+        var removed = 0;
+
+        if (retention.MaxAgeDays > 0)
+        {
+            var oldestAllowed = DateTime.UtcNow.AddDays(-retention.MaxAgeDays);
+
+            removed += await db.ChangeLogEntries
+                .Where(entry => entry.GameProjectId == projectId && entry.AtUtc < oldestAllowed)
+                .ExecuteDeleteAsync(ct);
+        }
+
+        if (retention.MaxPerProject > 0)
+        {
+            // Über die GUIDs und nicht über einen Zeitstempel als Grenze: Beim Speichern
+            // entstehen mehrere Einträge in derselben Sekunde, und eine Grenze „älter als“
+            // träfe von ihnen mal alle, mal keinen. Sortiert wird wie in der Ansicht, damit
+            // genau das stehen bleibt, was die erste Seite zeigt.
+            var doomed = await db.ChangeLogEntries
+                .Where(entry => entry.GameProjectId == projectId)
+                .OrderByDescending(entry => entry.AtUtc)
+                .ThenBy(entry => entry.Id)
+                .Skip(retention.MaxPerProject)
+                .Select(entry => entry.Id)
+                .ToListAsync(ct);
+
+            // In Blöcken: Eine IN-Liste mit zehntausend GUIDs sprengt die Parametergrenze
+            // jedes der vier Provider.
+            foreach (var chunk in doomed.Chunk(500))
+            {
+                removed += await db.ChangeLogEntries
+                    .Where(entry => chunk.Contains(entry.Id))
+                    .ExecuteDeleteAsync(ct);
+            }
+        }
+
+        return removed;
     }
 
     private static IQueryable<ChangeLogEntry> Filtered(
