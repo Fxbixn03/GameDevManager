@@ -120,7 +120,7 @@ public class ItemService(
             stored.UpdatedAtUtc = now;
         }
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         // Die Maske zeigt anschließend den gespeicherten Stand.
@@ -140,6 +140,7 @@ public class ItemService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Items, itemId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, itemId, ct);
 
         await db.Items

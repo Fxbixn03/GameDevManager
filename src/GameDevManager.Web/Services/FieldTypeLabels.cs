@@ -1,3 +1,4 @@
+using GameDevManager.Domain.Curves;
 using GameDevManager.Domain.Entities;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
@@ -22,6 +23,7 @@ public sealed class FieldTypeLabels(IStringLocalizer<FieldTypeLabels> localizer)
         ContentFieldType.EntityReference => localizer["Type_EntityReference"],
         ContentFieldType.Color => localizer["Type_Color"],
         ContentFieldType.Rarity => localizer["Type_Rarity"],
+        ContentFieldType.Curve => localizer["Type_Curve"],
         _ => type.ToString()
     };
 
@@ -38,6 +40,7 @@ public sealed class FieldTypeLabels(IStringLocalizer<FieldTypeLabels> localizer)
         ContentFieldType.EntityReference => Icons.Material.Filled.Link,
         ContentFieldType.Color => Icons.Material.Filled.Palette,
         ContentFieldType.Rarity => Icons.Material.Filled.Diamond,
+        ContentFieldType.Curve => Icons.Material.Filled.ShowChart,
         _ => Icons.Material.Filled.HelpOutline
     };
 
@@ -60,6 +63,9 @@ public sealed class FieldTypeLabels(IStringLocalizer<FieldTypeLabels> localizer)
             ContentFieldType.Select => definition.Options
                 .FirstOrDefault(option => option.Id == value.OptionId)?.Label ?? empty,
             ContentFieldType.EntityReference or ContentFieldType.Rarity => value.ReferenceValue?.ToString() ?? empty,
+            // Die Kurve steht als JSON im Textwert — roh wäre sie in einer Liste unlesbar.
+            ContentFieldType.Curve => CurveDefinition.Parse(value.TextValue)?
+                .Describe(localizer["CurveTable"].Value) ?? empty,
             _ => value.TextValue ?? empty
         };
 

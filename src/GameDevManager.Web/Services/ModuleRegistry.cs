@@ -89,7 +89,10 @@ public static class ModuleRegistry
         new(ModuleKeys.Tags, Icons.Material.Filled.Label, ModuleGroup.Production, Implemented: true),
         new(ModuleKeys.Audio, Icons.Material.Filled.MusicNote, ModuleGroup.Production, Implemented: true),
         new(ModuleKeys.Cutscenes, Icons.Material.Filled.Movie, ModuleGroup.Narrative, Implemented: true),
-        new(ModuleKeys.Statistics, Icons.Material.Filled.BarChart, ModuleGroup.Tools, Implemented: true)
+        new(ModuleKeys.World, Icons.Material.Filled.WbTwilight, ModuleGroup.World, Implemented: true),
+        new(ModuleKeys.Statistics, Icons.Material.Filled.BarChart, ModuleGroup.Tools, Implemented: true),
+        new(ModuleKeys.TechTree, Icons.Material.Filled.AccountTree, ModuleGroup.Tools, Implemented: true),
+        new(ModuleKeys.Changelog, Icons.Material.Filled.History, ModuleGroup.Tools, Implemented: true)
     ];
 
     /// <summary>

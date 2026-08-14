@@ -1124,3 +1124,84 @@ html {
 .blazor-error-boundary::after {
     content: "Ein unerwarteter Fehler ist aufgetreten."
 }
+
+/* Anmeldung, Ersteinrichtung und Abmelden. Diese Seiten werden statisch gerendert (nur eine
+   echte HTTP-Antwort kann ein Cookie setzen); MudBlazor-Eingaben kämen dort nicht durchs
+   Formular zurück, deshalb einfache Felder mit eigenem Anstrich statt Komponenten. */
+.gdm-auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.gdm-auth-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 32px;
+    background: var(--mud-palette-surface);
+    border: 1px solid var(--mud-palette-lines-default);
+}
+
+.gdm-auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.gdm-auth-label {
+    display: block;
+    margin: 16px 0 6px;
+    font-size: .78rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--mud-palette-text-secondary);
+}
+
+.gdm-auth-input {
+    width: 100%;
+    padding: 10px 12px;
+    font: inherit;
+    color: var(--mud-palette-text-primary);
+    background: var(--mud-palette-background);
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 0;
+}
+
+.gdm-auth-input:focus {
+    outline: none;
+    border-color: var(--mud-palette-primary);
+}
+
+.gdm-auth-hint {
+    margin-top: 6px;
+    font-size: .78rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.gdm-auth-submit {
+    width: 100%;
+    margin-top: 24px;
+    padding: 11px 16px;
+    font: inherit;
+    font-weight: 600;
+    color: var(--mud-palette-primary-text);
+    background: var(--mud-palette-primary);
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+}
+
+.gdm-auth-submit:hover {
+    background: var(--mud-palette-primary-darken);
+}
+
+/* Die Validierungsmeldungen von Blazor — sie stehen ohne Zutun unter den Feldern. */
+.gdm-auth-card .validation-message {
+    display: block;
+    margin-top: 6px;
+    font-size: .78rem;
+    color: var(--mud-palette-error);
+}

@@ -814,6 +814,53 @@ public sealed class RarityEntitySource(IStringLocalizer<DataMessages> messages)
 }
 
 /// <summary>
+/// Weltzustände für die modulübergreifenden Dienste. Andere Module verweisen über
+/// Bedingungen hierher — Tageszeit, Wetter und Biom stehen im Bedingungssystem.
+/// </summary>
+public sealed class WorldStateEntitySource(IStringLocalizer<DataMessages> messages)
+    : ModuleEntitySource<WorldState>(messages)
+{
+    public override string ModuleKey => ModuleKeys.World;
+
+    protected override DbSet<WorldState> Set(GameDevManagerDbContext db) => db.WorldStates;
+
+    /// <summary>
+    /// Die Auswahlfelder bieten Weltzustände nach Ausprägung und eingestellter Reihenfolge an,
+    /// nicht alphabetisch — sonst stünde „Abend“ vor „Morgen“, und eine Tageszeitliste wäre
+    /// keine mehr.
+    /// </summary>
+    public override Task<List<EntitySummary>> GetEntitiesAsync(
+        GameDevManagerDbContext db, Guid projectId, CancellationToken ct) =>
+        db.WorldStates
+            .AsNoTracking()
+            .Where(state => state.GameProjectId == projectId)
+            .OrderBy(state => state.Kind)
+            .ThenBy(state => state.SortOrder)
+            .ThenBy(state => state.Name)
+            .Select(state => new EntitySummary(
+                state.Id, ModuleKeys.World, state.Name, state.ContentType!.Name))
+            .ToListAsync(ct);
+
+    protected override IQueryable<SearchHit> Project(GameDevManagerDbContext db, IQueryable<WorldState> query)
+    {
+        var timeOfDay = Messages["WorldStateKind_TimeOfDay"].Value;
+        var weather = Messages["WorldStateKind_Weather"].Value;
+        var biome = Messages["WorldStateKind_Biome"].Value;
+
+        return query.Select(state => new SearchHit(
+            state.Id,
+            ModuleKeys.World,
+            SearchHitKind.Entity,
+            state.Name,
+            state.Kind == WorldStateKind.TimeOfDay ? timeOfDay
+                : state.Kind == WorldStateKind.Weather ? weather
+                : biome,
+            db.Assets.Where(a => a.OwnerEntityId == state.Id && a.IsPrimary)
+                .Select(a => (Guid?)a.Id).FirstOrDefault()));
+    }
+}
+
+/// <summary>
 /// Währungen für die modulübergreifenden Dienste.
 /// </summary>
 public sealed class CurrencyEntitySource(IStringLocalizer<DataMessages> messages)

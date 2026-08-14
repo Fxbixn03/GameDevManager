@@ -49,6 +49,7 @@ internal static class ExportFormat
             ["player.json"] = ModuleKeys.Player,
             ["classes.json"] = ModuleKeys.Classes,
             ["loot.json"] = ModuleKeys.Loot,
+            ["world.json"] = ModuleKeys.World,
             ["effects.json"] = ModuleKeys.Effects,
             ["achievements.json"] = ModuleKeys.Achievements,
             ["collectibles.json"] = ModuleKeys.Collectibles,

@@ -135,7 +135,7 @@ public class EffectService(
 
         await EntityCleanup.DeleteForEntitiesAsync(db, removedAssignmentIds, ct);
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         effect.CreatedAtUtc = stored.CreatedAtUtc;
@@ -213,6 +213,7 @@ public class EffectService(
             .Select(a => a.Id)
             .ToListAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.GameEffects, effectId, ct);
         await EntityCleanup.DeleteForEntitiesAsync(db, [effectId, .. assignmentIds], ct);
 
         // Die Zuweisungen fallen über den Fremdschlüssel mit.

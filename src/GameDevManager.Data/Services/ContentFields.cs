@@ -61,7 +61,8 @@ public static class ContentFields
 
     /// <summary>
     /// Trägt die Werte der Maske in den DbContext ein — ohne zu speichern, damit der Aufrufer
-    /// sie zusammen mit seinen Stammdaten schreibt.
+    /// sie zusammen mit seinen Stammdaten schreibt. Davor läuft die Schreibkonflikt-Prüfung
+    /// (<see cref="EnsureNotChangedElsewhereAsync"/>).
     /// <para>
     /// Werte von Feldern, die nach einem Artwechsel nicht mehr gelten, werden entfernt. Sonst
     /// bliebe unsichtbarer Inhalt in der Datenbank stehen und tauchte in Exporten und der
@@ -69,9 +70,12 @@ public static class ContentFields
     /// </para>
     /// </summary>
     public static async Task StageValuesAsync<TEntity>(
-        GameDevManagerDbContext db, ContentEditContext<TEntity> context, CancellationToken ct)
+        GameDevManagerDbContext db, ContentEditContext<TEntity> context,
+        IStringLocalizer<DataMessages> messages, CancellationToken ct)
         where TEntity : ContentEntity
     {
+        await EnsureNotChangedElsewhereAsync(db, context, messages, ct);
+
         var entity = context.Entity;
         var applicable = context.ApplicableFields.ToDictionary(f => f.Id);
 
@@ -124,6 +128,70 @@ public static class ContentFields
             db.FieldValues.Add(created);
         }
     }
+
+    /// <summary>
+    /// Die Schreibkonflikt-Erkennung: Wirft, wenn jemand anders die Entität geändert hat,
+    /// seit die Maske sie geladen hat.
+    /// <para>
+    /// Verglichen wird <c>UpdatedAtUtc</c> — der Stand, den die Maske mit sich trägt, gegen
+    /// den, der in der Datenbank steht. Ein Zeitstempel und keine <c>rowversion</c>: Die gibt
+    /// es nur im SQL Server, PostgreSQL hätte <c>xmin</c>, MySQL und SQLite gar nichts. Für
+    /// vier Provider mit derselben Spalte bleibt nur der Zeitstempel, den ohnehin jede
+    /// <see cref="ContentEntity"/> trägt und jeder Dienst beim Speichern hochsetzt.
+    /// </para>
+    /// <para>
+    /// Bewusst hier und nicht als eigener Aufruf in jedem der gut zwanzig Modul-Dienste: Diese
+    /// Methode ist die eine Stelle, durch die alle unmittelbar vor dem Speichern laufen —
+    /// dieselbe Überlegung wie bei <see cref="EntityCleanup"/>. Ein zusätzlicher Aufruf je
+    /// Dienst wäre der, den ein neues Modul vergisst.
+    /// </para>
+    /// <para>
+    /// Ist die Zeile inzwischen ganz verschwunden, ist das <b>kein</b> Konflikt: Speichern legt
+    /// sie dann wieder an — das Verhalten gab es schon vorher, und ein Fehler statt der Rettung
+    /// des offenen Formulars wäre die schlechtere Antwort.
+    /// </para>
+    /// </summary>
+    public static async Task EnsureNotChangedElsewhereAsync<TEntity>(
+        GameDevManagerDbContext db, ContentEditContext<TEntity> context,
+        IStringLocalizer<DataMessages> messages, CancellationToken ct)
+        where TEntity : ContentEntity
+    {
+        if (context.IsNew)
+        {
+            return;
+        }
+
+        var entityId = context.Entity.Id;
+
+        var current = await db.Set<TEntity>()
+            .AsNoTracking()
+            .Where(entity => entity.Id == entityId)
+            .Select(entity => (DateTime?)entity.UpdatedAtUtc)
+            .FirstOrDefaultAsync(ct);
+
+        // Verglichen wird gegen den Zeitstempel, den die Maske mitbringt. Nach jedem
+        // Speichern schreiben die Modul-Dienste den neuen Stand dorthin zurück — deshalb
+        // funktioniert auch das zweite Speichern aus demselben offenen Formular.
+        if (current is { } stored
+            && Math.Abs((stored - context.Entity.UpdatedAtUtc).TotalMilliseconds) > StorageRoundingMillis)
+        {
+            throw new ContentConcurrencyException(
+                messages["ConcurrentEdit", context.Entity.Name, stored.ToLocalTime().ToString("g")]);
+        }
+    }
+
+    /// <summary>
+    /// Wie weit zwei Zeitstempel auseinanderliegen dürfen und trotzdem derselbe sind.
+    /// <para>
+    /// Das ist <b>kein</b> Zeitfenster für Änderungen, sondern der Rundungsfehler des
+    /// Speicherns: Alle vier Provider halten Sekundenbruchteile fest (SQL Server
+    /// <c>datetime2</c>, PostgreSQL und MySQL auf Mikrosekunden, SQLite als ISO-Text), aber
+    /// die 100-Nanosekunden-Schritte von .NET überstehen den Weg nicht überall unverändert.
+    /// Eine Millisekunde liegt weit über dieser Ungenauigkeit und weit unter allem, was zwei
+    /// Menschen nacheinander tun.
+    /// </para>
+    /// </summary>
+    private const double StorageRoundingMillis = 1;
 
     /// <summary>Überträgt die Wertspalten, ohne Id und Zuordnung anzufassen.</summary>
     private static void CopyValues(FieldValue source, FieldValue target)

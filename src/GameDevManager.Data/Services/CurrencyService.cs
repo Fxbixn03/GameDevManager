@@ -123,7 +123,7 @@ public class CurrencyService(
         stored.Description = Normalize(currency.Description);
         stored.UpdatedAtUtc = now;
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         currency.CreatedAtUtc = stored.CreatedAtUtc;
@@ -141,6 +141,7 @@ public class CurrencyService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Currencies, currencyId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, currencyId, ct);
 
         await db.Currencies

@@ -10,7 +10,7 @@ namespace GameDevManager.Domain.Entities;
 /// trotzdem, weil Assets nur über die GUID hängen.
 /// </para>
 /// </summary>
-public class PlayerCharacter
+public class PlayerCharacter : IChangeLogged
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -21,6 +21,9 @@ public class PlayerCharacter
     public required string Name { get; set; }
 
     public string? Description { get; set; }
+
+    /// <summary>Modul der Entität für das Änderungsprotokoll. Nicht persistiert.</summary>
+    public string ModuleKey => ModuleKeys.Player;
 
     /// <summary>GUID-Referenz auf die Klasse der Figur — das Mapping aus dem Klassen-Modul.</summary>
     public Guid? CharacterClassId { get; set; }
@@ -34,7 +37,7 @@ public class PlayerCharacter
 /// Ein Skilltree — die benannte Gruppe, in der Skills hängen (z. B. „Kampf“ oder „Magie“).
 /// Die Baumstruktur selbst entsteht an den Skills über <see cref="Skill.ParentSkillId"/>.
 /// </summary>
-public class SkillTree
+public class SkillTree : IChangeLogged
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -45,6 +48,9 @@ public class SkillTree
     public required string Name { get; set; }
 
     public string? Description { get; set; }
+
+    /// <summary>Modul der Entität für das Änderungsprotokoll. Nicht persistiert.</summary>
+    public string ModuleKey => ModuleKeys.Player;
 }
 
 /// <summary>

@@ -1,0 +1,323 @@
+@page "/modules/world/neu"
+@page "/modules/world/{Id:guid}"
+@inject WorldService World
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IStringLocalizer<WorldStateEditor> L
+
+<PageTitle>@L["PageTitle", PageHeading]</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">@L["NotFound"]</MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/world">@L["BackToList"]</MudButton>
+}
+else if (_context is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@PageHeading"
+                  Subtitle="@(_context.IsNew ? L["NotSavedYet"].Value : null)"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            @if (_dirty)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                    @L["UnsavedChanges"]
+                </MudChip>
+            }
+            @if (!_context.IsNew)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="DeleteAsync">
+                    @L["Delete"]
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Href="/modules/world">@L["Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_saving"
+                       OnClick="SaveAsync">
+                @L["Save"]
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionBasics"]</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudSelect T="WorldStateKind"
+                                   Value="_context.Entity.Kind"
+                                   ValueChanged="@((WorldStateKind kind) => Touch(() => _context.Entity.Kind = kind))"
+                                   Label="@L["KindLabel"]"
+                                   Variant="Variant.Outlined"
+                                   HelperText="@L["KindHelperText"]">
+                            @foreach (var kind in Enum.GetValues<WorldStateKind>())
+                            {
+                                <MudSelectItem T="WorldStateKind" Value="@kind">@L[$"Kind_{kind}"]</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudTextField Value="_context.Entity.Name"
+                                      ValueChanged="@((string name) => Touch(() => _context.Entity.Name = name))"
+                                      T="string"
+                                      Label="@L["NameLabel"]"
+                                      HelperText="@NameHelperText"
+                                      Variant="Variant.Outlined"
+                                      Immediate="true" />
+
+                        <MudTextField Value="_context.Entity.Description"
+                                      ValueChanged="@((string text) => Touch(() => _context.Entity.Description = text))"
+                                      T="string"
+                                      Label="@L["DescriptionLabel"]"
+                                      Variant="Variant.Outlined"
+                                      Lines="3" />
+
+                        <MudColorPicker Text="@_context.Entity.Color"
+                                        TextChanged="@((string color) => Touch(() => _context.Entity.Color = color))"
+                                        Label="@L["ColorLabel"]"
+                                        HelperText="@L["ColorHelperText"]"
+                                        Variant="Variant.Outlined"
+                                        ColorPickerView="ColorPickerView.Spectrum"
+                                        ShowAlpha="false" />
+
+                        <MudSelect T="Guid?"
+                                   Value="_context.Entity.ContentTypeId"
+                                   ValueChanged="ChangeType"
+                                   Label="@L["TypeLabel"]"
+                                   Variant="Variant.Outlined"
+                                   Clearable="true"
+                                   HelperText="@L["TypeHelperText"]">
+                            @foreach (var type in _context.AvailableTypes)
+                            {
+                                <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudStack>
+                </MudPaper>
+
+                <AssetSpritePanel ModuleKey="@ModuleKeys.World"
+                                  EntityId="_context.Entity.Id"
+                                  Disabled="_context.IsNew" />
+
+                <div>
+                    <ContentFieldsPanel TEntity="WorldState"
+                                        Context="_context"
+                                        ModuleKey="@ModuleKeys.World"
+                                        TypesRoute="/modules/world/arten"
+                                        IndividualHint="@L["IndividualHint"]"
+                                        OnValueChanged="MarkDirty"
+                                        OnFieldDefinitionChanged="ReloadKeepingChangesAsync" />
+                </div>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudStack Spacing="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidCaption"]</MudText>
+                    <EntityIdChip Id="_context.Entity.Id" />
+
+                    <MudDivider Class="my-3" />
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["UsageHint"]</MudText>
+
+                    @if (!_context.IsNew)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CreatedCaption"]</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">@L["UpdatedCaption"]</MudText>
+                        <MudText Typo="Typo.body2">@_context.Entity.UpdatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                    }
+                </MudPaper>
+
+                @if (!_context.IsNew)
+                {
+                    <EntityTagsPanel ModuleKey="@ModuleKeys.World" EntityId="_context.Entity.Id" />
+                    <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.World);
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    /// <summary>Mit welcher Ausprägung ein neuer Zustand beginnt — die Liste gibt sie mit.</summary>
+    [SupplyParameterFromQuery(Name = "art")]
+    public string? KindParameter { get; set; }
+
+    private ContentEditContext<WorldState>? _context;
+    private ReferencesPanel? _referencesPanel;
+    private Guid? _loadedId;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+
+    private string PageHeading => _context switch
+    {
+        null => L["HeadingFallback"],
+        { IsNew: true } => L["HeadingNew"],
+        { Entity.Name: var name } when !string.IsNullOrWhiteSpace(name) => name,
+        _ => L["HeadingUnnamed"]
+    };
+
+    private string NameHelperText =>
+        _context is null ? string.Empty : L["NameHelperText", L[$"Kind_{_context.Entity.Kind}"].Value];
+
+    private List<BreadcrumbItem> Breadcrumbs =>
+    [
+        new(L["BreadcrumbList"], "/modules/world"),
+        new(PageHeading, null, disabled: true)
+    ];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_context is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _notFound = false;
+        _dirty = false;
+        _context = null;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var kind = Enum.TryParse<WorldStateKind>(KindParameter, ignoreCase: true, out var parsed)
+            ? parsed
+            : WorldStateKind.TimeOfDay;
+
+        _context = await World.LoadForEditAsync(projectId, Id, kind);
+
+        if (_context is null)
+        {
+            _notFound = true;
+        }
+    }
+
+    private void ChangeType(Guid? contentTypeId) =>
+        Touch(() => _context!.Entity.ContentTypeId = contentTypeId);
+
+    private void Touch(Action change)
+    {
+        change();
+        MarkDirty();
+    }
+
+    private void MarkDirty() => _dirty = true;
+
+    private async Task SaveAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            var wasNew = _context.IsNew;
+            await World.SaveStateAsync(_context);
+            _dirty = false;
+
+            Snackbar.Add(L["SavedMessage", _context.Entity.Name], Severity.Success);
+
+            if (wasNew)
+            {
+                Navigation.NavigateTo($"/modules/world/{_context.Entity.Id}");
+                return;
+            }
+
+            if (_referencesPanel is not null)
+            {
+                await _referencesPanel.RefreshAsync();
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", _context.Entity.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await World.DeleteStateAsync(_context.Entity.Id);
+        Snackbar.Add(L["DeletedMessage"], Severity.Success);
+        Navigation.NavigateTo("/modules/world");
+    }
+
+    private async Task ReloadKeepingChangesAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var entity = _context.Entity;
+        var wasDirty = _dirty;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var reloaded = await World.LoadForEditAsync(projectId, entity.Id, entity.Kind);
+
+        if (reloaded is null)
+        {
+            _notFound = true;
+            _context = null;
+            return;
+        }
+
+        reloaded.Entity.Name = entity.Name;
+        reloaded.Entity.Description = entity.Description;
+        reloaded.Entity.ContentTypeId = entity.ContentTypeId;
+        reloaded.Entity.Kind = entity.Kind;
+        reloaded.Entity.Color = entity.Color;
+
+        _context = reloaded;
+        _dirty = wasDirty;
+    }
+}

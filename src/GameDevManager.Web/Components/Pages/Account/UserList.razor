@@ -1,0 +1,156 @@
+@page "/konto/benutzer"
+@inject UserService Users
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider Authentication
+@inject IStringLocalizer<UserList> L
+
+@*
+    Die Benutzerverwaltung. Sichtbar nur für Verwalter — wer keiner ist, sieht den Hinweis
+    statt der Liste. Feinere Rechte kennt das Tool nicht: Wer sich anmelden darf, darf jedes
+    Projekt bearbeiten; unterschieden wird allein, wer Benutzer verwalten kann.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<div class="gdm-panel-head mb-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
+        <div>
+            <MudText Typo="Typo.h5">@L["Title"]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Subtitle</MudText>
+        </div>
+        @if (_isAdministrator)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.PersonAdd"
+                       OnClick="@(() => EditAsync(null))">
+                @L["NewUser"]
+            </MudButton>
+        }
+    </MudStack>
+</div>
+
+@if (!_isAdministrator)
+{
+    <MudAlert Severity="Severity.Info">@L["NotAllowed"]</MudAlert>
+}
+else if (_users is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel">
+        <MudStack Spacing="0">
+            @foreach (var user in _users)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="pa-3 gdm-field-row">
+                    <MudIcon Icon="@(user.IsAdministrator ? Icons.Material.Filled.AdminPanelSettings : Icons.Material.Filled.Person)"
+                             Color="@(user.IsDisabled ? Color.Secondary : Color.Default)"
+                             Size="Size.Small" />
+
+                    <div style="flex:1 1 auto;min-width:0;">
+                        <MudText Typo="Typo.body1" Class="gdm-ellipsis"><b>@user.DisplayName</b></MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">@user.UserName</MudText>
+                    </div>
+
+                    @if (user.IsAdministrator)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">
+                            @L["Administrator"]
+                        </MudChip>
+                    }
+                    @if (user.IsDisabled)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                            @L["Disabled"]
+                        </MudChip>
+                    }
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Style="min-width:150px;">
+                        @(user.LastLoginAtUtc is { } last
+                            ? L["LastLogin", last.ToLocalTime().ToString("dd.MM.yyyy HH:mm")].Value
+                            : L["NeverLoggedIn"].Value)
+                    </MudText>
+
+                    <MudTooltip Text="@L["EditTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditAsync(user))"
+                                       aria-label="@L["EditAria", user.DisplayName]" />
+                    </MudTooltip>
+                    <MudTooltip Text="@L["DeleteTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                       Size="Size.Small"
+                                       Disabled="user.Id == _currentUserId"
+                                       OnClick="@(() => DeleteAsync(user))"
+                                       aria-label="@L["DeleteAria", user.DisplayName]" />
+                    </MudTooltip>
+                </MudStack>
+            }
+        </MudStack>
+    </MudPaper>
+}
+
+@code {
+    private List<UserRow>? _users;
+    private bool _isAdministrator;
+    private Guid? _currentUserId;
+
+    private string Subtitle => _users is null ? L["Loading"] : L["SubtitleCount", _users.Count];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await Authentication.GetAuthenticationStateAsync();
+        _isAdministrator = state.User.IsAdministrator();
+        _currentUserId = state.User.UserId();
+
+        if (_isAdministrator)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task LoadAsync() => _users = await Users.GetUsersAsync();
+
+    private async Task EditAsync(UserRow? user)
+    {
+        var parameters = new DialogParameters<UserDialog> { { dialog => dialog.User, user } };
+
+        var reference = await Dialogs.ShowAsync<UserDialog>(
+            user is null ? L["NewUser"] : L["EditTitle", user.DisplayName].Value,
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true });
+
+        if (await reference.Result is { Canceled: false })
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(UserRow user)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", user.DisplayName],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Users.DeleteUserAsync(user.Id);
+            Snackbar.Add(L["DeletedMessage", user.DisplayName], Severity.Success);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

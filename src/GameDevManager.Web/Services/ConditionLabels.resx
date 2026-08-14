@@ -81,4 +81,28 @@
   <data name="Sentence_Custom" xml:space="preserve">
     <value>Frei beschriebene Bedingung</value>
   </data>
+  <data name="Kind_TimeOfDay" xml:space="preserve">
+    <value>Tageszeit</value>
+  </data>
+  <data name="Kind_Weather" xml:space="preserve">
+    <value>Wetter</value>
+  </data>
+  <data name="Kind_Biome" xml:space="preserve">
+    <value>Biom</value>
+  </data>
+  <data name="Kind_Unlocked" xml:space="preserve">
+    <value>Freigeschaltet</value>
+  </data>
+  <data name="Sentence_WorldState" xml:space="preserve">
+    <value>{0} ist „{1}“</value>
+  </data>
+  <data name="Sentence_WorldStateNot" xml:space="preserve">
+    <value>{0} ist nicht „{1}“</value>
+  </data>
+  <data name="Sentence_Unlocked" xml:space="preserve">
+    <value>„{0}“ ist freigeschaltet</value>
+  </data>
+  <data name="Sentence_NotUnlocked" xml:space="preserve">
+    <value>„{0}“ ist noch nicht freigeschaltet</value>
+  </data>
 </root>

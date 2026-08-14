@@ -1,0 +1,123 @@
+@page "/konto/einrichten"
+@layout StartLayout
+@attribute [AllowAnonymous]
+@attribute [ExcludeFromInteractiveRouting]
+@inject UserService Users
+@inject NavigationManager Navigation
+@inject IStringLocalizer<Setup> L
+
+@*
+    Die Ersteinrichtung: Sie erscheint genau so lange, wie es noch kein Konto gibt, und legt das
+    erste an — immer mit Verwalterrecht, sonst käme danach niemand an die Benutzerverwaltung.
+
+    Ein ausgeliefertes Standardkonto gäbe es nicht: Es wäre auf jeder Installation dasselbe.
+    Statisch gerendert wie die Anmeldung, aus demselben Grund — das Cookie.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<div class="gdm-auth-screen">
+    <div class="gdm-auth-card">
+        <div class="gdm-auth-brand">
+            <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Color="Color.Primary" Size="Size.Large" />
+            <MudText Typo="Typo.h5">@L["AppName"]</MudText>
+        </div>
+
+        <MudText Typo="Typo.subtitle1" Class="mb-1">@L["Title"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["Intro"]</MudText>
+
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4">@_error</MudAlert>
+        }
+
+        <EditForm Model="Input" FormName="setup" OnValidSubmit="CreateAsync">
+            <DataAnnotationsValidator />
+
+            <label class="gdm-auth-label" for="displayName">@L["DisplayNameLabel"]</label>
+            <InputText id="displayName" @bind-Value="Input.DisplayName" class="gdm-auth-input" autocomplete="name" />
+
+            <label class="gdm-auth-label" for="userName">@L["UserNameLabel"]</label>
+            <InputText id="userName" @bind-Value="Input.UserName" class="gdm-auth-input" autocomplete="username" />
+
+            <label class="gdm-auth-label" for="password">@L["PasswordLabel"]</label>
+            <InputText id="password" type="password" @bind-Value="Input.Password"
+                       class="gdm-auth-input" autocomplete="new-password" />
+            <div class="gdm-auth-hint">@L["PasswordHint", PasswordHasher.MinimumLength]</div>
+
+            <label class="gdm-auth-label" for="confirm">@L["ConfirmLabel"]</label>
+            <InputText id="confirm" type="password" @bind-Value="Input.Confirm"
+                       class="gdm-auth-input" autocomplete="new-password" />
+
+            <button type="submit" class="gdm-auth-submit">@L["Create"]</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private SetupInput Input { get; set; } = new();
+
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Steht schon ein Konto, ist diese Seite erledigt — sonst legte hier jeder ein
+        // weiteres Verwalterkonto an, der die Adresse kennt.
+        if (await Users.HasAnyUserAsync())
+        {
+            Navigation.NavigateTo("/konto/anmelden");
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        if (Input.Password != Input.Confirm)
+        {
+            _error = L["PasswordMismatch"];
+            return;
+        }
+
+        try
+        {
+            var id = await Users.CreateUserAsync(
+                Input.UserName ?? string.Empty,
+                Input.DisplayName ?? string.Empty,
+                Input.Password ?? string.Empty,
+                isAdministrator: true);
+
+            var created = await Users.GetUserAsync(id);
+
+            if (created is not null)
+            {
+                // Gleich anmelden: Wer das erste Konto anlegt, will nicht als Nächstes ein
+                // Anmeldeformular sehen.
+                await HttpContext.SignInWithUserAsync(created, persistent: true);
+            }
+
+            Navigation.NavigateTo("/dashboard");
+        }
+        catch (ContentValidationException ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    private sealed class SetupInput
+    {
+        [Required]
+        public string? DisplayName { get; set; }
+
+        [Required]
+        public string? UserName { get; set; }
+
+        [Required]
+        public string? Password { get; set; }
+
+        [Required]
+        public string? Confirm { get; set; }
+    }
+}

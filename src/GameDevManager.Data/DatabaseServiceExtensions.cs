@@ -3,6 +3,7 @@ using GameDevManager.Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace GameDevManager.Data;
 
@@ -27,8 +28,17 @@ public static class DatabaseServiceExtensions
                 $"Bitte 'ConnectionStrings:{options.Provider}' in der Konfiguration setzen.");
 
         services.AddSingleton(options);
-        services.AddDbContextFactory<GameDevManagerDbContext>(builder =>
-            builder.UseGameDevManagerProvider(options.Provider, connectionString));
+
+        // Die Factory ist bewusst scoped und nicht — wie sonst üblich — Singleton: Der
+        // ChangeLogInterceptor muss wissen, wer gerade angemeldet ist, und das steht je
+        // Verbindung fest. Contexts entstehen weiterhin je Aufruf; nur die Factory selbst
+        // lebt jetzt so lange wie die Verbindung. Wer sie beim Start aus dem Wurzel-Container
+        // holt, braucht dafür einen Scope (siehe Program.cs).
+        services.AddDbContextFactory<GameDevManagerDbContext>(
+            (provider, builder) => builder
+                .UseGameDevManagerProvider(options.Provider, connectionString)
+                .AddInterceptors(provider.GetRequiredService<ChangeLogInterceptor>()),
+            ServiceLifetime.Scoped);
 
         return services.AddGameDevManagerContentServices();
     }
@@ -39,6 +49,14 @@ public static class DatabaseServiceExtensions
     /// </summary>
     public static IServiceCollection AddGameDevManagerContentServices(this IServiceCollection services)
     {
+        // Das Änderungsprotokoll schreibt sich beim Speichern selbst mit — es hängt am
+        // DbContext und nicht an den Modul-Diensten. Wer gerade handelt, beantwortet die
+        // Web-Schicht; ohne Anmeldung bleibt es bei „System“.
+        services.AddScoped<ChangeLogInterceptor>();
+        services.TryAddScoped<IChangeAuthorProvider>(_ => new SystemChangeAuthorProvider());
+        services.AddScoped<ChangeLogService>();
+        services.AddScoped<UserService>();
+
         services.AddScoped<ProjectService>();
         services.AddScoped<ContentTypeService>();
         services.AddScoped<ModuleSettingsService>();
@@ -63,6 +81,8 @@ public static class DatabaseServiceExtensions
         services.AddScoped<AudioService>();
         services.AddScoped<CutsceneService>();
         services.AddScoped<StatisticsService>();
+        services.AddScoped<TechTreeService>();
+        services.AddScoped<WorldService>();
         services.AddScoped<LootService>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
@@ -97,6 +117,7 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<IModuleEntitySource, LootTableEntitySource>();
         services.AddSingleton<IModuleEntitySource, MapEntitySource>();
         services.AddSingleton<IModuleEntitySource, DialogueEntitySource>();
+        services.AddSingleton<IModuleEntitySource, WorldStateEntitySource>();
 
         return services;
     }

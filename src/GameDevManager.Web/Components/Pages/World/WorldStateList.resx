@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Welt — GameDevManager</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Zustände</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>Arten</value>
+  </data>
+  <data name="NewState" xml:space="preserve">
+    <value>Neuer Zustand</value>
+  </data>
+  <data name="AddToKind" xml:space="preserve">
+    <value>Hinzufügen</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Weltzustände</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Tageszeiten, Wetterlagen und Biome sind das, woran Spawns, Shops und Events über Bedingungen hängen können.</value>
+  </data>
+  <data name="FirstState" xml:space="preserve">
+    <value>Erste Tageszeit anlegen</value>
+  </data>
+  <data name="Kind_TimeOfDay" xml:space="preserve">
+    <value>Tageszeiten</value>
+  </data>
+  <data name="Kind_Weather" xml:space="preserve">
+    <value>Wetterlagen</value>
+  </data>
+  <data name="Kind_Biome" xml:space="preserve">
+    <value>Biome</value>
+  </data>
+  <data name="KindEmpty_TimeOfDay" xml:space="preserve">
+    <value>Noch keine Tageszeiten — z. B. Morgengrauen, Tag, Abenddämmerung, Nacht.</value>
+  </data>
+  <data name="KindEmpty_Weather" xml:space="preserve">
+    <value>Noch keine Wetterlagen — z. B. Klar, Regen, Sturm, Nebel.</value>
+  </data>
+  <data name="KindEmpty_Biome" xml:space="preserve">
+    <value>Noch keine Biome — z. B. Wald, Wüste, Sumpf, Hochgebirge.</value>
+  </data>
+  <data name="KindCount" xml:space="preserve">
+    <value>{0} Einträge</value>
+  </data>
+  <data name="UsedInConditions" xml:space="preserve">
+    <value>{0}× in Bedingungen</value>
+  </data>
+  <data name="Unused" xml:space="preserve">
+    <value>ungenutzt</value>
+  </data>
+  <data name="UnusedTooltip" xml:space="preserve">
+    <value>Auf diesen Zustand zeigt noch keine Bedingung — im Spiel wirkt er damit nirgends.</value>
+  </data>
+  <data name="MoveUp" xml:space="preserve">
+    <value>Nach oben</value>
+  </data>
+  <data name="MoveDown" xml:space="preserve">
+    <value>Nach unten</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>„{0}“ löschen</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Zustand löschen?</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit allen Feldwerten und Sprites entfernt.</value>
+  </data>
+  <data name="DeleteConfirmInUse" xml:space="preserve">
+    <value>„{0}“ wird entfernt. Achtung: {1} Bedingung(en) zeigen darauf und laufen danach ins Leere.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gelöscht.</value>
+  </data>
+</root>

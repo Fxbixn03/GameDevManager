@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} — Welt</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>Weltzustand</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>Neuer Weltzustand</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Ohne Namen</value>
+  </data>
+  <data name="BreadcrumbList" xml:space="preserve">
+    <value>Welt</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Diesen Weltzustand gibt es nicht (mehr).</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zurück zur Übersicht</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>noch nicht gespeichert</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>ungespeicherte Änderungen</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SectionBasics" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Ausprägung</value>
+  </data>
+  <data name="KindHelperText" xml:space="preserve">
+    <value>Tageszeit, Wetter oder Biom — danach richtet sich, welche Bedingungsart darauf zeigen kann.</value>
+  </data>
+  <data name="Kind_TimeOfDay" xml:space="preserve">
+    <value>Tageszeit</value>
+  </data>
+  <data name="Kind_Weather" xml:space="preserve">
+    <value>Wetter</value>
+  </data>
+  <data name="Kind_Biome" xml:space="preserve">
+    <value>Biom</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NameHelperText" xml:space="preserve">
+    <value>Eindeutig innerhalb der Ausprägung „{0}“.</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="ColorLabel" xml:space="preserve">
+    <value>Farbe</value>
+  </data>
+  <data name="ColorHelperText" xml:space="preserve">
+    <value>Zur Anzeige in Listen und auf Karten. Ohne Auswahl gilt die Standardlinie.</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="TypeHelperText" xml:space="preserve">
+    <value>Bestimmt die zusätzlichen Felder — etwa Dauer einer Tageszeit oder Sichtweite bei Nebel.</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Felder nur für diesen einen Zustand.</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="UsageHint" xml:space="preserve">
+    <value>Weltzustände wirken über das Bedingungssystem: Ein Spawn, ein Shop-Posten oder ein Event bekommt eine Bedingung „Tageszeit ist …“.</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Angelegt</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Geändert</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>„{0}“ wurde gespeichert.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Zustand löschen?</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird mit allen Feldwerten und Sprites entfernt.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Der Weltzustand wurde gelöscht.</value>
+  </data>
+</root>

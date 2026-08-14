@@ -15,7 +15,7 @@
 
 Ein Verwaltungstool für die Spieleentwicklung. Damit baust du vor und während der Entwicklung ein strukturiertes Wiki für deine Spielwelt auf und exportierst die Inhalte später in deine Game Engine.
 
-**Status: Konzeptphase.** Das Projekt ist noch in der Planung.
+**Status: Alle Module umgesetzt.** Sämtliche Punkte des Konzepts sind gebaut — zuletzt Benutzeranmeldung und Änderungsprotokoll, der Freischaltungs-Baum, das Welt-Modul (Tageszeit/Wetter/Biome) und der Feldtyp „Formel/Kurve“ für Levelkurven und Schadensformeln.
 
 ## Worum geht es?
 
@@ -48,9 +48,18 @@ Man legt seine Daten strukturiert während Planungsphasen an und kann diese spä
 | Events | Zufallsereignisse mit Mob-Spawns, Belohnungs-Loot und Einschränkungen auf bestimmte Orte |
 | Tags | Zentrale Tag-Verwaltung, pro Modul konfigurierbar |
 | Asset-Bibliothek | Alle Sprites nach Modul gruppiert, mit Primär-Sprite pro Entität, Tags und Upload-Verwaltung |
-| Statistik | Kennzahlen wie Anzahl der Items oder NPCs, dazu Health Checks: zyklische Rezepte, toter Content, Quests ohne Abschluss, Dialog-Sackgassen, Loot-Wahrscheinlichkeiten über 100 %, verwaiste Sprites, unerfüllbare Bedingungen |
+| Welt | Tageszeiten, Wetterlagen und Biome als benannte Zustände, an denen Spawns, Shops und Events über Bedingungen hängen |
+| Statistik | Kennzahlen wie Anzahl der Items oder NPCs, dazu Health Checks: zyklische Rezepte, toter Content, Quests ohne Abschluss, Dialog-Sackgassen, Loot-Wahrscheinlichkeiten über 100 %, verwaiste Sprites, unerfüllbare Bedingungen, Ringe im Freischaltungs-Baum |
+| Freischaltungen | Der Tech-Tree als Graph: was schaltet was frei — gelesen aus dem Bedingungssystem, ohne eigene Daten |
+| Änderungen | Änderungsprotokoll je Entität: wer hat wann was angelegt, geändert oder gelöscht |
 | SFX / Audio | Ansammlung an Audio Files |
 | Cutscenes | Sammlung von Video Files |
+
+## Benutzer & Änderungsprotokoll
+
+Das Tool liegt hinter einer Anmeldung. Beim ersten Start führt der Weg in die **Ersteinrichtung**, in der man das erste Konto anlegt — ein ausgeliefertes Standardpasswort gibt es bewusst nicht. Passwörter stehen nur als PBKDF2-Hash in der Datenbank; Benutzer gehören der Installation und nicht einem Projekt. Unterschieden wird allein, wer weitere Benutzer verwalten darf.
+
+Darauf baut das **Änderungsprotokoll** auf: Jedes Anlegen, Ändern und Löschen einer Entität landet mit Zeitpunkt, Benutzer und den geänderten Eigenschaften unter „Änderungen“, filterbar nach Modul, Benutzer und Art der Änderung. Ein Import erscheint als ein einziger Eintrag statt als tausend. Dazu kommt eine **Schreibkonflikt-Erkennung**: Wer auf einem Stand speichert, den inzwischen jemand anderes geändert hat, bekommt eine Meldung statt die fremde Arbeit stillschweigend zu überschreiben.
 
 ## Import & Export
 
@@ -71,9 +80,10 @@ Projekte lassen sich über dieselbe Strecke **duplizieren** („Kopie anlegen“
 3. Erste Module: Dashboard, Items, Asset-Bibliothek - Ham wa drin 👌
 4. Darauf aufbauend: Crafting, NPCs, Loot-Tables, Karten - Ham wa drin 👌
 5. Story-Ebene: Dialoge, Story, Quests, Events - Ham wa drin 👌
-6. Erweiterung und Härtung bestehende Module
+6. Erweiterung und Härtung bestehende Module - Ham wa drin 👌
 7. Import/Export in JSON mit Sprites/Assets als ZIP, inkl. Exportständen mit Diff - Ham wa drin 👌
 8. Import/Export mit Engine-Anbindung (Ordner-Layouts für Unity/Unreal/Godot - Ham wa drin 👌; engine-native Formate wie ScriptableObjects später)
+9. Benutzeranmeldung und Änderungsprotokoll - Ham wa drin 👌
 
 ## Lizenz
 

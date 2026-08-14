@@ -142,7 +142,7 @@ public class MapService(
 
         SyncMarkers(db, stored, map);
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         map.CreatedAtUtc = stored.CreatedAtUtc;
@@ -236,6 +236,7 @@ public class MapService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Maps, mapId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, mapId, ct);
 
         // Sonst zeigten Verknüpfungen anderer Karten auf eine Karte, die es nicht mehr gibt.

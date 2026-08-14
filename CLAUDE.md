@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GameDevManager ist ein selbst gehostetes Verwaltungstool für Indie-Spieleentwickler: ein strukturiertes Wiki für Spielinhalte (Items, NPCs, Quests, Dialoge, Karten, …) mit späterem Export in Game Engines (Unity, Unreal, Godot oder JSON/ZIP).
 
-**Status: Alle 22 Module umgesetzt.** Die Kern-Architektur der Roadmap steht ganz: Entitätenmodell, Arten/Felder (inklusive **Unterarten mit Feldvererbung**), GUID-Referenzen **und das Bedingungssystem**. Sämtliche Module der Registry haben eine eigene Oberfläche — von Items über NPCs, Fraktionen, Diplomatie, Story, Quests und Events bis zu Spieler/Skilltrees, Klassen, Effekten, Achievements, Sammelobjekten, Tags, Audio, Cutscenes und der Statistik-Seite mit allen Health Checks; die Platzhalterseite `ModulePage.razor` wird nicht mehr angesteuert. **Import und Export sind abgeschlossen**: Export als JSON/ZIP inkl. Assets (wahlweise im Ordner-Layout von Unity, Unreal oder Godot), Import des Export-ZIPs sowie aufbewahrte Exportstände mit Diff-Ansicht — siehe Abschnitt „Import & Export“. **Projektauswahl und konfigurierbares Dashboard sind umgesetzt** (siehe Abschnitt „Projekte & Dashboard“), ebenso ein erstes Testprojekt unter `tests/GameDevManager.Tests` (`dotnet test`). Kopieren gibt es auf beiden Ebenen — ganze Projekte und einzelne Entitäten, siehe „Duplizieren“. Noch offen: Changelog (braucht Benutzeranmeldung). Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
+**Status: Alle Module umgesetzt, die offenen Konzept-Punkte abgearbeitet.** Die Kern-Architektur der Roadmap steht ganz: Entitätenmodell, Arten/Felder (inklusive **Unterarten mit Feldvererbung**), GUID-Referenzen **und das Bedingungssystem**. Sämtliche Module der Registry haben eine eigene Oberfläche — von Items über NPCs, Fraktionen, Diplomatie, Story, Quests und Events bis zu Spieler/Skilltrees, Klassen, Effekten, Achievements, Sammelobjekten, Tags, Audio, Cutscenes und der Statistik-Seite mit allen Health Checks; die Platzhalterseite `ModulePage.razor` wird nicht mehr angesteuert. **Import und Export sind abgeschlossen**: Export als JSON/ZIP inkl. Assets (wahlweise im Ordner-Layout von Unity, Unreal oder Godot), Import des Export-ZIPs sowie aufbewahrte Exportstände mit Diff-Ansicht — siehe Abschnitt „Import & Export“. **Projektauswahl und konfigurierbares Dashboard sind umgesetzt** (siehe Abschnitt „Projekte & Dashboard“), ebenso ein erstes Testprojekt unter `tests/GameDevManager.Tests` (`dotnet test`). Kopieren gibt es auf beiden Ebenen — ganze Projekte und einzelne Entitäten, siehe „Duplizieren“. Dazu kommen **Benutzeranmeldung und Änderungsprotokoll** (siehe „Anmeldung & Änderungsprotokoll“), der **Freischaltungs-Graph**, das **Welt-Modul** (Tageszeit/Wetter/Biome) und der Feldtyp **Formel/Kurve**. Aus dem Konzept ist damit nichts mehr offen; was bleibt, sind die Ideen in [knowledge/ToDo.md](knowledge/ToDo.md). Die fachliche Quelle der Wahrheit ist [knowledge/Konzept.md](knowledge/Konzept.md) — dort sind alle Module und Anforderungen im Detail beschrieben; die README fasst sie zusammen.
 
 **Sprache:** README, Konzept und Doku sind auf Deutsch. Neue Dokumentation und Commit-Messages ebenfalls auf Deutsch verfassen. Code (Bezeichner, Kommentare) auf Englisch.
 
@@ -27,7 +27,7 @@ $env:Database__Provider="SqlServer"; dotnet ef migrations add <Name> --project s
 # ebenso mit PostgreSql, MySql, Sqlite
 ```
 
-`dotnet test` führt das Testprojekt [tests/GameDevManager.Tests](tests/GameDevManager.Tests) aus: echte Dienste aus demselben DI-Aufbau wie die Anwendung, gegen SQLite im Speicher (`TestDatabase`) — keine externen Abhängigkeiten. Getestet sind die JSON-Regeln des Exportformats, der Crafting-Graph (Zyklen, Grundstoff-Rechnung), die Health Checks (Bedingungen, Dialog-Sackgassen, Loot über 100 %), die Stichprobe des Startscreens, die Bänder des Dashboards (modulübergreifendes „Weiterarbeiten“, Zustandszusammenfassung, gespeicherte Anordnung), das Duplizieren von Projekten und Entitäten samt Sicherheitsnetz, die erweiterte Suche, der Dialog-Graph und die Feldvererbung der Unterarten. Der Harness legt je Test auch ein Verzeichnis für Exportstände an (`ExportStorageOptions`) und räumt es wieder ab — der ersetzende Import und das Projektlöschen schreiben dorthin.
+`dotnet test` führt das Testprojekt [tests/GameDevManager.Tests](tests/GameDevManager.Tests) aus: echte Dienste aus demselben DI-Aufbau wie die Anwendung, gegen SQLite im Speicher (`TestDatabase`) — keine externen Abhängigkeiten. Getestet sind die JSON-Regeln des Exportformats, der Crafting-Graph (Zyklen, Grundstoff-Rechnung), die Health Checks (Bedingungen, Dialog-Sackgassen, Loot über 100 %), die Stichprobe des Startscreens, die Bänder des Dashboards (modulübergreifendes „Weiterarbeiten“, Zustandszusammenfassung, gespeicherte Anordnung), das Duplizieren von Projekten und Entitäten samt Sicherheitsnetz, die erweiterte Suche, der Dialog-Graph und die Feldvererbung der Unterarten. Dazu der Ausdrucksrechner der Kurven (Rechenreihenfolge, kaputte Formeln, Wertetabelle), das Welt-Modul, der Freischaltungs-Graph samt Ringen, das Änderungsprotokoll (Urheber, geänderte Eigenschaften, Sammeleintrag beim Import), Passwörter und Benutzerverwaltung sowie die Schreibkonflikt-Erkennung. Der Harness legt je Test auch ein Verzeichnis für Exportstände an (`ExportStorageOptions`) und räumt es wieder ab — der ersetzende Import und das Projektlöschen schreiben dorthin.
 
 ## Architektur
 
@@ -42,7 +42,7 @@ GameDevManager.Web       ← Blazor Server (net10.0) + MudBlazor; referenziert D
 GameDevManager.Tests     ← xunit (unter tests/); echte Dienste gegen SQLite im Speicher
 ```
 
-Provider und Connection String kommen aus `appsettings.json` (`Database:Provider` + `ConnectionStrings:{Provider}`); die Verdrahtung inklusive `MigrationsAssembly` steht in [DatabaseServiceExtensions.cs](src/GameDevManager.Data/DatabaseServiceExtensions.cs). Der DbContext wird als **Factory** registriert (Blazor Server) — Dienste holen sich je Aufruf einen eigenen Kontext und halten keinen Zustand.
+Provider und Connection String kommen aus `appsettings.json` (`Database:Provider` + `ConnectionStrings:{Provider}`); die Verdrahtung inklusive `MigrationsAssembly` steht in [DatabaseServiceExtensions.cs](src/GameDevManager.Data/DatabaseServiceExtensions.cs). Der DbContext wird als **Factory** registriert (Blazor Server) — Dienste holen sich je Aufruf einen eigenen Kontext und halten keinen Zustand. Die Factory selbst ist **scoped** und nicht, wie sonst üblich, Singleton: Sie zieht den `ChangeLogInterceptor`, und der muss wissen, wer gerade angemeldet ist. Wer sie beim Start aus dem Wurzel-Container holt, braucht dafür einen Scope (siehe `Program.cs`).
 
 ### Arten- und Feldsystem (der modulübergreifende Kern)
 
@@ -64,7 +64,7 @@ Verweist ein Modul über **eigene Spalten** auf fremde Entitäten (Rezept-Zutate
 Ein neues Modul umsetzen heißt also:
 
 1. Entität von `ContentEntity` ableiten und in `GameDevManagerDbContext.OnModelCreating` mit `ConfigureContentEntity<T>` registrieren.
-2. Einen Service nach dem Muster von `ItemService`/`CurrencyService` schreiben. Die Feldmechanik kommt komplett aus `ContentFields` (laden, Pflichtfelder prüfen, Werte in denselben `SaveChanges` einreihen, beim Löschen aufräumen) — nicht neu bauen. Beim Löschen einer Entität `AssetService.DeleteForOwnerAsync` aufrufen, sonst bleiben Sprites und Dateien liegen.
+2. Einen Service nach dem Muster von `ItemService`/`CurrencyService` schreiben. Die Feldmechanik kommt komplett aus `ContentFields` (laden, Pflichtfelder prüfen, Werte in denselben `SaveChanges` einreihen, beim Löschen aufräumen) — nicht neu bauen. Beim Löschen einer Entität `AssetService.DeleteForOwnerAsync` aufrufen, sonst bleiben Sprites und Dateien liegen. Ebenso `ChangeLog.RecordDeletionAsync` unmittelbar vor dem `ExecuteDeleteAsync` — das ist die einzige Stelle, an der das Änderungsprotokoll je Modul etwas braucht; alles Übrige schreibt der `ChangeLogInterceptor` von selbst.
 3. Eine `ModuleEntitySource<T>` anlegen und in `AddGameDevManagerContentServices` registrieren. Damit ist das Modul in Referenzansicht, Auswahlfeldern, Arten-Zählung, Suche, Duplizieren und dem Startscreen auf einmal da.
 4. Seiten unter `Components/Pages/<Modul>/` anlegen. Die Arten-Verwaltung ist eine Zeile (`<ContentTypeManager ModuleKey="…" />`), die Feldabschnitte der Maske ebenso (`<ContentFieldsPanel TEntity="…" …/>`), das Kopieren in der Liste ebenfalls (`<EntityDuplicateButton ModuleKey="@Module.Id" …/>`).
 5. In `ModuleRegistry` `Implemented: true` setzen — und Name plus Beschreibung als `<key>_Name` / `<key>_Description` in [ModuleLabels.resx](src/GameDevManager.Web/Services/ModuleLabels.resx) eintragen.
@@ -93,6 +93,7 @@ Das Konzept verlangt „ein einheitliches System, welches über alle Module hinw
 - **Besitzer** kann eine ganze Entität sein (ein NPC) **oder ein Teilobjekt mit eigener GUID** (ein einzelner Händler-Posten). Genau das deckt „manche Shops und teilweise auch nur Items aus einem Shop“ ab.
 - **`Slot`** unterscheidet mehrere Bedingungssätze am selben Besitzer — siehe `ConditionSlots`. Ein NPC hat heute `Shop`; kommt später „erscheint, wenn …“ dazu, braucht das keine Umstellung.
 - **`ConditionKind`** legt fest, welche Spalten tragen: mengenbezogene Arten nutzen Operator und Zahl, Ja/Nein-Arten den booleschen Wert, Bezüge auf andere Entitäten eine GUID. `Custom` fängt alles ab, was das Tool noch nicht kennt.
+- **Das Zielmodul steht meist an der Art** (`ExpectedTargetModule`) — „hat Item“ zeigt auf Items, „ist Tageszeit“ auf die Weltzustände. Nur `Unlocked` lässt es den Nutzer wählen (`ChoosesTargetModule`), weil sich alles freischalten lässt; siehe „Freischaltungen“.
 - Ein **leerer Satz wird gelöscht statt gespeichert** — „keine Bedingung“ soll keine Zeile hinterlassen.
 
 `FindProblemsAsync` ist der Health Check „unerfüllbare Bedingungen“. Er meldet nur, was sich ohne Kenntnis des laufenden Spiels sicher feststellen lässt: Ziele, die es nicht mehr gibt, und Widersprüche in einem „alle müssen zutreffen“-Satz (eine Menge gleichzeitig über und unter einer Grenze, ein Schalter gleichzeitig gesetzt und nicht gesetzt). Ziele in noch nicht umgesetzten Modulen gelten ausdrücklich **nicht** als fehlend.
@@ -194,6 +195,64 @@ Ein Namenstreffer verdrängt den Feldwerttreffer derselben Entität, sonst stün
 
 Der Domain-Enum heißt `ContentFieldType` und nicht `FieldType` — letzteres kollidiert mit `MudBlazor.FieldType` und macht jede Razor-Datei mehrdeutig.
 
+### Welt: Tageszeit, Wetter, Biome
+
+Alle drei liegen in **einem** Modul und einer Tabelle (`WorldState`), unterschieden über `WorldStateKind`. Strukturell sind sie dasselbe — ein benannter Zustand, an dem Bedingungen hängen —, und man pflegt sie zusammen; drei Module wären dreimal dieselbe Liste. Wie bei `NpcKind` ist die Ausprägung eine echte Spalte und keine Art: Das Tool filtert danach, und das Bedingungssystem hat je Ausprägung eine eigene `ConditionKind`, die eine benutzerdefinierte Art nicht kennen könnte.
+
+`SortOrder` und `Color` stehen als Spalten da und nicht in benutzerdefinierten Feldern: Tageszeiten haben eine Abfolge, die alphabetisch verloren ginge („Abend, Mittag, Morgen, Nacht“ ist keine Tageszeitliste), und eine Anzeigefarbe muss jede Ansicht zuverlässig finden — dieselbe Überlegung wie bei den Seltenheiten. Alles Weitere (Dauer einer Tageszeit, Sichtweite bei Nebel) definiert der Nutzer als Felder der Art.
+
+Namen sind **je Ausprägung** eindeutig, nicht projektweit: „Klar“ kann eine Wetterlage und ein Biom-Merkmal sein, aber zwei Wetterlagen „Klar“ wären in jeder Bedingung dieselbe.
+
+Die Bedingungsarten `TimeOfDay`, `Weather` und `Biome` zeigen auf dieses Modul; `Condition.ExpectedWorldStateKind` filtert die Auswahl in der Maske, damit unter „Wetter“ keine Biome stehen. Sie sind zugleich Ja/Nein-Fragen — „nicht bei Regen“ ist der ebenso häufige Fall.
+
+### Freischaltungen (Tech-Tree)
+
+Ein Werkzeug-Modul **ohne eigene Daten**: Was etwas freischaltet, steht längst im Bedingungssystem — ein `ConditionSet` im Slot `Unlock` („wird freigeschaltet, wenn …“) oder `Availability`, dessen Bedingungen auf andere Entitäten zeigen. `TechTreeService` liest genau das als gerichteten Graphen (Voraussetzung → Freigeschaltetes) und zeichnet es wie den Dialog-Graphen als SVG ohne JavaScript.
+
+Eine eigene Tabelle hätte dieselbe Aussage ein zweites Mal gespeichert und wäre ab der ersten Bearbeitung im Bedingungs-Editor falsch. Vier Dinge, die man beim Ändern kennen muss:
+
+- **`ConditionKind.Unlocked` wählt sein Zielmodul selbst** (`Condition.ChoosesTargetModule`) — freischalten lässt sich ein Skill, ein Rezept, ein Gebiet. Ein fest verdrahtetes Modul verengte den Baum auf eine Sorte Inhalt; deshalb steht in der Maske ein Modul-Auswahlfeld davor.
+- **Ein „darf nicht freigeschaltet sein“ ist keine Kante.** Als Voraussetzung gelesen zeigte der Baum das Gegenteil dessen, was dasteht.
+- **Die Tiefe ist der längste Weg**, berechnet über eine topologische Sortierung nach Kahn — nicht der kürzeste: Was zwei Voraussetzungen hat, gehört hinter beide.
+- **Ringe** sind der Health Check dazu, derselbe Fall wie zyklische Rezepte eine Ebene höher: Alles im Ring wartet auf sich selbst. Sie erscheinen auf dem Dashboard und der Statistik-Seite; im Bild sind ihre Knoten gestrichelt.
+
+Bedingungen ohne Zielentität („Spieler hat Stufe 20“) sind Voraussetzungen, aber keine Knoten — sie bleiben draußen. Ein Ziel, das es nicht mehr gibt, fällt samt seiner Kante heraus; dass es fehlt, meldet der Health Check „unerfüllbare Bedingungen“.
+
+### Formeln und Levelkurven
+
+`ContentFieldType.Curve` ist ein Feld wie jedes andere — der Wert steht als JSON in `FieldValue.TextValue`. Bewusst keine eigene Tabelle: Feldwerte hängen modulübergreifend an einer GUID, und so geht eine Kurve ohne Zutun durch Export, Import, Duplizieren und die Feldvererbung der Unterarten. Nutzbar ist der Typ überall; gedacht ist er für Spieler, Klassen und Effekte.
+
+Eine Kurve ist ein **Ausdruck über `x`** (`100 * x ^ 1.5`), eine **Spanne** und eine **Wertetabelle** — beides zusammen, nicht entweder-oder: `CurveDefinition.Overrides` überschreibt einzelne Stufen, ohne die Formel zu verlieren (der „Boss auf Stufe 50 kriegt einen Sprung“-Fall). Ohne Formel sind die gesetzten Punkte die ganze Kurve.
+
+`CurveExpression` ist ein eigener Shunting-Yard-Parser ohne Fremdbibliothek — dieselbe Abwägung wie beim `ImageDimensionReader`. Drei Feinheiten:
+
+- **Der Ausdruck wird einmal gelesen und dann ausgewertet**: Die Vorschau ruft ihn bis zu 500-mal auf.
+- **Zahlen immer in fester Kultur.** Derselbe Ausdruck muss auf jedem Rechner dieselbe Kurve ergeben — er geht so auch in den Export.
+- **Vollständigkeit wird beim Lesen geprüft**, nicht erst beim Rechnen (`EnsureComplete` zählt die Stapeltiefe). Sonst nähme die Maske `1 +` klaglos an.
+
+Stellen, an denen die Formel nicht rechnet (Wurzel aus einer negativen Zahl), fallen aus der Wertetabelle heraus, statt die ganze Kurve zu verwerfen — an den übrigen Stufen stimmt sie ja. Ein Textwert, der kein Kurven-JSON ist, ergibt beim Lesen `null`: Ein Feld, das erst später auf „Formel/Kurve“ umgestellt wurde, trägt noch seinen alten Text und darf davon nicht umfallen.
+
+### Anmeldung & Änderungsprotokoll
+
+Das Tool liegt hinter einer Anmeldung, weil das Konzept protokollieren will, „welcher angemeldete Benutzer welche Änderungen getan hat“.
+
+**Anmeldung.** `AppUser` mit PBKDF2-Hash (`PasswordHasher`) und Cookie-Authentifizierung — bewusst kein ASP.NET-Identity: Gebraucht wird ein Konto mit Passwort, und dafür sieben Identity-Tabellen in alle vier Provider zu migrieren wäre ein Vielfaches an Umfang für dasselbe Ergebnis. Benutzer hängen wie die Projekte an keinem Projekt; unterschieden wird allein, wer weitere Benutzer verwalten darf. Es gibt **kein ausgeliefertes Standardkonto** — der erste Start führt in die Ersteinrichtung unter `/konto/einrichten`, und das erste Konto wird immer Verwalter. Der letzte Verwalter kann sich weder entmachten noch sperren noch löschen.
+
+Zwei Dinge, die man beim Ändern kennen muss:
+
+- **Die Seiten rund um die Anmeldung werden statisch gerendert** (`[ExcludeFromInteractiveRouting]`, ausgewertet in `App.razor` über `HttpContext.AcceptsInteractiveRouting()`). Ein Cookie lässt sich nur während einer echten HTTP-Antwort setzen; über die SignalR-Verbindung von Blazor Server gibt es keine, in die es hineinpasste. Aus demselben Grund benutzen diese Formulare `InputText` statt MudBlazor-Eingaben — nur echte `<input name="…">` kommen beim Postback wieder an.
+- **Geschützt ist alles über `@attribute [Authorize]` in `_Imports.razor`**; die Ausnahmen zeichnen sich mit `[AllowAnonymous]` aus (Anmeldung, Ersteinrichtung, Abmelden, Fehlerseiten). Die Endpunkte für Assets, Export und Exportstände tragen `RequireAuthorization()`.
+
+**Änderungsprotokoll.** Geschrieben wird es nicht in den gut zwanzig Modul-Diensten, sondern einmal im `ChangeLogInterceptor` am `SaveChanges` — dort weiß der Änderungsverfolger von EF ohnehin, was neu ist und welche Eigenschaften sich geändert haben. Dieselbe Überlegung wie bei `EntityCleanup`: einmal gebündelt statt je Modul wiederholt, sonst fehlte es in dem einen Modul, in dem man es vergisst. Protokolliert wird, was `IChangeLogged` erfüllt — die Schnittstelle bündelt nur die vier Angaben, die `ContentEntity`, `ContentType`, `PlayerCharacter` und `SkillTree` ohnehin schon tragen.
+
+- **Löschungen sieht der Interceptor nicht**: Die Modul-Dienste löschen über `ExecuteDeleteAsync`, das am Änderungsverfolger vorbei arbeitet, und danach ist nichts mehr da, dessen Namen man notieren könnte. Sie melden ihre Löschung deshalb selbst über `ChangeLog.RecordDeletionAsync`, unmittelbar vor dem Löschen und in derselben Transaktion — **den Benutzernamen lassen sie leer**, damit auch dort nur der Interceptor beantwortet, wer gehandelt hat.
+- **Ein Import ist ein Eintrag, keine tausend** (`GameDevManagerDbContext.SuppressChangeLog`, gesetzt von `ImportService`). Ein Protokoll, das ein Import flutet, ist danach unlesbar.
+- **Name des Benutzers und Name der Entität stehen als Momentaufnahme im Eintrag**, nicht als Verweis. Nach dem Löschen gäbe es nichts mehr aufzulösen — und genau dieser Eintrag ist der wichtigste.
+- **Das Protokoll ist Werkzeug-Sache**: Es steht wie die Moduleinstellungen und die Dashboard-Bänder nicht im Export und übersteht den ersetzenden Import — der als eigener Eintrag darin auftaucht.
+- **Wer gerade handelt**, beantwortet die Web-Schicht über `IChangeAuthorProvider`. Der `BlazorChangeAuthorProvider` fragt zwei Quellen: den `HttpContext` (statisch gerenderte Seiten, Endpunkte) und den `AuthenticationStateProvider` (laufender Blazor-Kreis, der keinen `HttpContext` mehr hat). Außerhalb beider — beim Anwendungsstart etwa — wirft Letzterer, statt „niemand angemeldet“ zu melden; das wird abgefangen, und es bleibt beim Systemnamen.
+
+**Schreibkonflikt-Erkennung.** `ContentFields.EnsureNotChangedElsewhereAsync` vergleicht den Zeitstempel, den die Maske mitbringt, gegen den in der Datenbank und wirft eine `ContentConcurrencyException` — abgeleitet von `ContentValidationException`, damit jede Maske sie ohne Änderung anzeigt. Kein `rowversion`: Den gibt es nur im SQL Server, PostgreSQL hätte `xmin`, MySQL und SQLite gar nichts; für vier Provider mit derselben Spalte bleibt der Zeitstempel, den jede `ContentEntity` ohnehin trägt. Die Prüfung sitzt in `StageValuesAsync` — der einen Stelle, durch die jeder Modul-Dienst unmittelbar vor dem Speichern läuft. Dass sie funktioniert, hängt daran, dass die Dienste nach dem Speichern den neuen Zeitstempel in die Maske **zurückschreiben**; sonst meldete der zweite Klick einen Konflikt mit einem selbst. Eine inzwischen gelöschte Zeile ist ausdrücklich **kein** Konflikt — Speichern legt sie wieder an.
+
 ### Duplizieren
 
 Kopiert wird auf zwei Ebenen, und beide benutzen denselben Kniff: **serialisieren, GUIDs tauschen, zurücklesen** ([GuidRemap.cs](src/GameDevManager.Data/Services/GuidRemap.cs)). Weil Entitäten laut Konzept ausnahmslos über GUIDs aufeinander verweisen, trifft ein Austausch über den gesamten JSON-Text jede Referenz — auch die Fremdschlüssel der Kind-Sammlungen, die Besitzer-GUIDs der Feldwerte und die Ziele der Bedingungen. Ein Verzeichnis der Spalten, in denen GUIDs vorkommen, müsste bei jedem neuen Modul nachgeführt werden.
@@ -235,7 +294,7 @@ Für die Projektleiste liest `ExportSnapshotService.FindLatestExportedAtUtc` den
 Drei Entscheidungen, die man kennen muss:
 
 - **Serialisiert werden die Domain-Entitäten selbst**, kein DTO-Satz. Ein `JsonTypeInfo`-Modifier entfernt Navigationsobjekte (Referenzen bleiben als GUID-Spalten — die Regel des Konzepts) und berechnete Nur-Lese-Eigenschaften; Kind-Sammlungen bleiben eingebettet. Wer eine neue Kind-Sammlung lädt, muss sie im Service auch `Include`n und stabil sortieren — nicht geladene Sammlungen erschienen sonst als leere Listen im Export. Sammlungen, die trotz ihrer Form **nicht** ins Archiv gehören, stehen in `IsUnloadedCollection`: `AssetTag.Assignments` (die Zuordnungen stehen an den Assets), `ContentType.InheritedFields` (nur zusammengetragen) und `ContentType.Children` (die Unterarten stehen ohnehin als eigene Einträge in derselben Liste).
-- **Alle Listen sind stabil sortiert** (Name bzw. SortOrder, dann GUID): derselbe Stand ergibt denselben Export — die Grundlage der Diff-Ansicht. `FormatVersion` bei jeder Format-Änderung erhöhen; sie steht auf **2**, seit Arten eine `parentId` tragen.
+- **Alle Listen sind stabil sortiert** (Name bzw. SortOrder, dann GUID): derselbe Stand ergibt denselben Export — die Grundlage der Diff-Ansicht. `FormatVersion` bei jeder Format-Änderung erhöhen; sie steht auf **3**, seit `content/world.json` dazugekommen ist (davor **2** für die `parentId` der Arten).
 - **Das ZIP entsteht in einer Temp-Datei** (`DeleteOnClose`) und wird dann in den Response kopiert: `ZipArchive` schließt Einträge synchron ab, und der Response-Stream von ASP.NET Core verbietet synchrone Schreibzugriffe.
 
 Was Export, Import und Diff gemeinsam über den Aufbau des Archivs wissen (JSON-Regeln samt `JsonTypeInfo`-Modifier, Manifest-Suche über alle Engine-Präfixe, Zuordnung Inhaltsdatei → Modul), steht in [ExportFormat.cs](src/GameDevManager.Data/Services/ExportFormat.cs).

@@ -136,7 +136,7 @@ public class ClassService(
             : characterClass.Description.Trim();
         stored.UpdatedAtUtc = now;
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         characterClass.CreatedAtUtc = stored.CreatedAtUtc;
@@ -153,6 +153,7 @@ public class ClassService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.CharacterClasses, classId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, classId, ct);
 
         // Keine Fremdschlüssel über die Modulgrenze — die Verweise müssen von Hand gelöst werden.

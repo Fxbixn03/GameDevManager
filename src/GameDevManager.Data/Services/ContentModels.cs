@@ -8,6 +8,17 @@ namespace GameDevManager.Data.Services;
 /// </summary>
 public class ContentValidationException(string message) : Exception(message);
 
+/// <summary>
+/// Jemand anders hat dieselbe Entität geändert, seit die Maske sie geladen hat.
+/// <para>
+/// Abgeleitet von <see cref="ContentValidationException"/>, damit die Oberfläche sie überall
+/// dort zeigt, wo sie fachliche Fehler ohnehin schon durchreicht — ein Schreibkonflikt ist
+/// aus Sicht der Maske dasselbe: Das Speichern hat nicht stattgefunden, und der Text daneben
+/// sagt warum.
+/// </para>
+/// </summary>
+public sealed class ContentConcurrencyException(string message) : ContentValidationException(message);
+
 /// <summary>Kurzfassung einer Entität für Listen, Auswahlfelder und die Referenzansicht.</summary>
 public sealed record EntitySummary(Guid Id, string ModuleKey, string Name, string? TypeName);
 
@@ -397,6 +408,24 @@ public sealed record CurrencyListRow(
     string? Description,
     Guid? ContentTypeId,
     string? TypeName,
+    DateTime UpdatedAtUtc,
+    Guid? PrimaryAssetId);
+
+/// <summary>Eine Zeile der Weltzustands-Übersicht — Tageszeiten, Wetter und Biome.</summary>
+/// <param name="ConditionUsageCount">
+/// Wie oft der Zustand in Bedingungen vorkommt. Das ist seine ganze Wirkung: Ein Biom, auf das
+/// keine Bedingung zeigt, steht in keinem Spawn und in keinem Shop.
+/// </param>
+public sealed record WorldStateListRow(
+    Guid Id,
+    string Name,
+    string? Description,
+    WorldStateKind Kind,
+    int SortOrder,
+    string? Color,
+    Guid? ContentTypeId,
+    string? TypeName,
+    int ConditionUsageCount,
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 

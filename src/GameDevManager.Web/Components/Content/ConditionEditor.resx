@@ -72,4 +72,7 @@
   <data name="SavedMessage" xml:space="preserve">
     <value>Bedingungen gespeichert.</value>
   </data>
+  <data name="TargetModuleLabel" xml:space="preserve">
+    <value>Modul des Ziels</value>
+  </data>
 </root>

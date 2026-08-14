@@ -41,5 +41,12 @@ public enum ContentFieldType
     /// Verweis auf eine <see cref="Rarity"/> — eine <see cref="EntityReference"/> mit fest
     /// verdrahtetem Zielmodul, damit „Seltenheit“ direkt als Feldtyp wählbar ist.
     /// </summary>
-    Rarity = 9
+    Rarity = 9,
+
+    /// <summary>
+    /// Levelkurve oder Formel: ein Ausdruck über <c>x</c> und/oder eine Wertetabelle, samt
+    /// Vorschau-Diagramm. Der Wert steht als JSON in <see cref="FieldValue.TextValue"/> —
+    /// siehe <see cref="Curves.CurveDefinition"/>.
+    /// </summary>
+    Curve = 10
 }

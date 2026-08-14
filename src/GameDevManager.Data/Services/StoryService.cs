@@ -176,7 +176,7 @@ public class StoryService(
 
         await EntityCleanup.DeleteForEntitiesAsync(db, removedParticipantIds, ct);
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         entry.CreatedAtUtc = stored.CreatedAtUtc;
@@ -256,6 +256,7 @@ public class StoryService(
             .Select(p => p.Id)
             .ToListAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.StoryEntries, entryId, ct);
         await EntityCleanup.DeleteForEntitiesAsync(db, [entryId, .. participantIds], ct);
 
         // Die Beteiligten fallen über den Fremdschlüssel mit.

@@ -54,6 +54,34 @@
                            Color="Color.Inherit"
                            OnClick="OpenSettingsAsync" />
         </MudTooltip>
+
+        @* Konto und Abmelden. Das Abmelden ist ein echter Seitenaufruf (forceLoad), weil
+           nur eine HTTP-Antwort das Cookie wieder loswird. *@
+        <MudMenu Icon="@Icons.Material.Filled.AccountCircle"
+                 Color="Color.Inherit"
+                 AriaLabel="@L["Account"]"
+                 AnchorOrigin="Origin.BottomRight"
+                 TransformOrigin="Origin.TopRight">
+            <AuthorizeView>
+                <Authorized>
+                    <MudMenuItem Disabled="true">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @L["SignedInAs", context.User.Identity?.Name ?? string.Empty]
+                        </MudText>
+                    </MudMenuItem>
+                    <MudDivider />
+                    <MudMenuItem Href="/konto" Icon="@Icons.Material.Filled.ManageAccounts">@L["MyAccount"]</MudMenuItem>
+                    @if (context.User.IsAdministrator())
+                    {
+                        <MudMenuItem Href="/konto/benutzer" Icon="@Icons.Material.Filled.Group">@L["Users"]</MudMenuItem>
+                    }
+                    <MudDivider />
+                    <MudMenuItem Href="/konto/abmelden" ForceLoad="true" Icon="@Icons.Material.Filled.Logout">
+                        @L["SignOut"]
+                    </MudMenuItem>
+                </Authorized>
+            </AuthorizeView>
+        </MudMenu>
     </MudAppBar>
 
     <MudMainContent>

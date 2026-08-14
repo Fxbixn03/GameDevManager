@@ -54,4 +54,10 @@
   <data name="WithUnit" xml:space="preserve">
     <value>{0} {1}</value>
   </data>
+  <data name="Type_Curve" xml:space="preserve">
+    <value>Formel/Kurve</value>
+  </data>
+  <data name="CurveTable" xml:space="preserve">
+    <value>Wertetabelle ({0} Stufen)</value>
+  </data>
 </root>

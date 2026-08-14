@@ -33,5 +33,18 @@ public static class ModuleKeys
     public const string Tags = "tags";
     public const string Audio = "audio";
     public const string Cutscenes = "cutscenes";
+
+    /// <summary>Tageszeiten, Wetterlagen und Biome — siehe <see cref="Entities.WorldState"/>.</summary>
+    public const string World = "world";
+
     public const string Statistics = "statistics";
+
+    /// <summary>
+    /// Der Freischaltungs-Graph. Ein Werkzeug-Modul ohne eigene Entitäten: Es zeigt, was das
+    /// Bedingungssystem ohnehin schon trägt.
+    /// </summary>
+    public const string TechTree = "techtree";
+
+    /// <summary>Das Änderungsprotokoll. Ebenfalls ein Werkzeug-Modul ohne eigene Inhalte.</summary>
+    public const string Changelog = "changelog";
 }

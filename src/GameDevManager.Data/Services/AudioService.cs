@@ -122,7 +122,7 @@ public class AudioService(
         stored.Description = string.IsNullOrWhiteSpace(sound.Description) ? null : sound.Description.Trim();
         stored.UpdatedAtUtc = now;
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         sound.CreatedAtUtc = stored.CreatedAtUtc;
@@ -139,6 +139,7 @@ public class AudioService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.SoundEffects, soundId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, soundId, ct);
 
         await db.SoundEffects

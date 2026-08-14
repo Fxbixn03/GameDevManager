@@ -563,4 +563,61 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="Import_AssetFileMissing" xml:space="preserve">
     <value>Die Datei zum Asset „{0}“ fehlt im Archiv.</value>
   </data>
+  <data name="ConcurrentEdit" xml:space="preserve">
+    <value>„{0}“ wurde zwischenzeitlich von jemand anderem gespeichert ({1}). Zum Überschreiben die Maske neu laden — sonst gingen die fremden Änderungen verloren.</value>
+  </data>
+  <data name="WorldStateNameRequired" xml:space="preserve">
+    <value>Der Weltzustand braucht einen Namen.</value>
+  </data>
+  <data name="WorldStateNameExists" xml:space="preserve">
+    <value>„{0}“ gibt es in dieser Ausprägung bereits.</value>
+  </data>
+  <data name="WorldStateKind_TimeOfDay" xml:space="preserve">
+    <value>Tageszeit</value>
+  </data>
+  <data name="WorldStateKind_Weather" xml:space="preserve">
+    <value>Wetter</value>
+  </data>
+  <data name="WorldStateKind_Biome" xml:space="preserve">
+    <value>Biom</value>
+  </data>
+  <data name="UnlockCycle" xml:space="preserve">
+    <value>Freischaltungs-Ring: {0}</value>
+  </data>
+  <data name="UserNameRequired" xml:space="preserve">
+    <value>Der Benutzer braucht einen Anmeldenamen.</value>
+  </data>
+  <data name="UserNameExists" xml:space="preserve">
+    <value>Den Anmeldenamen „{0}“ gibt es bereits.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Diesen Benutzer gibt es nicht mehr.</value>
+  </data>
+  <data name="UserPasswordTooShort" xml:space="preserve">
+    <value>Das Passwort braucht mindestens {0} Zeichen.</value>
+  </data>
+  <data name="UserCurrentPasswordWrong" xml:space="preserve">
+    <value>Das bisherige Passwort stimmt nicht.</value>
+  </data>
+  <data name="UserLastAdministrator" xml:space="preserve">
+    <value>Das ist der letzte Verwalter — ohne ihn käme niemand mehr an die Benutzerverwaltung.</value>
+  </data>
+  <data name="ConditionKind_TimeOfDay" xml:space="preserve">
+    <value>Tageszeit</value>
+  </data>
+  <data name="ConditionKind_Weather" xml:space="preserve">
+    <value>Wetter</value>
+  </data>
+  <data name="ConditionKind_Biome" xml:space="preserve">
+    <value>Biom</value>
+  </data>
+  <data name="ConditionKind_Unlocked" xml:space="preserve">
+    <value>Freigeschaltet</value>
+  </data>
+  <data name="ChangeLog_ProjectImported" xml:space="preserve">
+    <value>Projektstand eingespielt: {0}</value>
+  </data>
+  <data name="ChangeLog_ProjectDuplicated" xml:space="preserve">
+    <value>Als Kopie von „{0}“ angelegt.</value>
+  </data>
 </root>

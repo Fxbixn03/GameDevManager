@@ -4,6 +4,7 @@
 @inject LootService Loot
 @inject DialogueService Dialogues
 @inject ConditionService Conditions
+@inject TechTreeService TechTree
 @inject QuestService Quests
 @inject ProjectContext Project
 @inject IStringLocalizer<StatisticsPage> L
@@ -192,6 +193,24 @@ else
                 </MudStack>
             }
         </MudPaper>
+
+        @* Ringe im Freischaltungs-Baum — dieselbe Frage wie bei zyklischen Rezepten,
+           nur eine Ebene höher: Alles im Ring wartet auf sich selbst. *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_unlockCycles.Count)" Color="@StatusColor(_unlockCycles.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>@L["UnlockCyclesTitle"]</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_unlockCycles.Count)</MudText>
+                <MudSpacer />
+                <MudButton Size="Size.Small" Variant="Variant.Text" Href="/modules/techtree">
+                    @L["ToTechTree"]
+                </MudButton>
+            </MudStack>
+            @foreach (var cycle in _unlockCycles)
+            {
+                <MudText Typo="Typo.body2" Class="py-1">@TechTree.DescribeCycle(cycle)</MudText>
+            }
+        </MudPaper>
     </MudStack>
 }
 
@@ -207,6 +226,7 @@ else
     private List<LootTableListRow> _overfullTables = [];
     private List<OrphanedAsset> _orphanedAssets = [];
     private List<ConditionProblem> _conditionProblems = [];
+    private List<UnlockCycle> _unlockCycles = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -220,6 +240,7 @@ else
         _overfullTables = await Loot.FindOverfullTablesAsync(projectId);
         _orphanedAssets = await Statistics.FindOrphanedAssetsAsync(projectId);
         _conditionProblems = await Conditions.FindProblemsAsync(projectId);
+        _unlockCycles = await TechTree.FindCyclesAsync(projectId);
 
         // Zuletzt, weil die Anzeige darauf wartet — so erscheinen die Checks gemeinsam.
         _counts = await Statistics.GetCountsAsync(projectId);

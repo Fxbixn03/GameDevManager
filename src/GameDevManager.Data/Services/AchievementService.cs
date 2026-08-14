@@ -115,7 +115,7 @@ public class AchievementService(
         stored.IsSecret = achievement.IsSecret;
         stored.UpdatedAtUtc = now;
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         achievement.CreatedAtUtc = stored.CreatedAtUtc;
@@ -132,6 +132,7 @@ public class AchievementService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Achievements, achievementId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, achievementId, ct);
 
         await db.Achievements

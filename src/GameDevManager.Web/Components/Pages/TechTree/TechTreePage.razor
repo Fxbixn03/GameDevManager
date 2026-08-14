@@ -1,0 +1,272 @@
+@page "/modules/techtree"
+@inject TechTreeService TechTree
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject NavigationManager Navigation
+@inject IStringLocalizer<TechTreePage> L
+
+@*
+    Der Tech-Tree aus dem Konzept. Er bringt keine eigenen Daten mit: Was etwas freischaltet,
+    steht längst im Bedingungssystem — ein Satz im Slot „wird freigeschaltet, wenn …“ oder
+    „ist verfügbar, wenn …“, dessen Bedingungen auf andere Entitäten zeigen.
+
+    Gezeichnet wie der Dialog-Graph: Spalten sind die Tiefe, SVG ohne JavaScript.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/statistics">@L["ToStatistics"]</MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_graph is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_graph.Nodes.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.AccountTree" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["EmptyHint"]</MudText>
+    </div>
+}
+else
+{
+    @if (_graph.Cycles.Count > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4">
+            <MudText Typo="Typo.body2"><b>@L["CycleTitle", _graph.Cycles.Count]</b></MudText>
+            @foreach (var cycle in _graph.Cycles)
+            {
+                <MudText Typo="Typo.body2">@TechTree.DescribeCycle(cycle)</MudText>
+            }
+            <MudText Typo="Typo.caption">@L["CycleHint"]</MudText>
+        </MudAlert>
+    }
+
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            @foreach (var entry in Legend)
+            {
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <span style="display:inline-block;width:16px;height:16px;border:2px @entry.Style @entry.Color;"></span>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@entry.Label</MudText>
+                </MudStack>
+            }
+            <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                <span style="display:inline-block;width:24px;height:0;border-top:2px dashed var(--mud-palette-lines-default);"></span>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["LegendOptional"]</MudText>
+            </MudStack>
+            <MudSpacer />
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["LegendHint"]</MudText>
+        </MudStack>
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="gdm-panel pa-4" Style="overflow-x:auto;">
+        <svg viewBox="0 0 @CanvasWidth @CanvasHeight"
+             width="@CanvasWidth"
+             height="@CanvasHeight"
+             style="display:block;max-width:none;"
+             role="img"
+             aria-label="@L["GraphAria", _graph.Nodes.Count, _graph.Edges.Count]">
+
+            @* Kanten zuerst, damit die Knoten darüber liegen. *@
+            @foreach (var edge in _graph.Edges)
+            {
+                if (!_places.TryGetValue(edge.FromEntityId, out var from)
+                    || !_places.TryGetValue(edge.ToEntityId, out var to))
+                {
+                    continue;
+                }
+
+                <path d="@EdgePath(from, to)"
+                      fill="none"
+                      stroke="var(--mud-palette-lines-default)"
+                      stroke-width="2"
+                      stroke-dasharray="@(edge.IsOptional ? "6 4" : null)">
+                    <title>@EdgeTitle(edge)</title>
+                </path>
+            }
+
+            @foreach (var node in _graph.Nodes)
+            {
+                var place = _places[node.EntityId];
+
+                <g style="cursor:pointer;" @onclick="@(() => Open(node))">
+                    <rect x="@Fmt(place.X)" y="@Fmt(place.Y)"
+                          width="@NodeWidth" height="@NodeHeight"
+                          fill="var(--mud-palette-surface)"
+                          stroke="@NodeStroke(node)"
+                          stroke-width="2"
+                          stroke-dasharray="@(node.IsInCycle ? "6 4" : null)" />
+
+                    <title>@node.Name</title>
+
+                    <text x="@Fmt(place.X + 12)" y="@Fmt(place.Y + 22)"
+                          fill="var(--mud-palette-text-secondary)"
+                          style="font-size:11px;font-family:inherit;text-transform:uppercase;letter-spacing:.06em;">
+                        @Modules.Name(node.ModuleKey)
+                    </text>
+
+                    @* Ein <text> mit <tspan>-Zeilen: SVG bricht nicht selbst um, und ein
+                       <text> als erstes Element eines Razor-Blocks läse der Parser als sein
+                       eigenes Steuer-Tag. *@
+                    <text fill="var(--mud-palette-text-primary)"
+                          style="font-size:13px;font-family:inherit;">
+                        @foreach (var (line, index) in WrapText(node.Name).Select((line, index) => (line, index)))
+                        {
+                            <tspan x="@Fmt(place.X + 12)" y="@Fmt(place.Y + 44 + index * 16)">@line</tspan>
+                        }
+                    </text>
+                </g>
+            }
+        </svg>
+    </MudPaper>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.TechTree);
+
+    // Feste Maße wie beim Dialog-Graphen: Spalte ist die Tiefe, Zeile die Reihenfolge darin.
+    // Ohne JavaScript deterministisch und für die Größenordnung eines Projekts ausreichend.
+    private const int NodeWidth = 210;
+    private const int NodeHeight = 72;
+    private const int ColumnGap = 90;
+    private const int RowGap = 24;
+    private const int Padding = 20;
+
+    private const int WrapWidth = 26;
+    private const int WrapLines = 2;
+
+    private UnlockGraph? _graph;
+    private Dictionary<Guid, (double X, double Y)> _places = [];
+    private int _columns;
+    private int _rows;
+
+    private string Subtitle => _graph is null
+        ? L["Loading"]
+        : L["SubtitleCount", _graph.Nodes.Count, _graph.Edges.Count];
+
+    private int CanvasWidth => Padding * 2 + Math.Max(_columns, 1) * (NodeWidth + ColumnGap) - ColumnGap;
+
+    private int CanvasHeight => Padding * 2 + Math.Max(_rows, 1) * (NodeHeight + RowGap) - RowGap;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _graph = await TechTree.GetGraphAsync(projectId);
+        Layout(_graph);
+    }
+
+    /// <summary>
+    /// Spalten nach Tiefe: ganz links, was ohne Voraussetzung offensteht, rechts davon, was
+    /// erst dadurch erreichbar wird.
+    /// </summary>
+    private void Layout(UnlockGraph graph)
+    {
+        var nextRow = new Dictionary<int, int>();
+        var places = new Dictionary<Guid, (double X, double Y)>();
+
+        foreach (var node in graph.Nodes)
+        {
+            var column = Math.Max(node.Depth, 0);
+            var row = nextRow.GetValueOrDefault(column);
+            nextRow[column] = row + 1;
+
+            places[node.EntityId] = (
+                Padding + column * (NodeWidth + ColumnGap),
+                Padding + row * (NodeHeight + RowGap));
+        }
+
+        _places = places;
+        _columns = nextRow.Count == 0 ? 0 : nextRow.Keys.Max() + 1;
+        _rows = nextRow.Count == 0 ? 0 : nextRow.Values.Max();
+    }
+
+    private void Open(UnlockNode node)
+    {
+        var module = ModuleRegistry.Find(node.ModuleKey);
+
+        if (module is not null)
+        {
+            Navigation.NavigateTo($"{module.Route}/{node.EntityId}");
+        }
+    }
+
+    private string EdgeTitle(UnlockEdge edge)
+    {
+        var from = _graph?.Nodes.FirstOrDefault(node => node.EntityId == edge.FromEntityId)?.Name ?? "?";
+        var to = _graph?.Nodes.FirstOrDefault(node => node.EntityId == edge.ToEntityId)?.Name ?? "?";
+
+        return edge.IsOptional ? L["EdgeTitleOptional", from, to] : L["EdgeTitle", from, to];
+    }
+
+    /// <summary>Eine Bézierkurve von der rechten Kante zur linken — wie beim Dialog-Graphen.</summary>
+    private static string EdgePath((double X, double Y) from, (double X, double Y) to)
+    {
+        var x1 = from.X + NodeWidth;
+        var y1 = from.Y + NodeHeight / 2.0;
+        var x2 = to.X;
+        var y2 = to.Y + NodeHeight / 2.0;
+        var bend = Math.Max(ColumnGap / 2.0, Math.Abs(x2 - x1) / 2.0);
+
+        return $"M {Fmt(x1)} {Fmt(y1)} C {Fmt(x1 + bend)} {Fmt(y1)}, {Fmt(x2 - bend)} {Fmt(y2)}, {Fmt(x2)} {Fmt(y2)}";
+    }
+
+    private static string NodeStroke(UnlockNode node) =>
+        node.IsInCycle ? "var(--mud-palette-warning)"
+            : node.IsRoot ? "var(--mud-palette-primary)"
+            : "var(--mud-palette-lines-default)";
+
+    private List<(string Label, string Color, string Style)> Legend =>
+    [
+        (L["LegendRoot"], "var(--mud-palette-primary)", "solid"),
+        (L["LegendUnlocked"], "var(--mud-palette-lines-default)", "solid"),
+        (L["LegendCycle"], "var(--mud-palette-warning)", "dashed")
+    ];
+
+    /// <summary>Bricht den Namen auf feste Zeilen um — SVG kennt keinen Umbruch.</summary>
+    private static List<string> WrapText(string text)
+    {
+        var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var lines = new List<string>();
+        var current = string.Empty;
+
+        foreach (var word in words)
+        {
+            var candidate = current.Length == 0 ? word : $"{current} {word}";
+
+            if (candidate.Length <= WrapWidth)
+            {
+                current = candidate;
+                continue;
+            }
+
+            lines.Add(current.Length == 0 ? word[..Math.Min(word.Length, WrapWidth)] : current);
+            current = word;
+
+            if (lines.Count == WrapLines)
+            {
+                break;
+            }
+        }
+
+        if (lines.Count < WrapLines && current.Length > 0)
+        {
+            lines.Add(current);
+        }
+
+        if (lines.Count == WrapLines && lines[^1].Length > WrapWidth - 1)
+        {
+            lines[^1] = string.Concat(lines[^1].AsSpan(0, WrapWidth - 1), "…");
+        }
+
+        return lines;
+    }
+
+    private static string Fmt(double value) =>
+        value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}

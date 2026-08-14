@@ -1,0 +1,30 @@
+@page "/konto/abmelden"
+@layout StartLayout
+@attribute [AllowAnonymous]
+@attribute [ExcludeFromInteractiveRouting]
+@inject NavigationManager Navigation
+@inject IStringLocalizer<Logout> L
+
+@*
+    Das Abmelden. Wie die Anmeldung statisch gerendert: Ein Cookie lässt sich nur während einer
+    echten HTTP-Antwort löschen. Die Seite selbst zeigt nichts — sie meldet ab und leitet weiter.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<div class="gdm-auth-screen">
+    <div class="gdm-auth-card">
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Working"]</MudText>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        Navigation.NavigateTo("/konto/anmelden?abgemeldet=true");
+    }
+}

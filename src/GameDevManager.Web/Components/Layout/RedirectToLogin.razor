@@ -1,0 +1,21 @@
+@inject NavigationManager Navigation
+
+@*
+    Schickt einen nicht angemeldeten Aufruf zur Anmeldeseite und merkt sich dabei, wo er
+    hinwollte. Eine eigene Komponente, weil ein NavigateTo im Markup von Routes.razor bei
+    jedem Rendern erneut liefe.
+*@
+
+@code {
+    protected override void OnInitialized()
+    {
+        var target = Navigation.ToBaseRelativePath(Navigation.Uri);
+
+        // forceLoad: Die Anmeldeseite wird statisch gerendert, weil nur eine echte
+        // HTTP-Antwort ein Cookie setzen kann. Aus dem laufenden Kreis heraus muss der
+        // Browser sie deshalb neu anfordern.
+        Navigation.NavigateTo(
+            $"/konto/anmelden?ziel={Uri.EscapeDataString("/" + target)}",
+            forceLoad: true);
+    }
+}

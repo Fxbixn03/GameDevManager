@@ -9,7 +9,7 @@ namespace GameDevManager.Domain.Entities;
 /// der Nutzer über <see cref="FieldDefinition"/> und <see cref="FieldValue"/>.
 /// </para>
 /// </summary>
-public abstract class ContentEntity
+public abstract class ContentEntity : IChangeLogged
 {
     /// <summary>Zugleich die Referenz-GUID, über die andere Module diese Entität ansprechen.</summary>
     public Guid Id { get; set; } = Guid.NewGuid();

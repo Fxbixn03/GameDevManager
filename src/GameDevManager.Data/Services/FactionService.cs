@@ -138,7 +138,7 @@ public class FactionService(
         // Falls an entfernten Mitgliedschaften etwas über deren GUID hängt, fällt es nicht von selbst mit.
         await EntityCleanup.DeleteForEntitiesAsync(db, removedMemberIds, ct);
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         faction.CreatedAtUtc = stored.CreatedAtUtc;
@@ -221,6 +221,7 @@ public class FactionService(
             .Select(member => member.Id)
             .ToListAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Factions, factionId, ct);
         await EntityCleanup.DeleteForEntitiesAsync(db, [factionId, .. memberIds], ct);
 
         // Die Mitgliedschaften fallen über den Fremdschlüssel mit.

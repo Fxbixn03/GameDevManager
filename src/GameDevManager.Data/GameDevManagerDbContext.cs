@@ -114,6 +114,23 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<AssetTagAssignment> AssetTagAssignments => Set<AssetTagAssignment>();
 
+    /// <summary>Tageszeiten, Wetterlagen und Biome — die benannten Zustände der Spielwelt.</summary>
+    public DbSet<WorldState> WorldStates => Set<WorldState>();
+
+    /// <summary>Die Benutzer der Installation. Hängen bewusst an keinem Projekt.</summary>
+    public DbSet<AppUser> AppUsers => Set<AppUser>();
+
+    /// <summary>Das Änderungsprotokoll: wer hat wann was getan.</summary>
+    public DbSet<ChangeLogEntry> ChangeLogEntries => Set<ChangeLogEntry>();
+
+    /// <summary>
+    /// Schaltet das Änderungsprotokoll für diesen Kontext ab. Gesetzt von Import und
+    /// Projekt-Duplizierung: Beide schreiben den gesamten Bestand eines Projekts auf einmal,
+    /// und eine Zeile je Entität machte das Protokoll danach unlesbar. Sie schreiben
+    /// stattdessen einen einzigen Eintrag über den Vorgang.
+    /// </summary>
+    public bool SuppressChangeLog { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -321,6 +338,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.Ignore(c => c.UsesBoolean);
             entity.Ignore(c => c.UsesTarget);
             entity.Ignore(c => c.ExpectedTargetModule);
+            entity.Ignore(c => c.ChoosesTargetModule);
+            entity.Ignore(c => c.TargetModule);
+            entity.Ignore(c => c.ExpectedWorldStateKind);
 
             entity.HasOne(c => c.ConditionSet)
                 .WithMany(s => s.Conditions)
@@ -453,6 +473,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.Property(p => p.Name).HasMaxLength(200).IsRequired();
             entity.Property(p => p.Description).HasMaxLength(4000);
 
+            // Nur eine Konstante für das Änderungsprotokoll, keine Spalte.
+            entity.Ignore(p => p.ModuleKey);
+
             entity.HasOne(p => p.GameProject)
                 .WithMany()
                 .HasForeignKey(p => p.GameProjectId)
@@ -468,6 +491,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         {
             entity.Property(t => t.Name).HasMaxLength(200).IsRequired();
             entity.Property(t => t.Description).HasMaxLength(4000);
+
+            // Nur eine Konstante für das Änderungsprotokoll, keine Spalte.
+            entity.Ignore(t => t.ModuleKey);
 
             entity.HasOne(t => t.GameProject)
                 .WithMany()
@@ -566,6 +592,51 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Frage „welche Tags hat diese Entität?“; je Entität und Tag höchstens einmal.
             entity.HasIndex(a => new { a.TargetEntityId, a.ContentTagId }).IsUnique();
+        });
+
+        ConfigureContentEntity<WorldState>(modelBuilder);
+
+        modelBuilder.Entity<WorldState>(entity =>
+        {
+            entity.Property(w => w.Color).HasMaxLength(9);
+
+            // Die Übersicht zeigt Tageszeiten, Wetter und Biome getrennt und in ihrer
+            // eigenen Reihenfolge — alphabetisch wäre eine Tageszeitliste keine.
+            entity.HasIndex(w => new { w.GameProjectId, w.Kind, w.SortOrder });
+        });
+
+        modelBuilder.Entity<AppUser>(entity =>
+        {
+            entity.Property(u => u.UserName).HasMaxLength(100).IsRequired();
+            entity.Property(u => u.DisplayName).HasMaxLength(200).IsRequired();
+            entity.Property(u => u.PasswordHash).HasMaxLength(400).IsRequired();
+
+            // Benutzer hängen an keinem Projekt — der Name ist installationsweit eindeutig.
+            // Der UserService prüft das vorher und meldet es verständlich; dieser Index ist
+            // die Absicherung dahinter.
+            entity.HasIndex(u => u.UserName).IsUnique();
+        });
+
+        modelBuilder.Entity<ChangeLogEntry>(entity =>
+        {
+            entity.Property(e => e.UserName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.ModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Property(e => e.EntityName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Details).HasMaxLength(2000);
+
+            entity.HasOne(e => e.GameProject)
+                .WithMany()
+                .HasForeignKey(e => e.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Bewusst kein Fremdschlüssel auf den Benutzer: Ein Eintrag überlebt das Konto,
+            // das ihn geschrieben hat — der Name steht als Momentaufnahme daneben.
+
+            // Die Ansicht blättert immer projektweise von hinten.
+            entity.HasIndex(e => new { e.GameProjectId, e.AtUtc });
+
+            // Trägt die Frage „was ist mit dieser Entität geschehen?“.
+            entity.HasIndex(e => e.EntityId);
         });
 
         ConfigureContentEntity<LootTable>(modelBuilder);

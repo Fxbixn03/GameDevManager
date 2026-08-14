@@ -68,6 +68,7 @@ public class PlayerService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.PlayerCharacters, characterId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, characterId, ct);
 
         await db.PlayerCharacters
@@ -129,6 +130,8 @@ public class PlayerService(
     {
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
+
+        await ChangeLog.RecordDeletionAsync(db, db.SkillTrees, treeId, ct);
 
         // Kein Fremdschlüssel über die GUID — die Verweise müssen von Hand gelöst werden,
         // sonst zeigten Skills auf einen Baum, den es nicht mehr gibt.
@@ -309,7 +312,7 @@ public class PlayerService(
         stored.CostItemAmount = skill.CostItemAmount;
         stored.UpdatedAtUtc = now;
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         skill.CreatedAtUtc = stored.CreatedAtUtc;
@@ -326,6 +329,7 @@ public class PlayerService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Skills, skillId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, skillId, ct);
 
         // Kinder verlieren ihre Voraussetzung, statt auf einen gelöschten Skill zu zeigen.

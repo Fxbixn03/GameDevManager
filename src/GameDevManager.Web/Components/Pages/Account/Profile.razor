@@ -1,0 +1,158 @@
+@page "/konto"
+@inject UserService Users
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider Authentication
+@inject IStringLocalizer<Profile> L
+
+@*
+    Das eigene Konto: Anzeigename und Passwort. Das Passwort ändert man nur gegen das alte —
+    auch der Verwalter, der es bei anderen ohne setzen darf.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<div class="gdm-panel-head mb-4">
+    <MudText Typo="Typo.h5">@L["Title"]</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary">@Subtitle</MudText>
+</div>
+
+@if (_user is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionProfile"]</MudText>
+
+                <MudStack Spacing="4">
+                    <MudTextField @bind-Value="_displayName"
+                                  T="string"
+                                  Label="@L["DisplayNameLabel"]"
+                                  HelperText="@L["DisplayNameHelper"]"
+                                  Variant="Variant.Outlined"
+                                  Immediate="true" />
+
+                    <MudTextField Value="@_user.UserName"
+                                  T="string"
+                                  Label="@L["UserNameLabel"]"
+                                  Variant="Variant.Outlined"
+                                  Disabled="true" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               OnClick="SaveProfileAsync">
+                        @L["SaveProfile"]
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionPassword"]</MudText>
+
+                <MudStack Spacing="4">
+                    <MudTextField @bind-Value="_currentPassword"
+                                  T="string"
+                                  Label="@L["CurrentPasswordLabel"]"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Password" />
+
+                    <MudTextField @bind-Value="_newPassword"
+                                  T="string"
+                                  Label="@L["NewPasswordLabel"]"
+                                  HelperText="@L["NewPasswordHelper", PasswordHasher.MinimumLength]"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Password" />
+
+                    <MudTextField @bind-Value="_confirmPassword"
+                                  T="string"
+                                  Label="@L["ConfirmPasswordLabel"]"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Password" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Key"
+                               OnClick="ChangePasswordAsync">
+                        @L["ChangePassword"]
+                    </MudButton>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["PasswordHint"]</MudText>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private UserRow? _user;
+    private string? _displayName;
+    private string? _currentPassword;
+    private string? _newPassword;
+    private string? _confirmPassword;
+
+    private string Subtitle => _user is null ? L["Loading"] : L["SubtitleName", _user.UserName];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await Authentication.GetAuthenticationStateAsync();
+
+        if (state.User.UserId() is { } id)
+        {
+            _user = await Users.GetUserAsync(id);
+            _displayName = _user?.DisplayName;
+        }
+    }
+
+    private async Task SaveProfileAsync()
+    {
+        if (_user is null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Verwalterrecht und Sperre bleiben, wie sie sind — sie gehören nicht ins eigene Profil.
+            await Users.UpdateUserAsync(_user.Id, _displayName ?? string.Empty, _user.IsAdministrator, _user.IsDisabled);
+            Snackbar.Add(L["ProfileSaved"], Severity.Success);
+            Snackbar.Add(L["ReloadHint"], Severity.Info);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        if (_user is null)
+        {
+            return;
+        }
+
+        if (_newPassword != _confirmPassword)
+        {
+            Snackbar.Add(L["PasswordMismatch"], Severity.Error);
+            return;
+        }
+
+        try
+        {
+            await Users.ChangeOwnPasswordAsync(
+                _user.Id, _currentPassword ?? string.Empty, _newPassword ?? string.Empty);
+
+            _currentPassword = _newPassword = _confirmPassword = null;
+            Snackbar.Add(L["PasswordChanged"], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Freischaltungen — GameDevManager</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>wird geladen …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Knoten, {1} Voraussetzungen</value>
+  </data>
+  <data name="ToStatistics" xml:space="preserve">
+    <value>Zur Statistik</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch keine Freischaltungen</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Der Baum entsteht von selbst aus dem Bedingungssystem: Sobald ein Eintrag eine Bedingung „Freigeschaltet“ oder eine Verfügbarkeit bekommt, die auf einen anderen Eintrag zeigt, steht er hier.</value>
+  </data>
+  <data name="LegendRoot" xml:space="preserve">
+    <value>ohne Voraussetzung</value>
+  </data>
+  <data name="LegendUnlocked" xml:space="preserve">
+    <value>wird freigeschaltet</value>
+  </data>
+  <data name="LegendCycle" xml:space="preserve">
+    <value>in einem Ring</value>
+  </data>
+  <data name="LegendOptional" xml:space="preserve">
+    <value>einer von mehreren Wegen</value>
+  </data>
+  <data name="LegendHint" xml:space="preserve">
+    <value>Klick auf einen Knoten öffnet den Eintrag.</value>
+  </data>
+  <data name="GraphAria" xml:space="preserve">
+    <value>Freischaltungs-Graph mit {0} Knoten und {1} Kanten</value>
+  </data>
+  <data name="EdgeTitle" xml:space="preserve">
+    <value>„{0}“ schaltet „{1}“ frei</value>
+  </data>
+  <data name="EdgeTitleOptional" xml:space="preserve">
+    <value>„{0}“ ist einer der Wege zu „{1}“</value>
+  </data>
+  <data name="CycleTitle" xml:space="preserve">
+    <value>{0} Ring(e) gefunden</value>
+  </data>
+  <data name="CycleHint" xml:space="preserve">
+    <value>Alles in einem Ring wartet auf sich selbst und ist im Spiel nie erreichbar — wie zyklische Rezepte.</value>
+  </data>
+</root>

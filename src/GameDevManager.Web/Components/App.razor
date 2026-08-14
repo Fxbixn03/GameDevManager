@@ -14,11 +14,11 @@
     <link rel="stylesheet" href="@Assets["GameDevManager.Web.styles.css"]" />
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet @rendermode="InteractiveServer" />
+    <HeadOutlet @rendermode="PageRenderMode" />
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="PageRenderMode" />
     <ReconnectModal />
     <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
     @* Rechnet Klicks auf das Kartenbild in relative Koordinaten um — die dargestellte
@@ -28,3 +28,17 @@
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    /// <summary>
+    /// Interaktiv ist alles — außer den Seiten rund um die Anmeldung. Die sind mit
+    /// <c>[ExcludeFromInteractiveRouting]</c> ausgezeichnet und werden statisch gerendert,
+    /// weil ein Anmelde-Cookie nur während einer echten HTTP-Antwort gesetzt werden kann;
+    /// über die SignalR-Verbindung von Blazor Server gibt es keine, in die es hineinpasste.
+    /// </summary>
+    private IComponentRenderMode? PageRenderMode =>
+        HttpContext.AcceptsInteractiveRouting() ? InteractiveServer : null;
+}

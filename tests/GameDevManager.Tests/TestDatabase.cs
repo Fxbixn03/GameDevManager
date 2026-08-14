@@ -18,6 +18,7 @@ public sealed class TestDatabase : IDisposable
 {
     private readonly SqliteConnection _connection;
     private readonly ServiceProvider _provider;
+    private readonly IServiceScope _scope;
     private readonly string _exportPath;
 
     public TestDatabase()
@@ -34,14 +35,26 @@ public sealed class TestDatabase : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddLocalization();
-        services.AddDbContextFactory<GameDevManagerDbContext>(builder => builder.UseSqlite(_connection));
+
+        // Wie in der Anwendung: scoped und mit dem ChangeLogInterceptor, damit das
+        // Änderungsprotokoll in den Tests genauso mitschreibt wie im Betrieb.
+        services.AddDbContextFactory<GameDevManagerDbContext>(
+            (provider, builder) => builder
+                .UseSqlite(_connection)
+                .AddInterceptors(provider.GetRequiredService<ChangeLogInterceptor>()),
+            ServiceLifetime.Scoped);
+
         services.AddSingleton<IAssetStorage, InMemoryAssetStorage>();
         services.AddSingleton(new AssetStorageOptions { RootPath = Path.GetTempPath() });
         services.AddSingleton(new ExportStorageOptions { RootPath = _exportPath });
         services.AddScoped<ExportSnapshotService>();
         services.AddGameDevManagerContentServices();
 
+        // Ersetzt die Vorgabe „System“ — so lässt sich prüfen, wer im Protokoll landet.
+        services.AddScoped<IChangeAuthorProvider>(_ => Author);
+
         _provider = services.BuildServiceProvider();
+        _scope = _provider.CreateScope();
 
         using var db = CreateContext();
         db.Database.EnsureCreated();
@@ -55,16 +68,27 @@ public sealed class TestDatabase : IDisposable
 
     public Guid ProjectId { get; }
 
-    public GameDevManagerDbContext CreateContext() =>
-        _provider.GetRequiredService<IDbContextFactory<GameDevManagerDbContext>>().CreateDbContext();
+    /// <summary>
+    /// Wer im Änderungsprotokoll als Urheber steht. Veränderbar, damit ein Test zwei Benutzer
+    /// nacheinander arbeiten lassen kann.
+    /// </summary>
+    public MutableChangeAuthorProvider Author { get; } = new();
 
-    public T GetService<T>() where T : notnull => _provider.GetRequiredService<T>();
+    /// <summary>
+    /// Aus dem Scope und nicht aus dem Wurzel-Container: Die Context-Factory ist scoped
+    /// registriert, weil der Interceptor den handelnden Benutzer braucht.
+    /// </summary>
+    public GameDevManagerDbContext CreateContext() =>
+        _scope.ServiceProvider.GetRequiredService<IDbContextFactory<GameDevManagerDbContext>>().CreateDbContext();
+
+    public T GetService<T>() where T : notnull => _scope.ServiceProvider.GetRequiredService<T>();
 
     /// <summary>Wo die Exportstände dieses Tests liegen — der Ordner vergeht mit ihm.</summary>
     public string ExportPath => _exportPath;
 
     public void Dispose()
     {
+        _scope.Dispose();
         _provider.Dispose();
         _connection.Dispose();
 
@@ -72,6 +96,15 @@ public sealed class TestDatabase : IDisposable
         {
             Directory.Delete(_exportPath, recursive: true);
         }
+    }
+
+    /// <summary>Ein Urheber, den der Test umstellen kann — im Betrieb kommt er aus der Anmeldung.</summary>
+    public sealed class MutableChangeAuthorProvider : IChangeAuthorProvider
+    {
+        public ChangeAuthor Current { get; set; } = new(Guid.NewGuid(), "Testbenutzer");
+
+        public ValueTask<ChangeAuthor> GetCurrentAsync(CancellationToken ct = default) =>
+            ValueTask.FromResult(Current);
     }
 
     /// <summary>Dateispeicher-Attrappe: es geht in den Tests nie um echte Dateien.</summary>

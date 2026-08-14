@@ -133,6 +133,7 @@ public class ImportService(
         var player = await ReadAsync<PlayerFile>("player.json");
         var classes = await ReadAsync<ClassesFile>("classes.json");
         var loot = await ReadAsync<LootFile>("loot.json");
+        var world = await ReadAsync<WorldFile>("world.json");
         var effects = await ReadAsync<EffectsFile>("effects.json");
         var achievements = await ReadAsync<AchievementsFile>("achievements.json");
         var collectibles = await ReadAsync<CollectiblesFile>("collectibles.json");
@@ -147,6 +148,11 @@ public class ImportService(
         var warnings = new List<string>();
 
         await using var db = await factory.CreateDbContextAsync(ct);
+
+        // Ein Import schreibt den gesamten Bestand auf einmal. Eine Protokollzeile je Entität
+        // machte das Änderungsprotokoll danach unlesbar — es bekommt weiter unten stattdessen
+        // einen einzigen Eintrag über den Vorgang.
+        db.SuppressChangeLog = true;
 
         var missingProject = messages["Export_ProjectMissing"].Value;
         var project = await db.GameProjects.FirstOrDefaultAsync(p => p.Id == projectId, ct)
@@ -226,7 +232,7 @@ public class ImportService(
             [.. dialogs.Dialogues], [.. story.Entries], [.. quests.Quests], [.. events.Events],
             [.. player.Skills], [.. classes.Classes], [.. effects.Effects], [.. achievements.Achievements],
             [.. collectibles.Collectibles], [.. audio.SoundEffects], [.. cutscenes.Cutscenes],
-            [.. loot.LootTables]
+            [.. loot.LootTables], [.. world.WorldStates]
         ];
 
         foreach (var entity in contentLists.SelectMany(list => list))
@@ -264,6 +270,7 @@ public class ImportService(
         db.SoundEffects.AddRange(audio.SoundEffects);
         db.Cutscenes.AddRange(cutscenes.Cutscenes);
         db.LootTables.AddRange(loot.LootTables);
+        db.WorldStates.AddRange(world.WorldStates);
         db.ContentTags.AddRange(tags.Tags);
         db.ContentTypes.AddRange(typesAndFields.ContentTypes);
         db.FieldDefinitions.AddRange(typesAndFields.IndividualFields);
@@ -281,6 +288,13 @@ public class ImportService(
         }
 
         await db.SaveChangesAsync(ct);
+
+        // Der eine Eintrag über den Vorgang, noch innerhalb der Transaktion: Wird der Import
+        // zurückgerollt, verschwindet auch die Meldung darüber.
+        await ChangeLog.RecordProjectActionAsync(
+            db, projectId, project.Name, ChangeAction.Imported,
+            messages["ChangeLog_ProjectImported", project.Name].Value, ct);
+
         await transaction.CommitAsync(ct);
 
         // Erst nach dem Commit: Dateien des ersetzten Bestands entfernen, die der neue Stand
@@ -307,6 +321,7 @@ public class ImportService(
             [ModuleKeys.Player] = player.PlayerCharacters.Count + player.SkillTrees.Count + player.Skills.Count,
             [ModuleKeys.Classes] = classes.Classes.Count,
             [ModuleKeys.Loot] = loot.LootTables.Count,
+            [ModuleKeys.World] = world.WorldStates.Count,
             [ModuleKeys.Effects] = effects.Effects.Count,
             [ModuleKeys.Achievements] = achievements.Achievements.Count,
             [ModuleKeys.Collectibles] = collectibles.Collectibles.Count,
@@ -395,6 +410,7 @@ public class ImportService(
         await CollectAsync(db.SoundEffects);
         await CollectAsync(db.Cutscenes);
         await CollectAsync(db.LootTables);
+        await CollectAsync(db.WorldStates);
 
         entityIds.AddRange(await db.PlayerCharacters
             .Where(p => p.GameProjectId == projectId).Select(p => p.Id).ToListAsync(ct));
@@ -445,6 +461,7 @@ public class ImportService(
         await db.SoundEffects.Where(e => e.GameProjectId == projectId).ExecuteDeleteAsync(ct);
         await db.Cutscenes.Where(e => e.GameProjectId == projectId).ExecuteDeleteAsync(ct);
         await db.LootTables.Where(e => e.GameProjectId == projectId).ExecuteDeleteAsync(ct);
+        await db.WorldStates.Where(e => e.GameProjectId == projectId).ExecuteDeleteAsync(ct);
         await db.PlayerCharacters.Where(p => p.GameProjectId == projectId).ExecuteDeleteAsync(ct);
         await db.SkillTrees.Where(t => t.GameProjectId == projectId).ExecuteDeleteAsync(ct);
 
@@ -495,6 +512,8 @@ public class ImportService(
     private sealed class ClassesFile { public List<CharacterClass> Classes { get; set; } = []; }
 
     private sealed class LootFile { public List<LootTable> LootTables { get; set; } = []; }
+
+    private sealed class WorldFile { public List<WorldState> WorldStates { get; set; } = []; }
 
     private sealed class EffectsFile { public List<GameEffect> Effects { get; set; } = []; }
 

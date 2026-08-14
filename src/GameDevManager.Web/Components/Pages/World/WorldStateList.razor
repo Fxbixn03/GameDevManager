@@ -1,0 +1,210 @@
+@page "/modules/world"
+@inject WorldService World
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<WorldStateList> L
+
+@*
+    Tageszeiten, Wetterlagen und Biome. Drei Abschnitte statt drei Module: Sie sind strukturell
+    dasselbe — ein benannter Zustand, an dem Bedingungen hängen —, und man pflegt sie zusammen.
+
+    Innerhalb eines Abschnitts zählt die Reihenfolge und nicht das Alphabet: „Abend, Mittag,
+    Morgen, Nacht“ wäre keine Tageszeitliste.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Style"
+                   Href="/modules/world/arten">
+            @L["TypesButton"]
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="@($"/modules/world/neu?art={_newKind}")">
+            @L["NewState"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_states is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_states.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.WbTwilight" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["EmptyHint"]</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/world/neu?art=TimeOfDay">
+            @L["FirstState"]
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudStack Spacing="4">
+        @foreach (var kind in Enum.GetValues<WorldStateKind>())
+        {
+            var rows = _states.Where(state => state.Kind == kind).ToList();
+
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+                    <MudIcon Icon="@KindIcon(kind)" Color="Color.Primary" Size="Size.Small" />
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">@KindName(kind)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["KindCount", rows.Count]</MudText>
+                    <MudSpacer />
+                    <MudButton Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               Href="@($"/modules/world/neu?art={kind}")">
+                        @L["AddToKind"]
+                    </MudButton>
+                </MudStack>
+
+                @if (rows.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@KindEmptyHint(kind)</MudText>
+                }
+                else
+                {
+                    <MudStack Spacing="1">
+                        @foreach (var (state, index) in rows.Select((state, index) => (state, index)))
+                        {
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="pa-2 gdm-field-row">
+                                @* Der Farbpunkt ist die schnellste Auskunft in einer Liste
+                                   gleichartiger Namen — dasselbe Muster wie bei den Seltenheiten. *@
+                                <span style="display:inline-block;width:14px;height:14px;flex:0 0 auto;background:@(state.Color ?? "var(--mud-palette-lines-default)");"></span>
+
+                                <MudLink Href="@($"/modules/world/{state.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
+                                    <b>@state.Name</b>
+                                </MudLink>
+
+                                @if (!string.IsNullOrWhiteSpace(state.Description))
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gdm-ellipsis">
+                                        @state.Description
+                                    </MudText>
+                                }
+
+                                <MudSpacer />
+
+                                @if (state.ConditionUsageCount > 0)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                        @L["UsedInConditions", state.ConditionUsageCount]
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudTooltip Text="@L["UnusedTooltip"]">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Unused"]</MudText>
+                                    </MudTooltip>
+                                }
+
+                                @if (state.TypeName is not null)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@state.TypeName</MudChip>
+                                }
+
+                                <MudTooltip Text="@L["MoveUp"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
+                                                   Size="Size.Small"
+                                                   Disabled="index == 0"
+                                                   OnClick="@(() => MoveAsync(state, -1))"
+                                                   aria-label="@L["MoveUp"]" />
+                                </MudTooltip>
+                                <MudTooltip Text="@L["MoveDown"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward"
+                                                   Size="Size.Small"
+                                                   Disabled="index == rows.Count - 1"
+                                                   OnClick="@(() => MoveAsync(state, 1))"
+                                                   aria-label="@L["MoveDown"]" />
+                                </MudTooltip>
+
+                                <EntityDuplicateButton ModuleKey="@Module.Id"
+                                                       EntityId="state.Id"
+                                                       Name="@state.Name"
+                                                       EditRoute="/modules/world" />
+
+                                <MudTooltip Text="@L["DeleteTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteAsync(state))"
+                                                   aria-label="@L["DeleteAria", state.Name]" />
+                                </MudTooltip>
+                            </MudStack>
+                        }
+                    </MudStack>
+                }
+            </MudPaper>
+        }
+    </MudStack>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.World);
+
+    private List<WorldStateListRow>? _states;
+    private List<ContentType> _types = [];
+
+    /// <summary>Der Knopf oben legt in der Ausprägung an, die noch am dünnsten besetzt ist.</summary>
+    private WorldStateKind _newKind = WorldStateKind.TimeOfDay;
+
+    private string Subtitle => _states is null ? L["Loading"] : L["SubtitleCount", _states.Count];
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _types = await ContentTypes.GetTypesAsync(projectId, ModuleKeys.World);
+        _states = await World.GetStatesAsync(projectId);
+
+        _newKind = Enum.GetValues<WorldStateKind>()
+            .OrderBy(kind => _states.Count(state => state.Kind == kind))
+            .First();
+    }
+
+    private string KindName(WorldStateKind kind) => L[$"Kind_{kind}"];
+
+    private string KindEmptyHint(WorldStateKind kind) => L[$"KindEmpty_{kind}"];
+
+    private static string KindIcon(WorldStateKind kind) => kind switch
+    {
+        WorldStateKind.TimeOfDay => Icons.Material.Filled.WbTwilight,
+        WorldStateKind.Weather => Icons.Material.Filled.Cloud,
+        _ => Icons.Material.Filled.Terrain
+    };
+
+    private async Task MoveAsync(WorldStateListRow state, int direction)
+    {
+        await World.MoveAsync(state.Id, direction);
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(WorldStateListRow state)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteConfirmTitle"],
+            state.ConditionUsageCount > 0
+                ? L["DeleteConfirmInUse", state.Name, state.ConditionUsageCount].Value
+                : L["DeleteConfirmMessage", state.Name].Value,
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await World.DeleteStateAsync(state.Id);
+        Snackbar.Add(L["DeletedMessage", state.Name], Severity.Success);
+        await LoadAsync();
+    }
+}

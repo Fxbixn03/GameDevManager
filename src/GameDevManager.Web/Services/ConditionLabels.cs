@@ -18,6 +18,10 @@ public sealed class ConditionLabels(IStringLocalizer<ConditionLabels> localizer)
         ConditionKind.NpcDefeated => localizer["Kind_NpcDefeated"],
         ConditionKind.Flag => localizer["Kind_Flag"],
         ConditionKind.PlayerLevel => localizer["Kind_PlayerLevel"],
+        ConditionKind.TimeOfDay => localizer["Kind_TimeOfDay"],
+        ConditionKind.Weather => localizer["Kind_Weather"],
+        ConditionKind.Biome => localizer["Kind_Biome"],
+        ConditionKind.Unlocked => localizer["Kind_Unlocked"],
         ConditionKind.Custom => localizer["Kind_Custom"],
         _ => kind.ToString()
     };
@@ -31,6 +35,10 @@ public sealed class ConditionLabels(IStringLocalizer<ConditionLabels> localizer)
         ConditionKind.NpcDefeated => Icons.Material.Filled.People,
         ConditionKind.Flag => Icons.Material.Filled.Flag,
         ConditionKind.PlayerLevel => Icons.Material.Filled.TrendingUp,
+        ConditionKind.TimeOfDay => Icons.Material.Filled.WbTwilight,
+        ConditionKind.Weather => Icons.Material.Filled.Cloud,
+        ConditionKind.Biome => Icons.Material.Filled.Terrain,
+        ConditionKind.Unlocked => Icons.Material.Filled.LockOpen,
         _ => Icons.Material.Filled.HelpOutline
     };
 
@@ -72,6 +80,14 @@ public sealed class ConditionLabels(IStringLocalizer<ConditionLabels> localizer)
                     : localizer["Sentence_FlagSet", condition.TextValue ?? string.Empty],
             ConditionKind.QuestState =>
                 localizer["Sentence_QuestState", target, condition.TextValue ?? string.Empty],
+            ConditionKind.TimeOfDay or ConditionKind.Weather or ConditionKind.Biome =>
+                condition.BooleanValue == false
+                    ? localizer["Sentence_WorldStateNot", Describe(condition.Kind), target]
+                    : localizer["Sentence_WorldState", Describe(condition.Kind), target],
+            ConditionKind.Unlocked =>
+                condition.BooleanValue == false
+                    ? localizer["Sentence_NotUnlocked", target]
+                    : localizer["Sentence_Unlocked", target],
             _ => condition.TextValue ?? localizer["Sentence_Custom"].Value
         };
     }

@@ -152,7 +152,7 @@ public class NpcService(
         // Bedingungen entfernter Posten hängen an deren GUID und fallen nicht von selbst mit.
         await EntityCleanup.DeleteForEntitiesAsync(db, removedOfferIds, ct);
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         npc.CreatedAtUtc = stored.CreatedAtUtc;
@@ -267,6 +267,7 @@ public class NpcService(
             .Select(offer => offer.Id)
             .ToListAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Npcs, npcId, ct);
         await EntityCleanup.DeleteForEntitiesAsync(db, [npcId, .. offerIds], ct);
 
         // Die Angebote fallen über den Fremdschlüssel mit.

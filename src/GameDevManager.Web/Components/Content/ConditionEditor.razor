@@ -1,4 +1,5 @@
 @inject ConditionService Conditions
+@inject WorldService World
 @inject ReferenceService References
 @inject ProjectContext Project
 @inject ISnackbar Snackbar
@@ -58,18 +59,39 @@ else
                             </MudSelect>
                         </MudItem>
 
+                        @* Frei wählbares Zielmodul — bisher nur bei „Freigeschaltet“:
+                           freischalten lässt sich alles, und ein fest verdrahtetes Modul
+                           verengte den Freischaltungs-Graphen auf eine Sorte Inhalt. *@
+                        @if (condition.ChoosesTargetModule)
+                        {
+                            <MudItem xs="12" sm="6">
+                                <MudSelect T="string"
+                                           Value="@(condition.TargetModuleKey ?? string.Empty)"
+                                           ValueChanged="@((string key) => ChangeTargetModuleAsync(condition, key))"
+                                           Label="@L["TargetModuleLabel"]"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense">
+                                    @foreach (var module in TargetModules)
+                                    {
+                                        <MudSelectItem T="string" Value="@module.Id">@ModuleName(module.Id)</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        }
+
                         @if (condition.UsesTarget)
                         {
                             <MudItem xs="12" sm="6">
                                 @{
-                                    var module = condition.ExpectedTargetModule ?? string.Empty;
+                                    var key = OptionsKey(condition);
+                                    var module = condition.TargetModule ?? string.Empty;
                                 }
-                                @if (Options(module).Count == 0)
+                                @if (Options(key).Count == 0)
                                 {
                                     <MudTextField T="string"
-                                                  Value="@ModuleName(module)"
+                                                  Value="@TargetCaption(condition)"
                                                   Label="@L["TargetLabel"]"
-                                                  HelperText="@L["TargetHelperEmpty", ModuleName(module)]"
+                                                  HelperText="@L["TargetHelperEmpty", TargetCaption(condition)]"
                                                   Variant="Variant.Outlined"
                                                   Margin="Margin.Dense"
                                                   Disabled="true" />
@@ -78,10 +100,10 @@ else
                                 {
                                     <MudAutocomplete T="EntitySummary"
                                                      Value="@TargetFor(condition)"
-                                                     ValueChanged="@((EntitySummary? e) => SetTarget(condition, e))"
-                                                     SearchFunc="@((string? s, CancellationToken ct) => SearchAsync(module, s))"
+                                                     ValueChanged="@((EntitySummary? e) => SetTarget(condition, e, module))"
+                                                     SearchFunc="@((string? s, CancellationToken ct) => SearchAsync(key, s))"
                                                      ToStringFunc="@(e => e?.Name ?? string.Empty)"
-                                                     Label="@ModuleName(module)"
+                                                     Label="@TargetCaption(condition)"
                                                      Variant="Variant.Outlined"
                                                      Margin="Margin.Dense"
                                                      Clearable="true"
@@ -224,46 +246,82 @@ else
         _set = await Conditions.LoadAsync(projectId, OwnerId, OwnerModuleKey, Slot);
         _dirty = false;
 
-        foreach (var moduleKey in _set.Conditions
-            .Select(condition => condition.ExpectedTargetModule)
-            .OfType<string>()
-            .Distinct())
+        foreach (var condition in _set.Conditions)
         {
-            await EnsureOptionsAsync(projectId, moduleKey);
+            await EnsureOptionsAsync(projectId, condition);
         }
     }
 
-    private async Task EnsureOptionsAsync(Guid projectId, string moduleKey)
+    /// <summary>
+    /// Unter welchem Schlüssel die Auswahl einer Bedingung liegt. Weltzustände werden nach
+    /// ihrer Ausprägung getrennt gehalten — unter „Wetter“ sollen keine Biome stehen.
+    /// </summary>
+    private static string OptionsKey(Condition condition) =>
+        condition.ExpectedWorldStateKind is { } kind
+            ? $"{ModuleKeys.World}:{kind}"
+            : condition.TargetModule ?? string.Empty;
+
+    private async Task EnsureOptionsAsync(Guid projectId, Condition condition)
     {
-        if (!_options.ContainsKey(moduleKey))
+        var key = OptionsKey(condition);
+
+        if (string.IsNullOrEmpty(key) || _options.ContainsKey(key))
         {
-            _options[moduleKey] = await References.GetEntitiesAsync(projectId, moduleKey);
+            return;
         }
+
+        _options[key] = condition.ExpectedWorldStateKind is { } kind
+            ? [.. (await World.GetStatesAsync(projectId, kind))
+                .Select(state => new EntitySummary(state.Id, ModuleKeys.World, state.Name, state.TypeName))]
+            : await References.GetEntitiesAsync(projectId, key);
     }
 
-    private List<EntitySummary> Options(string moduleKey) => _options.GetValueOrDefault(moduleKey, []);
+    private List<EntitySummary> Options(string key) => _options.GetValueOrDefault(key, []);
 
     private string ModuleName(string moduleKey) => Modules.Name(moduleKey);
 
+    /// <summary>Beschriftung des Auswahlfelds: die Ausprägung, sonst der Modulname.</summary>
+    private string TargetCaption(Condition condition) =>
+        condition.ExpectedWorldStateKind is not null
+            ? Labels.Describe(condition.Kind)
+            : ModuleName(condition.TargetModule ?? string.Empty);
+
+    /// <summary>
+    /// Die Module, auf die eine Freischaltung zeigen darf: alle umgesetzten mit eigenem
+    /// Inhalt. Auswertende Module (Statistik, Freischaltungen, Änderungen) tragen keine
+    /// Entitäten und stünden im Auswahlfeld als leere Einträge.
+    /// </summary>
+    private static IEnumerable<ModuleDefinition> TargetModules =>
+        ModuleRegistry.All.Where(module => module.Implemented && module.Group != ModuleGroup.Tools);
+
     private EntitySummary? TargetFor(Condition condition) =>
-        condition.ExpectedTargetModule is { } moduleKey && condition.TargetEntityId is { } id
-            ? Options(moduleKey).FirstOrDefault(entity => entity.Id == id)
+        condition.TargetEntityId is { } id
+            ? Options(OptionsKey(condition)).FirstOrDefault(entity => entity.Id == id)
             : null;
 
     private string? TargetName(Condition condition) => TargetFor(condition)?.Name;
 
-    private void SetTarget(Condition condition, EntitySummary? entity) =>
+    private void SetTarget(Condition condition, EntitySummary? entity, string moduleKey) =>
         Touch(() =>
         {
             condition.TargetEntityId = entity?.Id;
-            condition.TargetModuleKey = entity?.ModuleKey ?? condition.ExpectedTargetModule;
+            condition.TargetModuleKey = entity?.ModuleKey ?? (string.IsNullOrEmpty(moduleKey) ? null : moduleKey);
         });
 
-    private Task<IEnumerable<EntitySummary>> SearchAsync(string moduleKey, string? search)
+    private async Task ChangeTargetModuleAsync(Condition condition, string moduleKey)
+    {
+        condition.TargetModuleKey = moduleKey;
+        condition.TargetEntityId = null;
+        _dirty = true;
+
+        await EnsureOptionsAsync(await Project.GetCurrentIdAsync(), condition);
+    }
+
+    private Task<IEnumerable<EntitySummary>> SearchAsync(string key, string? search)
     {
         IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
-            ? Options(moduleKey)
-            : Options(moduleKey).Where(entity =>
+            ? Options(key)
+            : Options(key).Where(entity =>
                 entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
 
         return Task.FromResult(matches);
@@ -295,13 +353,17 @@ else
         _set.Conditions.Add(condition);
         _dirty = true;
 
-        await EnsureOptionsAsync(await Project.GetCurrentIdAsync(), ModuleKeys.Items);
+        await EnsureOptionsAsync(await Project.GetCurrentIdAsync(), condition);
     }
 
     private async Task ChangeKindAsync(Condition condition, ConditionKind kind)
     {
         condition.Kind = kind;
-        condition.TargetModuleKey = condition.ExpectedTargetModule;
+
+        // Bei frei wählbarem Zielmodul steht die erste Wahl schon da, sonst gäbe das
+        // Auswahlfeld nichts her, bis der Nutzer es anfasst.
+        condition.TargetModuleKey = condition.ExpectedTargetModule
+            ?? (condition.ChoosesTargetModule ? ModuleKeys.Items : null);
 
         // Beim Wechsel passen die alten Angaben nicht mehr — sie werden zurückgesetzt statt
         // stehen zu bleiben und unbemerkt mitgespeichert zu werden.
@@ -311,10 +373,7 @@ else
 
         _dirty = true;
 
-        if (condition.ExpectedTargetModule is { } moduleKey)
-        {
-            await EnsureOptionsAsync(await Project.GetCurrentIdAsync(), moduleKey);
-        }
+        await EnsureOptionsAsync(await Project.GetCurrentIdAsync(), condition);
     }
 
     private void Remove(Condition condition)

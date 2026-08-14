@@ -218,7 +218,7 @@ public class CraftingService(
         SyncLines(db, stored.Outputs, recipe.Outputs, stored.Id);
         SyncLines(db, stored.Ingredients, recipe.Ingredients, stored.Id);
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         recipe.CreatedAtUtc = stored.CreatedAtUtc;
@@ -323,6 +323,7 @@ public class CraftingService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Recipes, recipeId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, recipeId, ct);
 
         // Ziel-Items und Zutaten fallen über den Fremdschlüssel mit.

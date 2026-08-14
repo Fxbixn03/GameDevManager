@@ -84,4 +84,10 @@
   <data name="FindingsCount" xml:space="preserve">
     <value>{0} Fund(e)</value>
   </data>
+  <data name="UnlockCyclesTitle" xml:space="preserve">
+    <value>Ringe im Freischaltungs-Baum</value>
+  </data>
+  <data name="ToTechTree" xml:space="preserve">
+    <value>Zum Baum</value>
+  </data>
 </root>

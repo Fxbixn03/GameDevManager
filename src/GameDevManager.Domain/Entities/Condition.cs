@@ -25,7 +25,23 @@ public enum ConditionKind
     PlayerLevel = 5,
 
     /// <summary>Frei beschrieben — für alles, was das Tool noch nicht kennt.</summary>
-    Custom = 6
+    Custom = 6,
+
+    /// <summary>Es ist eine bestimmte Tageszeit — siehe <see cref="WorldStateKind.TimeOfDay"/>.</summary>
+    TimeOfDay = 7,
+
+    /// <summary>Es herrscht ein bestimmtes Wetter — siehe <see cref="WorldStateKind.Weather"/>.</summary>
+    Weather = 8,
+
+    /// <summary>Der Spieler ist in einem bestimmten Biom — siehe <see cref="WorldStateKind.Biome"/>.</summary>
+    Biome = 9,
+
+    /// <summary>
+    /// Eine andere Entität ist bereits freigeschaltet. Die Art, die den Freischaltungs-Graphen
+    /// trägt: Sie verweist auf beliebige Module, deshalb steht das Zielmodul an der Bedingung
+    /// statt an der Art.
+    /// </summary>
+    Unlocked = 10
 }
 
 /// <summary>Wie ein Zahlenwert verglichen wird.</summary>
@@ -83,20 +99,52 @@ public class Condition
 
     /// <summary>Diese Art ist eine Ja/Nein-Frage.</summary>
     public bool UsesBoolean =>
-        Kind is ConditionKind.NpcDefeated or ConditionKind.Flag;
+        Kind is ConditionKind.NpcDefeated or ConditionKind.Flag or ConditionKind.Unlocked
+            or ConditionKind.TimeOfDay or ConditionKind.Weather or ConditionKind.Biome;
 
     /// <summary>Diese Art bezieht sich auf eine andere Entität.</summary>
     public bool UsesTarget =>
         Kind is ConditionKind.HasItem or ConditionKind.HasCurrency
-            or ConditionKind.QuestState or ConditionKind.NpcDefeated;
+            or ConditionKind.QuestState or ConditionKind.NpcDefeated or ConditionKind.Unlocked
+            or ConditionKind.TimeOfDay or ConditionKind.Weather or ConditionKind.Biome;
 
-    /// <summary>Auf welches Modul sich diese Art bezieht — steuert das Auswahlfeld in der Maske.</summary>
+    /// <summary>
+    /// Auf welches Modul sich diese Art bezieht — steuert das Auswahlfeld in der Maske.
+    /// <c>null</c> heißt „die Art legt es nicht fest“; dann wählt der Nutzer das Modul selbst,
+    /// siehe <see cref="ChoosesTargetModule"/>.
+    /// </summary>
     public string? ExpectedTargetModule => Kind switch
     {
         ConditionKind.HasItem => ModuleKeys.Items,
         ConditionKind.HasCurrency => ModuleKeys.Currencies,
         ConditionKind.QuestState => ModuleKeys.Quests,
         ConditionKind.NpcDefeated => ModuleKeys.Npcs,
+        ConditionKind.TimeOfDay or ConditionKind.Weather or ConditionKind.Biome => ModuleKeys.World,
+        _ => null
+    };
+
+    /// <summary>
+    /// Das Zielmodul wählt der Nutzer. Bisher nur bei <see cref="ConditionKind.Unlocked"/>:
+    /// Freigeschaltet werden kann alles — ein Skill, ein Rezept, ein Gebiet —, und ein fest
+    /// verdrahtetes Modul hieße, den Freischaltungs-Graphen auf eine Sorte Inhalt zu verengen.
+    /// </summary>
+    public bool ChoosesTargetModule => Kind == ConditionKind.Unlocked;
+
+    /// <summary>
+    /// Das Modul, aus dem die Zielentität stammt: bei fest zugeordneten Arten das erwartete,
+    /// bei frei wählbaren das gespeicherte. Die Maske füllt ihr Auswahlfeld hieraus.
+    /// </summary>
+    public string? TargetModule => ExpectedTargetModule ?? TargetModuleKey;
+
+    /// <summary>
+    /// Diese Ausprägung passt zu einem Weltzustand dieser Art — die Maske filtert die
+    /// Auswahl danach, damit unter „Wetter“ keine Biome stehen.
+    /// </summary>
+    public WorldStateKind? ExpectedWorldStateKind => Kind switch
+    {
+        ConditionKind.TimeOfDay => WorldStateKind.TimeOfDay,
+        ConditionKind.Weather => WorldStateKind.Weather,
+        ConditionKind.Biome => WorldStateKind.Biome,
         _ => null
     };
 }

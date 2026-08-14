@@ -156,7 +156,7 @@ public class LootService(
 
         SyncEntries(db, stored, table);
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         table.CreatedAtUtc = stored.CreatedAtUtc;
@@ -252,6 +252,7 @@ public class LootService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.LootTables, tableId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, tableId, ct);
 
         // Ohne das zeigten die NPCs auf eine Tabelle, die es nicht mehr gibt.

@@ -1,0 +1,120 @@
+@page "/konto/anmelden"
+@layout StartLayout
+@attribute [AllowAnonymous]
+@attribute [ExcludeFromInteractiveRouting]
+@inject UserService Users
+@inject NavigationManager Navigation
+@inject IStringLocalizer<Login> L
+
+@*
+    Die Anmeldung. Bewusst statisch gerendert (ExcludeFromInteractiveRouting): Ein Cookie lässt
+    sich nur während einer echten HTTP-Antwort setzen — über die SignalR-Verbindung von Blazor
+    Server gibt es keine Antwort, in die es hineinpasste. Deshalb ein gewöhnliches Formular mit
+    Postback statt einer interaktiven Maske.
+
+    Aus demselben Grund einfache InputText-Felder statt MudBlazor-Eingaben: Nur echte
+    <input name="…">-Elemente kommen beim Postback wieder an.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<div class="gdm-auth-screen">
+    <div class="gdm-auth-card">
+        <div class="gdm-auth-brand">
+            <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Color="Color.Primary" Size="Size.Large" />
+            <MudText Typo="Typo.h5">@L["AppName"]</MudText>
+        </div>
+
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["Intro"]</MudText>
+
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4">@_error</MudAlert>
+        }
+
+        @if (LoggedOut)
+        {
+            <MudAlert Severity="Severity.Success" Dense="true" Class="mb-4">@L["LoggedOut"]</MudAlert>
+        }
+
+        <EditForm Model="Input" FormName="login" OnValidSubmit="SignInAsync">
+            <DataAnnotationsValidator />
+
+            <label class="gdm-auth-label" for="userName">@L["UserNameLabel"]</label>
+            <InputText id="userName" @bind-Value="Input.UserName" class="gdm-auth-input" autocomplete="username" />
+
+            <label class="gdm-auth-label" for="password">@L["PasswordLabel"]</label>
+            <InputText id="password" type="password" @bind-Value="Input.Password"
+                       class="gdm-auth-input" autocomplete="current-password" />
+
+            <button type="submit" class="gdm-auth-submit">@L["SignIn"]</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private LoginInput Input { get; set; } = new();
+
+    /// <summary>Wohin es nach der Anmeldung weitergeht — gesetzt von der Umleitung.</summary>
+    [SupplyParameterFromQuery(Name = "ziel")]
+    public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery(Name = "abgemeldet")]
+    public bool LoggedOut { get; set; }
+
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Vor dem ersten Konto führt kein Weg an der Ersteinrichtung vorbei — ein
+        // ausgeliefertes Standardpasswort gibt es bewusst nicht.
+        if (!await Users.HasAnyUserAsync())
+        {
+            Navigation.NavigateTo("/konto/einrichten");
+        }
+    }
+
+    private async Task SignInAsync()
+    {
+        var user = await Users.AuthenticateAsync(Input.UserName ?? string.Empty, Input.Password ?? string.Empty);
+
+        if (user is null)
+        {
+            // Bewusst eine Meldung für beide Fälle: Ein „diesen Benutzer gibt es nicht“ wäre
+            // eine Auskunft darüber, welche Konten bestehen.
+            _error = L["Failed"];
+            return;
+        }
+
+        await HttpContext.SignInWithUserAsync(user, Input.RememberMe);
+
+        // forceLoad wäre hier falsch: Wir sind mitten in der Antwort, die das Cookie setzt.
+        Navigation.NavigateTo(SafeReturnUrl(), forceLoad: false);
+    }
+
+    /// <summary>
+    /// Nur Pfade innerhalb der Anwendung. Ein „ziel“ aus der Adresszeile darf nicht auf eine
+    /// fremde Seite führen — das wäre eine offene Weiterleitung.
+    /// </summary>
+    private string SafeReturnUrl() =>
+        !string.IsNullOrWhiteSpace(ReturnUrl)
+            && ReturnUrl.StartsWith('/')
+            && !ReturnUrl.StartsWith("//", StringComparison.Ordinal)
+            ? ReturnUrl
+            : "/dashboard";
+
+    private sealed class LoginInput
+    {
+        [Required]
+        public string? UserName { get; set; }
+
+        [Required]
+        public string? Password { get; set; }
+
+        public bool RememberMe { get; set; } = true;
+    }
+}

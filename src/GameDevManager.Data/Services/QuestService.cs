@@ -138,7 +138,7 @@ public class QuestService(
         stored.DialogueId = quest.DialogueId;
         stored.UpdatedAtUtc = now;
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         quest.CreatedAtUtc = stored.CreatedAtUtc;
@@ -155,6 +155,7 @@ public class QuestService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Quests, questId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, questId, ct);
 
         await db.Quests

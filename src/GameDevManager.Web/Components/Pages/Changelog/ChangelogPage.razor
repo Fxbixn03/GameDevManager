@@ -1,0 +1,229 @@
+@page "/modules/changelog"
+@inject ChangeLogService ChangeLog
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject NavigationManager Navigation
+@inject IStringLocalizer<ChangelogPage> L
+
+@*
+    Das Änderungsprotokoll aus dem Konzept: „geloggt werden, welcher angemeldete Benutzer welche
+    Änderungen getan hat“. Geschrieben wird es nicht hier, sondern beim Speichern selbst
+    (ChangeLogInterceptor) und beim Löschen (ChangeLog.RecordDeletionAsync) — diese Seite liest nur.
+
+    Name des Benutzers und Name der Entität stehen als Momentaufnahme im Eintrag: Nach dem Löschen
+    einer Entität gäbe es nichts mehr aufzulösen, und genau dieser Eintrag ist der wichtigste.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle" />
+
+<MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+        <MudSelect T="string"
+                   Value="@(_moduleFilter ?? string.Empty)"
+                   ValueChanged="@((string key) => ApplyFilterAsync(() => _moduleFilter = string.IsNullOrEmpty(key) ? null : key))"
+                   Label="@L["ModuleFilter"]"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Style="max-width:220px;">
+            <MudSelectItem T="string" Value="@string.Empty">@L["AllModules"]</MudSelectItem>
+            @foreach (var module in ModuleRegistry.All.Where(m => m.Implemented))
+            {
+                <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect T="string"
+                   Value="@(_userFilter?.ToString() ?? string.Empty)"
+                   ValueChanged="@((string id) => ApplyFilterAsync(() => _userFilter = Guid.TryParse(id, out var parsed) ? parsed : null))"
+                   Label="@L["UserFilter"]"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Style="max-width:220px;">
+            <MudSelectItem T="string" Value="@string.Empty">@L["AllUsers"]</MudSelectItem>
+            @foreach (var author in _authors.Where(a => a.UserId is not null))
+            {
+                <MudSelectItem T="string" Value="@author.UserId!.Value.ToString()">
+                    @L["AuthorOption", author.UserName, author.Count]
+                </MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect T="string"
+                   Value="@(_actionFilter?.ToString() ?? string.Empty)"
+                   ValueChanged="@((string action) => ApplyFilterAsync(() => _actionFilter = Enum.TryParse<ChangeAction>(action, out var parsed) ? parsed : null))"
+                   Label="@L["ActionFilter"]"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Style="max-width:200px;">
+            <MudSelectItem T="string" Value="@string.Empty">@L["AllActions"]</MudSelectItem>
+            @foreach (var action in Enum.GetValues<ChangeAction>())
+            {
+                <MudSelectItem T="string" Value="@action.ToString()">@ActionName(action)</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSpacer />
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@FilterSummary</MudText>
+    </MudStack>
+</MudPaper>
+
+@if (!_loaded)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_rows.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.History" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@EmptyHint</MudText>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel">
+        <MudStack Spacing="0">
+            @foreach (var row in _rows)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="pa-3 gdm-field-row">
+                    <MudTooltip Text="@ActionName(row.Action)">
+                        <MudIcon Icon="@ActionIcon(row.Action)" Color="@ActionColor(row.Action)" Size="Size.Small" />
+                    </MudTooltip>
+
+                    <div style="min-width:132px;">
+                        <MudText Typo="Typo.body2">@row.AtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@row.UserName</MudText>
+                    </div>
+
+                    <div style="flex:1 1 auto;min-width:0;">
+                        @if (row.Action == ChangeAction.Deleted || Route(row) is null)
+                        {
+                            @* Gelöschtes hat kein Ziel mehr — der Name steht als Momentaufnahme da. *@
+                            <MudText Typo="Typo.body1" Class="gdm-ellipsis"><b>@row.EntityName</b></MudText>
+                        }
+                        else
+                        {
+                            <MudLink Href="@Route(row)" Typo="Typo.body1" Class="gdm-ellipsis">
+                                <b>@row.EntityName</b>
+                            </MudLink>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(row.Details))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-ellipsis">
+                                @(row.Action == ChangeAction.Updated ? L["ChangedFields", row.Details].Value : row.Details)
+                            </MudText>
+                        }
+                    </div>
+
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
+                        @Modules.Name(row.ModuleKey)
+                    </MudChip>
+                </MudStack>
+            }
+        </MudStack>
+    </MudPaper>
+
+    @if (_rows.Count < _total)
+    {
+        <MudStack Row="true" Justify="Justify.Center" Class="mt-4">
+            <MudButton Variant="Variant.Outlined" OnClick="LoadMoreAsync">
+                @L["LoadMore", _total - _rows.Count]
+            </MudButton>
+        </MudStack>
+    }
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Changelog);
+
+    private const int PageSize = 50;
+
+    private List<ChangeLogAuthor> _authors = [];
+    private List<ChangeLogRow> _rows = [];
+    private string? _moduleFilter;
+    private Guid? _userFilter;
+    private ChangeAction? _actionFilter;
+    private int _total;
+    private bool _loaded;
+
+    private string Subtitle => _loaded ? L["SubtitleCount", _total] : L["Loading"];
+
+    private string FilterSummary => _loaded ? L["FilterCount", _rows.Count, _total] : string.Empty;
+
+    private string EmptyHint => HasFilter ? L["EmptyFiltered"] : L["EmptyHint"];
+
+    private bool HasFilter => _moduleFilter is not null || _userFilter is not null || _actionFilter is not null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _authors = await ChangeLog.GetAuthorsAsync(projectId);
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        var loaded = await ChangeLog.GetEntriesAsync(projectId, Filter, 0, PageSize);
+
+        _rows = [.. loaded.Rows];
+        _total = loaded.Total;
+        _loaded = true;
+    }
+
+    /// <summary>
+    /// Blättert nach. Übersprungen wird, was schon dasteht — die Gesamtzahl kommt bei jedem
+    /// Nachladen frisch mit, damit der Knopf nichts anbietet, was inzwischen weg ist.
+    /// </summary>
+    private async Task LoadMoreAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        var loaded = await ChangeLog.GetEntriesAsync(projectId, Filter, _rows.Count, PageSize);
+
+        _rows.AddRange(loaded.Rows);
+        _total = loaded.Total;
+    }
+
+    private ChangeLogFilter Filter => new(_moduleFilter, _userFilter, _actionFilter);
+
+    private async Task ApplyFilterAsync(Action change)
+    {
+        change();
+        _loaded = false;
+        await LoadAsync();
+    }
+
+    /// <summary>
+    /// Wohin der Eintrag führt. Module ohne Detailroute (Statistik, Freischaltungen, das
+    /// Protokoll selbst) bekommen keinen Link — er liefe ins Leere.
+    /// </summary>
+    private static string? Route(ChangeLogRow row)
+    {
+        var module = ModuleRegistry.Find(row.ModuleKey);
+
+        return module is null || module.Group == ModuleGroup.Tools
+            ? null
+            : $"{module.Route}/{row.EntityId}";
+    }
+
+    private string ActionName(ChangeAction action) => L[$"Action_{action}"];
+
+    private static string ActionIcon(ChangeAction action) => action switch
+    {
+        ChangeAction.Created => Icons.Material.Filled.AddCircleOutline,
+        ChangeAction.Updated => Icons.Material.Filled.EditNote,
+        ChangeAction.Deleted => Icons.Material.Filled.DeleteOutline,
+        _ => Icons.Material.Filled.CloudDownload
+    };
+
+    private static Color ActionColor(ChangeAction action) => action switch
+    {
+        ChangeAction.Created => Color.Success,
+        ChangeAction.Deleted => Color.Error,
+        ChangeAction.Imported => Color.Warning,
+        _ => Color.Default
+    };
+}

@@ -13,6 +13,7 @@ public static class HealthCheckKeys
     public const string OverfullLoot = "overfullLoot";
     public const string OrphanedAssets = "orphanedAssets";
     public const string ImpossibleConditions = "impossibleConditions";
+    public const string UnlockCycles = "unlockCycles";
 }
 
 /// <summary>
@@ -43,7 +44,8 @@ public class DashboardOverviewService(
     QuestService quests,
     DialogueService dialogues,
     LootService loot,
-    ConditionService conditions)
+    ConditionService conditions,
+    TechTreeService techTree)
 {
     /// <summary>
     /// Die zuletzt bearbeiteten Entitäten quer durch alle Module, jüngste zuerst.
@@ -108,7 +110,12 @@ public class DashboardOverviewService(
             // Bedingungen hängen an Entitäten aller Module — ein einzelnes Sprungziel gibt es
             // dafür nicht, die Zeile führt auf die Statistik-Seite.
             new(HealthCheckKeys.ImpossibleConditions, null,
-                (await conditions.FindProblemsAsync(projectId, ct)).Count)
+                (await conditions.FindProblemsAsync(projectId, ct)).Count),
+
+            // Ringe im Freischaltungs-Graphen — derselbe Fall wie zyklische Rezepte, nur eine
+            // Ebene höher: Alles im Ring wartet auf sich selbst und ist nie erreichbar.
+            new(HealthCheckKeys.UnlockCycles, ModuleKeys.TechTree,
+                (await techTree.FindCyclesAsync(projectId, ct)).Count)
         ];
 
         return new HealthSummary(

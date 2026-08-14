@@ -171,4 +171,22 @@
   <data name="Group_Tools_Name" xml:space="preserve">
     <value>Auswertung</value>
   </data>
+  <data name="world_Name" xml:space="preserve">
+    <value>Welt</value>
+  </data>
+  <data name="world_Description" xml:space="preserve">
+    <value>Tageszeiten, Wetterlagen und Biome, an denen Bedingungen hängen</value>
+  </data>
+  <data name="techtree_Name" xml:space="preserve">
+    <value>Freischaltungen</value>
+  </data>
+  <data name="techtree_Description" xml:space="preserve">
+    <value>Was schaltet was frei — der Tech-Tree aus dem Bedingungssystem</value>
+  </data>
+  <data name="changelog_Name" xml:space="preserve">
+    <value>Änderungen</value>
+  </data>
+  <data name="changelog_Description" xml:space="preserve">
+    <value>Wer hat wann was geändert</value>
+  </data>
 </root>

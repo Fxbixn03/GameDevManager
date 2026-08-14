@@ -124,6 +124,17 @@ public class ProjectService(
             rewritten.Position = 0;
 
             await import.ImportAsync(copy.Id, rewritten, replaceExisting: false, ct);
+
+            // Woher die Kopie stammt, weiß nur diese Stelle — der Import sieht nur ein Archiv.
+            await using var log = await factory.CreateDbContextAsync(ct);
+            var sourceName = await log.GameProjects
+                .Where(p => p.Id == sourceId)
+                .Select(p => p.Name)
+                .FirstOrDefaultAsync(ct) ?? copyName;
+
+            await ChangeLog.RecordProjectActionAsync(
+                log, copy.Id, copyName, ChangeAction.Created,
+                messages["ChangeLog_ProjectDuplicated", sourceName].Value, ct);
         }
         catch
         {

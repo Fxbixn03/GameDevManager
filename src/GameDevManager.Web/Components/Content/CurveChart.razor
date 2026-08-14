@@ -1,0 +1,109 @@
+@inject IStringLocalizer<CurveChart> L
+
+@*
+    Das Vorschau-Diagramm einer Levelkurve. Gezeichnet als SVG ohne JavaScript und ohne
+    Diagrammbibliothek — wie der Diplomatie- und der Dialog-Graph. Eine Linie mit Achsen und
+    ein paar Beschriftungen ist genau das, was hier gebraucht wird.
+*@
+
+@if (Points.Count == 0)
+{
+    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Empty"]</MudText>
+}
+else
+{
+    <svg viewBox="0 0 @Width @Height"
+         width="100%"
+         style="max-width:@(Width)px;display:block;"
+         role="img"
+         aria-label="@L["Aria", Points.Count, Fmt(MinY), Fmt(MaxY)]">
+
+        @* Achsen zuerst, damit die Kurve darüber liegt. *@
+        <line x1="@Fmt(PadLeft)" y1="@Fmt(PadTop)" x2="@Fmt(PadLeft)" y2="@Fmt(BaseY)"
+              stroke="var(--mud-palette-lines-default)" stroke-width="1" />
+        <line x1="@Fmt(PadLeft)" y1="@Fmt(BaseY)" x2="@Fmt(Width - PadRight)" y2="@Fmt(BaseY)"
+              stroke="var(--mud-palette-lines-default)" stroke-width="1" />
+
+        <polyline points="@Polyline"
+                  fill="none"
+                  stroke="var(--mud-palette-primary)"
+                  stroke-width="2" />
+
+        @* Stützstellen nur, solange sie sich nicht zur Fläche verdichten. *@
+        @if (Points.Count <= 40)
+        {
+            @foreach (var point in Points)
+            {
+                <circle cx="@Fmt(ScaleX(point.X))" cy="@Fmt(ScaleY(point.Y))" r="2.5"
+                        fill="var(--mud-palette-primary)">
+                    <title>@L["PointTitle", Fmt(point.X), Fmt(point.Y)]</title>
+                </circle>
+            }
+        }
+
+        <text x="@Fmt(PadLeft - 6)" y="@Fmt(PadTop + 4)" text-anchor="end"
+              fill="var(--mud-palette-text-secondary)" style="font-size:11px;font-family:inherit;">
+            @Fmt(MaxY)
+        </text>
+        <text x="@Fmt(PadLeft - 6)" y="@Fmt(BaseY)" text-anchor="end"
+              fill="var(--mud-palette-text-secondary)" style="font-size:11px;font-family:inherit;">
+            @Fmt(MinY)
+        </text>
+        <text x="@Fmt(PadLeft)" y="@Fmt(Height - 6)"
+              fill="var(--mud-palette-text-secondary)" style="font-size:11px;font-family:inherit;">
+            @Fmt(MinX)
+        </text>
+        <text x="@Fmt(Width - PadRight)" y="@Fmt(Height - 6)" text-anchor="end"
+              fill="var(--mud-palette-text-secondary)" style="font-size:11px;font-family:inherit;">
+            @Fmt(MaxX)
+        </text>
+    </svg>
+}
+
+@code {
+    private const double Width = 520;
+    private const double Height = 200;
+    private const double PadLeft = 46;
+    private const double PadRight = 12;
+    private const double PadTop = 12;
+    private const double PadBottom = 24;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<CurvePoint> Points { get; set; } = [];
+
+    private double BaseY => Height - PadBottom;
+
+    private double MinX => Points.Count == 0 ? 0 : Points.Min(point => point.X);
+
+    private double MaxX => Points.Count == 0 ? 0 : Points.Max(point => point.X);
+
+    private double MinY => Points.Count == 0 ? 0 : Math.Min(0, Points.Min(point => point.Y));
+
+    private double MaxY => Points.Count == 0 ? 0 : Points.Max(point => point.Y);
+
+    private string Polyline =>
+        string.Join(" ", Points.Select(point => $"{Fmt(ScaleX(point.X))},{Fmt(ScaleY(point.Y))}"));
+
+    /// <summary>
+    /// Eine waagerechte Kurve (alle Werte gleich) hätte eine Spanne von null und läge sonst
+    /// im Nichts — sie wird dann auf die Mitte gelegt.
+    /// </summary>
+    private double ScaleX(double x)
+    {
+        var span = MaxX - MinX;
+        var ratio = span <= 0 ? 0.5 : (x - MinX) / span;
+
+        return PadLeft + ratio * (Width - PadLeft - PadRight);
+    }
+
+    private double ScaleY(double y)
+    {
+        var span = MaxY - MinY;
+        var ratio = span <= 0 ? 0.5 : (y - MinY) / span;
+
+        return BaseY - ratio * (BaseY - PadTop);
+    }
+
+    private static string Fmt(double value) =>
+        value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}

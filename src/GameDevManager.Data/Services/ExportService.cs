@@ -51,7 +51,7 @@ public class ExportService(
     /// Version 2: Arten tragen eine <c>parentId</c> — Unterarten erben die Felder ihrer
     /// Eltern-Art.
     /// </remarks>
-    public const int FormatVersion = 2;
+    public const int FormatVersion = 3;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -114,6 +114,7 @@ public class ExportService(
         var soundEffects = await LoadContentAsync(db.SoundEffects);
         var cutscenes = await LoadContentAsync(db.Cutscenes.Include(c => c.Shots));
         var lootTables = await LoadContentAsync(db.LootTables.Include(t => t.Entries));
+        var worldStates = await LoadContentAsync(db.WorldStates);
 
         // Der Zeitstreifen ist eine Reihenfolge — hier sortiert sie statt des Namens.
         var storyEntries = await db.StoryEntries.AsNoTracking()
@@ -256,6 +257,7 @@ public class ExportService(
         await WriteJsonAsync("content/player.json", new { playerCharacters = players, skillTrees, skills });
         await WriteJsonAsync("content/classes.json", new { classes });
         await WriteJsonAsync("content/loot.json", new { lootTables });
+        await WriteJsonAsync("content/world.json", new { worldStates });
         await WriteJsonAsync("content/effects.json", new { effects });
         await WriteJsonAsync("content/achievements.json", new { achievements });
         await WriteJsonAsync("content/collectibles.json", new { collectibles });
@@ -311,6 +313,7 @@ public class ExportService(
             [ModuleKeys.Player] = players.Count + skillTrees.Count + skills.Count,
             [ModuleKeys.Classes] = classes.Count,
             [ModuleKeys.Loot] = lootTables.Count,
+            [ModuleKeys.World] = worldStates.Count,
             [ModuleKeys.Effects] = effects.Count,
             [ModuleKeys.Achievements] = achievements.Count,
             [ModuleKeys.Collectibles] = collectibles.Count,

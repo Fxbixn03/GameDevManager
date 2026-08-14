@@ -129,7 +129,7 @@ public class CutsceneService(
 
         await EntityCleanup.DeleteForEntitiesAsync(db, removedShotIds, ct);
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         cutscene.CreatedAtUtc = stored.CreatedAtUtc;
@@ -189,6 +189,7 @@ public class CutsceneService(
             .Select(shot => shot.Id)
             .ToListAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Cutscenes, cutsceneId, ct);
         await EntityCleanup.DeleteForEntitiesAsync(db, [cutsceneId, .. shotIds], ct);
 
         // Das Storyboard fällt über den Fremdschlüssel mit.

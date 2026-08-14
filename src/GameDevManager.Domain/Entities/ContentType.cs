@@ -14,7 +14,7 @@ namespace GameDevManager.Domain.Entities;
 /// die Hierarchie hier und nicht über das Tag-Modul abgebildet ist: Tags tragen keine Felder.
 /// </para>
 /// </summary>
-public class ContentType
+public class ContentType : IChangeLogged
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 

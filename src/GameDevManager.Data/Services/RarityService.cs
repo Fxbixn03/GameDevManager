@@ -116,6 +116,7 @@ public class RarityService(
         await using var db = await factory.CreateDbContextAsync(ct);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Rarities, rarityId, ct);
         await EntityCleanup.DeleteForEntityAsync(db, rarityId, ct);
 
         await db.Rarities

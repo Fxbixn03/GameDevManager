@@ -2,7 +2,9 @@ using GameDevManager.Data;
 using GameDevManager.Data.Services;
 using GameDevManager.Web.Components;
 using GameDevManager.Web.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MudBlazor;
 using MudBlazor.Services;
 
@@ -37,6 +39,40 @@ builder.Services.AddSingleton<AppearanceSelection>();
 builder.Services.AddSingleton<ModuleLabels>();
 builder.Services.AddSingleton<ConditionLabels>();
 builder.Services.AddSingleton<FieldTypeLabels>();
+builder.Services.AddSingleton<AccountLabels>();
+builder.Services.AddSingleton<ISystemUserName>(sp => sp.GetRequiredService<AccountLabels>());
+
+// Anmeldung über ein Cookie. Bewusst kein ASP.NET-Identity: Gebraucht wird ein Konto mit
+// Passwort, und dafür sieben Identity-Tabellen in alle vier Provider zu migrieren wäre ein
+// Vielfaches an Umfang für dasselbe Ergebnis — das Hashing steht in PasswordHasher.
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/konto/anmelden";
+        options.LogoutPath = "/konto/abmelden";
+        options.AccessDeniedPath = "/konto/anmelden";
+        // Derselbe Name, den auch RedirectToLogin anhängt — sonst käme man je nach Weg
+        // (Umleitung des Cookies oder des laufenden Kreises) unterschiedlich zurück.
+        options.ReturnUrlParameter = "ziel";
+        options.Cookie.Name = "gdm.auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        // Das Tool wird self-hosted betrieben, oft ohne HTTPS im lokalen Netz — deshalb
+        // „SameAsRequest“ statt „Always“, sonst käme das Cookie über HTTP nie an.
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.ExpireTimeSpan = TimeSpan.FromDays(14);
+        options.SlidingExpiration = true;
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
+// Statisch gerenderte Seiten und die Datei-Endpunkte kennen ihren Benutzer über den
+// HttpContext; der laufende Blazor-Kreis hat keinen mehr — siehe BlazorChangeAuthorProvider.
+builder.Services.AddHttpContextAccessor();
+
+// Wer gerade handelt, weiß nur die Web-Schicht — die Datenschicht kennt dafür nur die
+// Schnittstelle. Ersetzt die Vorgabe „System“ aus AddGameDevManagerContentServices.
+builder.Services.Replace(
+    ServiceDescriptor.Scoped<IChangeAuthorProvider, BlazorChangeAuthorProvider>());
 
 var app = builder.Build();
 
@@ -51,6 +87,8 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
@@ -76,7 +114,7 @@ app.MapGet("/assets/{id:guid}", async (Guid id, AssetService assets, HttpContext
     http.Response.Headers.ContentSecurityPolicy = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
 
     return Results.Stream(file.Value.Content, file.Value.MimeType);
-});
+}).RequireAuthorization();
 
 // Der Projekt-Export als ZIP-Download. Wie die Assets bewusst ein Endpunkt: über die
 // SignalR-Verbindung von Blazor Server lässt sich keine Datei ausliefern, der Browser
@@ -104,7 +142,7 @@ app.MapGet("/export/{projectId:guid}", async (
         stream => export.WriteExportAsync(projectId, exportTarget, assets ?? true, stream, ct),
         "application/zip",
         fileDownloadName: fileName);
-});
+}).RequireAuthorization();
 
 // Lädt einen aufbewahrten Exportstand herunter. Der Dienst prüft den Dateinamen streng
 // (Zeitstempel plus Projekt-GUID) — alles andere ist ein 404, kein Pfad ins Dateisystem.
@@ -114,14 +152,16 @@ app.MapGet("/export/snapshots/{fileName}", (string fileName, ExportSnapshotServi
     return stream is null
         ? Results.NotFound()
         : Results.Stream(stream, "application/zip", fileDownloadName: fileName);
-});
+}).RequireAuthorization();
 
 // Ausstehende Migrationen beim Start anwenden (abschaltbar über "Database:AutoMigrate": false).
-var dbOptions = app.Services.GetRequiredService<DatabaseOptions>();
-var contextFactory = app.Services.GetRequiredService<IDbContextFactory<GameDevManagerDbContext>>();
-
-if (dbOptions.AutoMigrate)
+// Über einen eigenen Scope, weil die Context-Factory scoped registriert ist — sie zieht sich
+// den ChangeLogInterceptor, und der braucht den angemeldeten Benutzer der Verbindung.
+if (app.Services.GetRequiredService<DatabaseOptions>().AutoMigrate)
 {
+    using var scope = app.Services.CreateScope();
+    var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<GameDevManagerDbContext>>();
+
     await using var db = await contextFactory.CreateDbContextAsync();
     await db.Database.MigrateAsync();
 

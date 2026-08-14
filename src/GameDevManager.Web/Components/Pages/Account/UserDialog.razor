@@ -1,0 +1,118 @@
+@inject UserService Users
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<UserDialog> L
+
+@*
+    Anlegen und Ändern eines Benutzers. Das Passwort steht getrennt: Beim Anlegen ist es
+    Pflicht, beim Ändern setzt ein leeres Feld es bewusst nicht zurück — sonst löschte jedes
+    Umbenennen nebenbei das Passwort.
+*@
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="4">
+            <MudTextField @bind-Value="_displayName"
+                          T="string"
+                          Label="@L["DisplayNameLabel"]"
+                          HelperText="@L["DisplayNameHelper"]"
+                          Variant="Variant.Outlined"
+                          Immediate="true" />
+
+            <MudTextField @bind-Value="_userName"
+                          T="string"
+                          Label="@L["UserNameLabel"]"
+                          HelperText="@L["UserNameHelper"]"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Disabled="!IsNew" />
+
+            <MudTextField @bind-Value="_password"
+                          T="string"
+                          Label="@(IsNew ? L["PasswordLabel"].Value : L["NewPasswordLabel"].Value)"
+                          HelperText="@(IsNew ? L["PasswordHelper", PasswordHasher.MinimumLength].Value : L["NewPasswordHelper"].Value)"
+                          Variant="Variant.Outlined"
+                          InputType="InputType.Password" />
+
+            <MudSwitch @bind-Value="_isAdministrator" Color="Color.Primary" Label="@L["AdministratorLabel"]" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["AdministratorHelper"]</MudText>
+
+            @if (!IsNew)
+            {
+                <MudSwitch @bind-Value="_isDisabled" Color="Color.Warning" Label="@L["DisabledLabel"]" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["DisabledHelper"]</MudText>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_saving" OnClick="SaveAsync">
+            @L["Save"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance Dialog { get; set; } = default!;
+
+    /// <summary><c>null</c> heißt „neuer Benutzer“.</summary>
+    [Parameter]
+    public UserRow? User { get; set; }
+
+    private string? _displayName;
+    private string? _userName;
+    private string? _password;
+    private bool _isAdministrator;
+    private bool _isDisabled;
+    private bool _saving;
+
+    private bool IsNew => User is null;
+
+    protected override void OnInitialized()
+    {
+        _displayName = User?.DisplayName;
+        _userName = User?.UserName;
+        _isAdministrator = User?.IsAdministrator ?? false;
+        _isDisabled = User?.IsDisabled ?? false;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+
+        try
+        {
+            if (User is null)
+            {
+                await Users.CreateUserAsync(
+                    _userName ?? string.Empty,
+                    _displayName ?? string.Empty,
+                    _password ?? string.Empty,
+                    _isAdministrator);
+            }
+            else
+            {
+                await Users.UpdateUserAsync(User.Id, _displayName ?? string.Empty, _isAdministrator, _isDisabled);
+
+                // Ein leeres Feld lässt das Passwort stehen — nur ein eingetragenes ersetzt es.
+                if (!string.IsNullOrWhiteSpace(_password))
+                {
+                    await Users.SetPasswordAsync(User.Id, _password);
+                }
+            }
+
+            Snackbar.Add(L["SavedMessage", _displayName ?? _userName ?? string.Empty], Severity.Success);
+            Dialog.Close(DialogResult.Ok(true));
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void Cancel() => Dialog.Cancel();
+}

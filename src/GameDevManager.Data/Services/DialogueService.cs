@@ -150,7 +150,7 @@ public class DialogueService(
         // Antwortmöglichkeiten haben eigene GUIDs und können später eigene Bedingungen tragen.
         await EntityCleanup.DeleteForEntitiesAsync(db, removedOwners, ct);
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         dialogue.CreatedAtUtc = stored.CreatedAtUtc;
@@ -353,6 +353,7 @@ public class DialogueService(
             .Select(choice => choice.Id)
             .ToListAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.Dialogues, dialogueId, ct);
         await EntityCleanup.DeleteForEntitiesAsync(db, [dialogueId, .. lineIds, .. choiceIds], ct);
 
         // Beteiligte, Zeilen und Antworten fallen über die Fremdschlüssel mit.

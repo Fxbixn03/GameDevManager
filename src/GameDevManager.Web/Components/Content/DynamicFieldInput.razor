@@ -132,6 +132,10 @@
         }
         break;
 
+    case ContentFieldType.Curve:
+        <CurveFieldEditor Definition="Definition" Value="Value" OnValueChanged="OnValueChanged" />
+        break;
+
     case ContentFieldType.Color:
         <MudColorPicker Text="@Value.TextValue"
                         TextChanged="SetText"

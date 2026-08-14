@@ -126,7 +126,7 @@ public class EventService(
 
         await EntityCleanup.DeleteForEntitiesAsync(db, removedSpawnIds, ct);
 
-        await ContentFields.StageValuesAsync(db, context, ct);
+        await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
 
         gameEvent.CreatedAtUtc = stored.CreatedAtUtc;
@@ -216,6 +216,7 @@ public class EventService(
             .Select(spawn => spawn.Id)
             .ToListAsync(ct);
 
+        await ChangeLog.RecordDeletionAsync(db, db.GameEvents, eventId, ct);
         await EntityCleanup.DeleteForEntitiesAsync(db, [eventId, .. spawnIds], ct);
 
         // Die Spawns fallen über den Fremdschlüssel mit.
