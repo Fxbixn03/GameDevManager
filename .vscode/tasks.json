@@ -57,6 +57,13 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "Publish",
+            "type": "shell",
+            "command": "dotnet publish src/GameDevManager.Web --configuration Release ${input:publishTarget}",
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "Hot-Reload",
             "type": "process",
             "command": "dotnet",
@@ -107,6 +114,26 @@
                 {
                     "label": "GameDevManager.Data.Migrations.Sqlite",
                     "value": "${workspaceFolder}/src/GameDevManager.Data.Migrations.Sqlite"
+                }
+            ]
+        },
+        {
+            "id": "publishTarget",
+            "type": "pickString",
+            "description": "Für welche Plattform soll veröffentlicht werden?",
+            "default": "--output publish/portable",
+            "options": [
+                {
+                    "label": "Portabel (Windows & Linux, .NET-Runtime muss installiert sein)",
+                    "value": "--output publish/portable"
+                },
+                {
+                    "label": "Windows x64 (eigenständig, Runtime enthalten)",
+                    "value": "--runtime win-x64 --self-contained true --output publish/win-x64"
+                },
+                {
+                    "label": "Linux x64 (eigenständig, Runtime enthalten)",
+                    "value": "--runtime linux-x64 --self-contained true --output publish/linux-x64"
                 }
             ]
         },
