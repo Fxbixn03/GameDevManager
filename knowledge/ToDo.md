@@ -81,3 +81,9 @@ Hier können mit komma getrennt werte eingegeben und mit enter bestätigt werden
 - ToDo (Mehrere Kanban Boards zur projektverwaltung die der Benutzer nach belieben anlegen und verwalten und löschen kann)
 - Whiteboard (Hier können Nutzer zusammen an einem Projekt arbeiten und zeichnen, Notizen anheften, etc, inspiriert bei Miro)
 - Vrbindungen (In diesem Modul werden NPCs und Fraktionen angezeigt wie wer mit wem verknüpft ist. Dafür werden die Bilder der NPCs verwendet und als runde rofilbilder mit ihrem namen darunter angezeigt und dann striche zu den jeweiligen verknüpfungen. Die Runden bilder haben eine Farbliche umrandung je nachdem in welcher fraktion sie sind, oder fraktionslos sidn)
+
+#### Grundumbau des SPieler Moduls
+
+- Der Spieler wird zukünftig als NPC behandelt und kein eigenes Modul mehr
+- Das Spieler Modul wird zum SkillTree Modul
+- Das Modul ist nurnoch zum administrieren von Skilltrees 
