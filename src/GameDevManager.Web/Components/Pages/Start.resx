@@ -24,4 +24,28 @@
   <data name="StartButton" xml:space="preserve">
     <value>Start</value>
   </data>
+  <data name="PageTitleSignIn" xml:space="preserve">
+    <value>Anmelden — GameDevManager</value>
+  </data>
+  <data name="UserNameLabel" xml:space="preserve">
+    <value>Anmeldename</value>
+  </data>
+  <data name="PasswordLabel" xml:space="preserve">
+    <value>Passwort</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>Anmelden</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Angemeldet bleiben</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Anmeldename oder Passwort stimmt nicht.</value>
+  </data>
+  <data name="FailedUserNameOnly" xml:space="preserve">
+    <value>Mit diesem Anmeldenamen geht es nicht.</value>
+  </data>
+  <data name="LoggedOut" xml:space="preserve">
+    <value>Du bist abgemeldet.</value>
+  </data>
 </root>

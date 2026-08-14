@@ -747,9 +747,13 @@ html {
 
 /* -------------------------------------------------------------- Startscreen */
 
-/* Titel oben im Drittel, Button unten — dazwischen ist der Platz für die spätere
-   Anmeldemaske reserviert. Alle Effekte sind reines CSS und respektieren
-   prefers-reduced-motion (ganz unten in diesem Abschnitt). */
+/* Titel oben im Drittel, darunter der Start-Knopf — oder, solange niemand angemeldet ist,
+   an derselben Stelle die Anmeldemaske. Alle Effekte sind reines CSS und respektieren
+   prefers-reduced-motion (ganz unten in diesem Abschnitt).
+
+   min-height statt height: Passt die Anmeldemaske auf einem flachen Fenster nicht mehr
+   hinein, wächst der Kasten mit und die Seite rollt — mit fester Höhe schnitte das
+   overflow:hidden der Dekorationsebenen das Formular ab. */
 .gdm-start-screen {
     position: relative;
     overflow: hidden;
@@ -759,8 +763,16 @@ html {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
+    /* Untergrenze für den Abstand: Auf einem flachen Fenster verteilt space-between nichts
+       mehr, und die Anmeldemaske stieße sonst an den Untertitel. */
+    gap: 2rem;
     padding: 14vh 1.5rem 12vh;
     background-color: var(--mud-palette-background);
+}
+
+/* Die Anmeldemaske braucht mehr Höhe als der Knopf — der Titel rückt dafür etwas hoch. */
+.gdm-start-screen-auth {
+    padding: 9vh 1.5rem 7vh;
 }
 
 /* Der Inhalt liegt über den dekorativen Ebenen. */
@@ -863,9 +875,17 @@ html {
         radial-gradient(ellipse 46% 27% at 50% 30%, transparent 20%, black 88%),
         radial-gradient(ellipse 24% 13% at 50% 88%, transparent 25%, black 92%);
     mask-composite: intersect;
-    /* Der Regen kommt erst nach dem Verbinden aus der Datenbank — er soll aufblenden
-       statt zu erscheinen. */
+    /* Der Regen kommt mit der Seite aus der Datenbank — er soll aufblenden statt zu
+       erscheinen. */
     animation: gdm-start-fade-in 1.6s ease both;
+}
+
+/* Beim Anmelden steht statt des Knopfes die Maske dort: Das untere Loch wird größer und
+   rückt mit ihr nach oben, damit keine Kachel über die Eingabefelder läuft. */
+.gdm-start-screen-auth .gdm-start-rain {
+    mask-image:
+        radial-gradient(ellipse 46% 24% at 50% 24%, transparent 20%, black 88%),
+        radial-gradient(ellipse 32% 27% at 50% 74%, transparent 30%, black 92%);
 }
 
 /* Bahn, Größe, Tempo und Startzeitpunkt würfelt die Seite je Tropfen aus und übergibt
@@ -1128,6 +1148,56 @@ html {
     75%, 100% { left: 120%; }
 }
 
+/* Die Anmeldung sitzt an der Stelle des Start-Knopfes. Bewusst durchscheinend und mit
+   Weichzeichner dahinter: Regen und Farbebenen laufen weiter, bleiben hinter den
+   Eingabefeldern aber lesbar zurück. Felder, Beschriftungen und Haken teilen sich die
+   .gdm-auth-*-Regeln mit Ersteinrichtung und Abmelden — dieselben Formulare, nur ein
+   anderer Grund. */
+.gdm-start-login {
+    width: min(380px, 100%);
+    padding: 24px 28px 28px;
+    text-align: left;
+    background-color: color-mix(in srgb, var(--mud-palette-surface) 82%, transparent);
+    border: 1px solid var(--mud-palette-lines-default);
+    border-top: 2px solid var(--mud-palette-primary);
+    backdrop-filter: blur(6px);
+}
+
+/* Die erste Beschriftung braucht den Abstand nicht — den hat schon der Innenrand. */
+.gdm-start-login .gdm-auth-label:first-child {
+    margin-top: 0;
+}
+
+/* Derselbe Lichtstreif und derselbe harte Schatten wie am Start-Knopf: Der Knopf tauscht
+   nur seine Aufschrift, nicht sein Verhalten. */
+.gdm-start-login-submit {
+    position: relative;
+    overflow: hidden;
+    transition: transform 120ms linear, box-shadow 120ms linear;
+}
+
+.gdm-start-login-submit:hover,
+.gdm-start-login-submit:focus-visible {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 color-mix(in srgb, var(--mud-palette-primary) 35%, transparent);
+}
+
+.gdm-start-login-submit::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -60%;
+    width: 40%;
+    transform: skewX(-20deg);
+    background: linear-gradient(90deg,
+        transparent,
+        color-mix(in srgb, var(--mud-palette-white) 30%, transparent),
+        transparent);
+    pointer-events: none;
+    animation: gdm-start-sheen 4.5s ease-in-out 2s infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .gdm-start-aurora::before,
     .gdm-start-aurora::after,
@@ -1137,7 +1207,8 @@ html {
     .gdm-start-enter,
     .gdm-start-icon,
     .gdm-start-rule,
-    .gdm-start-button::after {
+    .gdm-start-button::after,
+    .gdm-start-login-submit::after {
         animation: none;
     }
 
@@ -1148,7 +1219,8 @@ html {
         display: none;
     }
 
-    .gdm-start-button {
+    .gdm-start-button,
+    .gdm-start-login-submit {
         transition: none;
     }
 }
@@ -1166,9 +1238,10 @@ html {
     content: "Ein unerwarteter Fehler ist aufgetreten."
 }
 
-/* Anmeldung, Ersteinrichtung und Abmelden. Diese Seiten werden statisch gerendert (nur eine
-   echte HTTP-Antwort kann ein Cookie setzen); MudBlazor-Eingaben kämen dort nicht durchs
-   Formular zurück, deshalb einfache Felder mit eigenem Anstrich statt Komponenten. */
+/* Ersteinrichtung und Abmelden — und, über .gdm-start-login, die Anmeldung auf dem
+   Startscreen. Diese Seiten werden statisch gerendert (nur eine echte HTTP-Antwort kann ein
+   Cookie setzen); MudBlazor-Eingaben kämen dort nicht durchs Formular zurück, deshalb
+   einfache Felder mit eigenem Anstrich statt Komponenten. */
 .gdm-auth-screen {
     min-height: 100vh;
     display: flex;
@@ -1254,7 +1327,8 @@ html {
 }
 
 /* Die Validierungsmeldungen von Blazor — sie stehen ohne Zutun unter den Feldern. */
-.gdm-auth-card .validation-message {
+.gdm-auth-card .validation-message,
+.gdm-start-login .validation-message {
     display: block;
     margin-top: 6px;
     font-size: .78rem;
