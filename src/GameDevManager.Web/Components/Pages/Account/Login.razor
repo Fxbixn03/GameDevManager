@@ -65,8 +65,18 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    // Bewusst kein Auto-Property mit Initializer (BL0008): Das Modellbinding setzt diesen
+    // Parameter beim Postback und schriebe null hinein, wenn die Bindung nichts hergibt — der
+    // Initializer liefe kein zweites Mal, und das Markup liefe in eine NullReferenceException.
+    // Das Backing-Feld hält deshalb immer ein Objekt bereit.
+    private LoginInput _input = new();
+
     [SupplyParameterFromForm]
-    private LoginInput Input { get; set; } = new();
+    private LoginInput Input
+    {
+        get => _input;
+        set => _input = value ?? new();
+    }
 
     /// <summary>Wohin es nach der Anmeldung weitergeht — gesetzt von der Umleitung.</summary>
     [SupplyParameterFromQuery(Name = "ziel")]

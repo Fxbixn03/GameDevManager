@@ -66,8 +66,16 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    // Bewusst kein Auto-Property mit Initializer (BL0008) — siehe Login.razor: Der Parameter wird
+    // beim Postback gesetzt und trüge sonst null, wenn die Bindung nichts hergibt.
+    private SetupInput _input = new();
+
     [SupplyParameterFromForm]
-    private SetupInput Input { get; set; } = new();
+    private SetupInput Input
+    {
+        get => _input;
+        set => _input = value ?? new();
+    }
 
     private string? _error;
 
