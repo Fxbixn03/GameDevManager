@@ -75,6 +75,35 @@ public class LootService(
         ];
     }
 
+    /// <summary>
+    /// Würfelt eine Tabelle durch und fasst zusammen, was dabei fällt — der Loot-Simulator.
+    /// Gerechnet wird im Speicher; die Datenbank liefert nur Tabelle und Item-Namen.
+    /// </summary>
+    public async Task<LootSimulationResult?> SimulateAsync(
+        Guid projectId, Guid tableId, int rolls, int seed, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var table = await db.LootTables
+            .AsNoTracking()
+            .Include(t => t.Entries)
+            .FirstOrDefaultAsync(t => t.Id == tableId && t.GameProjectId == projectId, ct);
+
+        if (table is null)
+        {
+            return null;
+        }
+
+        var itemIds = table.Entries.Select(entry => entry.ItemId).Distinct().ToList();
+
+        var names = await db.Items
+            .AsNoTracking()
+            .Where(item => itemIds.Contains(item.Id))
+            .ToDictionaryAsync(item => item.Id, item => item.Name, ct);
+
+        return LootSimulation.Run(table, names, rolls, seed);
+    }
+
     public async Task<ContentEditContext<LootTable>?> LoadForEditAsync(
         Guid projectId, Guid? tableId, CancellationToken ct = default)
     {

@@ -170,6 +170,13 @@ Der Health Check „Loot-Wahrscheinlichkeiten über 100 %“ aus dem Konzept gil
 
 NPCs verweisen über `Npc.LootTableId` auf eine Tabelle. Beim Löschen einer Tabelle setzt `LootService` diese Verweise auf `null`, sonst zeigten NPCs auf etwas, das es nicht mehr gibt.
 
+**Der Simulator** ([LootSimulation.cs](src/GameDevManager.Data/Services/LootSimulation.cs), Seite `/modules/loot/{id}/simulation`) würfelt eine Tabelle zehntausendmal durch und beantwortet, was die Prozentzahl allein nicht sagt: wie lange ein Spieler auf das seltene Schwert wartet. Reine Auswertung ohne eigenen Datenbestand — dasselbe Muster wie der Freischaltungs-Graph, gezeichnet als SVG ohne JavaScript. Vier Dinge:
+
+- **Der Startwert kommt aus der Oberfläche**, nicht aus `Random.Shared`: Derselbe Startwert muss denselben Lauf ergeben, sonst ließe sich eine Änderung an der Tabelle nicht gegen den Lauf von vorhin halten. Ein Knopf daneben würfelt einen neuen — das ist der Unterschied zwischen „nochmal“ und „nochmal dasselbe“.
+- **Gezählt wird je Eintrag, nicht je Item.** Dasselbe Item darf mehrfach in einer Tabelle stehen („zu 50 % eine Münze, zu 5 % gleich zwanzig“), und genau diese zwei Zeilen will der Designer nebeneinander sehen.
+- **Die Wartezeit ist ein Median, kein Mittelwert** — bei seltenen Dingen sagt die Mitte der Verteilung mehr als der Durchschnitt. Gemessen werden die Abstände zwischen zwei Treffern; ein Eintrag, der im ganzen Lauf nie fiel, bekommt `null` statt einer erfundenen Zahl.
+- **Beide Verfahren rechnen wirklich verschieden**: `Independent` würfelt je Eintrag, `SinglePick` verteilt einen Wurf auf der Skala von 0 bis 100. Der Lauf macht damit sichtbar, was der Health Check meldet — was über 100 % hinausragt, fällt nie.
+
 ### Quests und ihre Ziele
 
 `QuestObjective` zerlegt eine Quest in ihre Schritte („Sprich mit Alrik“, „Sammle 5 Kräuter“, „Kehre zurück“) — eine Kind-Sammlung nach dem Muster von `RecipeIngredient` und `CutsceneShot`, mit Text, Reihenfolge und `IsOptional`. Vier Dinge dahinter:

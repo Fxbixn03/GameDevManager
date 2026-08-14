@@ -1,0 +1,304 @@
+@page "/modules/loot/{Id:guid}/simulation"
+@inject LootService Loot
+@inject ProjectContext Project
+@inject IStringLocalizer<LootSimulationPage> L
+
+@*
+    Der Loot-Simulator: eine Tabelle zehntausendmal würfeln und sehen, was dabei herauskommt.
+    Die Prozentzahl an einem Eintrag sagt für sich noch nicht, wie lange ein Spieler auf das
+    seltene Schwert wartet — das sagt erst der Lauf.
+
+    Reine Auswertung ohne eigenen Datenbestand, gezeichnet als SVG ohne JavaScript — dasselbe
+    Muster wie der Freischaltungs-Graph. Der Startwert steht in der Oberfläche, damit derselbe
+    Lauf dasselbe Ergebnis liefert und sich zwei Stände vergleichen lassen.
+*@
+
+<PageTitle>@L["PageTitle", _tableName ?? "…"]</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="@L["TitleFormat", _tableName ?? "…"]"
+              Subtitle="@Subtitle"
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/loot">@L["ToList"]</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Edit"
+                   Href="@($"/modules/loot/{Id}")">
+            @L["ToEditor"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">@L["NotFound"]</MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/loot">@L["ToList"]</MudButton>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudNumericField T="int"
+                             @bind-Value="_rolls"
+                             Label="@L["RollsLabel"]"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Min="1"
+                             Max="@LootSimulation.MaxRolls"
+                             Style="max-width:180px;" />
+
+            <MudNumericField T="int"
+                             @bind-Value="_seed"
+                             Label="@L["SeedLabel"]"
+                             HelperText="@L["SeedHelper"]"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Style="max-width:180px;" />
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Casino"
+                       Disabled="_running"
+                       OnClick="RunAsync">
+                @L["Run"]
+            </MudButton>
+
+            <MudButton Variant="Variant.Text"
+                       StartIcon="@Icons.Material.Filled.Shuffle"
+                       Disabled="_running"
+                       OnClick="RunWithNewSeedAsync">
+                @L["RunNewSeed"]
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+
+    @if (_running)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (_result is null)
+    {
+        <div class="gdm-empty">
+            <MudIcon Icon="@Icons.Material.Filled.Casino" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+            <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["EmptyHint"]</MudText>
+        </div>
+    }
+    else if (_result.Rows.Count == 0)
+    {
+        <div class="gdm-empty">
+            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+            <MudText Typo="Typo.h6">@L["NoEntriesTitle"]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["NoEntriesHint"]</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"/modules/loot/{Id}")">
+                @L["ToEditor"]
+            </MudButton>
+        </div>
+    }
+    else
+    {
+        <MudGrid Spacing="4">
+            @* ------------------------------------------------------------- Kennzahlen *@
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudStack Row="true" Spacing="6" Wrap="Wrap.Wrap">
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["StatRolls"]</MudText>
+                            <MudText Typo="Typo.h6">@_result.Rolls.ToString("N0")</MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["StatMode"]</MudText>
+                            <MudText Typo="Typo.h6">
+                                @(_result.RollMode == LootRollMode.SinglePick ? L["ModeSinglePick"] : L["ModeIndependent"])
+                            </MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["StatEmpty"]</MudText>
+                            <MudText Typo="Typo.h6">@Percent(_result.EmptyRate)</MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["StatAverageItems"]</MudText>
+                            <MudText Typo="Typo.h6">@_result.AverageItemsPerRoll.ToString("0.###")</MudText>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            @* --------------------------------------------------------- Balkendiagramm *@
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["ChartHeading"]</MudText>
+
+                    <div style="overflow-x:auto;">
+                        <svg width="100%" height="@(_result.Rows.Count * RowHeight + 16)"
+                             viewBox="@($"0 0 1000 {_result.Rows.Count * RowHeight + 16}")"
+                             preserveAspectRatio="none"
+                             role="img"
+                             aria-label="@L["ChartHeading"]">
+                            @for (var index = 0; index < _result.Rows.Count; index++)
+                            {
+                                var row = _result.Rows[index];
+                                var y = index * RowHeight + 8;
+                                var width = MaxRate <= 0 ? 0 : row.DropRate / MaxRate * 1000;
+
+                                <rect x="0" y="@y" width="1000" height="@(RowHeight - 10)"
+                                      fill="var(--mud-palette-background-gray)" />
+                                <rect x="0" y="@y" width="@width.ToString("0.##", Culture)" height="@(RowHeight - 10)"
+                                      fill="var(--mud-palette-primary)" />
+                            }
+                        </svg>
+                    </div>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">
+                        @L["ChartHint"]
+                    </MudText>
+                </MudPaper>
+            </MudItem>
+
+            @* ------------------------------------------------------------- Ergebnisse *@
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["TableHeading"]</MudText>
+
+                    <MudSimpleTable Dense="true" Elevation="0">
+                        <thead>
+                            <tr>
+                                <th>@L["ColumnItem"]</th>
+                                <th style="text-align:right;">@L["ColumnChance"]</th>
+                                <th style="text-align:right;">@L["ColumnDropRate"]</th>
+                                <th style="text-align:right;">@L["ColumnDrops"]</th>
+                                <th style="text-align:right;">@L["ColumnAverageQuantity"]</th>
+                                <th style="text-align:right;">@L["ColumnExpected"]</th>
+                                <th style="text-align:right;">@L["ColumnMedianWait"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in _result.Rows)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (string.IsNullOrWhiteSpace(row.ItemName))
+                                        {
+                                            <MudText Typo="Typo.body2" Color="Color.Warning">@L["DeletedItem"]</MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudLink Href="@($"/modules/items/{row.ItemId}")">@row.ItemName</MudLink>
+                                        }
+                                    </td>
+                                    <td style="text-align:right;">@Percent(row.Chance)</td>
+                                    <td style="text-align:right;">@Percent(row.DropRate)</td>
+                                    <td style="text-align:right;" class="gdm-mono">@row.Drops.ToString("N0")</td>
+                                    <td style="text-align:right;">@row.AverageQuantity.ToString("0.##")</td>
+                                    <td style="text-align:right;">@row.ExpectedPerRoll.ToString("0.###")</td>
+                                    <td style="text-align:right;">
+                                        @(row.MedianWait is null ? L["NeverDropped"].Value : row.MedianWait.Value.ToString("N0"))
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-3">
+                        @L["TableHint"]
+                    </MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Loot);
+
+    /// <summary>Zahlen im SVG immer in fester Kultur — ein Komma wäre dort kein Dezimaltrenner.</summary>
+    private static readonly System.Globalization.CultureInfo Culture =
+        System.Globalization.CultureInfo.InvariantCulture;
+
+    private const int RowHeight = 26;
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private LootSimulationResult? _result;
+    private string? _tableName;
+    private Guid? _loadedId;
+    private bool _notFound;
+    private bool _running;
+    private int _rolls = LootSimulation.DefaultRolls;
+    private int _seed = 1;
+
+    /// <summary>Die Balken teilen sich eine Skala, sonst verglichen sie nichts.</summary>
+    private double MaxRate => _result is null || _result.Rows.Count == 0
+        ? 0
+        : _result.Rows.Max(row => row.DropRate);
+
+    private string Subtitle => _result is null
+        ? L["SubtitleIdle"]
+        : L["SubtitleResult", _result.Rolls.ToString("N0"), _result.Seed];
+
+    private List<BreadcrumbItem> Breadcrumbs =>
+    [
+        new(L["BreadcrumbList"], "/modules/loot"),
+        new(_tableName ?? "…", $"/modules/loot/{Id}"),
+        new(L["BreadcrumbSelf"], null, disabled: true)
+    ];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        _result = null;
+        _notFound = false;
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var tables = await Loot.GetTablesAsync(projectId);
+        var table = tables.FirstOrDefault(row => row.Id == Id);
+
+        if (table is null)
+        {
+            _notFound = true;
+            return;
+        }
+
+        _tableName = table.Name;
+    }
+
+    private async Task RunAsync()
+    {
+        _running = true;
+
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            _result = await Loot.SimulateAsync(projectId, Id, _rolls, _seed);
+
+            if (_result is null)
+            {
+                _notFound = true;
+            }
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    /// <summary>
+    /// Ein anderer Startwert ist ein anderer Lauf — dieselbe Tabelle, andere Würfel. Zusammen
+    /// mit dem festen Startwert daneben ist das der Unterschied zwischen „nochmal“ und „nochmal
+    /// dasselbe“.
+    /// </summary>
+    private Task RunWithNewSeedAsync()
+    {
+        _seed = Random.Shared.Next(1, int.MaxValue);
+        return RunAsync();
+    }
+
+    private static string Percent(double value) => value.ToString("0.##") + " %";
+}

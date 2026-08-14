@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Simulation: {0} – GameDevManager</value>
+  </data>
+  <data name="TitleFormat" xml:space="preserve">
+    <value>Simulation: {0}</value>
+  </data>
+  <data name="SubtitleIdle" xml:space="preserve">
+    <value>Noch nicht gewürfelt</value>
+  </data>
+  <data name="SubtitleResult" xml:space="preserve">
+    <value>{0} Würfe, Startwert {1}</value>
+  </data>
+  <data name="BreadcrumbList" xml:space="preserve">
+    <value>Loot-Tables</value>
+  </data>
+  <data name="BreadcrumbSelf" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="ToList" xml:space="preserve">
+    <value>Zur Übersicht</value>
+  </data>
+  <data name="ToEditor" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Diese Loot-Table gibt es im aktuellen Projekt nicht.</value>
+  </data>
+  <data name="RollsLabel" xml:space="preserve">
+    <value>Würfe</value>
+  </data>
+  <data name="SeedLabel" xml:space="preserve">
+    <value>Startwert</value>
+  </data>
+  <data name="SeedHelper" xml:space="preserve">
+    <value>Derselbe Startwert ergibt denselben Lauf.</value>
+  </data>
+  <data name="Run" xml:space="preserve">
+    <value>Würfeln</value>
+  </data>
+  <data name="RunNewSeed" xml:space="preserve">
+    <value>Neuer Startwert</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Noch kein Ergebnis</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Die Prozentzahl an einem Eintrag sagt noch nicht, wie lange ein Spieler auf das seltene Schwert wartet. Der Lauf sagt es.</value>
+  </data>
+  <data name="NoEntriesTitle" xml:space="preserve">
+    <value>Diese Tabelle hat keine Einträge</value>
+  </data>
+  <data name="NoEntriesHint" xml:space="preserve">
+    <value>Ohne Einträge fällt bei jedem Wurf nichts — es gibt nichts auszuwerten.</value>
+  </data>
+  <data name="StatRolls" xml:space="preserve">
+    <value>Würfe</value>
+  </data>
+  <data name="StatMode" xml:space="preserve">
+    <value>Verfahren</value>
+  </data>
+  <data name="ModeIndependent" xml:space="preserve">
+    <value>Unabhängig</value>
+  </data>
+  <data name="ModeSinglePick" xml:space="preserve">
+    <value>Ein Treffer</value>
+  </data>
+  <data name="StatEmpty" xml:space="preserve">
+    <value>Leere Würfe</value>
+  </data>
+  <data name="StatAverageItems" xml:space="preserve">
+    <value>Items je Wurf</value>
+  </data>
+  <data name="ChartHeading" xml:space="preserve">
+    <value>Verteilung</value>
+  </data>
+  <data name="ChartHint" xml:space="preserve">
+    <value>Ein Balken je Eintrag, in der Reihenfolge der Tabelle darunter. Alle teilen sich eine Skala — sonst verglichen sie nichts.</value>
+  </data>
+  <data name="TableHeading" xml:space="preserve">
+    <value>Ergebnis je Eintrag</value>
+  </data>
+  <data name="ColumnItem" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="ColumnChance" xml:space="preserve">
+    <value>Angesetzt</value>
+  </data>
+  <data name="ColumnDropRate" xml:space="preserve">
+    <value>Gefallen</value>
+  </data>
+  <data name="ColumnDrops" xml:space="preserve">
+    <value>Treffer</value>
+  </data>
+  <data name="ColumnAverageQuantity" xml:space="preserve">
+    <value>Menge je Treffer</value>
+  </data>
+  <data name="ColumnExpected" xml:space="preserve">
+    <value>Erwartet je Wurf</value>
+  </data>
+  <data name="ColumnMedianWait" xml:space="preserve">
+    <value>Würfe bis zum Treffer</value>
+  </data>
+  <data name="NeverDropped" xml:space="preserve">
+    <value>nie</value>
+  </data>
+  <data name="DeletedItem" xml:space="preserve">
+    <value>Gelöschtes Item</value>
+  </data>
+  <data name="TableHint" xml:space="preserve">
+    <value>„Angesetzt“ ist die eingetragene Wahrscheinlichkeit, „Gefallen“ das, was der Lauf daraus gemacht hat — bei einem Treffer-Verfahren weichen beide voneinander ab, sobald die Summe über 100 % liegt. „Würfe bis zum Treffer“ ist der Median der Abstände, nicht ihr Mittelwert.</value>
+  </data>
+</root>

@@ -27,6 +27,9 @@
   <data name="UnsavedChanges" xml:space="preserve">
     <value>Ungespeicherte Änderungen</value>
   </data>
+  <data name="Simulate" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>Löschen</value>
   </data>

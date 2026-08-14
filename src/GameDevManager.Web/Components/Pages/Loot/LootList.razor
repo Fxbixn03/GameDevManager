@@ -121,6 +121,16 @@ else
                                 <MudLink Href="@($"/modules/loot/{table.Id}")" Typo="Typo.body1" Class="gdm-ellipsis">
                                     <b>@table.Name</b>
                                 </MudLink>
+                                @* Eine Tabelle ohne Einträge gäbe nichts auszuwerten. *@
+                                @if (table.EntryCount > 0)
+                                {
+                                    <MudTooltip Text="@L["SimulateTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Casino"
+                                                       Size="Size.Small"
+                                                       Href="@($"/modules/loot/{table.Id}/simulation")"
+                                                       aria-label="@L["SimulateAria", table.Name]" />
+                                    </MudTooltip>
+                                }
                                 <EntityDuplicateButton ModuleKey="@Module.Id"
                                                        EntityId="table.Id"
                                                        Name="@table.Name"

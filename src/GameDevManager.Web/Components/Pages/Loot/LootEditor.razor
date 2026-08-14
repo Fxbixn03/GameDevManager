@@ -36,6 +36,14 @@ else
             }
             @if (!_context.IsNew)
             {
+                @if (_context.Entity.Entries.Count > 0)
+                {
+                    <MudButton Variant="Variant.Text"
+                               StartIcon="@Icons.Material.Filled.Casino"
+                               Href="@($"/modules/loot/{_context.Entity.Id}/simulation")">
+                        @L["Simulate"]
+                    </MudButton>
+                }
                 <MudButton Variant="Variant.Text"
                            Color="Color.Error"
                            StartIcon="@Icons.Material.Filled.DeleteOutline"

@@ -236,7 +236,7 @@ Tabelle ein Werkzeug. Speichern je Zelle wie im Übersetzungsraster — eine Bal
 
 *Aufwand: L · Migration: nein · Format: unverändert*
 
-### F15 — Loot-Simulator
+### F15 — Loot-Simulator ✅ umgesetzt
 
 > **Als** Designer **möchte ich** eine Loot-Table zehntausendmal würfeln lassen und die
 > Verteilung sehen, **damit** ich weiß, wie lange ein Spieler im Mittel auf das seltene Schwert
@@ -249,6 +249,10 @@ festen Startwert aus der Oberfläche, damit derselbe Lauf dasselbe Ergebnis lief
 Datenbestand, reine Auswertung — dasselbe Muster wie der Freischaltungs-Graph.
 
 *Aufwand: S · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `LootSimulation` als reiner Rechenkern, `LootService.SimulateAsync` daneben,
+Seite `/modules/loot/{id}/simulation` mit Balkendiagramm als SVG. Startwert aus der Oberfläche,
+Wartezeit als Median, gezählt je Eintrag statt je Item.
 
 ### F16 — Wirtschafts-Prüfung
 
