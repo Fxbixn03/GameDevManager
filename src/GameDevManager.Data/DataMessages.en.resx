@@ -139,6 +139,9 @@
   <data name="QuestNameRequired" xml:space="preserve">
     <value>The quest needs a name.</value>
   </data>
+  <data name="QuestObjectiveTextRequired" xml:space="preserve">
+    <value>Every quest objective needs a text.</value>
+  </data>
   <data name="CurrencyNameRequired" xml:space="preserve">
     <value>The currency needs a name.</value>
   </data>
@@ -522,6 +525,9 @@
   </data>
   <data name="Translate_StoryBody" xml:space="preserve">
     <value>Story text</value>
+  </data>
+  <data name="Translate_QuestObjective" xml:space="preserve">
+    <value>Objective {0}</value>
   </data>
   <data name="Reference_FactionMember" xml:space="preserve">
     <value>Member</value>

@@ -305,6 +305,7 @@ public sealed record QuestListRow(
     string? GiverNpcName,
     Guid? StoryEntryId,
     string? StoryEntryName,
+    int ObjectiveCount,
     Guid? ContentTypeId,
     string? TypeName,
     DateTime UpdatedAtUtc,

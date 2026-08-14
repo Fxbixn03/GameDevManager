@@ -2003,6 +2003,33 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("Quests");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.QuestObjective", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsOptional")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("QuestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestId");
+
+                    b.ToTable("QuestObjectives");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Rarity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3258,6 +3285,17 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.QuestObjective", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Quest", "Quest")
+                        .WithMany("Objectives")
+                        .HasForeignKey("QuestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quest");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Rarity", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -3563,6 +3601,11 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("Offers");
 
                     b.Navigation("Relations");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Quest", b =>
+                {
+                    b.Navigation("Objectives");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Recipe", b =>

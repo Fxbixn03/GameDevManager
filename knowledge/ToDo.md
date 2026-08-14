@@ -14,7 +14,7 @@ andockt. Die Marker am Ende jedes Punktes:
 
 ## A. Inhalt und Modellierung
 
-### F1 — Quest-Ziele als eigene Schritte
+### F1 — Quest-Ziele als eigene Schritte ✅ umgesetzt
 
 > **Als** Quest-Designer **möchte ich** eine Quest in einzelne Ziele zerlegen („Sprich mit Alrik",
 > „Sammle 5 Kräuter", „Kehre zurück"), jedes mit eigener Abschlussbedingung, **damit** ich den
@@ -30,6 +30,11 @@ Bedingungen als Waisen zurück. Der Health Check „Quests ohne Abschlussbedingu
 zusätzlich Ziele ohne Bedingung.
 
 *Aufwand: M · Migration: ja · Format: +1*
+
+**Umgesetzt.** `QuestObjective` als Kind-Sammlung, Migration `QuestObjectives` in allen vier
+Providern, `FormatVersion` auf **9**. Die Abschlussbedingung hängt im Slot `Completion` an der
+GUID des Ziels; der Health Check verlangt bei Zielen eine Bedingung je Ziel statt einer an der
+Quest. Die Ziel-Texte sind über F8 gleich mit übersetzbar.
 
 ### F2 — Feldtyp „Referenzliste"
 

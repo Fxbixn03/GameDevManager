@@ -162,6 +162,97 @@ else
                     </MudStack>
                 </MudPaper>
 
+                @* ------------------------------------------------------------------- Ziele *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionObjectives"]</MudText>
+                        <MudSpacer />
+                        <MudButton Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="AddObjective">
+                            @L["AddObjective"]
+                        </MudButton>
+                    </MudStack>
+
+                    @if (_context.Entity.Objectives.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoObjectives"]</MudText>
+                    }
+                    else
+                    {
+                        <MudStack Spacing="0">
+                            @for (var index = 0; index < _context.Entity.Objectives.Count; index++)
+                            {
+                                var objective = _context.Entity.Objectives[index];
+                                var position = index;
+                                var conditionCount = _objectiveConditionCounts.GetValueOrDefault(objective.Id);
+
+                                <div class="pa-2 gdm-field-row">
+                                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Start">
+                                        <MudText Typo="Typo.subtitle2" Class="gdm-mono mt-3" Style="min-width:32px;">
+                                            @(position + 1).
+                                        </MudText>
+
+                                        <div style="flex:1 1 auto; min-width:0;">
+                                            <MudTextField T="string"
+                                                          Value="objective.Text"
+                                                          ValueChanged="@((string text) => Touch(() => objective.Text = text))"
+                                                          Label="@L["ObjectiveTextLabel"]"
+                                                          Variant="Variant.Outlined"
+                                                          Margin="Margin.Dense"
+                                                          MaxLength="2000" />
+
+                                            <MudSwitch T="bool"
+                                                       Value="objective.IsOptional"
+                                                       ValueChanged="@((bool value) => Touch(() => objective.IsOptional = value))"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Label="@L["ObjectiveOptional"]" />
+                                        </div>
+
+                                        @* Die Abschlussbedingung hängt an der GUID des Ziels — deshalb
+                                           erst nach dem ersten Speichern, wie überall bei Teilobjekten. *@
+                                        <MudTooltip Text="@(_context.IsNew ? L["ObjectiveConditionsAfterSave"] : L["ObjectiveConditions"])">
+                                            <MudButton Size="Size.Small"
+                                                       Variant="@(conditionCount > 0 ? Variant.Filled : Variant.Text)"
+                                                       Color="@(conditionCount > 0 ? Color.Primary : Color.Default)"
+                                                       StartIcon="@Icons.Material.Filled.Rule"
+                                                       Disabled="@(_context.IsNew || _dirty)"
+                                                       OnClick="@(() => EditObjectiveConditionsAsync(objective))">
+                                                @(conditionCount > 0 ? conditionCount.ToString() : L["ObjectiveConditionsShort"].Value)
+                                            </MudButton>
+                                        </MudTooltip>
+
+                                        <MudStack Spacing="0">
+                                            <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
+                                                           Size="Size.Small"
+                                                           Disabled="@(position == 0)"
+                                                           OnClick="@(() => MoveObjective(position, -1))"
+                                                           aria-label="@L["MoveObjectiveUp"]" />
+                                            <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward"
+                                                           Size="Size.Small"
+                                                           Disabled="@(position == _context.Entity.Objectives.Count - 1)"
+                                                           OnClick="@(() => MoveObjective(position, 1))"
+                                                           aria-label="@L["MoveObjectiveDown"]" />
+                                        </MudStack>
+
+                                        <MudTooltip Text="@L["RemoveObjective"]">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => RemoveObjective(objective))"
+                                                           aria-label="@L["RemoveObjective"]" />
+                                        </MudTooltip>
+                                    </MudStack>
+                                </div>
+                            }
+                        </MudStack>
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">
+                            @L["ObjectivesHint"]
+                        </MudText>
+                    }
+                </MudPaper>
+
                 @* ------------------------------------------------------------ Bedingungen *@
                 @if (!_context.IsNew)
                 {
@@ -251,6 +342,7 @@ else
     private List<EntitySummary> _dialogues = [];
     private int _availabilityCount;
     private int _completionCount;
+    private Dictionary<Guid, int> _objectiveConditionCounts = [];
     private Guid? _loadedId;
     private bool _notFound;
     private bool _saving;
@@ -300,9 +392,28 @@ else
             var counts = await Conditions.CountByOwnersAsync([_context.Entity.Id], ConditionSlots.Availability);
             _availabilityCount = counts.GetValueOrDefault(_context.Entity.Id);
 
-            counts = await Conditions.CountByOwnersAsync([_context.Entity.Id], ConditionSlots.Completion);
-            _completionCount = counts.GetValueOrDefault(_context.Entity.Id);
+            await RefreshCompletionCountsAsync();
         }
+    }
+
+    /// <summary>
+    /// Der Abschluss-Slot hängt sowohl an der Quest selbst als auch an jedem einzelnen Ziel —
+    /// beides in einem Zug, damit die Knöpfe nach dem Bedingungs-Dialog stimmen.
+    /// </summary>
+    private async Task RefreshCompletionCountsAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var counts = await Conditions.CountByOwnersAsync([_context.Entity.Id], ConditionSlots.Completion);
+        _completionCount = counts.GetValueOrDefault(_context.Entity.Id);
+
+        var objectiveIds = _context.Entity.Objectives.Select(objective => objective.Id).ToList();
+        _objectiveConditionCounts = objectiveIds.Count == 0
+            ? []
+            : await Conditions.CountByOwnersAsync(objectiveIds, ConditionSlots.Completion);
     }
 
     private static EntitySummary? EntityFor(List<EntitySummary> pool, Guid? id) =>
@@ -316,6 +427,49 @@ else
             : pool.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
 
         return Task.FromResult(matches);
+    }
+
+    private void AddObjective() =>
+        Touch(() => _context!.Entity.Objectives.Add(new QuestObjective
+        {
+            QuestId = _context.Entity.Id,
+            Text = string.Empty,
+            SortOrder = _context.Entity.Objectives.Count
+        }));
+
+    private void RemoveObjective(QuestObjective objective) =>
+        Touch(() => _context!.Entity.Objectives.Remove(objective));
+
+    private void MoveObjective(int index, int offset) =>
+        Touch(() =>
+        {
+            var objectives = _context!.Entity.Objectives;
+            (objectives[index], objectives[index + offset]) =
+                (objectives[index + offset], objectives[index]);
+        });
+
+    /// <summary>
+    /// Die Abschlussbedingung eines Ziels — sie hängt an dessen eigener GUID, genau wie die
+    /// eines Händler-Postens. Der Dialog speichert selbst, deshalb danach nachzählen.
+    /// </summary>
+    private async Task EditObjectiveConditionsAsync(QuestObjective objective)
+    {
+        var parameters = new DialogParameters<ConditionDialog>
+        {
+            { dialog => dialog.OwnerId, objective.Id },
+            { dialog => dialog.OwnerModuleKey, ModuleKeys.Quests },
+            { dialog => dialog.Slot, ConditionSlots.Completion },
+            { dialog => dialog.Subject, L["ObjectiveConditionSubject", objective.Text, _context!.Entity.Name].Value },
+            { dialog => dialog.EmptyHint, L["ObjectiveConditionEmptyHint"].Value }
+        };
+
+        var reference = await Dialogs.ShowAsync<ConditionDialog>(
+            L["ObjectiveConditionsDialogTitle"],
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        await reference.Result;
+        await RefreshCompletionCountsAsync();
     }
 
     private void ChangeType(Guid? contentTypeId) =>
@@ -351,6 +505,10 @@ else
                 Navigation.NavigateTo($"/modules/quests/{_context.Entity.Id}");
                 return;
             }
+
+            // Frisch angelegte Ziele haben ihre GUID erst jetzt in der Datenbank — vorher
+            // führte der Bedingungs-Knopf ins Leere.
+            await RefreshCompletionCountsAsync();
 
             if (_referencesPanel is not null)
             {
@@ -426,6 +584,7 @@ else
         reloaded.Entity.GiverNpcId = entity.GiverNpcId;
         reloaded.Entity.StoryEntryId = entity.StoryEntryId;
         reloaded.Entity.DialogueId = entity.DialogueId;
+        reloaded.Entity.Objectives = entity.Objectives;
 
         _context = reloaded;
         _dirty = wasDirty;

@@ -61,9 +61,10 @@ public class ExportService(
     /// <c>localization/</c> tragen zusätzlich die Texte der Teilobjekte — Dialogzeilen und
     /// ihre Antwortmöglichkeiten (Slot <c>text</c>, adressiert über die GUID der Zeile bzw.
     /// der Antwort), Cutscene-Einstellungen (ebenso) und den Story-Text (Slot <c>body</c> an
-    /// der GUID des Abschnitts).
+    /// der GUID des Abschnitts). Version 9: Quests tragen ihre <c>objectives</c> — die
+    /// einzelnen Ziele, deren Abschlussbedingung als Bedingungssatz an ihrer eigenen GUID hängt.
     /// </remarks>
-    public const int FormatVersion = 8;
+    public const int FormatVersion = 9;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -116,7 +117,7 @@ public class ExportService(
         var dialogues = await LoadContentAsync(db.Dialogues
             .Include(d => d.Participants)
             .Include(d => d.Lines).ThenInclude(l => l.Choices));
-        var quests = await LoadContentAsync(db.Quests);
+        var quests = await LoadContentAsync(db.Quests.Include(q => q.Objectives));
         var events = await LoadContentAsync(db.GameEvents.Include(e => e.Spawns));
         var skills = await LoadContentAsync(db.Skills);
         var classes = await LoadContentAsync(db.CharacterClasses);
@@ -254,6 +255,7 @@ public class ExportService(
             s.Participants = [.. s.Participants.OrderBy(p => p.SortOrder).ThenBy(p => p.Id)];
             s.Links = [.. s.Links.OrderBy(l => l.SortOrder).ThenBy(l => l.Id)];
         });
+        quests.ForEach(q => q.Objectives = [.. q.Objectives.OrderBy(o => o.SortOrder).ThenBy(o => o.Id)]);
         events.ForEach(e => e.Spawns = [.. e.Spawns.OrderBy(s => s.SortOrder).ThenBy(s => s.Id)]);
         effects.ForEach(e => e.Assignments = [.. e.Assignments.OrderBy(a => a.SortOrder).ThenBy(a => a.Id)]);
         cutscenes.ForEach(c => c.Shots = [.. c.Shots.OrderBy(s => s.SortOrder).ThenBy(s => s.Id)]);

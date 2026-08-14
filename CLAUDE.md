@@ -170,6 +170,15 @@ Der Health Check „Loot-Wahrscheinlichkeiten über 100 %“ aus dem Konzept gil
 
 NPCs verweisen über `Npc.LootTableId` auf eine Tabelle. Beim Löschen einer Tabelle setzt `LootService` diese Verweise auf `null`, sonst zeigten NPCs auf etwas, das es nicht mehr gibt.
 
+### Quests und ihre Ziele
+
+`QuestObjective` zerlegt eine Quest in ihre Schritte („Sprich mit Alrik“, „Sammle 5 Kräuter“, „Kehre zurück“) — eine Kind-Sammlung nach dem Muster von `RecipeIngredient` und `CutsceneShot`, mit Text, Reihenfolge und `IsOptional`. Vier Dinge dahinter:
+
+- **Die Abschlussbedingung steht nicht am Ziel**, sondern als `ConditionSet` im Slot `Completion` an der **GUID des Ziels**. Ein Teilobjekt mit eigener GUID darf Besitzer eines Bedingungssatzes sein — genau der Fall, für den `ConditionSlots` gebaut ist; es brauchte also keine neue Mechanik, nur den Aufruf von `EntityCleanup.DeleteForEntitiesAsync` mit **allen** Ziel-GUIDs beim Löschen der Quest und beim Entfernen eines einzelnen Ziels.
+- **Der Health Check „Quests ohne Abschlussbedingung“ wechselt die Ebene**, sobald es Ziele gibt: Er verlangt dann eine Bedingung an **jedem** Ziel statt einer an der Quest — der Verlauf sagt, was die Quest als Ganzes nicht mehr sagen muss. Ohne Ziele bleibt alles wie zuvor. Optionale Ziele sind nicht ausgenommen: Auch ein Nebenziel muss erfüllbar sein, sonst ist es keines.
+- **In der Maske ist der Bedingungs-Knopf gesperrt, solange ungespeicherte Änderungen anstehen** — die Bedingung hängt an einer GUID, die es in der Datenbank erst nach dem Speichern gibt. Nach dem Speichern zählt der Editor die Bedingungen aller Ziele neu.
+- **Die Ziel-Texte sind Spieltexte** und deshalb übersetzbar: `QuestEntitySource` überschreibt `GetTranslatableTextsAsync` (Slot `text` an der Ziel-GUID), dieselbe Anbindung wie die Dialogzeilen.
+
 ### Dialoge
 
 Die Klasse heißt `Dialogue` und nicht `Dialog`, weil der zugehörige Dienst sonst `DialogService` hieße und mit `MudBlazor.DialogService` kollidierte — in Razor-Dateien sind beide Namensräume importiert. In der Oberfläche heißt es weiterhin „Dialog“.
@@ -320,7 +329,7 @@ Eingesammelt wird **nur die Eigenschaft `id`**: Was mitkopiert wird, bekommt ein
 
 ### Lokalisierung der Spielinhalte
 
-`ContentLanguage` (Sprachen je Projekt) und `ContentTranslation` (die Texte), bedient von `LocalizationService`, Oberfläche im Werkzeug-Modul `ModuleKeys.Localization`. Migration in allen vier Providern: `ContentLocalization`, `FormatVersion` des Exports auf **8**. Acht Dinge:
+`ContentLanguage` (Sprachen je Projekt) und `ContentTranslation` (die Texte), bedient von `LocalizationService`, Oberfläche im Werkzeug-Modul `ModuleKeys.Localization`. Migration in allen vier Providern: `ContentLocalization`. Acht Dinge:
 
 - **Die Ausgangssprache ist keine Übersetzung.** Ihre Texte stehen dort, wo sie ohnehin stehen — Name, Beschreibung, Textfelder. Nur die weiteren Sprachen hängen als `ContentTranslation` daneben. Sonst müsste jedes Modul seine Stammdaten durch eine Übersetzungstabelle ersetzen, und ein Projekt mit einer Sprache zahlte für etwas, das es nicht braucht. Genau **eine** Sprache je Projekt trägt `IsSource`; die erste angelegte wird es automatisch, und löschen lässt sie sich nicht.
 - **Der `Slot` sagt, welcher Text gemeint ist**: `"name"`, `"description"`, `"text"`, `"body"` oder die GUID einer `FieldDefinition` — eine Textspalte, kein Verweis, dieselbe Überlegung wie beim `Slot` der Bedingungssätze. Neue Textfelder kommen damit ohne Änderung an dieser Stelle mit.
@@ -414,7 +423,7 @@ Für die Projektleiste liest `ExportSnapshotService.FindLatestExportedAtUtc` den
 Drei Entscheidungen, die man kennen muss:
 
 - **Serialisiert werden die Domain-Entitäten selbst**, kein DTO-Satz. Ein `JsonTypeInfo`-Modifier entfernt Navigationsobjekte (Referenzen bleiben als GUID-Spalten — die Regel des Konzepts) und berechnete Nur-Lese-Eigenschaften; Kind-Sammlungen bleiben eingebettet. Wer eine neue Kind-Sammlung lädt, muss sie im Service auch `Include`n und stabil sortieren — nicht geladene Sammlungen erschienen sonst als leere Listen im Export. Sammlungen, die trotz ihrer Form **nicht** ins Archiv gehören, stehen in `IsUnloadedCollection`: `AssetTag.Assignments` (die Zuordnungen stehen an den Assets), `ContentType.InheritedFields` (nur zusammengetragen) und `ContentType.Children` (die Unterarten stehen ohnehin als eigene Einträge in derselben Liste).
-- **Alle Listen sind stabil sortiert** (Name bzw. SortOrder, dann GUID): derselbe Stand ergibt denselben Export — die Grundlage der Diff-Ansicht. `FormatVersion` bei jeder Format-Änderung erhöhen; sie steht auf **8**, seit die Zeichenketten-Tabellen unter `localization/` auch die Texte der Teilobjekte tragen (davor **7** für die Lokalisierung selbst, **6** für den `isTagList`-Schalter der Felddefinitionen, **5** für NPC-Beziehungen, Karten-Ebenen und die erweiterten Story-Abschnitte, **4** für die `points` der Karten-Markierungen, **3** für `content/world.json`, **2** für die `parentId` der Arten).
+- **Alle Listen sind stabil sortiert** (Name bzw. SortOrder, dann GUID): derselbe Stand ergibt denselben Export — die Grundlage der Diff-Ansicht. `FormatVersion` bei jeder Format-Änderung erhöhen; sie steht auf **9**, seit Quests ihre `objectives` tragen (davor **8** für die Texte der Teilobjekte in den Zeichenketten-Tabellen unter `localization/`, **7** für die Lokalisierung selbst, **6** für den `isTagList`-Schalter der Felddefinitionen, **5** für NPC-Beziehungen, Karten-Ebenen und die erweiterten Story-Abschnitte, **4** für die `points` der Karten-Markierungen, **3** für `content/world.json`, **2** für die `parentId` der Arten).
 - **Das ZIP entsteht in einer Temp-Datei** (`DeleteOnClose`) und wird dann in den Response kopiert: `ZipArchive` schließt Einträge synchron ab, und der Response-Stream von ASP.NET Core verbietet synchrone Schreibzugriffe.
 
 Was Export, Import und Diff gemeinsam über den Aufbau des Archivs wissen (JSON-Regeln samt `JsonTypeInfo`-Modifier, Manifest-Suche über alle Engine-Präfixe, Zuordnung Inhaltsdatei → Modul), steht in [ExportFormat.cs](src/GameDevManager.Data/Services/ExportFormat.cs).
@@ -438,7 +447,7 @@ Die Export-Seite zeigt außerdem die offenen **Health-Check-Funde** über dem Do
 
 ## Neuere Erweiterungen (14.08.2026)
 
-Was man beim Weiterarbeiten an den neuen Teilen wissen muss — die Migration dazu heißt in allen vier Providern `NpcRelationsMapLayersStoryAndBoards` (danach kam `FieldTagList` für die Stichwortfelder), die `FormatVersion` des Exports steht inzwischen auf **8**:
+Was man beim Weiterarbeiten an den neuen Teilen wissen muss — die Migration dazu heißt in allen vier Providern `NpcRelationsMapLayersStoryAndBoards` (danach kam `FieldTagList` für die Stichwortfelder), die `FormatVersion` des Exports steht inzwischen auf **9**:
 
 - **NPC-Beziehungen** (`NpcRelationType` + `NpcRelation`): Die Beziehungsart ist ein Bezeichnungspaar (Richtung/Gegenrichtung), bewusst keine `ContentType`-Art — sie trägt keine Felder. Beziehungen sind gerichtete Kind-Sammlungen des Quell-NPCs (Export eingebettet in `npcs.json`, die Arten daneben als `relationTypes`); die Gegenseite hängt als GUID ohne Fremdschlüssel daran, `NpcService.DeleteNpcAsync` räumt eingehende Beziehungen selbst ab. Die Arten hängen per Restrict-Fremdschlüssel an den Beziehungen — beim Projekt-Wipe deshalb **erst die NPCs, dann die Arten** löschen. `DeleteRelationTypeAsync` ist ein reiner `ExecuteDelete`-Pfad und prüft den `PermissionGuard` selbst.
 - **Wesenszüge/Vorlieben/Persönlichkeit am NPC**: Textspalten, keine Tabellen — Vorlieben/Persönlichkeit kommagetrennt (kanonisch über `KeywordList.Normalize`, dieselbe Hilfe wie bei den Stichwortfeldern), Wesenszüge kanonisch über `NpcTraits.Parse/Format` (feste Schlüssel, feste Reihenfolge — derselbe Stand ergibt denselben Export). UI: `ChipListInput` und `TraitBarEditor` unter `Components/Content`.

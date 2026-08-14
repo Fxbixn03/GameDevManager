@@ -172,6 +172,12 @@ else
                                             @(quest.StoryEntryName ?? L["DeletedStoryEntry"].Value)
                                         </MudChip>
                                     }
+                                    @if (quest.ObjectiveCount > 0)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                            @L["ObjectiveChip", quest.ObjectiveCount]
+                                        </MudChip>
+                                    }
                                     @if (quest.TypeName is null)
                                     {
                                         <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoType"]</MudText>

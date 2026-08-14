@@ -41,4 +41,38 @@ public class Quest : ContentEntity
 
     /// <summary>Der Dialog, aus dem die Quest hervorgeht.</summary>
     public Guid? DialogueId { get; set; }
+
+    /// <summary>Die einzelnen Schritte, in die die Quest zerfällt — in ihrer Reihenfolge.</summary>
+    public List<QuestObjective> Objectives { get; set; } = [];
+}
+
+/// <summary>
+/// Ein einzelnes Ziel einer Quest — „Sprich mit Alrik“, „Sammle 5 Kräuter“, „Kehre zurück“.
+/// <para>
+/// Die Abschlussbedingung hängt nicht hier, sondern als <see cref="ConditionSet"/> im Slot
+/// <see cref="ConditionSlots.Completion"/> an der GUID des Ziels: Ein Teilobjekt mit eigener
+/// GUID darf Besitzer eines Bedingungssatzes sein — genau der Fall, für den die Slots gebaut
+/// sind. Es braucht dafür also keine neue Mechanik, nur die Zusicherung, dass
+/// <c>DeleteQuestAsync</c> die Ziel-GUIDs mit abräumt.
+/// </para>
+/// </summary>
+public class QuestObjective
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public Guid QuestId { get; set; }
+
+    public Quest? Quest { get; set; }
+
+    /// <summary>Was der Spieler tun soll.</summary>
+    public required string Text { get; set; }
+
+    /// <summary>Position im Verlauf, klein = früh.</summary>
+    public int SortOrder { get; set; }
+
+    /// <summary>
+    /// Ein Nebenziel, das die Quest auch unerledigt abschließen lässt. Es bleibt in der
+    /// Reihenfolge stehen — der Health Check übergeht es nicht, er nennt es nur anders.
+    /// </summary>
+    public bool IsOptional { get; set; }
 }

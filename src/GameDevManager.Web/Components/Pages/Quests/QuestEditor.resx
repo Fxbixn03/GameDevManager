@@ -81,6 +81,51 @@
   <data name="DialogueHelper" xml:space="preserve">
     <value>Der Dialog, aus dem die Quest hervorgeht.</value>
   </data>
+  <data name="SectionObjectives" xml:space="preserve">
+    <value>Ziele</value>
+  </data>
+  <data name="AddObjective" xml:space="preserve">
+    <value>Ziel hinzufügen</value>
+  </data>
+  <data name="NoObjectives" xml:space="preserve">
+    <value>Noch keine Ziele. Ohne Ziele ist die Quest fertig oder nicht — dazwischen gibt es nichts.</value>
+  </data>
+  <data name="ObjectiveTextLabel" xml:space="preserve">
+    <value>Was zu tun ist</value>
+  </data>
+  <data name="ObjectiveOptional" xml:space="preserve">
+    <value>Optional</value>
+  </data>
+  <data name="ObjectiveConditions" xml:space="preserve">
+    <value>Abschlussbedingung dieses Ziels</value>
+  </data>
+  <data name="ObjectiveConditionsShort" xml:space="preserve">
+    <value>Bedingung</value>
+  </data>
+  <data name="ObjectiveConditionsAfterSave" xml:space="preserve">
+    <value>Erst speichern — die Bedingung hängt an der GUID des Ziels.</value>
+  </data>
+  <data name="ObjectiveConditionsDialogTitle" xml:space="preserve">
+    <value>Abschlussbedingung des Ziels</value>
+  </data>
+  <data name="ObjectiveConditionSubject" xml:space="preserve">
+    <value>„{0}“ in {1}</value>
+  </data>
+  <data name="ObjectiveConditionEmptyHint" xml:space="preserve">
+    <value>Ohne Bedingung ließe sich dieser Schritt nie abhaken.</value>
+  </data>
+  <data name="MoveObjectiveUp" xml:space="preserve">
+    <value>Ziel nach oben</value>
+  </data>
+  <data name="MoveObjectiveDown" xml:space="preserve">
+    <value>Ziel nach unten</value>
+  </data>
+  <data name="RemoveObjective" xml:space="preserve">
+    <value>Ziel entfernen</value>
+  </data>
+  <data name="ObjectivesHint" xml:space="preserve">
+    <value>Hat jedes Ziel eine Abschlussbedingung, gilt die Quest als versorgt — der Health Check schaut dann auf die Ziele statt auf die Quest.</value>
+  </data>
   <data name="SectionConditions" xml:space="preserve">
     <value>Bedingungen</value>
   </data>

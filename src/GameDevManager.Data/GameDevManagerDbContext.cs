@@ -60,6 +60,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<Quest> Quests => Set<Quest>();
 
+    public DbSet<QuestObjective> QuestObjectives => Set<QuestObjective>();
+
     public DbSet<GameEvent> GameEvents => Set<GameEvent>();
 
     public DbSet<EventSpawn> EventSpawns => Set<EventSpawn>();
@@ -543,6 +545,16 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.HasIndex(q => q.GiverNpcId);
             entity.HasIndex(q => q.StoryEntryId);
             entity.HasIndex(q => q.DialogueId);
+        });
+
+        modelBuilder.Entity<QuestObjective>(entity =>
+        {
+            entity.Property(o => o.Text).HasMaxLength(2000).IsRequired();
+
+            entity.HasOne(o => o.Quest)
+                .WithMany(q => q.Objectives)
+                .HasForeignKey(o => o.QuestId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         ConfigureContentEntity<GameEvent>(modelBuilder);

@@ -583,6 +583,33 @@ public sealed class QuestEntitySource(IStringLocalizer<DataMessages> messages)
 
         return hits;
     }
+
+    /// <summary>Die Ziele der Quest — der Text, den der Spieler in seinem Questlog liest.</summary>
+    public override async Task<List<TranslatableText>> GetTranslatableTextsAsync(
+        GameDevManagerDbContext db, Guid projectId, CancellationToken ct)
+    {
+        var objectives = await db.QuestObjectives
+            .AsNoTracking()
+            .Where(objective => objective.Quest!.GameProjectId == projectId)
+            .OrderBy(objective => objective.Quest!.Name)
+            .ThenBy(objective => objective.SortOrder)
+            .Select(objective => new
+            {
+                objective.Id,
+                objective.Text,
+                objective.SortOrder,
+                objective.QuestId,
+                QuestName = objective.Quest!.Name
+            })
+            .ToListAsync(ct);
+
+        return
+        [
+            .. objectives.Select(objective => new TranslatableText(
+                objective.Id, objective.QuestId, objective.QuestName, TranslationSlots.Text,
+                Messages["Translate_QuestObjective", objective.SortOrder + 1].Value, objective.Text))
+        ];
+    }
 }
 
 /// <summary>

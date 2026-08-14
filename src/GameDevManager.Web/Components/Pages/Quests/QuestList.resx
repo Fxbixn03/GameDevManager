@@ -57,6 +57,9 @@
   <data name="GiverChip" xml:space="preserve">
     <value>von {0}</value>
   </data>
+  <data name="ObjectiveChip" xml:space="preserve">
+    <value>{0} Ziel(e)</value>
+  </data>
   <data name="DeletedNpc" xml:space="preserve">
     <value>(gelöschter NPC)</value>
   </data>
