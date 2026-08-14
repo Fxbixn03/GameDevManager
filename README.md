@@ -69,6 +69,7 @@ Die Seite „Import &amp; Export“ deckt den kompletten Kreislauf ab:
 - **Import** des Export-ZIPs, um ein Projekt umzuziehen oder eine Sicherung wiederherzustellen (alle GUID-Referenzen bleiben erhalten)
 - **Exportstände**: Stände lassen sich aufbewahren, herunterladen und paarweise — oder gegen den aktuellen Stand — vergleichen; der Diff zeigt je Modul, was dazukam, wegfiel und welche Eigenschaften sich geändert haben
 - **Sicherheitsnetz**: Vor einem ersetzenden Import und vor dem Löschen eines Projekts entsteht automatisch ein Exportstand — der bisherige Bestand ist damit immer wiederherstellbar
+- **Aufbewahrung**: Damit das Verzeichnis nicht endlos wächst, fallen alte Stände nach einer Obergrenze je Projekt und wahlweise nach einem Höchstalter weg (`Exports:MaxPerProject`, Vorgabe 20, und `Exports:MaxAgeDays`, Vorgabe aus); der jüngste Stand bleibt in jedem Fall stehen
 - **Hinweis statt Sperre**: Offene Health-Check-Funde zeigt die Seite vor dem Export an, blockiert ihn aber nicht — ein Zwischenstand muss sich exportieren lassen
 
 Projekte lassen sich über dieselbe Strecke **duplizieren** („Kopie anlegen“ auf der Projektseite): Der Stand wird flüchtig exportiert, alle GUIDs werden neu vergeben und in ein frisches Projekt eingespielt. Einzelne Einträge kopiert dagegen „Als Vorlage kopieren“ in jeder Modul-Liste — mit Feldwerten, individuellen Feldern und Bedingungen, aber weiterhin auf dieselben fremden Entitäten verweisend.

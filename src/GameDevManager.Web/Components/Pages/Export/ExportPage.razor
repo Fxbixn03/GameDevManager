@@ -5,6 +5,7 @@
 @inject ModuleLabels Modules
 @inject NavigationManager Nav
 @inject ExportSnapshotService Snapshots
+@inject ExportStorageOptions ExportStorage
 @inject ImportService Importer
 @inject DashboardOverviewService Overview
 @inject ISnackbar Snackbar
@@ -117,9 +118,23 @@
                     @L["KeepSnapshotButton"]
                 </MudButton>
                 <MudSwitch T="bool" @bind-Value="_snapshotIncludeAssets" Color="Color.Primary" Label="@L["SnapshotIncludeAssets"]" />
+
+                @* Von Hand, weil eine geänderte Aufbewahrung sonst erst beim nächsten Stand griffe. *@
+                @if (ExportStorage.HasRetentionRule)
+                {
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CleaningServices"
+                               Disabled="@(_projectId == Guid.Empty || _creatingSnapshot || _pruning)"
+                               OnClick="PruneAsync">
+                        @L["PruneButton"]
+                    </MudButton>
+                }
             </MudStack>
 
-            @if (_creatingSnapshot)
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-3">@RetentionHint</MudText>
+
+            @if (_creatingSnapshot || _pruning)
             {
                 <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-3" />
             }
@@ -333,6 +348,7 @@
     private List<ExportSnapshot> _snapshots = [];
     private bool _snapshotIncludeAssets = true;
     private bool _creatingSnapshot;
+    private bool _pruning;
 
     private IBrowserFile? _importFile;
     private bool _replaceExisting;
@@ -414,6 +430,21 @@
     {
         _snapshots = Snapshots.List(_projectId);
 
+        // Ein Stand, den es nicht mehr gibt — von Hand gelöscht oder von der Aufbewahrung
+        // weggeräumt —, taugt nicht mehr als Seite des Vergleichs. Die Auswahl fällt dann auf
+        // den aktuellen Stand zurück; geprüft wird hier und nicht je Aufrufer, damit auch das
+        // Aufräumen beim Anlegen eines Standes nicht ins Leere zeigen lässt.
+        var known = _snapshots.Select(snapshot => snapshot.FileName).ToHashSet(StringComparer.Ordinal);
+
+        if (_diffLeft != CurrentStateKey && !known.Contains(_diffLeft))
+        {
+            _diffLeft = CurrentStateKey;
+        }
+        if (_diffRight != CurrentStateKey && !known.Contains(_diffRight))
+        {
+            _diffRight = CurrentStateKey;
+        }
+
         // Voreinstellung des Vergleichs: jüngster aufbewahrter Stand gegen den aktuellen.
         if (_diffLeft == CurrentStateKey && _snapshots.Count > 0)
         {
@@ -440,6 +471,46 @@
         }
     }
 
+    /// <summary>
+    /// Was die eingestellte Aufbewahrung bedeutet, im Klartext. Auch der Fall „unbegrenzt“
+    /// steht da: Sonst wäre nicht zu erkennen, dass es die Einstellung überhaupt gibt.
+    /// </summary>
+    private string RetentionHint => (ExportStorage.MaxPerProject > 0, ExportStorage.MaxAgeDays > 0) switch
+    {
+        (true, true) => L["RetentionHintBoth", ExportStorage.MaxPerProject, ExportStorage.MaxAgeDays],
+        (true, false) => L["RetentionHintCount", ExportStorage.MaxPerProject],
+        (false, true) => L["RetentionHintAge", ExportStorage.MaxAgeDays],
+        _ => L["RetentionHintOff"]
+    };
+
+    private async Task PruneAsync()
+    {
+        _pruning = true;
+        try
+        {
+            var removed = await Snapshots.PruneAsync(_projectId);
+
+            string message = removed.Count switch
+            {
+                0 => L["PrunedNothingMessage"],
+                1 => L["PrunedOneMessage"],
+                _ => L["PrunedMessage", removed.Count]
+            };
+
+            Snackbar.Add(message, removed.Count == 0 ? Severity.Info : Severity.Success);
+
+            LoadSnapshots();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _pruning = false;
+        }
+    }
+
     private async Task DeleteSnapshotAsync(ExportSnapshot snapshot)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
@@ -458,16 +529,7 @@
             await Snapshots.DeleteAsync(snapshot.FileName);
             Snackbar.Add(L["SnapshotDeletedMessage"], Severity.Success);
 
-            // Zeigte der Vergleich auf den gelöschten Stand, fällt er auf den aktuellen zurück.
-            if (_diffLeft == snapshot.FileName)
-            {
-                _diffLeft = CurrentStateKey;
-            }
-            if (_diffRight == snapshot.FileName)
-            {
-                _diffRight = CurrentStateKey;
-            }
-
+            // Zeigte der Vergleich hierher, fällt er in LoadSnapshots auf den aktuellen zurück.
             LoadSnapshots();
         }
         catch (ContentValidationException ex)

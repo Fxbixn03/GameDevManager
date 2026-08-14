@@ -9,12 +9,11 @@ Stand 14.08.2026 — **die offenen Punkte aus dem Konzept sind abgearbeitet, ebe
 - [ ] **Massenbearbeitung.** Mehrere Entitäten markieren und gemeinsam Art zuweisen, Tags vergeben oder einen Feldwert setzen — bei hunderten Items lohnt das schnell.
 - [ ] **CSV-Import/-Export je Modul.** Balancing wird oft in Tabellen gepflegt; ein Spalten-Mapping auf die Felder der Art (Import aktualisiert über die GUID- oder Namensspalte) würde den Weg Tabelle ↔ Tool schließen.
 - [ ] **Lokalisierung der Spielinhalte.** Item-Namen, Beschreibungen, Dialog- und Quest-Texte in mehreren Sprachen pflegen und mit exportieren. Das größte der Ideen-Themen (eigene Übersetzungstabelle je Text, Sprachwahl im Export, Fortschrittsanzeige „was ist noch unübersetzt“) — für jedes Spiel mit mehr als einer Sprache aber zentral.
-- [x] **Änderungsprotokoll je Entität in der Maske.** Erledigt: Jede Bearbeitungsmaske zeigt neben der Referenzansicht den Abschnitt „Geschichte“ (`EntityHistoryPanel`) — die jüngsten Einträge dieser Entität mit Zeitpunkt, Benutzer und geänderten Eigenschaften, mit „Weitere laden“ zum Blättern. Nach dem Speichern frischt er sich mit der Referenzansicht auf; wer das Protokoll-Modul nicht sehen darf, bekommt ihn nicht.
 - [ ] **Kurven vergleichen.** Zwei Levelkurven übereinander zeichnen (Spieler gegen Gegner, Klasse A gegen B) — das Diagramm kann heute nur eine.
 
 ### Betrieb & Sicherheit
 
-- [ ] **Aufräumen alter Exportstände.** Seit das Sicherheitsnetz bei jedem ersetzenden Import und jedem Projektlöschen einen Stand anlegt, wächst das Verzeichnis von allein. Sinnvoll wäre eine Obergrenze je Projekt (die ältesten fallen weg) oder ein Höchstalter, konfigurierbar neben `Exports:StoragePath`.
+- [x] **Aufräumen alter Exportstände.** *(umgesetzt)* `Exports:MaxPerProject` (Vorgabe 20) und `Exports:MaxAgeDays` (Vorgabe aus) stehen neben `Exports:StoragePath`; aufgeräumt wird bei jedem neu angelegten Stand — dem von Hand wie dem Sicherheitsnetz — und über „Jetzt aufräumen“ auf der Export-Seite. Der jüngste Stand bleibt in jedem Fall stehen.
 - [ ] **Aufräumen des Änderungsprotokolls.** Dasselbe eine Ebene tiefer: Nach einem Jahr Arbeit stehen dort sehr viele Zeilen. Ein Höchstalter oder eine Obergrenze je Projekt wäre die passende Antwort.
 - [ ] **Englische Oberfläche.** Die resx-Struktur ist darauf vorbereitet (neutral = Deutsch, Satelliten-resx je Sprache plus Sprachwahl) — reine Übersetzungsarbeit, kein Umbau.
 

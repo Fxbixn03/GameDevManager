@@ -141,6 +141,30 @@
   <data name="SnapshotDeletedMessage" xml:space="preserve">
     <value>Der Stand wurde gelöscht.</value>
   </data>
+  <data name="PruneButton" xml:space="preserve">
+    <value>Jetzt aufräumen</value>
+  </data>
+  <data name="PrunedOneMessage" xml:space="preserve">
+    <value>Ein alter Stand wurde entfernt.</value>
+  </data>
+  <data name="PrunedMessage" xml:space="preserve">
+    <value>{0} alte Stände wurden entfernt.</value>
+  </data>
+  <data name="PrunedNothingMessage" xml:space="preserve">
+    <value>Es war nichts aufzuräumen.</value>
+  </data>
+  <data name="RetentionHintCount" xml:space="preserve">
+    <value>Aufbewahrung: höchstens {0} Stände je Projekt — beim Anlegen eines neuen fallen die ältesten weg. Der jüngste Stand bleibt in jedem Fall stehen.</value>
+  </data>
+  <data name="RetentionHintAge" xml:space="preserve">
+    <value>Aufbewahrung: höchstens {0} Tage — ältere Stände fallen beim Anlegen eines neuen weg. Der jüngste Stand bleibt in jedem Fall stehen.</value>
+  </data>
+  <data name="RetentionHintBoth" xml:space="preserve">
+    <value>Aufbewahrung: höchstens {0} Stände je Projekt, und keiner älter als {1} Tage — beim Anlegen eines neuen fällt weg, was darüber liegt. Der jüngste Stand bleibt in jedem Fall stehen.</value>
+  </data>
+  <data name="RetentionHintOff" xml:space="preserve">
+    <value>Aufbewahrung: unbegrenzt — Stände bleiben liegen, bis sie hier von Hand gelöscht werden. Eine Obergrenze oder ein Höchstalter lässt sich über „Exports:MaxPerProject“ bzw. „Exports:MaxAgeDays“ einstellen.</value>
+  </data>
   <data name="ImportHeading" xml:space="preserve">
     <value>Import</value>
   </data>

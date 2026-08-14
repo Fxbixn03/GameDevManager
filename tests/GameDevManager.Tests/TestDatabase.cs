@@ -48,7 +48,8 @@ public sealed class TestDatabase : IDisposable
 
         services.AddSingleton<IAssetStorage, InMemoryAssetStorage>();
         services.AddSingleton(new AssetStorageOptions { RootPath = Path.GetTempPath() });
-        services.AddSingleton(new ExportStorageOptions { RootPath = _exportPath });
+        ExportOptions = new ExportStorageOptions { RootPath = _exportPath };
+        services.AddSingleton(ExportOptions);
         services.AddScoped<ExportSnapshotService>();
         services.AddGameDevManagerContentServices();
 
@@ -101,6 +102,12 @@ public sealed class TestDatabase : IDisposable
 
     /// <summary>Wo die Exportstände dieses Tests liegen — der Ordner vergeht mit ihm.</summary>
     public string ExportPath => _exportPath;
+
+    /// <summary>
+    /// Der Dateispeicher der Exportstände samt Aufbewahrung. Veränderbar, damit ein Test die
+    /// Grenzen umstellen kann — im Betrieb kommen sie aus dem Abschnitt „Exports“.
+    /// </summary>
+    public ExportStorageOptions ExportOptions { get; }
 
     public void Dispose()
     {

@@ -54,6 +54,10 @@ public sealed record SnapshotDiff(IReadOnlyList<SnapshotFileDiff> Files)
 /// hat sich wirklich geändert. Gemeldet werden je Datei: dazugekommen, weggefallen und geändert
 /// (mit den Namen der geänderten Eigenschaften).
 /// </para>
+/// <para>
+/// Wie lange Stände liegen bleiben, sagt die Aufbewahrung in den <see cref="ExportStorageOptions"/>
+/// — siehe <see cref="PruneAsync"/>.
+/// </para>
 /// </summary>
 public partial class ExportSnapshotService(
     ExportService export,
@@ -97,8 +101,94 @@ public partial class ExportSnapshotService(
             await export.WriteExportAsync(projectId, ExportTarget.Json, includeAssets, file, ct);
         }
 
-        return ReadSnapshotInfo(path)
+        var snapshot = ReadSnapshotInfo(path)
             ?? throw new ContentValidationException(messages["Export_SnapshotMissing"].Value);
+
+        // Aufgeräumt wird hier und nicht in der Oberfläche: Das Sicherheitsnetz legt bei jedem
+        // ersetzenden Import und jedem Projektlöschen einen Stand an, und was von allein
+        // wächst, muss auch von allein wieder abnehmen.
+        PruneCore(projectId);
+
+        return snapshot;
+    }
+
+    /// <summary>
+    /// Räumt die Stände des Projekts nach der eingestellten Aufbewahrung ab
+    /// (<see cref="ExportStorageOptions.MaxPerProject"/> und
+    /// <see cref="ExportStorageOptions.MaxAgeDays"/>) und liefert die entfernten zurück.
+    /// <para>
+    /// Läuft nach jedem neu angelegten Stand von selbst; von Hand gerufen wird sie, wenn eine
+    /// geänderte Einstellung sofort greifen soll, statt erst beim nächsten Stand.
+    /// </para>
+    /// </summary>
+    public async Task<IReadOnlyList<ExportSnapshot>> PruneAsync(
+        Guid projectId, CancellationToken ct = default)
+    {
+        // Wie beim Löschen eines einzelnen Standes: Die Stände sind Teil des Exports.
+        await guard.EnsureCanExportAsync(ct);
+
+        return PruneCore(projectId);
+    }
+
+    /// <summary>
+    /// Das eigentliche Aufräumen — ungeprüft, damit es auch hinter dem Sicherheitsnetz läuft.
+    /// <para>
+    /// Gearbeitet wird auf <see cref="List"/> und nicht auf dem Verzeichnis: Entfernt wird
+    /// genau das, was die Historie auch zeigt. Eine fremde oder kaputte Datei im Ordner taucht
+    /// dort nicht auf und ist nicht unsere, sie zu löschen.
+    /// </para>
+    /// <para>
+    /// <b>Der jüngste Stand bleibt in jedem Fall stehen</b>, auch wenn er über dem Höchstalter
+    /// liegt: Ein Projekt, an dem lange niemand arbeitet, stünde sonst irgendwann ganz ohne
+    /// Sicherung da — und genau der letzte Stand ist der, auf den man zurückgeht.
+    /// </para>
+    /// </summary>
+    private IReadOnlyList<ExportSnapshot> PruneCore(Guid projectId)
+    {
+        if (!options.HasRetentionRule)
+        {
+            return [];
+        }
+
+        var snapshots = List(projectId);
+        if (snapshots.Count <= 1)
+        {
+            return [];
+        }
+
+        var oldestAllowed = options.MaxAgeDays > 0
+            ? DateTime.UtcNow.AddDays(-options.MaxAgeDays)
+            : (DateTime?)null;
+
+        var removed = new List<ExportSnapshot>();
+
+        // Index 0 ist der jüngste Stand — die Schleife beginnt bewusst bei 1.
+        for (var index = 1; index < snapshots.Count; index++)
+        {
+            var snapshot = snapshots[index];
+
+            var tooMany = options.MaxPerProject > 0 && index >= options.MaxPerProject;
+            var tooOld = oldestAllowed is not null && snapshot.ExportedAtUtc < oldestAllowed;
+
+            if (!tooMany && !tooOld)
+            {
+                continue;
+            }
+
+            try
+            {
+                File.Delete(Path.Combine(options.RootPath, snapshot.FileName));
+                removed.Add(snapshot);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Ein Stand, der gerade heruntergeladen wird, lässt sich nicht löschen. Das
+                // darf weder den Export noch das Aufräumen abbrechen — er bleibt stehen und
+                // fällt beim nächsten Lauf.
+            }
+        }
+
+        return removed;
     }
 
     /// <summary>
