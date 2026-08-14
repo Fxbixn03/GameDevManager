@@ -1,6 +1,5 @@
 @page "/modules/player"
 @inject PlayerService Player
-@inject ReferenceService References
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -33,84 +32,44 @@ else
 {
     <MudGrid Spacing="4">
         <MudItem xs="12" md="5">
-            @* ---------------------------------------------------------- Spielerfiguren *@
+            @* ------------------------------------------------------------ Spielerfiguren *@
+            @* Der Spieler ist ein NPC — dieses Modul verwaltet nur noch Skilltrees. Was an
+               alten Spielerfiguren noch da ist, lässt sich hier in NPCs überführen. *@
             <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionCharacters"]</MudText>
-                    <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="AddCharacter">
-                        @L["AddCharacter"]
-                    </MudButton>
-                </MudStack>
+                <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionCharacters"]</MudText>
 
                 @if (_characters.Count == 0)
                 {
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        @L["NoCharacters"]
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        @L["PlayerIsNpcHint"]
                     </MudText>
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.People"
+                               Href="/modules/npcs">
+                        @L["ToNpcs"]
+                    </MudButton>
                 }
                 else
                 {
-                    <MudStack Spacing="3">
-                        @foreach (var character in _characters)
-                        {
-                            <div class="pa-3 gdm-field-row">
-                                <MudStack Spacing="2">
-                                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
-                                        <MudTextField T="string"
-                                                      @bind-Value="character.Name"
-                                                      Label="@L["NameLabel"]"
-                                                      Variant="Variant.Outlined"
-                                                      Margin="Margin.Dense" />
-                                        <MudTooltip Text="@L["SaveCharacterTooltip"]">
-                                            <MudIconButton Icon="@Icons.Material.Filled.Save"
-                                                           Size="Size.Small"
-                                                           Color="Color.Primary"
-                                                           OnClick="@(() => SaveCharacterAsync(character))"
-                                                           aria-label="@L["SaveCharacterAria"]" />
-                                        </MudTooltip>
-                                        <MudTooltip Text="@L["DeleteCharacterTooltip"]">
-                                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                                           Size="Size.Small"
-                                                           OnClick="@(() => DeleteCharacterAsync(character))"
-                                                           aria-label="@L["DeleteCharacterAria"]" />
-                                        </MudTooltip>
-                                    </MudStack>
+                    <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+                        @L["ConvertHint", _characters.Count]
+                    </MudAlert>
 
-                                    <MudTextField T="string"
-                                                  @bind-Value="character.Description"
-                                                  Label="@L["DescriptionLabel"]"
-                                                  Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense"
-                                                  Lines="2" />
+                    @foreach (var character in _characters)
+                    {
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="gdm-field-row py-1">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Color="Color.Secondary" />
+                            <MudText Typo="Typo.body2">@character.Name</MudText>
+                        </MudStack>
+                    }
 
-                                    @* Im Konzept (Klassen-Modul): „auf die Spielerfigur … gemappt“. *@
-                                    <MudSelect T="Guid?"
-                                               @bind-Value="character.CharacterClassId"
-                                               Label="@L["ClassLabel"]"
-                                               Variant="Variant.Outlined"
-                                               Margin="Margin.Dense"
-                                               Clearable="true"
-                                               Disabled="@(_classes.Count == 0)"
-                                               HelperText="@(_classes.Count == 0 ? L["ClassHelperEmpty"].Value : null)">
-                                        @foreach (var characterClass in _classes)
-                                        {
-                                            <MudSelectItem T="Guid?" Value="@characterClass.Id">@characterClass.Name</MudSelectItem>
-                                        }
-                                    </MudSelect>
-
-                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidCaption"]</MudText>
-                                        <EntityIdChip Id="character.Id" />
-                                    </MudStack>
-
-                                    @* Sprites hängen nur an der GUID — das funktioniert auch ohne ContentEntity. *@
-                                    <AssetSpritePanel ModuleKey="@ModuleKeys.Player"
-                                                      EntityId="character.Id"
-                                                      Disabled="@(!_savedCharacterIds.Contains(character.Id))" />
-                                </MudStack>
-                            </div>
-                        }
-                    </MudStack>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.MoveUp"
+                               Class="mt-3"
+                               OnClick="ConvertCharactersAsync">
+                        @L["ConvertButton"]
+                    </MudButton>
                 }
             </MudPaper>
         </MudItem>
@@ -233,13 +192,11 @@ else
     private List<SkillTreeRow>? _trees;
     private List<SkillListRow>? _skills;
     private readonly List<SkillTree> _editingTrees = [];
-    private List<EntitySummary> _classes = [];
-    private readonly HashSet<Guid> _savedCharacterIds = [];
     private Guid _projectId;
 
     private string Subtitle => _skills is null
         ? L["Loading"]
-        : L["SubtitleCount", _characters!.Count, _trees!.Count, _skills.Count];
+        : L["SubtitleCount", _trees!.Count, _skills.Count];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -249,13 +206,6 @@ else
         _characters = await Player.GetCharactersAsync(_projectId);
         _trees = await Player.GetTreesAsync(_projectId);
         _skills = await Player.GetSkillsAsync(_projectId);
-        _classes = await References.GetEntitiesAsync(_projectId, ModuleKeys.Classes);
-
-        _savedCharacterIds.Clear();
-        foreach (var character in _characters)
-        {
-            _savedCharacterIds.Add(character.Id);
-        }
     }
 
     /// <summary>Skills eines Baums als eingerückte Liste — Wurzeln zuerst, Kinder darunter.</summary>
@@ -314,35 +264,13 @@ else
 
     // ---------------------------------------------------------------- Spielerfiguren
 
-    private void AddCharacter() =>
-        _characters!.Insert(0, new PlayerCharacter { GameProjectId = _projectId, Name = string.Empty });
-
-    private async Task SaveCharacterAsync(PlayerCharacter character)
+    /// <summary>Überführt die verbliebenen Spielerfiguren in NPCs — GUID und Anhänge bleiben.</summary>
+    private async Task ConvertCharactersAsync()
     {
-        try
-        {
-            await Player.SaveCharacterAsync(character);
-            _savedCharacterIds.Add(character.Id);
-            Snackbar.Add(L["CharacterSavedMessage", character.Name], Severity.Success);
-        }
-        catch (ContentValidationException ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
-    }
-
-    private async Task DeleteCharacterAsync(PlayerCharacter character)
-    {
-        if (!_savedCharacterIds.Contains(character.Id))
-        {
-            _characters!.Remove(character);
-            return;
-        }
-
         var confirmed = await Dialogs.ShowMessageBoxAsync(
-            L["DeleteCharacterTitle"],
-            L["DeleteCharacterMessage", character.Name],
-            yesText: L["DeleteYes"],
+            L["ConvertConfirmTitle"],
+            L["ConvertConfirmMessage", _characters!.Count],
+            yesText: L["ConvertYes"],
             cancelText: L["DeleteCancel"]);
 
         if (confirmed != true)
@@ -350,8 +278,16 @@ else
             return;
         }
 
-        await Player.DeleteCharacterAsync(character.Id);
-        Snackbar.Add(L["CharacterDeletedMessage"], Severity.Success);
+        try
+        {
+            var count = await Player.ConvertCharactersToNpcsAsync(_projectId);
+            Snackbar.Add(L["ConvertedMessage", count], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+
         await LoadAsync();
     }
 

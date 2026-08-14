@@ -22,7 +22,31 @@
     <value>Neuer Skill</value>
   </data>
   <data name="SectionCharacters" xml:space="preserve">
-    <value>Spielerfigur(en)</value>
+    <value>Spielerfigur</value>
+  </data>
+  <data name="PlayerIsNpcHint" xml:space="preserve">
+    <value>Die Spielerfigur wird als NPC gepflegt — mit Sprites, Klassen, Feldern und allem, was NPCs können. Dieses Modul verwaltet nur noch die Skilltrees.</value>
+  </data>
+  <data name="ToNpcs" xml:space="preserve">
+    <value>Zu den NPCs</value>
+  </data>
+  <data name="ConvertHint" xml:space="preserve">
+    <value>Hier liegen noch {0} Spielerfigur(en) aus der Zeit, als dieses Modul sie verwaltete. Überführe sie in NPCs — GUID, Sprites, Feldwerte und Bedingungen bleiben dabei erhalten.</value>
+  </data>
+  <data name="ConvertButton" xml:space="preserve">
+    <value>Als NPCs überführen</value>
+  </data>
+  <data name="ConvertConfirmTitle" xml:space="preserve">
+    <value>Spielerfiguren überführen?</value>
+  </data>
+  <data name="ConvertConfirmMessage" xml:space="preserve">
+    <value>{0} Spielerfigur(en) werden zu einzigartigen NPCs. Alle Verweise bleiben erhalten, die Figuren erscheinen danach im NPC-Modul.</value>
+  </data>
+  <data name="ConvertYes" xml:space="preserve">
+    <value>Überführen</value>
+  </data>
+  <data name="ConvertedMessage" xml:space="preserve">
+    <value>{0} Spielerfigur(en) in NPCs überführt.</value>
   </data>
   <data name="AddCharacter" xml:space="preserve">
     <value>Figur</value>
@@ -100,7 +124,7 @@
     <value>Wird geladen …</value>
   </data>
   <data name="SubtitleCount" xml:space="preserve">
-    <value>{0} Figur(en), {1} Skilltree(s), {2} Skill(s)</value>
+    <value>{0} Skilltree(s), {1} Skill(s)</value>
   </data>
   <data name="CostPoints" xml:space="preserve">
     <value>{0} Punkte</value>

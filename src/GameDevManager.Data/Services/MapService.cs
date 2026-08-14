@@ -62,6 +62,22 @@ public class MapService(
             .ToListAsync(ct);
     }
 
+    /// <summary>
+    /// Die Markierungen einer Karte als Auswahlliste — etwa für den Schauplatz eines
+    /// Story-Abschnitts.
+    /// </summary>
+    public async Task<List<MapMarkerOption>> GetMarkerOptionsAsync(Guid mapId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        return await db.MapMarkers
+            .AsNoTracking()
+            .Where(marker => marker.MapId == mapId)
+            .OrderBy(marker => marker.SortOrder)
+            .Select(marker => new MapMarkerOption(marker.Id, marker.Label, marker.X, marker.Y))
+            .ToListAsync(ct);
+    }
+
     public async Task<ContentEditContext<GameMap>?> LoadForEditAsync(
         Guid projectId, Guid? mapId, CancellationToken ct = default)
     {
@@ -84,6 +100,7 @@ public class MapService(
         var map = await db.Maps
             .AsNoTracking()
             .Include(m => m.Markers)
+            .Include(m => m.Layers)
             .FirstOrDefaultAsync(m => m.Id == mapId && m.GameProjectId == projectId, ct);
 
         if (map is null)
@@ -92,6 +109,7 @@ public class MapService(
         }
 
         map.Markers = [.. map.Markers.OrderBy(marker => marker.SortOrder)];
+        map.Layers = [.. map.Layers.OrderBy(layer => layer.SortOrder)];
 
         return new ContentEditContext<GameMap>
         {
@@ -120,6 +138,7 @@ public class MapService(
         var now = DateTime.UtcNow;
         var stored = await db.Maps
             .Include(m => m.Markers)
+            .Include(m => m.Layers)
             .FirstOrDefaultAsync(m => m.Id == map.Id, ct);
 
         if (stored is null)
@@ -140,6 +159,7 @@ public class MapService(
         stored.Description = string.IsNullOrWhiteSpace(map.Description) ? null : map.Description.Trim();
         stored.UpdatedAtUtc = now;
 
+        SyncLayers(db, stored, map);
         SyncMarkers(db, stored, map);
 
         await ContentFields.StageValuesAsync(db, context, messages, ct);
@@ -153,6 +173,12 @@ public class MapService(
 
     private void Validate(GameMap map)
     {
+        // Eine Ebene ohne Namen wäre in der Ebenen-Liste nicht zu erkennen.
+        if (map.Layers.Any(layer => string.IsNullOrWhiteSpace(layer.Name)))
+        {
+            throw new ContentValidationException(messages["MapLayerNameRequired"]);
+        }
+
         foreach (var marker in map.Markers)
         {
             if (marker.X is < 0 or > 1 || marker.Y is < 0 or > 1)
@@ -190,10 +216,52 @@ public class MapService(
         }
     }
 
+    private static void SyncLayers(GameDevManagerDbContext db, GameMap stored, GameMap incoming)
+    {
+        var wanted = incoming.Layers;
+        var wantedIds = wanted.Select(layer => layer.Id).ToHashSet();
+
+        // Nur aus der Navigationsliste entfernen — der Fremdschlüssel ist pflicht, EF löscht
+        // die Waise dadurch von selbst.
+        foreach (var obsolete in stored.Layers.Where(l => !wantedIds.Contains(l.Id)).ToList())
+        {
+            stored.Layers.Remove(obsolete);
+        }
+
+        for (var index = 0; index < wanted.Count; index++)
+        {
+            var layer = wanted[index];
+            var target = stored.Layers.FirstOrDefault(l => l.Id == layer.Id);
+
+            if (target is null)
+            {
+                // Ausdrücklich über das DbSet — siehe SyncMarkers.
+                db.MapLayers.Add(new MapLayer
+                {
+                    Id = layer.Id,
+                    MapId = stored.Id,
+                    Name = layer.Name.Trim(),
+                    IsVisible = layer.IsVisible,
+                    SortOrder = index
+                });
+            }
+            else
+            {
+                target.Name = layer.Name.Trim();
+                target.IsVisible = layer.IsVisible;
+                target.SortOrder = index;
+            }
+        }
+    }
+
     private static void SyncMarkers(GameDevManagerDbContext db, GameMap stored, GameMap incoming)
     {
         var wanted = incoming.Markers;
         var wantedIds = wanted.Select(marker => marker.Id).ToHashSet();
+
+        // Eine Zuordnung zu einer Ebene, die es (nicht mehr) gibt, fällt auf die Grundebene
+        // zurück — etwa nach dem Löschen einer Ebene in der Maske.
+        var layerIds = incoming.Layers.Select(layer => layer.Id).ToHashSet();
 
         // Nur aus der Navigationsliste entfernen — der Fremdschlüssel ist pflicht, EF löscht
         // die Waise dadurch von selbst.
@@ -225,6 +293,7 @@ public class MapService(
                     TargetEntityId = marker.TargetEntityId,
                     IconAssetId = marker.IconAssetId,
                     Color = Normalize(marker.Color),
+                    LayerId = marker.LayerId is { } layerId && layerIds.Contains(layerId) ? layerId : null,
                     SortOrder = index
                 });
             }
@@ -239,6 +308,7 @@ public class MapService(
                 target.TargetEntityId = marker.TargetEntityId;
                 target.IconAssetId = marker.IconAssetId;
                 target.Color = Normalize(marker.Color);
+                target.LayerId = marker.LayerId is { } movedLayerId && layerIds.Contains(movedLayerId) ? movedLayerId : null;
                 target.SortOrder = index;
             }
         }
@@ -264,6 +334,13 @@ public class MapService(
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(marker => marker.TargetEntityId, (Guid?)null)
                 .SetProperty(marker => marker.TargetModuleKey, (string?)null), ct);
+
+        // Dasselbe für Story-Abschnitte, deren Schauplatz diese Karte war.
+        await db.StoryEntries
+            .Where(s => s.TargetMapId == mapId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(s => s.TargetMapId, (Guid?)null)
+                .SetProperty(s => s.TargetMapMarkerId, (Guid?)null), ct);
 
         // Die eigenen Markierungen fallen über den Fremdschlüssel mit.
         await db.Maps

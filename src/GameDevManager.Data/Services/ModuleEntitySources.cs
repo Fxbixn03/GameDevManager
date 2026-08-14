@@ -120,6 +120,7 @@ public sealed class NpcEntitySource(IStringLocalizer<DataMessages> messages)
         var tradeGoods = Messages["Reference_TradeGoods"].Value;
         var offerCurrency = Messages["Reference_OfferCurrency"].Value;
         var lootTable = Messages["Reference_LootTable"].Value;
+        var npcRelation = Messages["Reference_NpcRelation"].Value;
 
         var hits = await db.TraderOffers
             .AsNoTracking()
@@ -140,6 +141,15 @@ public sealed class NpcEntitySource(IStringLocalizer<DataMessages> messages)
             .AsNoTracking()
             .Where(npc => npc.LootTableId == entityId)
             .Select(npc => new EntityReferenceHit(npc.Id, ModuleKeys.Npcs, npc.Name, lootTable))
+            .ToListAsync(ct));
+
+        // Beziehungen sind beim Quell-NPC gespeichert — für den Ziel-NPC sind sie eine
+        // Verwendung wie jede andere GUID-Referenz.
+        hits.AddRange(await db.NpcRelations
+            .AsNoTracking()
+            .Where(relation => relation.OtherNpcId == entityId)
+            .Select(relation => new EntityReferenceHit(
+                relation.NpcId, ModuleKeys.Npcs, relation.Npc!.Name, npcRelation))
             .ToListAsync(ct));
 
         return hits;
@@ -414,12 +424,14 @@ public sealed class StoryEntrySource(IStringLocalizer<DataMessages> messages)
                 .Select(a => (Guid?)a.Id).FirstOrDefault()));
     }
 
-    public override Task<List<EntityReferenceHit>> FindReferencesAsync(
+    public override async Task<List<EntityReferenceHit>> FindReferencesAsync(
         GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
     {
         var storyParticipant = Messages["Reference_StoryParticipant"].Value;
+        var storyLink = Messages["Reference_StoryLink"].Value;
+        var storyLocation = Messages["Reference_StoryLocation"].Value;
 
-        return db.StoryParticipants
+        var hits = await db.StoryParticipants
             .AsNoTracking()
             .Where(participant => participant.TargetEntityId == entityId)
             .Select(participant => new EntityReferenceHit(
@@ -428,6 +440,24 @@ public sealed class StoryEntrySource(IStringLocalizer<DataMessages> messages)
                 participant.StoryEntry!.Name,
                 storyParticipant))
             .ToListAsync(ct);
+
+        // Szenen-Verknüpfungen sind beim Quell-Abschnitt gespeichert — für den Ziel-Abschnitt
+        // sind sie eine Verwendung wie jede andere GUID-Referenz.
+        hits.AddRange(await db.StoryLinks
+            .AsNoTracking()
+            .Where(link => link.TargetEntryId == entityId)
+            .Select(link => new EntityReferenceHit(
+                link.StoryEntryId, ModuleKeys.Story, link.StoryEntry!.Name, storyLink))
+            .ToListAsync(ct));
+
+        // Der Schauplatz zeigt auf eine Karte.
+        hits.AddRange(await db.StoryEntries
+            .AsNoTracking()
+            .Where(entry => entry.TargetMapId == entityId)
+            .Select(entry => new EntityReferenceHit(entry.Id, ModuleKeys.Story, entry.Name, storyLocation))
+            .ToListAsync(ct));
+
+        return hits;
     }
 }
 

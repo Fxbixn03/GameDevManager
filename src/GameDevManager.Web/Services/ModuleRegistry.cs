@@ -92,7 +92,10 @@ public static class ModuleRegistry
         new(ModuleKeys.World, Icons.Material.Filled.WbTwilight, ModuleGroup.World, Implemented: true),
         new(ModuleKeys.Statistics, Icons.Material.Filled.BarChart, ModuleGroup.Tools, Implemented: true),
         new(ModuleKeys.TechTree, Icons.Material.Filled.AccountTree, ModuleGroup.Tools, Implemented: true),
-        new(ModuleKeys.Changelog, Icons.Material.Filled.History, ModuleGroup.Tools, Implemented: true)
+        new(ModuleKeys.Changelog, Icons.Material.Filled.History, ModuleGroup.Tools, Implemented: true),
+        new(ModuleKeys.Connections, Icons.Material.Filled.Hub, ModuleGroup.Tools, Implemented: true),
+        new(ModuleKeys.Todo, Icons.Material.Filled.ViewKanban, ModuleGroup.Tools, Implemented: true),
+        new(ModuleKeys.Whiteboard, Icons.Material.Filled.Draw, ModuleGroup.Tools, Implemented: true)
     ];
 
     /// <summary>

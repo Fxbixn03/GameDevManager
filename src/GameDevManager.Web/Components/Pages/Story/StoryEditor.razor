@@ -1,6 +1,7 @@
 @page "/modules/story/neu"
 @page "/modules/story/{Id:guid}"
 @inject StoryService Story
+@inject MapService Maps
 @inject ReferenceService References
 @inject ProjectContext Project
 @inject IDialogService Dialogs
@@ -49,6 +50,7 @@ else
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
+                       data-gdm-save
                        OnClick="SaveAsync">
                 @L["Save"]
             </MudButton>
@@ -91,7 +93,169 @@ else
                                 <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
                             }
                         </MudSelect>
+
+                        <MudStack Row="true" Spacing="3" Wrap="Wrap.Wrap">
+                            <MudTextField Value="_context.Entity.Mood"
+                                          ValueChanged="@((string v) => Touch(() => _context.Entity.Mood = v))"
+                                          T="string"
+                                          Label="@L["MoodLabel"]"
+                                          Placeholder="@L["MoodPlaceholder"]"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Style="min-width:180px;" />
+                            <MudTextField Value="_context.Entity.GameDate"
+                                          ValueChanged="@((string v) => Touch(() => _context.Entity.GameDate = v))"
+                                          T="string"
+                                          Label="@L["GameDateLabel"]"
+                                          Placeholder="@L["GameDatePlaceholder"]"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Style="min-width:180px;" />
+                            <MudTextField Value="_context.Entity.Duration"
+                                          ValueChanged="@((string v) => Touch(() => _context.Entity.Duration = v))"
+                                          T="string"
+                                          Label="@L["DurationLabel"]"
+                                          Placeholder="@L["DurationPlaceholder"]"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Style="min-width:180px;" />
+                        </MudStack>
                     </MudStack>
+                </MudPaper>
+
+                @* ------------------------------------------------------------ Schauplatz *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["LocationSection"]</MudText>
+
+                    <MudStack Spacing="4">
+                        <MudTextField Value="_context.Entity.Location"
+                                      ValueChanged="@((string v) => Touch(() => _context.Entity.Location = v))"
+                                      T="string"
+                                      Label="@L["LocationLabel"]"
+                                      Placeholder="@L["LocationPlaceholder"]"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+
+                        <MudStack Row="true" Spacing="3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+                            <MudSelect T="Guid?"
+                                       Value="_context.Entity.TargetMapId"
+                                       ValueChanged="ChangeTargetMapAsync"
+                                       Label="@L["TargetMapLabel"]"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Clearable="true"
+                                       Disabled="@(EntitiesOf(ModuleKeys.Maps).Count == 0)"
+                                       HelperText="@(EntitiesOf(ModuleKeys.Maps).Count == 0 ? L["NoMapsHint"].Value : null)"
+                                       Style="min-width:240px;">
+                                @foreach (var map in EntitiesOf(ModuleKeys.Maps))
+                                {
+                                    <MudSelectItem T="Guid?" Value="@map.Id">@map.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            @if (_context.Entity.TargetMapId is not null)
+                            {
+                                <MudSelect T="Guid?"
+                                           Value="_context.Entity.TargetMapMarkerId"
+                                           ValueChanged="@((Guid? id) => Touch(() => _context.Entity.TargetMapMarkerId = id))"
+                                           Label="@L["TargetMarkerLabel"]"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Clearable="true"
+                                           Disabled="@(_mapMarkers.Count == 0)"
+                                           HelperText="@(_mapMarkers.Count == 0 ? L["NoMarkersHint"].Value : null)"
+                                           Style="min-width:240px;">
+                                    @foreach (var marker in _mapMarkers)
+                                    {
+                                        <MudSelectItem T="Guid?" Value="@marker.Id">@MarkerOptionTitle(marker)</MudSelectItem>
+                                    }
+                                </MudSelect>
+
+                                <MudButton Size="Size.Small"
+                                           Variant="Variant.Outlined"
+                                           StartIcon="@Icons.Material.Filled.Map"
+                                           Href="@($"/modules/maps/{_context.Entity.TargetMapId}")">
+                                    @L["OpenMap"]
+                                </MudButton>
+                            }
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+
+                @* --------------------------------------------------- Szenen-Verknüpfungen *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["LinksSection"]</MudText>
+                        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                   Size="Size.Small"
+                                   Disabled="@(_otherEntries.Count == 0)"
+                                   OnClick="AddLink">
+                            @L["AddLink"]
+                        </MudButton>
+                    </MudStack>
+
+                    @if (_otherEntries.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoOtherEntries"]</MudText>
+                    }
+                    else if (_context.Entity.Links.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoLinks"]</MudText>
+                    }
+                    else
+                    {
+                        <MudStack Spacing="0">
+                            @foreach (var link in _context.Entity.Links)
+                            {
+                                <div class="pa-2 gdm-field-row">
+                                    <MudGrid Spacing="2">
+                                        <MudItem xs="12" sm="6">
+                                            <MudAutocomplete T="EntitySummary"
+                                                             Value="@LinkTargetFor(link)"
+                                                             ValueChanged="@((EntitySummary? e) => Touch(() => link.TargetEntryId = e?.Id ?? Guid.Empty))"
+                                                             SearchFunc="SearchOtherEntriesAsync"
+                                                             ToStringFunc="@(e => e?.Name ?? string.Empty)"
+                                                             Label="@L["LinkTargetLabel"]"
+                                                             Variant="Variant.Outlined"
+                                                             Margin="Margin.Dense"
+                                                             Clearable="true"
+                                                             ResetValueOnEmptyText="true"
+                                                             CoerceValue="false"
+                                                             MaxItems="50" />
+                                        </MudItem>
+
+                                        <MudItem xs="12" sm="4">
+                                            <MudTextField Value="link.Label"
+                                                          ValueChanged="@((string v) => Touch(() => link.Label = v))"
+                                                          T="string"
+                                                          Label="@L["LinkLabelLabel"]"
+                                                          Placeholder="@L["LinkLabelPlaceholder"]"
+                                                          Variant="Variant.Outlined"
+                                                          Margin="Margin.Dense" />
+                                        </MudItem>
+
+                                        <MudItem xs="12" sm="2" Class="d-flex align-center justify-end">
+                                            @if (link.TargetEntryId != Guid.Empty)
+                                            {
+                                                <MudTooltip Text="@L["OpenLinkedEntry"]">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                                                   Size="Size.Small"
+                                                                   Href="@($"/modules/story/{link.TargetEntryId}")"
+                                                                   aria-label="@L["OpenLinkedEntry"]" />
+                                                </MudTooltip>
+                                            }
+                                            <MudTooltip Text="@L["RemoveLink"]">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => RemoveLink(link))"
+                                                               aria-label="@L["RemoveLink"]" />
+                                            </MudTooltip>
+                                        </MudItem>
+                                    </MudGrid>
+                                </div>
+                            }
+                        </MudStack>
+                    }
                 </MudPaper>
 
                 @* ------------------------------------------------------------- Story-Text *@
@@ -244,6 +408,8 @@ else
 
     private ContentEditContext<StoryEntry>? _context;
     private ReferencesPanel? _referencesPanel;
+    private List<EntitySummary> _otherEntries = [];
+    private List<MapMarkerOption> _mapMarkers = [];
     private readonly Dictionary<string, List<EntitySummary>> _entitiesByModule = [];
     private Guid? _loadedId;
     private bool _notFound;
@@ -290,8 +456,58 @@ else
         if (_context is null)
         {
             _notFound = true;
+            return;
+        }
+
+        // Für die Szenen-Verknüpfungen — der Abschnitt selbst gehört nicht in die Auswahl.
+        _otherEntries = (await References.GetEntitiesAsync(projectId, ModuleKeys.Story))
+            .Where(entry => entry.Id != _context.Entity.Id)
+            .ToList();
+
+        if (_context.Entity.TargetMapId is { } mapId)
+        {
+            _mapMarkers = await Maps.GetMarkerOptionsAsync(mapId);
         }
     }
+
+    private async Task ChangeTargetMapAsync(Guid? mapId)
+    {
+        Touch(() =>
+        {
+            _context!.Entity.TargetMapId = mapId;
+            // Die alte Markierung gehört zu einer anderen Karte und wäre jetzt irreführend.
+            _context.Entity.TargetMapMarkerId = null;
+        });
+
+        _mapMarkers = mapId is { } id ? await Maps.GetMarkerOptionsAsync(id) : [];
+    }
+
+    private string MarkerOptionTitle(MapMarkerOption marker) =>
+        string.IsNullOrWhiteSpace(marker.Label)
+            ? L["MarkerFallback", (marker.X * 100).ToString("0"), (marker.Y * 100).ToString("0")]
+            : marker.Label;
+
+    private EntitySummary? LinkTargetFor(StoryLink link) =>
+        _otherEntries.FirstOrDefault(entry => entry.Id == link.TargetEntryId);
+
+    private Task<IEnumerable<EntitySummary>> SearchOtherEntriesAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? _otherEntries
+            : _otherEntries.Where(entry => entry.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private void AddLink() =>
+        Touch(() => _context!.Entity.Links.Add(new StoryLink
+        {
+            StoryEntryId = _context.Entity.Id,
+            SortOrder = _context.Entity.Links.Count
+        }));
+
+    private void RemoveLink(StoryLink link) =>
+        Touch(() => _context!.Entity.Links.Remove(link));
 
     private List<EntitySummary> EntitiesOf(string moduleKey) =>
         _entitiesByModule.GetValueOrDefault(moduleKey) ?? [];
@@ -350,6 +566,7 @@ else
 
         // Leere Eingabezeilen sind ein Bedienschritt, kein Inhalt.
         _context.Entity.Participants.RemoveAll(p => p.TargetEntityId == Guid.Empty);
+        _context.Entity.Links.RemoveAll(l => l.TargetEntryId == Guid.Empty);
 
         _saving = true;
 
@@ -433,8 +650,15 @@ else
         reloaded.Entity.Description = entity.Description;
         reloaded.Entity.ContentTypeId = entity.ContentTypeId;
         reloaded.Entity.Body = entity.Body;
+        reloaded.Entity.Mood = entity.Mood;
+        reloaded.Entity.GameDate = entity.GameDate;
+        reloaded.Entity.Duration = entity.Duration;
+        reloaded.Entity.Location = entity.Location;
+        reloaded.Entity.TargetMapId = entity.TargetMapId;
+        reloaded.Entity.TargetMapMarkerId = entity.TargetMapMarkerId;
         reloaded.Entity.SortOrder = entity.SortOrder;
         reloaded.Entity.Participants = entity.Participants;
+        reloaded.Entity.Links = entity.Links;
 
         _context = reloaded;
         _dirty = wasDirty;

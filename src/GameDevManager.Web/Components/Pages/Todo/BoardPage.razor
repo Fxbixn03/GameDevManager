@@ -1,0 +1,331 @@
+@page "/modules/todo/{Id:guid}"
+@inject KanbanService Kanban
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IStringLocalizer<BoardPage> L
+
+<PageTitle>@L["PageTitle", _board?.Name ?? L["HeadingFallback"]]</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @L["NotFoundMessage"]
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/todo">@L["BackToBoards"]</MudButton>
+}
+else if (_board is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@_board.Name"
+                  Subtitle="@_board.Description"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            <MudButton Variant="Variant.Text"
+                       StartIcon="@Icons.Material.Filled.Edit"
+                       OnClick="RenameBoardAsync">
+                @L["RenameBoard"]
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/modules/todo">@L["BackToBoards"]</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="AddColumnAsync">
+                @L["AddColumn"]
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    <div style="display:flex;gap:16px;align-items:flex-start;overflow-x:auto;padding-bottom:8px;">
+        @foreach (var column in _board.Columns)
+        {
+            <div class="mud-paper gdm-panel pa-3"
+                 style="min-width:280px;max-width:280px;flex-shrink:0;"
+                 @ondragover:preventDefault="true"
+                 @ondrop="@(() => DropOnColumnAsync(column))">
+
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-2">
+                    <MudTextField Value="column.Name"
+                                  ValueChanged="@((string name) => RenameColumnAsync(column, name))"
+                                  T="string"
+                                  Variant="Variant.Text"
+                                  Margin="Margin.Dense"
+                                  Style="flex-grow:1;font-weight:600;" />
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">@column.Cards.Count</MudText>
+                    <MudTooltip Text="@L["MoveColumnLeft"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
+                                       Size="Size.Small"
+                                       Disabled="@(column == _board.Columns.First())"
+                                       OnClick="@(() => MoveColumnAsync(column, left: true))"
+                                       aria-label="@L["MoveColumnLeft"]" />
+                    </MudTooltip>
+                    <MudTooltip Text="@L["MoveColumnRight"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
+                                       Size="Size.Small"
+                                       Disabled="@(column == _board.Columns.Last())"
+                                       OnClick="@(() => MoveColumnAsync(column, left: false))"
+                                       aria-label="@L["MoveColumnRight"]" />
+                    </MudTooltip>
+                    <MudTooltip Text="@L["DeleteColumnTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteColumnAsync(column))"
+                                       aria-label="@L["DeleteColumnAria", column.Name]" />
+                    </MudTooltip>
+                </MudStack>
+
+                <MudStack Spacing="2">
+                    @foreach (var card in column.Cards)
+                    {
+                        <div class="mud-paper gdm-panel pa-3"
+                             style="@(ReferenceEquals(_dragging, card) ? "opacity:0.4;cursor:grab;" : "cursor:grab;")"
+                             draggable="true"
+                             @ondragstart="@(() => _dragging = card)"
+                             @ondragend="@(() => _dragging = null)"
+                             @ondragover:preventDefault="true"
+                             @ondrop="@(() => DropOnCardAsync(column, card))"
+                             @ondrop:stopPropagation="true"
+                             @onclick="@(() => EditCardAsync(card))">
+                            <MudText Typo="Typo.body2" Style="font-weight:500;">@card.Title</MudText>
+                            @if (!string.IsNullOrWhiteSpace(card.Notes))
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@Shorten(card.Notes)</MudText>
+                            }
+                        </div>
+                    }
+
+                    @if (_newCardColumnId == column.Id)
+                    {
+                        <MudTextField @bind-Value="_newCardTitle"
+                                      Label="@L["NewCardLabel"]"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Immediate="true"
+                                      AutoFocus="true"
+                                      OnKeyDown="@(args => OnNewCardKeyAsync(args, column))" />
+                        <MudStack Row="true" Spacing="1">
+                            <MudButton Size="Size.Small"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Disabled="@string.IsNullOrWhiteSpace(_newCardTitle)"
+                                       OnClick="@(() => CommitNewCardAsync(column))">
+                                @L["AddCardConfirm"]
+                            </MudButton>
+                            <MudButton Size="Size.Small"
+                                       Variant="Variant.Text"
+                                       OnClick="@(() => { _newCardColumnId = null; _newCardTitle = null; })">
+                                @L["AddCardCancel"]
+                            </MudButton>
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                   Size="Size.Small"
+                                   Variant="Variant.Text"
+                                   OnClick="@(() => { _newCardColumnId = column.Id; _newCardTitle = null; })">
+                            @L["AddCard"]
+                        </MudButton>
+                    }
+                </MudStack>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Todo);
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private KanbanBoard? _board;
+    private KanbanCard? _dragging;
+    private Guid? _newCardColumnId;
+    private string? _newCardTitle;
+    private Guid? _loadedId;
+    private bool _notFound;
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(_board?.Name ?? L["HeadingFallback"], null, disabled: true)];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_board is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _board = await Kanban.GetBoardAsync(projectId, Id);
+        _notFound = _board is null;
+    }
+
+    private async Task RenameBoardAsync()
+    {
+        if (_board is null)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters<BoardRenameDialog>
+        {
+            { dialog => dialog.BoardName, _board.Name },
+            { dialog => dialog.BoardDescription, _board.Description }
+        };
+
+        var reference = await Dialogs.ShowAsync<BoardRenameDialog>(
+            L["RenameDialogTitle"], parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await reference.Result;
+
+        if (result is { Canceled: false, Data: BoardRenameDialog.Outcome outcome })
+        {
+            await Run(() => Kanban.RenameBoardAsync(_board.Id, outcome.Name, outcome.Description));
+        }
+    }
+
+    private async Task AddColumnAsync()
+    {
+        if (_board is null)
+        {
+            return;
+        }
+
+        await Run(() => Kanban.AddColumnAsync(_board.Id, L["NewColumnName", _board.Columns.Count + 1]));
+    }
+
+    private Task RenameColumnAsync(KanbanColumn column, string name) =>
+        Run(() => Kanban.RenameColumnAsync(column.Id, name));
+
+    private Task MoveColumnAsync(KanbanColumn column, bool left) =>
+        Run(() => Kanban.MoveColumnAsync(column.Id, left));
+
+    private async Task DeleteColumnAsync(KanbanColumn column)
+    {
+        if (column.Cards.Count > 0)
+        {
+            var confirmed = await Dialogs.ShowMessageBoxAsync(
+                L["DeleteColumnConfirmTitle"],
+                L["DeleteColumnConfirmMessage", column.Name, column.Cards.Count],
+                yesText: L["DeleteYes"],
+                cancelText: L["DeleteCancel"]);
+
+            if (confirmed != true)
+            {
+                return;
+            }
+        }
+
+        await Run(() => Kanban.DeleteColumnAsync(column.Id));
+    }
+
+    private async Task OnNewCardKeyAsync(KeyboardEventArgs args, KanbanColumn column)
+    {
+        if (args.Key is "Enter" or "NumpadEnter")
+        {
+            await CommitNewCardAsync(column);
+        }
+        else if (args.Key is "Escape")
+        {
+            _newCardColumnId = null;
+            _newCardTitle = null;
+        }
+    }
+
+    private async Task CommitNewCardAsync(KanbanColumn column)
+    {
+        if (string.IsNullOrWhiteSpace(_newCardTitle))
+        {
+            return;
+        }
+
+        var title = _newCardTitle;
+        _newCardTitle = null;
+
+        await Run(() => Kanban.AddCardAsync(column.Id, title));
+    }
+
+    private async Task EditCardAsync(KanbanCard card)
+    {
+        var parameters = new DialogParameters<CardEditDialog>
+        {
+            { dialog => dialog.CardTitle, card.Title },
+            { dialog => dialog.CardNotes, card.Notes }
+        };
+
+        var reference = await Dialogs.ShowAsync<CardEditDialog>(
+            L["CardDialogTitle"], parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await reference.Result;
+
+        if (result is { Canceled: false, Data: CardEditDialog.Outcome outcome })
+        {
+            if (outcome.Delete)
+            {
+                await Run(() => Kanban.DeleteCardAsync(card.Id));
+            }
+            else
+            {
+                await Run(() => Kanban.UpdateCardAsync(card.Id, outcome.Title, outcome.Notes));
+            }
+        }
+    }
+
+    /// <summary>Auf einer Karte losgelassen: an deren Position in deren Spalte einsortieren.</summary>
+    private async Task DropOnCardAsync(KanbanColumn column, KanbanCard target)
+    {
+        if (_dragging is null || ReferenceEquals(_dragging, target))
+        {
+            _dragging = null;
+            return;
+        }
+
+        var moved = _dragging;
+        _dragging = null;
+
+        await Run(() => Kanban.MoveCardAsync(moved.Id, column.Id, column.Cards.IndexOf(target)));
+    }
+
+    /// <summary>Auf der Spalte (unterhalb der Karten) losgelassen: ans Ende der Spalte.</summary>
+    private async Task DropOnColumnAsync(KanbanColumn column)
+    {
+        if (_dragging is null)
+        {
+            return;
+        }
+
+        var moved = _dragging;
+        _dragging = null;
+
+        await Run(() => Kanban.MoveCardAsync(moved.Id, column.Id, column.Cards.Count));
+    }
+
+    /// <summary>Führt eine Board-Änderung aus, zeigt Validierungsfehler an und lädt neu.</summary>
+    private async Task Run(Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+
+        await LoadAsync();
+    }
+
+    private static string Shorten(string? text) =>
+        string.IsNullOrWhiteSpace(text)
+            ? string.Empty
+            : text.Length <= 120 ? text : string.Concat(text.AsSpan(0, 120), "…");
+}

@@ -1,0 +1,52 @@
+@inject IStringLocalizer<CardEditDialog> L
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudTextField @bind-Value="CardTitle"
+                          Label="@L["TitleLabel"]"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          AutoFocus="true" />
+            <MudTextField @bind-Value="CardNotes"
+                          Label="@L["NotesLabel"]"
+                          Variant="Variant.Outlined"
+                          Lines="5" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error"
+                   StartIcon="@Icons.Material.Filled.DeleteOutline"
+                   OnClick="Delete">
+            @L["Delete"]
+        </MudButton>
+        <MudSpacer />
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@string.IsNullOrWhiteSpace(CardTitle)"
+                   OnClick="Confirm">
+            @L["Save"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    /// <summary>Das Ergebnis des Dialogs — Speichern mit neuen Werten oder Löschen.</summary>
+    public sealed record Outcome(string Title, string? Notes, bool Delete);
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public string? CardTitle { get; set; }
+
+    [Parameter]
+    public string? CardNotes { get; set; }
+
+    private void Confirm() =>
+        MudDialog.Close(DialogResult.Ok(new Outcome(CardTitle!, CardNotes, Delete: false)));
+
+    private void Delete() =>
+        MudDialog.Close(DialogResult.Ok(new Outcome(CardTitle ?? string.Empty, CardNotes, Delete: true)));
+}

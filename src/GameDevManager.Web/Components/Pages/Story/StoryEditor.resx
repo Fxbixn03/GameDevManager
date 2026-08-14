@@ -129,4 +129,76 @@
   <data name="DeletedMessage" xml:space="preserve">
     <value>Story-Abschnitt gelöscht.</value>
   </data>
+  <data name="MoodLabel" xml:space="preserve">
+    <value>Stimmung</value>
+  </data>
+  <data name="MoodPlaceholder" xml:space="preserve">
+    <value>bedrückend, ausgelassen, …</value>
+  </data>
+  <data name="GameDateLabel" xml:space="preserve">
+    <value>Datum (Spielwelt)</value>
+  </data>
+  <data name="GameDatePlaceholder" xml:space="preserve">
+    <value>3. Tag der Aschewoche</value>
+  </data>
+  <data name="DurationLabel" xml:space="preserve">
+    <value>Dauer</value>
+  </data>
+  <data name="DurationPlaceholder" xml:space="preserve">
+    <value>eine Nacht</value>
+  </data>
+  <data name="LocationSection" xml:space="preserve">
+    <value>Schauplatz</value>
+  </data>
+  <data name="LocationLabel" xml:space="preserve">
+    <value>Ort</value>
+  </data>
+  <data name="LocationPlaceholder" xml:space="preserve">
+    <value>Hafenviertel von Aldenhus</value>
+  </data>
+  <data name="TargetMapLabel" xml:space="preserve">
+    <value>Karte</value>
+  </data>
+  <data name="NoMapsHint" xml:space="preserve">
+    <value>Noch keine Karten im Projekt — der Schauplatz bleibt vorerst Freitext.</value>
+  </data>
+  <data name="TargetMarkerLabel" xml:space="preserve">
+    <value>Markierung auf der Karte</value>
+  </data>
+  <data name="NoMarkersHint" xml:space="preserve">
+    <value>Diese Karte hat noch keine Markierungen.</value>
+  </data>
+  <data name="OpenMap" xml:space="preserve">
+    <value>Karte öffnen</value>
+  </data>
+  <data name="MarkerFallback" xml:space="preserve">
+    <value>Markierung bei {0} / {1}</value>
+  </data>
+  <data name="LinksSection" xml:space="preserve">
+    <value>Verknüpfte Szenen</value>
+  </data>
+  <data name="AddLink" xml:space="preserve">
+    <value>Szene verknüpfen</value>
+  </data>
+  <data name="NoOtherEntries" xml:space="preserve">
+    <value>Es gibt noch keine anderen Abschnitte, mit denen sich diese Szene verknüpfen ließe.</value>
+  </data>
+  <data name="NoLinks" xml:space="preserve">
+    <value>Noch keine Verknüpfungen — etwa „spielt parallel zu“ oder „Rückblende auf“.</value>
+  </data>
+  <data name="LinkTargetLabel" xml:space="preserve">
+    <value>Abschnitt</value>
+  </data>
+  <data name="LinkLabelLabel" xml:space="preserve">
+    <value>Bedeutung</value>
+  </data>
+  <data name="LinkLabelPlaceholder" xml:space="preserve">
+    <value>Rückblende, spielt parallel, …</value>
+  </data>
+  <data name="OpenLinkedEntry" xml:space="preserve">
+    <value>Verknüpften Abschnitt öffnen</value>
+  </data>
+  <data name="RemoveLink" xml:space="preserve">
+    <value>Verknüpfung entfernen</value>
+  </data>
 </root>

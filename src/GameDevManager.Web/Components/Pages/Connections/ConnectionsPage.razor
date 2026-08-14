@@ -1,0 +1,246 @@
+@page "/modules/connections"
+@inject ConnectionsService Connections
+@inject ProjectContext Project
+@inject NavigationManager Navigation
+@inject IStringLocalizer<ConnectionsPage> L
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@L["Subtitle"]">
+    <Actions>
+        <MudSwitch T="bool"
+                   Value="_includeUnconnected"
+                   ValueChanged="ToggleUnconnectedAsync"
+                   Color="Color.Primary"
+                   Label="@L["ShowUnconnected"]" />
+        <MudButton Variant="Variant.Outlined" Href="/modules/npcs">@L["ToNpcs"]</MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_graph is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_graph.Nodes.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Hub" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            @L["EmptyHint"]
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/modules/npcs">
+            @L["ToNpcs"]
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="4" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+            @foreach (var faction in _graph.Factions)
+            {
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:3px solid @FactionColor(faction.Id);"></span>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@faction.Name</MudText>
+                </MudStack>
+            }
+            <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                <span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:3px solid var(--mud-palette-lines-default);"></span>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Factionless"]</MudText>
+            </MudStack>
+            <MudDivider Vertical="true" FlexItem="true" />
+            @foreach (var stance in Enum.GetValues<NpcRelationStance>())
+            {
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <span style="display:inline-block;width:24px;height:0;border-top:3px solid @EdgeColor(stance);"></span>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@StanceLabel(stance)</MudText>
+                </MudStack>
+            }
+        </MudStack>
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="gdm-panel pa-4" Style="overflow-x:auto;">
+        <svg viewBox="0 0 @CanvasSize @CanvasSize"
+             width="100%"
+             style="max-width:900px;display:block;margin:0 auto;"
+             role="img"
+             aria-label="@L["GraphAria"]">
+
+            <defs>
+                @* Je Knoten ein eigener Kreisausschnitt für das Profilbild. *@
+                @foreach (var node in _graph.Nodes)
+                {
+                    if (node.PrimaryAssetId is not null)
+                    {
+                        var position = PositionOf(node.NpcId)!.Value;
+
+                        <clipPath id="@($"clip-{node.NpcId:N}")">
+                            <circle cx="@Fmt(position.X)" cy="@Fmt(position.Y)" r="@NodeRadius" />
+                        </clipPath>
+                    }
+                }
+            </defs>
+
+            @* Kanten zuerst, damit die Knoten darüber liegen. *@
+            @foreach (var edge in _graph.Edges)
+            {
+                var a = PositionOf(edge.FromNpcId);
+                var b = PositionOf(edge.ToNpcId);
+
+                if (a is null || b is null)
+                {
+                    continue;
+                }
+
+                <line x1="@Fmt(a.Value.X)" y1="@Fmt(a.Value.Y)"
+                      x2="@Fmt(b.Value.X)" y2="@Fmt(b.Value.Y)"
+                      stroke="@EdgeColor(edge.Stance)"
+                      stroke-width="2.5">
+                    <title>@L["EdgeTitle", NameOf(edge.FromNpcId), edge.Label, NameOf(edge.ToNpcId), StanceLabel(edge.Stance)]</title>
+                </line>
+            }
+
+            @foreach (var node in _graph.Nodes)
+            {
+                var position = PositionOf(node.NpcId)!.Value;
+
+                <g style="cursor:pointer;"
+                   @onclick="@(() => Navigation.NavigateTo($"/modules/npcs/{node.NpcId}"))">
+
+                    @* Der Farbring: Fraktionsfarbe oder Grau für Fraktionslose. *@
+                    <circle cx="@Fmt(position.X)" cy="@Fmt(position.Y)" r="@(NodeRadius + 3)"
+                            fill="var(--mud-palette-surface)"
+                            stroke="@RingColor(node)"
+                            stroke-width="4" />
+
+                    @if (node.PrimaryAssetId is { } assetId)
+                    {
+                        @* Das runde Profilbild — das primäre Sprite des NPCs. *@
+                        <image href="@($"/assets/{assetId}")"
+                               x="@Fmt(position.X - NodeRadius)" y="@Fmt(position.Y - NodeRadius)"
+                               width="@(NodeRadius * 2)" height="@(NodeRadius * 2)"
+                               preserveAspectRatio="xMidYMid slice"
+                               clip-path="@($"url(#clip-{node.NpcId:N})")" />
+                    }
+                    else
+                    {
+                        @* In <g> gehüllt: ein <text> als erstes Element eines Razor-Blocks
+                           läse der Parser als sein eigenes Steuer-Tag. *@
+                        <g>
+                            <text x="@Fmt(position.X)" y="@Fmt(position.Y + 7)"
+                                  text-anchor="middle"
+                                  fill="var(--mud-palette-text-primary)"
+                                  style="font-size:22px;font-family:inherit;font-weight:600;">
+                                @Initial(node.Name)
+                            </text>
+                        </g>
+                    }
+
+                    <title>@node.Name</title>
+                    <text x="@Fmt(position.X)" y="@Fmt(position.Y + NodeRadius + 20)"
+                          text-anchor="middle"
+                          fill="var(--mud-palette-text-primary)"
+                          style="font-size:13px;font-family:inherit;">
+                        @node.Name
+                    </text>
+                </g>
+            }
+        </svg>
+    </MudPaper>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Connections);
+
+    private const int CanvasSize = 760;
+    private const int NodeRadius = 26;
+
+    /// <summary>
+    /// Feste Datenfarben für die Fraktionsringe — bewusst keine Theme-Farben: Es braucht
+    /// viele unterscheidbare Töne nebeneinander, wie bei den Farben der Seltenheiten.
+    /// </summary>
+    private static readonly string[] FactionPalette =
+    [
+        "#FFC300", "#4FC3F7", "#81C784", "#E57373", "#BA68C8",
+        "#FF8A65", "#4DB6AC", "#F06292", "#A1887F", "#7986CB"
+    ];
+
+    private ConnectionGraph? _graph;
+    private Dictionary<Guid, int> _indexByNpc = [];
+    private Dictionary<Guid, int> _paletteIndexByFaction = [];
+    private bool _includeUnconnected;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _graph = await Connections.GetGraphAsync(projectId, _includeUnconnected);
+
+        _indexByNpc = _graph.Nodes
+            .Select((node, index) => (node.NpcId, index))
+            .ToDictionary(pair => pair.NpcId, pair => pair.index);
+
+        _paletteIndexByFaction = _graph.Factions
+            .Select((faction, index) => (faction.Id, index))
+            .ToDictionary(pair => pair.Id, pair => pair.index);
+    }
+
+    private async Task ToggleUnconnectedAsync(bool value)
+    {
+        _includeUnconnected = value;
+        await LoadAsync();
+    }
+
+    /// <summary>
+    /// Kreis-Layout wie beim Diplomatie-Graphen: deterministisch, ohne JavaScript, und für
+    /// die Größenordnung eines Spielprojekts völlig ausreichend.
+    /// </summary>
+    private (double X, double Y)? PositionOf(Guid npcId)
+    {
+        if (_graph is null || !_indexByNpc.TryGetValue(npcId, out var index))
+        {
+            return null;
+        }
+
+        var count = Math.Max(_graph.Nodes.Count, 1);
+        var angle = 2 * Math.PI * index / count - Math.PI / 2;
+        var radius = CanvasSize / 2.0 - 90;
+
+        return (CanvasSize / 2.0 + radius * Math.Cos(angle),
+                CanvasSize / 2.0 + radius * Math.Sin(angle));
+    }
+
+    private string NameOf(Guid npcId) =>
+        _graph?.Nodes.FirstOrDefault(node => node.NpcId == npcId)?.Name ?? string.Empty;
+
+    private static string Initial(string name) =>
+        string.IsNullOrWhiteSpace(name) ? "?" : name.Trim()[..1].ToUpperInvariant();
+
+    private string FactionColor(Guid factionId) =>
+        FactionPalette[_paletteIndexByFaction.GetValueOrDefault(factionId) % FactionPalette.Length];
+
+    /// <summary>Der Ring trägt die erste Fraktion des NPCs; ohne Fraktion bleibt er grau.</summary>
+    private string RingColor(ConnectionNode node) =>
+        node.FactionIds.Count == 0
+            ? "var(--mud-palette-lines-default)"
+            : FactionColor(node.FactionIds[0]);
+
+    private static string EdgeColor(NpcRelationStance stance) => stance switch
+    {
+        NpcRelationStance.Friendly => "var(--mud-palette-success)",
+        NpcRelationStance.Hostile => "var(--mud-palette-error)",
+        _ => "var(--mud-palette-lines-default)"
+    };
+
+    private string StanceLabel(NpcRelationStance stance) => stance switch
+    {
+        NpcRelationStance.Friendly => L["StanceFriendly"],
+        NpcRelationStance.Hostile => L["StanceHostile"],
+        _ => L["StanceNeutral"]
+    };
+
+    private static string Fmt(double value) =>
+        value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}

@@ -219,6 +219,20 @@ public sealed record FactionListRow(
 /// <summary>Eine Fraktion, in der ein bestimmter NPC Mitglied ist — für die NPC-Maske.</summary>
 public sealed record FactionForNpc(Guid FactionId, string FactionName, string? Role);
 
+/// <summary>Eine Markierung als Auswahleintrag — etwa für den Schauplatz eines Story-Abschnitts.</summary>
+public sealed record MapMarkerOption(Guid Id, string? Label, double X, double Y);
+
+/// <summary>
+/// Eine eingehende Beziehung für die NPC-Maske: bei <c>OwnerNpcId</c> gespeichert, zeigt auf
+/// den geöffneten NPC; <c>Label</c> ist bereits die Gegenrichtungs-Bezeichnung.
+/// </summary>
+public sealed record NpcRelationRow(
+    Guid RelationId,
+    Guid OwnerNpcId,
+    string OwnerNpcName,
+    string Label,
+    NpcRelationStance Stance);
+
 /// <summary>Eine Zeile der Diplomatie-Übersicht. Die Fraktionsnamen sind aufgelöst; <c>null</c> heißt gelöscht.</summary>
 public sealed record DiplomacyListRow(
     Guid Id,

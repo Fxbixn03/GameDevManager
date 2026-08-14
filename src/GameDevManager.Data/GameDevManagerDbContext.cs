@@ -41,6 +41,11 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<TraderOffer> TraderOffers => Set<TraderOffer>();
 
+    /// <summary>Vom Nutzer definierte Beziehungsarten zwischen NPCs („Ist Vater von“).</summary>
+    public DbSet<NpcRelationType> NpcRelationTypes => Set<NpcRelationType>();
+
+    public DbSet<NpcRelation> NpcRelations => Set<NpcRelation>();
+
     public DbSet<Faction> Factions => Set<Faction>();
 
     public DbSet<FactionMember> FactionMembers => Set<FactionMember>();
@@ -50,6 +55,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
     public DbSet<StoryEntry> StoryEntries => Set<StoryEntry>();
 
     public DbSet<StoryParticipant> StoryParticipants => Set<StoryParticipant>();
+
+    public DbSet<StoryLink> StoryLinks => Set<StoryLink>();
 
     public DbSet<Quest> Quests => Set<Quest>();
 
@@ -107,6 +114,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<MapMarker> MapMarkers => Set<MapMarker>();
 
+    /// <summary>Ebenen der Karten — Markierungen hängen über <see cref="MapMarker.LayerId"/> daran.</summary>
+    public DbSet<MapLayer> MapLayers => Set<MapLayer>();
+
     /// <summary>Hochgeladene Dateien aller Module; die Datei selbst liegt im Dateispeicher.</summary>
     public DbSet<Asset> Assets => Set<Asset>();
 
@@ -116,6 +126,20 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     /// <summary>Tageszeiten, Wetterlagen und Biome — die benannten Zustände der Spielwelt.</summary>
     public DbSet<WorldState> WorldStates => Set<WorldState>();
+
+    /// <summary>Kanban-Boards der Projektverwaltung — Werkzeug-Daten, nicht im Export.</summary>
+    public DbSet<KanbanBoard> KanbanBoards => Set<KanbanBoard>();
+
+    public DbSet<KanbanColumn> KanbanColumns => Set<KanbanColumn>();
+
+    public DbSet<KanbanCard> KanbanCards => Set<KanbanCard>();
+
+    /// <summary>Whiteboards zum gemeinsamen Skizzieren — Werkzeug-Daten, nicht im Export.</summary>
+    public DbSet<Whiteboard> Whiteboards => Set<Whiteboard>();
+
+    public DbSet<WhiteboardNote> WhiteboardNotes => Set<WhiteboardNote>();
+
+    public DbSet<WhiteboardStroke> WhiteboardStrokes => Set<WhiteboardStroke>();
 
     /// <summary>Die Benutzer der Installation. Hängen bewusst an keinem Projekt.</summary>
     public DbSet<AppUser> AppUsers => Set<AppUser>();
@@ -305,6 +329,11 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
         modelBuilder.Entity<Npc>(entity =>
         {
+            entity.Property(n => n.Preferences).HasMaxLength(2000);
+            entity.Property(n => n.Personality).HasMaxLength(2000);
+            // Zehn Züge à „riskTaking:10;“ — 400 lässt Luft.
+            entity.Property(n => n.Traits).HasMaxLength(400);
+
             // Die Übersicht filtert fast immer nach NPC/Mob und nach Rolle.
             entity.HasIndex(n => new { n.GameProjectId, n.Kind });
             entity.HasIndex(n => n.IsTrader);
@@ -314,6 +343,39 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Frage „welche NPCs haben diese Klasse?“.
             entity.HasIndex(n => n.CharacterClassId);
+        });
+
+        modelBuilder.Entity<NpcRelationType>(entity =>
+        {
+            entity.Property(t => t.Name).HasMaxLength(200).IsRequired();
+            entity.Property(t => t.InverseName).HasMaxLength(200).IsRequired();
+
+            entity.HasOne(t => t.GameProject)
+                .WithMany()
+                .HasForeignKey(t => t.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(t => t.GameProjectId);
+        });
+
+        modelBuilder.Entity<NpcRelation>(entity =>
+        {
+            entity.HasOne(r => r.Npc)
+                .WithMany(n => n.Relations)
+                .HasForeignKey(r => r.NpcId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Bewusst kein Cascade: Eine Beziehungsart, die noch verwendet wird, darf nicht
+            // stillschweigend Beziehungen mitreißen — der NpcService blockt das vorher ab.
+            entity.HasOne(r => r.RelationType)
+                .WithMany()
+                .HasForeignKey(r => r.RelationTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Trägt die Frage „welche Beziehungen zeigen auf diesen NPC?“ — die Gegenseite
+            // hängt ohne Fremdschlüssel daran und wird beim Löschen darüber aufgeräumt.
+            entity.HasIndex(r => r.OtherNpcId);
+            entity.HasIndex(r => r.RelationTypeId);
         });
 
         modelBuilder.Entity<ConditionSet>(entity =>
@@ -419,8 +481,30 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
         modelBuilder.Entity<StoryEntry>(entity =>
         {
+            entity.Property(s => s.Mood).HasMaxLength(200);
+            entity.Property(s => s.GameDate).HasMaxLength(200);
+            entity.Property(s => s.Duration).HasMaxLength(200);
+            entity.Property(s => s.Location).HasMaxLength(400);
+
             // Der Zeitstreifen lädt immer projektweise in dieser Reihenfolge.
             entity.HasIndex(s => new { s.GameProjectId, s.SortOrder });
+
+            // Trägt die Frage „welche Abschnitte spielen auf dieser Karte?“.
+            entity.HasIndex(s => s.TargetMapId);
+        });
+
+        modelBuilder.Entity<StoryLink>(entity =>
+        {
+            entity.Property(l => l.Label).HasMaxLength(200);
+
+            entity.HasOne(l => l.StoryEntry)
+                .WithMany(s => s.Links)
+                .HasForeignKey(l => l.StoryEntryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „welche Abschnitte verweisen auf diesen?“ — die Gegenseite
+            // hängt ohne Fremdschlüssel daran und wird beim Löschen darüber aufgeräumt.
+            entity.HasIndex(l => l.TargetEntryId);
         });
 
         modelBuilder.Entity<StoryParticipant>(entity =>
@@ -605,6 +689,83 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.HasIndex(w => new { w.GameProjectId, w.Kind, w.SortOrder });
         });
 
+        modelBuilder.Entity<KanbanBoard>(entity =>
+        {
+            entity.Property(b => b.Name).HasMaxLength(200).IsRequired();
+            entity.Property(b => b.Description).HasMaxLength(2000);
+
+            entity.HasOne(b => b.GameProject)
+                .WithMany()
+                .HasForeignKey(b => b.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(b => b.GameProjectId);
+        });
+
+        modelBuilder.Entity<KanbanColumn>(entity =>
+        {
+            entity.Property(c => c.Name).HasMaxLength(200).IsRequired();
+
+            entity.HasOne(c => c.Board)
+                .WithMany(b => b.Columns)
+                .HasForeignKey(c => c.BoardId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(c => c.BoardId);
+        });
+
+        modelBuilder.Entity<KanbanCard>(entity =>
+        {
+            entity.Property(c => c.Title).HasMaxLength(400).IsRequired();
+            entity.Property(c => c.Notes).HasMaxLength(4000);
+
+            entity.HasOne(c => c.Column)
+                .WithMany(column => column.Cards)
+                .HasForeignKey(c => c.ColumnId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(c => c.ColumnId);
+        });
+
+        modelBuilder.Entity<Whiteboard>(entity =>
+        {
+            entity.Property(w => w.Name).HasMaxLength(200).IsRequired();
+
+            entity.HasOne(w => w.GameProject)
+                .WithMany()
+                .HasForeignKey(w => w.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(w => w.GameProjectId);
+        });
+
+        modelBuilder.Entity<WhiteboardNote>(entity =>
+        {
+            entity.Property(n => n.Text).HasMaxLength(2000);
+            entity.Property(n => n.Color).HasMaxLength(20);
+
+            entity.HasOne(n => n.Whiteboard)
+                .WithMany(w => w.Notes)
+                .HasForeignKey(n => n.WhiteboardId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(n => n.WhiteboardId);
+        });
+
+        modelBuilder.Entity<WhiteboardStroke>(entity =>
+        {
+            // Ein langer Freihandzug hat viele Punkte — bewusst ohne Längengrenze.
+            entity.Property(s => s.Points).IsRequired();
+            entity.Property(s => s.Color).HasMaxLength(20);
+
+            entity.HasOne(s => s.Whiteboard)
+                .WithMany(w => w.Strokes)
+                .HasForeignKey(s => s.WhiteboardId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(s => s.WhiteboardId);
+        });
+
         modelBuilder.Entity<AppUser>(entity =>
         {
             entity.Property(u => u.UserName).HasMaxLength(100).IsRequired();
@@ -667,6 +828,18 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Frage „wo auf den Karten kommt diese Entität vor?“.
             entity.HasIndex(m => m.TargetEntityId);
+        });
+
+        modelBuilder.Entity<MapLayer>(entity =>
+        {
+            entity.Property(l => l.Name).HasMaxLength(200).IsRequired();
+
+            entity.HasOne(l => l.Map)
+                .WithMany(map => map.Layers)
+                .HasForeignKey(l => l.MapId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(l => l.MapId);
         });
 
         modelBuilder.Entity<LootEntry>(entity =>

@@ -13,4 +13,6 @@ public class GameMap : ContentEntity
     public override string ModuleKey => ModuleKeys.Maps;
 
     public List<MapMarker> Markers { get; set; } = [];
+
+    public List<MapLayer> Layers { get; set; } = [];
 }

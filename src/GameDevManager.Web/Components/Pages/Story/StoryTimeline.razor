@@ -48,8 +48,23 @@ else
         {
             <MudTimelineItem Color="Color.Primary" Size="Size.Small" Elevation="0">
                 <ItemContent>
-                    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-2">
+                    @* Verschieben per Drag & Drop: Karte greifen und auf der Zielkarte
+                       loslassen — die Pfeile daneben bleiben als tastaturfreundlicher Weg.
+                       Ein einfaches div statt MudPaper, weil die Drag-Direktiven
+                       (:preventDefault) nur auf HTML-Elementen erlaubt sind. *@
+                    <div class="mud-paper gdm-panel pa-4 mb-2"
+                         style="@(ReferenceEquals(_dragging, entry) ? "opacity:0.4;" : _dragging is not null ? "cursor:grabbing;" : null)"
+                         draggable="true"
+                         @ondragstart="@(() => _dragging = entry)"
+                         @ondragend="@(() => _dragging = null)"
+                         @ondragover:preventDefault="true"
+                         @ondrop="@(() => DropOnAsync(entry))">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+                            <MudIcon Icon="@Icons.Material.Filled.DragIndicator"
+                                     Size="Size.Small"
+                                     Color="Color.Secondary"
+                                     Style="cursor:grab;"
+                                     title="@L["DragHint"]" />
                             <AssetThumbnail AssetId="entry.PrimaryAssetId"
                                             Size="Size.Small"
                                             Alt="@entry.Name"
@@ -109,7 +124,7 @@ else
                                 @L["NoBodyYet"]
                             </MudText>
                         }
-                    </MudPaper>
+                    </div>
                 </ItemContent>
             </MudTimelineItem>
         }
@@ -120,6 +135,7 @@ else
     private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Story);
 
     private List<StoryListRow>? _entries;
+    private StoryListRow? _dragging;
 
     private string Subtitle => _entries is null
         ? L["Loading"]
@@ -137,6 +153,27 @@ else
     {
         var projectId = await Project.GetCurrentIdAsync();
         await Story.MoveAsync(projectId, entry.Id, up);
+        await LoadAsync();
+    }
+
+    /// <summary>Die gegriffene Karte an der Stelle der Zielkarte einsortieren.</summary>
+    private async Task DropOnAsync(StoryListRow target)
+    {
+        if (_entries is null || _dragging is null || ReferenceEquals(_dragging, target))
+        {
+            _dragging = null;
+            return;
+        }
+
+        var moved = _dragging;
+        _dragging = null;
+
+        var targetIndex = _entries.IndexOf(target);
+        _entries.Remove(moved);
+        _entries.Insert(targetIndex, moved);
+
+        var projectId = await Project.GetCurrentIdAsync();
+        await Story.ReorderAsync(projectId, [.. _entries.Select(e => e.Id)]);
         await LoadAsync();
     }
 

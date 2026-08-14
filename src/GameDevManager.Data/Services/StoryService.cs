@@ -42,6 +42,33 @@ public class StoryService(
     }
 
     /// <summary>
+    /// Übernimmt eine per Drag &amp; Drop neu sortierte Reihenfolge des Zeitstreifens.
+    /// Abschnitte, die nicht in der Liste stehen (parallel angelegt), bleiben dahinter.
+    /// </summary>
+    public async Task ReorderAsync(Guid projectId, IReadOnlyList<Guid> orderedIds, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var entries = await db.StoryEntries
+            .Where(s => s.GameProjectId == projectId)
+            .OrderBy(s => s.SortOrder).ThenBy(s => s.Name)
+            .ToListAsync(ct);
+
+        var position = orderedIds
+            .Select((id, index) => (id, index))
+            .ToDictionary(pair => pair.id, pair => pair.index);
+
+        var next = orderedIds.Count;
+
+        foreach (var entry in entries)
+        {
+            entry.SortOrder = position.TryGetValue(entry.Id, out var index) ? index : next++;
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
     /// Schiebt einen Abschnitt im Zeitstreifen einen Platz nach oben oder unten, indem er
     /// die Position mit seinem Nachbarn tauscht.
     /// </summary>
@@ -113,6 +140,7 @@ public class StoryService(
         var entry = await db.StoryEntries
             .AsNoTracking()
             .Include(s => s.Participants)
+            .Include(s => s.Links)
             .FirstOrDefaultAsync(s => s.Id == entryId && s.GameProjectId == projectId, ct);
 
         if (entry is null)
@@ -121,6 +149,7 @@ public class StoryService(
         }
 
         entry.Participants = [.. entry.Participants.OrderBy(p => p.SortOrder)];
+        entry.Links = [.. entry.Links.OrderBy(l => l.SortOrder)];
 
         return new ContentEditContext<StoryEntry>
         {
@@ -149,6 +178,7 @@ public class StoryService(
         var now = DateTime.UtcNow;
         var stored = await db.StoryEntries
             .Include(s => s.Participants)
+            .Include(s => s.Links)
             .FirstOrDefaultAsync(s => s.Id == entry.Id, ct);
 
         if (stored is null)
@@ -168,11 +198,19 @@ public class StoryService(
         stored.Name = entry.Name.Trim();
         stored.Description = string.IsNullOrWhiteSpace(entry.Description) ? null : entry.Description.Trim();
         stored.Body = string.IsNullOrWhiteSpace(entry.Body) ? null : entry.Body;
+        stored.Mood = Normalize(entry.Mood);
+        stored.GameDate = Normalize(entry.GameDate);
+        stored.Duration = Normalize(entry.Duration);
+        stored.Location = Normalize(entry.Location);
+        stored.TargetMapId = entry.TargetMapId;
+        // Eine Markierung ohne Karte wäre nicht zu deuten.
+        stored.TargetMapMarkerId = entry.TargetMapId is null ? null : entry.TargetMapMarkerId;
         stored.SortOrder = entry.SortOrder;
         stored.UpdatedAtUtc = now;
 
         var removedParticipantIds = new List<Guid>();
         SyncParticipants(db, stored, entry, removedParticipantIds);
+        SyncLinks(db, stored, entry);
 
         await EntityCleanup.DeleteForEntitiesAsync(db, removedParticipantIds, ct);
 
@@ -200,6 +238,63 @@ public class StoryService(
         if (duplicate is not null)
         {
             throw new ContentValidationException(messages["StoryParticipantDuplicate"]);
+        }
+
+        // Dieselben Regeln für die Szenen-Verknüpfungen.
+        if (entry.Links.Any(l => l.TargetEntryId == Guid.Empty))
+        {
+            throw new ContentValidationException(messages["StoryLinkEntryRequired"]);
+        }
+
+        if (entry.Links.Any(l => l.TargetEntryId == entry.Id))
+        {
+            throw new ContentValidationException(messages["StoryLinkSelf"]);
+        }
+
+        if (entry.Links.GroupBy(l => l.TargetEntryId).Any(group => group.Count() > 1))
+        {
+            throw new ContentValidationException(messages["StoryLinkDuplicate"]);
+        }
+    }
+
+    private static string? Normalize(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static void SyncLinks(GameDevManagerDbContext db, StoryEntry stored, StoryEntry incoming)
+    {
+        var wanted = incoming.Links;
+        var wantedIds = wanted.Select(l => l.Id).ToHashSet();
+
+        // Nur aus der Navigationsliste entfernen — der Fremdschlüssel ist pflicht, EF löscht
+        // die Waise dadurch von selbst.
+        foreach (var obsolete in stored.Links.Where(l => !wantedIds.Contains(l.Id)).ToList())
+        {
+            stored.Links.Remove(obsolete);
+        }
+
+        for (var index = 0; index < wanted.Count; index++)
+        {
+            var link = wanted[index];
+            var target = stored.Links.FirstOrDefault(l => l.Id == link.Id);
+
+            if (target is null)
+            {
+                // Ausdrücklich über das DbSet — siehe EF-Fallstrick bei Kind-Sammlungen.
+                db.StoryLinks.Add(new StoryLink
+                {
+                    Id = link.Id,
+                    StoryEntryId = stored.Id,
+                    TargetEntryId = link.TargetEntryId,
+                    Label = Normalize(link.Label),
+                    SortOrder = index
+                });
+            }
+            else
+            {
+                target.TargetEntryId = link.TargetEntryId;
+                target.Label = Normalize(link.Label);
+                target.SortOrder = index;
+            }
         }
     }
 
@@ -259,7 +354,13 @@ public class StoryService(
         await ChangeLog.RecordDeletionAsync(db, db.StoryEntries, entryId, ct);
         await EntityCleanup.DeleteForEntitiesAsync(db, [entryId, .. participantIds], ct);
 
-        // Die Beteiligten fallen über den Fremdschlüssel mit.
+        // Verknüpfungen anderer Abschnitte hierher hängen ohne Fremdschlüssel daran und
+        // blieben sonst als Waisen zurück.
+        await db.StoryLinks
+            .Where(l => l.TargetEntryId == entryId)
+            .ExecuteDeleteAsync(ct);
+
+        // Die Beteiligten und eigenen Verknüpfungen fallen über den Fremdschlüssel mit.
         await db.StoryEntries
             .Where(s => s.Id == entryId)
             .ExecuteDeleteAsync(ct);

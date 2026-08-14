@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>Board</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>Dieses Board gibt es nicht (mehr) in diesem Projekt.</value>
+  </data>
+  <data name="BackToBoards" xml:space="preserve">
+    <value>Zu den Boards</value>
+  </data>
+  <data name="RenameBoard" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="RenameDialogTitle" xml:space="preserve">
+    <value>Board bearbeiten</value>
+  </data>
+  <data name="AddColumn" xml:space="preserve">
+    <value>Neue Spalte</value>
+  </data>
+  <data name="NewColumnName" xml:space="preserve">
+    <value>Spalte {0}</value>
+  </data>
+  <data name="MoveColumnLeft" xml:space="preserve">
+    <value>Spalte nach links</value>
+  </data>
+  <data name="MoveColumnRight" xml:space="preserve">
+    <value>Spalte nach rechts</value>
+  </data>
+  <data name="DeleteColumnTooltip" xml:space="preserve">
+    <value>Spalte löschen</value>
+  </data>
+  <data name="DeleteColumnAria" xml:space="preserve">
+    <value>Spalte „{0}“ löschen</value>
+  </data>
+  <data name="DeleteColumnConfirmTitle" xml:space="preserve">
+    <value>Spalte löschen?</value>
+  </data>
+  <data name="DeleteColumnConfirmMessage" xml:space="preserve">
+    <value>Die Spalte „{0}“ enthält noch {1} Karte(n) — sie werden mitgelöscht.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="AddCard" xml:space="preserve">
+    <value>Karte hinzufügen</value>
+  </data>
+  <data name="NewCardLabel" xml:space="preserve">
+    <value>Titel der Karte</value>
+  </data>
+  <data name="AddCardConfirm" xml:space="preserve">
+    <value>Anlegen</value>
+  </data>
+  <data name="AddCardCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="CardDialogTitle" xml:space="preserve">
+    <value>Karte bearbeiten</value>
+  </data>
+</root>

@@ -1,0 +1,83 @@
+@inject IStringLocalizer<TraitBarEditor> L
+
+@* Die zehn festen Wesenszüge eines NPCs als klickbare Balken: zehn gestrichelte Segmente je
+   Zug, von links gefüllt bis zum eingestellten Wert. Ein Klick auf ein Segment setzt den
+   Wert; ein Klick auf das bereits letzte gefüllte Segment setzt auf 0 zurück — so braucht
+   „kein Wert“ keinen eigenen Knopf. Gespeichert wird die kanonische Textspalte über
+   GameDevManager.Domain.Entities.NpcTraits. *@
+
+<MudStack Spacing="2">
+    @foreach (var key in NpcTraits.Keys)
+    {
+        var value = _values.GetValueOrDefault(key);
+
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+            <MudText Typo="Typo.body2" Style="width:140px;flex-shrink:0;">@L[$"Trait_{key}"]</MudText>
+
+            <div style="display:flex;gap:4px;flex-grow:1;max-width:340px;"
+                 role="group"
+                 aria-label="@L[$"Trait_{key}"]">
+                @for (var segment = 1; segment <= NpcTraits.MaxValue; segment++)
+                {
+                    var target = segment;
+                    var filled = segment <= value;
+
+                    <div style="@SegmentStyle(filled)"
+                         title="@L["SegmentTooltip", L[$"Trait_{key}"].Value, target]"
+                         @onclick="@(() => SetAsync(key, target))"></div>
+                }
+            </div>
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono" Style="width:36px;text-align:right;">
+                @value/@NpcTraits.MaxValue
+            </MudText>
+        </MudStack>
+    }
+</MudStack>
+
+@code {
+    /// <summary>Die kanonische Textspalte <c>Npc.Traits</c>.</summary>
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private Dictionary<string, int> _values = [];
+    private string? _parsedFrom;
+
+    protected override void OnParametersSet()
+    {
+        // Nur neu lesen, wenn der Wert wirklich von außen kam — sonst überschriebe jede
+        // eigene Änderung sich beim Rerender selbst.
+        if (!string.Equals(_parsedFrom, Value, StringComparison.Ordinal) || _values.Count == 0)
+        {
+            _values = NpcTraits.Parse(Value);
+            _parsedFrom = Value;
+        }
+    }
+
+    private string SegmentStyle(bool filled) =>
+        "flex:1 1 0;height:16px;box-sizing:border-box;"
+        + (Disabled ? "" : "cursor:pointer;")
+        + "border:1px dashed var(--mud-palette-lines-inputs);"
+        + (filled ? "background:var(--mud-palette-primary);border-style:solid;" : "background:transparent;");
+
+    private async Task SetAsync(string key, int target)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        // Klick auf das letzte gefüllte Segment nimmt den Wert ganz zurück.
+        _values[key] = _values.GetValueOrDefault(key) == target ? 0 : target;
+
+        Value = NpcTraits.Format(_values);
+        _parsedFrom = Value;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

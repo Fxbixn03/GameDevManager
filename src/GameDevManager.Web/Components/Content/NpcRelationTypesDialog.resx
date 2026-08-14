@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Beziehungsarten</value>
+  </data>
+  <data name="Explanation" xml:space="preserve">
+    <value>Jede Beziehungsart ist ein Bezeichnungspaar: die Richtung („Ist Vater von“) und ihre Gegenrichtung („Ist Sohn von“). Die Maske des jeweils anderen NPCs zeigt automatisch die Gegenrichtung.</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Noch keine Beziehungsarten. Lege die erste an — etwa „Ist Vater von“ mit der Gegenrichtung „Ist Sohn von“.</value>
+  </data>
+  <data name="ForwardLabel" xml:space="preserve">
+    <value>Richtung</value>
+  </data>
+  <data name="InverseLabel" xml:space="preserve">
+    <value>Gegenrichtung</value>
+  </data>
+  <data name="NewForwardLabel" xml:space="preserve">
+    <value>Neue Richtung</value>
+  </data>
+  <data name="NewForwardPlaceholder" xml:space="preserve">
+    <value>Ist Vorgesetzter von</value>
+  </data>
+  <data name="NewInverseLabel" xml:space="preserve">
+    <value>Gegenrichtung</value>
+  </data>
+  <data name="NewInversePlaceholder" xml:space="preserve">
+    <value>Ist Untergebener von</value>
+  </data>
+  <data name="AddType" xml:space="preserve">
+    <value>Anlegen</value>
+  </data>
+  <data name="SymmetricHint" xml:space="preserve">
+    <value>Für symmetrische Beziehungen („Ist Verbündeter von“) trägst du in beide Felder denselben Text ein.</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Beziehungsart löschen</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Beziehungsart „{0}“ löschen</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Beziehungsart löschen?</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>Soll die Beziehungsart „{0}“ gelöscht werden? Eine noch verwendete Art lässt sich nicht löschen.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+</root>

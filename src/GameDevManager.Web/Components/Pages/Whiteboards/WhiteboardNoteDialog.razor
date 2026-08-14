@@ -1,0 +1,60 @@
+@inject IStringLocalizer<WhiteboardNoteDialog> L
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudTextField @bind-Value="NoteText"
+                          Label="@L["TextLabel"]"
+                          Variant="Variant.Outlined"
+                          Lines="4"
+                          AutoFocus="true" />
+
+            <div>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["ColorLabel"]</MudText>
+                <MudStack Row="true" Spacing="1">
+                    @foreach (var color in Colors)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Circle"
+                                       Size="Size.Small"
+                                       Style="@($"color:{color};{(color == NoteColor ? "outline:2px solid var(--mud-palette-primary);" : "")}")"
+                                       OnClick="@(() => NoteColor = color)"
+                                       aria-label="@L["PickColorAria", color]" />
+                    }
+                </MudStack>
+            </div>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error"
+                   StartIcon="@Icons.Material.Filled.DeleteOutline"
+                   OnClick="Delete">
+            @L["Delete"]
+        </MudButton>
+        <MudSpacer />
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Confirm">@L["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    /// <summary>Das Ergebnis des Dialogs — Speichern mit neuen Werten oder Löschen.</summary>
+    public sealed record Outcome(string? Text, string? Color, bool Delete);
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public string? NoteText { get; set; }
+
+    [Parameter]
+    public string? NoteColor { get; set; }
+
+    [Parameter]
+    public string[] Colors { get; set; } = [];
+
+    private void Confirm() =>
+        MudDialog.Close(DialogResult.Ok(new Outcome(NoteText, NoteColor, Delete: false)));
+
+    private void Delete() =>
+        MudDialog.Close(DialogResult.Ok(new Outcome(NoteText, NoteColor, Delete: true)));
+}

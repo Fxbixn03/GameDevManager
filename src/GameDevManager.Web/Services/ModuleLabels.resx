@@ -85,10 +85,10 @@
     <value>Sprite-Bibliothek über alle Entitäten</value>
   </data>
   <data name="player_Name" xml:space="preserve">
-    <value>Spieler</value>
+    <value>Skilltrees</value>
   </data>
   <data name="player_Description" xml:space="preserve">
-    <value>Spielerfigur und Skilltrees</value>
+    <value>Skilltrees und Skills — die Spielerfigur ist ein NPC im NPC-Modul</value>
   </data>
   <data name="classes_Name" xml:space="preserve">
     <value>Klassen</value>
@@ -182,6 +182,24 @@
   </data>
   <data name="techtree_Description" xml:space="preserve">
     <value>Was schaltet was frei — der Tech-Tree aus dem Bedingungssystem</value>
+  </data>
+  <data name="connections_Name" xml:space="preserve">
+    <value>Verbindungen</value>
+  </data>
+  <data name="connections_Description" xml:space="preserve">
+    <value>Wer mit wem: NPCs und ihre Beziehungen als Netz, eingefärbt nach Fraktion.</value>
+  </data>
+  <data name="todo_Name" xml:space="preserve">
+    <value>ToDo</value>
+  </data>
+  <data name="todo_Description" xml:space="preserve">
+    <value>Kanban-Boards für die Projektverwaltung — beliebig viele je Projekt.</value>
+  </data>
+  <data name="whiteboard_Name" xml:space="preserve">
+    <value>Whiteboard</value>
+  </data>
+  <data name="whiteboard_Description" xml:space="preserve">
+    <value>Gemeinsam skizzieren und Notizen anheften — mehrere Nutzer, ein Board.</value>
   </data>
   <data name="changelog_Name" xml:space="preserve">
     <value>Änderungen</value>

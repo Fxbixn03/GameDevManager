@@ -50,9 +50,13 @@ public class ExportService(
     /// <remarks>
     /// Version 2: Arten tragen eine <c>parentId</c> — Unterarten erben die Felder ihrer
     /// Eltern-Art. Version 4: Karten-Markierungen tragen <c>points</c> — Gebiete als Polygon
-    /// statt nur als Kreis.
+    /// statt nur als Kreis. Version 5: NPCs tragen Beziehungen samt <c>relationTypes</c> in
+    /// <c>content/npcs.json</c> sowie Einzigartig-Schalter, Vorlieben, Persönlichkeit und
+    /// Wesenszüge; Karten tragen <c>layers</c>, Markierungen eine <c>layerId</c>;
+    /// Story-Abschnitte tragen Stimmung, Spieldatum, Dauer, Ort, Karten-Verknüpfung
+    /// und <c>links</c> auf andere Abschnitte.
     /// </remarks>
-    public const int FormatVersion = 4;
+    public const int FormatVersion = 5;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -98,10 +102,10 @@ public class ExportService(
             .Include(r => r.Outputs).Include(r => r.Ingredients));
         var currencies = await LoadContentAsync(db.Currencies);
         var rarities = await LoadContentAsync(db.Rarities);
-        var npcs = await LoadContentAsync(db.Npcs.Include(n => n.Offers));
+        var npcs = await LoadContentAsync(db.Npcs.Include(n => n.Offers).Include(n => n.Relations));
         var factions = await LoadContentAsync(db.Factions.Include(f => f.Members));
         var relations = await LoadContentAsync(db.DiplomaticRelations);
-        var maps = await LoadContentAsync(db.Maps.Include(m => m.Markers));
+        var maps = await LoadContentAsync(db.Maps.Include(m => m.Markers).Include(m => m.Layers));
         var dialogues = await LoadContentAsync(db.Dialogues
             .Include(d => d.Participants)
             .Include(d => d.Lines).ThenInclude(l => l.Choices));
@@ -120,6 +124,7 @@ public class ExportService(
         // Der Zeitstreifen ist eine Reihenfolge — hier sortiert sie statt des Namens.
         var storyEntries = await db.StoryEntries.AsNoTracking()
             .Include(s => s.Participants)
+            .Include(s => s.Links)
             .Where(s => s.GameProjectId == projectId)
             .OrderBy(s => s.SortOrder).ThenBy(s => s.Id)
             .ToListAsync(ct);
@@ -153,6 +158,11 @@ public class ExportService(
             .ToListAsync(ct);
 
         var assetTags = await db.AssetTags.AsNoTracking()
+            .Where(t => t.GameProjectId == projectId)
+            .OrderBy(t => t.Name).ThenBy(t => t.Id)
+            .ToListAsync(ct);
+
+        var npcRelationTypes = await db.NpcRelationTypes.AsNoTracking()
             .Where(t => t.GameProjectId == projectId)
             .OrderBy(t => t.Name).ThenBy(t => t.Id)
             .ToListAsync(ct);
@@ -197,16 +207,28 @@ public class ExportService(
             r.Outputs = [.. r.Outputs.OrderBy(o => o.SortOrder).ThenBy(o => o.Id)];
             r.Ingredients = [.. r.Ingredients.OrderBy(i => i.SortOrder).ThenBy(i => i.Id)];
         });
-        npcs.ForEach(n => n.Offers = [.. n.Offers.OrderBy(o => o.SortOrder).ThenBy(o => o.Id)]);
+        npcs.ForEach(n =>
+        {
+            n.Offers = [.. n.Offers.OrderBy(o => o.SortOrder).ThenBy(o => o.Id)];
+            n.Relations = [.. n.Relations.OrderBy(r => r.SortOrder).ThenBy(r => r.Id)];
+        });
         factions.ForEach(f => f.Members = [.. f.Members.OrderBy(m => m.SortOrder).ThenBy(m => m.Id)]);
-        maps.ForEach(m => m.Markers = [.. m.Markers.OrderBy(x => x.SortOrder).ThenBy(x => x.Id)]);
+        maps.ForEach(m =>
+        {
+            m.Markers = [.. m.Markers.OrderBy(x => x.SortOrder).ThenBy(x => x.Id)];
+            m.Layers = [.. m.Layers.OrderBy(x => x.SortOrder).ThenBy(x => x.Id)];
+        });
         dialogues.ForEach(d =>
         {
             d.Participants = [.. d.Participants.OrderBy(p => p.SortOrder).ThenBy(p => p.Id)];
             d.Lines = [.. d.Lines.OrderBy(l => l.SortOrder).ThenBy(l => l.Id)];
             d.Lines.ForEach(l => l.Choices = [.. l.Choices.OrderBy(c => c.SortOrder).ThenBy(c => c.Id)]);
         });
-        storyEntries.ForEach(s => s.Participants = [.. s.Participants.OrderBy(p => p.SortOrder).ThenBy(p => p.Id)]);
+        storyEntries.ForEach(s =>
+        {
+            s.Participants = [.. s.Participants.OrderBy(p => p.SortOrder).ThenBy(p => p.Id)];
+            s.Links = [.. s.Links.OrderBy(l => l.SortOrder).ThenBy(l => l.Id)];
+        });
         events.ForEach(e => e.Spawns = [.. e.Spawns.OrderBy(s => s.SortOrder).ThenBy(s => s.Id)]);
         effects.ForEach(e => e.Assignments = [.. e.Assignments.OrderBy(a => a.SortOrder).ThenBy(a => a.Id)]);
         cutscenes.ForEach(c => c.Shots = [.. c.Shots.OrderBy(s => s.SortOrder).ThenBy(s => s.Id)]);
@@ -247,7 +269,7 @@ public class ExportService(
         await WriteJsonAsync("content/crafting.json", new { recipes });
         await WriteJsonAsync("content/currencies.json", new { currencies });
         await WriteJsonAsync("content/rarities.json", new { rarities });
-        await WriteJsonAsync("content/npcs.json", new { npcs });
+        await WriteJsonAsync("content/npcs.json", new { npcs, relationTypes = npcRelationTypes });
         await WriteJsonAsync("content/factions.json", new { factions });
         await WriteJsonAsync("content/diplomacy.json", new { relations });
         await WriteJsonAsync("content/maps.json", new { maps });

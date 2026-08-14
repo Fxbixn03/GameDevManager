@@ -1,0 +1,29 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+@* Unsichtbare Komponente im MainLayout: verdrahtet die globalen Tastatur-Shortcuts.
+   Strg+K (Suche) und Strg+S (Speichern-Knopf mit data-gdm-save) laufen rein im Browser;
+   die Alt-Navigation ruft hierher zurück, weil nur Blazor ohne Neuladen navigieren kann. *@
+
+@code {
+    private DotNetObjectReference<KeyboardShortcuts>? _reference;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _reference = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("gdmShortcuts.init", _reference);
+        }
+    }
+
+    [JSInvokable]
+    public void NavigateTo(string route) => Navigation.NavigateTo(route);
+
+    public ValueTask DisposeAsync()
+    {
+        _reference?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}

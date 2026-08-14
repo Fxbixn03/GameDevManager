@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>Whiteboard</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>Dieses Whiteboard gibt es nicht (mehr) in diesem Projekt.</value>
+  </data>
+  <data name="BackToBoards" xml:space="preserve">
+    <value>Zu den Whiteboards</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>{0} Notiz(en), {1} Strich(e) — Änderungen anderer Nutzer erscheinen sofort.</value>
+  </data>
+  <data name="ToolDraw" xml:space="preserve">
+    <value>Zeichnen</value>
+  </data>
+  <data name="ToolNote" xml:space="preserve">
+    <value>Notiz anheften</value>
+  </data>
+  <data name="ToolMove" xml:space="preserve">
+    <value>Verschieben und bearbeiten</value>
+  </data>
+  <data name="ToolErase" xml:space="preserve">
+    <value>Radieren</value>
+  </data>
+  <data name="PickColorAria" xml:space="preserve">
+    <value>Farbe {0} wählen</value>
+  </data>
+  <data name="StrokeWidth" xml:space="preserve">
+    <value>Stärke: {0}</value>
+  </data>
+  <data name="HintDraw" xml:space="preserve">
+    <value>Ziehen zeichnet einen Strich.</value>
+  </data>
+  <data name="HintNote" xml:space="preserve">
+    <value>Klick heftet an dieser Stelle eine Notiz an.</value>
+  </data>
+  <data name="HintMove" xml:space="preserve">
+    <value>Notizen ziehen — Klick öffnet sie zum Bearbeiten.</value>
+  </data>
+  <data name="HintErase" xml:space="preserve">
+    <value>Klick auf Strich oder Notiz löscht sie.</value>
+  </data>
+  <data name="CanvasAria" xml:space="preserve">
+    <value>Whiteboard-Zeichenfläche</value>
+  </data>
+  <data name="NoteDialogTitle" xml:space="preserve">
+    <value>Notiz bearbeiten</value>
+  </data>
+</root>

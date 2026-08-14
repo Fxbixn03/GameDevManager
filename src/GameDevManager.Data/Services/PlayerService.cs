@@ -61,6 +61,93 @@ public class PlayerService(
         await db.SaveChangesAsync(ct);
     }
 
+    /// <summary>
+    /// Überführt alle Spielerfiguren des Projekts in NPCs — der Umbau aus der ToDo-Liste:
+    /// „Der Spieler wird zukünftig als NPC behandelt.“ Die GUID bleibt dieselbe, damit
+    /// Sprites, Feldwerte, Bedingungen, Tags und Karten-Markierungen weiter auf die Figur
+    /// zeigen; nur ihr Modul-Schlüssel wird umgeschrieben. Der neue NPC ist einzigartig —
+    /// eine Spielerfigur gibt es genau einmal.
+    /// </summary>
+    public async Task<int> ConvertCharactersToNpcsAsync(Guid projectId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+
+        var characters = await db.PlayerCharacters
+            .AsNoTracking()
+            .Where(p => p.GameProjectId == projectId)
+            .OrderBy(p => p.Name)
+            .ToListAsync(ct);
+
+        if (characters.Count == 0)
+        {
+            return 0;
+        }
+
+        var now = DateTime.UtcNow;
+
+        foreach (var character in characters)
+        {
+            db.Npcs.Add(new Npc
+            {
+                Id = character.Id,
+                GameProjectId = projectId,
+                Name = character.Name,
+                Description = character.Description,
+                CharacterClassId = character.CharacterClassId,
+                Kind = NpcKind.Npc,
+                IsUnique = true,
+                CreatedAtUtc = character.CreatedAtUtc,
+                UpdatedAtUtc = now
+            });
+        }
+
+        await db.SaveChangesAsync(ct);
+
+        var ids = characters.Select(c => c.Id).ToList();
+
+        // Alles, was über die GUID an der Figur hängt, wandert per Modul-Schlüssel mit.
+        await db.Assets
+            .Where(a => a.OwnerEntityId != null && ids.Contains(a.OwnerEntityId.Value))
+            .ExecuteUpdateAsync(s => s.SetProperty(a => a.OwnerModuleKey, ModuleKeys.Npcs), ct);
+
+        await db.FieldValues
+            .Where(v => ids.Contains(v.OwnerEntityId))
+            .ExecuteUpdateAsync(s => s.SetProperty(v => v.OwnerModuleKey, ModuleKeys.Npcs), ct);
+
+        await db.FieldDefinitions
+            .Where(f => f.OwnerEntityId != null && ids.Contains(f.OwnerEntityId.Value))
+            .ExecuteUpdateAsync(s => s.SetProperty(f => f.ModuleKey, ModuleKeys.Npcs), ct);
+
+        await db.ConditionSets
+            .Where(c => ids.Contains(c.OwnerId))
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.OwnerModuleKey, ModuleKeys.Npcs), ct);
+
+        await db.Conditions
+            .Where(c => c.TargetEntityId != null && ids.Contains(c.TargetEntityId.Value))
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.TargetModuleKey, ModuleKeys.Npcs), ct);
+
+        await db.ContentTagAssignments
+            .Where(a => ids.Contains(a.TargetEntityId))
+            .ExecuteUpdateAsync(s => s.SetProperty(a => a.TargetModuleKey, ModuleKeys.Npcs), ct);
+
+        await db.MapMarkers
+            .Where(m => m.TargetEntityId != null && ids.Contains(m.TargetEntityId.Value))
+            .ExecuteUpdateAsync(s => s.SetProperty(m => m.TargetModuleKey, ModuleKeys.Npcs), ct);
+
+        await db.StoryParticipants
+            .Where(p => ids.Contains(p.TargetEntityId))
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.TargetModuleKey, ModuleKeys.Npcs), ct);
+
+        await db.PlayerCharacters
+            .Where(p => p.GameProjectId == projectId)
+            .ExecuteDeleteAsync(ct);
+
+        await transaction.CommitAsync(ct);
+
+        return characters.Count;
+    }
+
     public async Task DeleteCharacterAsync(Guid characterId, CancellationToken ct = default)
     {
         await assets.DeleteForOwnerAsync(characterId, ct);

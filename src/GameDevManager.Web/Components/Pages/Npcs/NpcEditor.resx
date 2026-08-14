@@ -246,4 +246,73 @@
   <data name="DeletedMessage" xml:space="preserve">
     <value>NPC gelöscht.</value>
   </data>
+  <data name="UniqueLabel" xml:space="preserve">
+    <value>Einzigartig</value>
+  </data>
+  <data name="UniqueOnHint" xml:space="preserve">
+    <value>Diese Figur gibt es genau einmal — etwa den Schmied, der durchs Dorf läuft.</value>
+  </data>
+  <data name="UniqueOffHint" xml:space="preserve">
+    <value>Diese Figur kann mehrfach und immer wieder spawnen — etwa ein Waschbär.</value>
+  </data>
+  <data name="PersonalitySection" xml:space="preserve">
+    <value>Persönlichkeit &amp; Wesenszüge</value>
+  </data>
+  <data name="PreferencesLabel" xml:space="preserve">
+    <value>Vorlieben</value>
+  </data>
+  <data name="PersonalityLabel" xml:space="preserve">
+    <value>Persönlichkeit</value>
+  </data>
+  <data name="ChipInputHint" xml:space="preserve">
+    <value>Mit Komma getrennt eingeben und mit Enter bestätigen.</value>
+  </data>
+  <data name="TraitsLabel" xml:space="preserve">
+    <value>Wesenszüge (0 bis 10 — auf die Balken klicken)</value>
+  </data>
+  <data name="RelationsSection" xml:space="preserve">
+    <value>Beziehungen</value>
+  </data>
+  <data name="ManageRelationTypes" xml:space="preserve">
+    <value>Beziehungsarten</value>
+  </data>
+  <data name="AddRelation" xml:space="preserve">
+    <value>Beziehung hinzufügen</value>
+  </data>
+  <data name="NoRelationTypesHint" xml:space="preserve">
+    <value>Noch keine Beziehungsarten definiert. Lege über „Beziehungsarten“ zuerst ein Bezeichnungspaar an — etwa „Ist Vater von“ mit der Gegenrichtung „Ist Sohn von“.</value>
+  </data>
+  <data name="NoRelationsHint" xml:space="preserve">
+    <value>Noch keine Beziehungen. Über „Beziehung hinzufügen“ verknüpfst du diesen NPC mit einem anderen.</value>
+  </data>
+  <data name="RelationTypeLabel" xml:space="preserve">
+    <value>Beziehungsart</value>
+  </data>
+  <data name="RelationOtherLabel" xml:space="preserve">
+    <value>Anderer NPC</value>
+  </data>
+  <data name="RelationStanceLabel" xml:space="preserve">
+    <value>Haltung</value>
+  </data>
+  <data name="StanceFriendly" xml:space="preserve">
+    <value>Freundlich</value>
+  </data>
+  <data name="StanceNeutral" xml:space="preserve">
+    <value>Neutral</value>
+  </data>
+  <data name="StanceHostile" xml:space="preserve">
+    <value>Feindlich</value>
+  </data>
+  <data name="RemoveRelation" xml:space="preserve">
+    <value>Beziehung entfernen</value>
+  </data>
+  <data name="IncomingRelations" xml:space="preserve">
+    <value>Von anderen NPCs aus gepflegt</value>
+  </data>
+  <data name="RelationPreview" xml:space="preserve">
+    <value>{0} {1} {2} — {2} {3} {0}.</value>
+  </data>
+  <data name="RelationTypesDialogTitle" xml:space="preserve">
+    <value>Beziehungsarten verwalten</value>
+  </data>
 </root>

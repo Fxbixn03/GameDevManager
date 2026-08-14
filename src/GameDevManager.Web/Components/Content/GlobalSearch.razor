@@ -11,6 +11,8 @@
     laufen in diesem Tool ausschließlich über GUIDs.
 *@
 
+@* Die id trägt den Shortcut Strg+K — gdm-shortcuts.js fokussiert darüber das Eingabefeld. *@
+<div id="gdm-global-search">
 <MudAutocomplete T="SearchHit"
                  Value="_selected"
                  ValueChanged="OpenAsync"
@@ -54,6 +56,7 @@
         </MudText>
     </NoItemsTemplate>
 </MudAutocomplete>
+</div>
 
 @code {
     private SearchHit? _selected;

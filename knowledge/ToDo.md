@@ -1,6 +1,6 @@
 # ToDo
 
-Stand 13.08.2026 — **die offenen Punkte aus dem Konzept sind abgearbeitet.** Dazugekommen sind Benutzeranmeldung und Änderungsprotokoll samt Schreibkonflikt-Erkennung, der Freischaltungs-Graph (Tech-Tree), das Welt-Modul für Tageszeit/Wetter/Biome und der Feldtyp „Formel/Kurve“ für Levelkurven und Stat-/Schadensformeln (siehe „Erledigt“). Was hier bleibt, sind gesammelte Ideen; Details zu den Anforderungen stehen in [Konzept.md](Konzept.md).
+Stand 14.08.2026 — **die offenen Punkte aus dem Konzept sind abgearbeitet, ebenso die Feature-Welle vom 13.08.** (NPC-Beziehungen und Persönlichkeit, Karten-Ebenen, Story-Erweiterungen, die neuen Module ToDo/Whiteboard/Verbindungen, der Spieler-Umbau und die Shortcuts — siehe „Erledigt“ unten). Was hier bleibt, sind gesammelte Ideen; Details zu den Anforderungen stehen in [Konzept.md](Konzept.md).
 
 ## Ideen / kleinere Verbesserungen
 
@@ -24,66 +24,29 @@ Stand 13.08.2026 — **die offenen Punkte aus dem Konzept sind abgearbeitet.** D
 - [ ] **Read-only-HTTP-API.** Die Vorstufe dazu: Inhalte je Projekt als JSON-Endpunkte (dieselben Serialisierungsregeln wie der Export), damit ein Unity-/Godot-Editor-Plugin den Stand direkt ziehen kann statt über das ZIP zu gehen. Mit der Benutzeranmeldung stünde jetzt auch die Grundlage für API-Schlüssel.
 
 
+## Erledigt (14.08.2026)
+
 ### Erweiterung bestehender Features
 
-#### Allgemein
+- [x] **Shortcuts.** Strg+K fokussiert die globale Suche, Strg+S speichert die geöffnete Maske (NPC-, Karten- und Story-Editor), Alt+H/I/N/Q/T/W navigiert zu Dashboard, Items, NPCs, Quests, ToDo und Whiteboard ([gdm-shortcuts.js](../src/GameDevManager.Web/wwwroot/js/gdm-shortcuts.js) + `KeyboardShortcuts`-Komponente).
+- [x] **Karten-Ebenen.** Markierungen lassen sich Ebenen zuordnen (`MapLayer`, `MapMarker.LayerId`); Ebenen sind einzeln ein-/ausblendbar (persistiert), die im Editor aktivierte Ebene nimmt neu gesetzte Markierungen auf. Gelöschte Ebenen lassen ihre Markierungen auf die Grundebene zurückfallen.
+- [x] **NPC-Beziehungen.** Frei definierbare Beziehungsarten als Bezeichnungspaar („Ist Vater von“ ↔ „Ist Sohn von“, symmetrisch mit gleichem Text) je Projekt; Beziehungen je NPC mit Haltung Freundlich/Neutral/Feindlich. Die Gegenseite zeigt dieselbe Beziehung mit der Gegenrichtungs-Bezeichnung; Referenzansicht, Export (`relationTypes` in `npcs.json`, FormatVersion 5) und Aufräumen beim Löschen sind angebunden.
+- [x] **NPC einzigartig/wiederkehrend.** Schalter `IsUnique` — der Schmied im Dorf gegen den immer wieder spawnenden Waschbären.
+- [x] **Vorlieben & Persönlichkeit.** Kommagetrennte Chips-Eingabe (Enter/Komma bestätigt, `ChipListInput`); gespeichert als normalisierte Textspalten.
+- [x] **Wesenszüge.** Zehn feste Züge (Empathie bis Mitgefühl) mit Werten 0–10, als klickbare, von links gefüllte gestrichelte Balken (`TraitBarEditor`); kanonische Textspalte über `NpcTraits`.
+- [x] **Story-Abschnitte erweitert.** Stimmung, Datum (Spielwelt, Freitext), Dauer und Ort; Schauplatz als Karte + Markierung; Sprites gab es schon; Verknüpfungen zu anderen Szenen mit freiem Etikett (`StoryLink`); Verschieben im Zeitstreifen per Drag & Drop (die Pfeile bleiben als tastaturfreundlicher Weg).
 
-- Shortcuts für bestimte Funktionen
+### Neue Module
 
-#### Karten
+- [x] **ToDo.** Beliebig viele Kanban-Boards je Projekt (`/modules/todo`), Spalten und Karten frei verwaltbar, Karten per Drag & Drop zwischen Spalten. Werkzeug-Daten: nicht im Export, überstehen den ersetzenden Import.
+- [x] **Whiteboard.** Freihand zeichnen, Notizen anheften, verschieben und radieren (`/modules/whiteboard`); mehrere Nutzer sehen die gespeicherten Änderungen der anderen sofort (`WhiteboardNotifier`). Ebenfalls Werkzeug-Daten.
+- [x] **Verbindungen.** NPC-Graph mit runden Profilbildern (primäres Sprite), Namen darunter, Kanten je Beziehung (Farbe = Haltung) und Farbring je Fraktion bzw. Grau für Fraktionslose (`/modules/connections`).
 
-- Layer auf der Karte für das einfügen von objekten auf karten
-  - Aktivieren und deaktivieren von Layern
-  - Ein- und ausblenden von Layern
+### Grundumbau des Spieler-Moduls
 
-#### NPCs
+- [x] Der Spieler wird als NPC behandelt (einzigartiger NPC mit Klassen, Sprites, Feldern); das Modul heißt jetzt „Skilltrees“ und verwaltet nur noch Skilltrees und Skills. Bestehende Spielerfiguren lassen sich per Knopf in NPCs überführen — GUID und alle Anhänge (Sprites, Feldwerte, Bedingungen, Tags, Karten-Markierungen) bleiben dabei erhalten. 
 
-- Beziehungen zwischen NPCs, können durch den anwender frei definiert werden auch die bezeichnungen
-  - Ist Vater Von <--> Ist Sohn Von
-  - Ist Bruder Von <--> Ist Bruder von
-  - Ist Bruder Von <--> Ist Schwester von
-  - ISt Verbündeter von <--> Ist verbündeter von
-  - Ist vorgesetzter von <--> ist untergebener von
-  - Außerdem kann angegeben werden ob die Beziehenung Freundlich, Neutral oder Feindlich ist
 
-- NPC Option, Ist ein NPC ein einzigartiger NPC welcher zb in einerm DOrf herunläuft oder ist es eher ein mob wie ein waschbär welcher immer wieder und mehrfach spawnen kann.
+### Neues Game Engine Modul
 
-Hier können mit komma getrennt werte eingegeben und mit enter bestätigt werden
-- Vorlieben
-- Persöhnlichkeit
-- Wensenszüge (hier kann zu jedem wert ein wert eingetragen werden von 0 bis 10, die Werte werden als gestrichelte balken dargetsellt. Der Nutzer kann auf die balken klicken sie sind immer von links aus gefüllt und zeigen visuell dem numerischen wert von 0 bis 10) 
-  - Empathie
-  - Impulsivität
-  - Loyalität
-  - Mut
-  - Ehrlichkeit
-  - Dominanz
-  - Geduld
-  - Misstrauen
-  - Risikobereitschaft
-  - Mitgefühl
-
-#### Story Modul
-
-- Erweitern der Optionen zu einem Abschnitt
-  - Typ
-  - Stimmung
-  - Datum
-  - Dauer
-  - Ort
-  - Verknüpfter Karten Marker oder Position auf karte
-  - Bilder/Sprites zur Scene
-  - Verknüpfungen zu anderen Scenen
-- Verschieben von Scenen im ABlauf per Drag and Drop
-
-#### Neuen Module
-
-- ToDo (Mehrere Kanban Boards zur projektverwaltung die der Benutzer nach belieben anlegen und verwalten und löschen kann)
-- Whiteboard (Hier können Nutzer zusammen an einem Projekt arbeiten und zeichnen, Notizen anheften, etc, inspiriert bei Miro)
-- Vrbindungen (In diesem Modul werden NPCs und Fraktionen angezeigt wie wer mit wem verknüpft ist. Dafür werden die Bilder der NPCs verwendet und als runde rofilbilder mit ihrem namen darunter angezeigt und dann striche zu den jeweiligen verknüpfungen. Die Runden bilder haben eine Farbliche umrandung je nachdem in welcher fraktion sie sind, oder fraktionslos sidn)
-
-#### Grundumbau des SPieler Moduls
-
-- Der Spieler wird zukünftig als NPC behandelt und kein eigenes Modul mehr
-- Das Spieler Modul wird zum SkillTree Modul
-- Das Modul ist nurnoch zum administrieren von Skilltrees 
+- Hier können Pro GameEngine verschiedene Presets gebaut werden zb für einen NPC, beim einem Export in eine Gameengine kann dann ein Preset der GameEngine ausgewählt werden sodass dann dieses GameObject nurnoch gefüllt und in die Game Engine Exportiert wird.

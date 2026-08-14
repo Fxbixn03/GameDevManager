@@ -1,0 +1,435 @@
+@page "/modules/whiteboard/{Id:guid}"
+@implements IDisposable
+@inject WhiteboardService Whiteboards
+@inject WhiteboardNotifier Notifier
+@inject ProjectContext Project
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject IStringLocalizer<WhiteboardPage> L
+
+<PageTitle>@L["PageTitle", _board?.Name ?? L["HeadingFallback"]]</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @L["NotFoundMessage"]
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/whiteboard">@L["BackToBoards"]</MudButton>
+}
+else if (_board is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@_board.Name"
+                  Subtitle="@L["Subtitle", _board.Notes.Count, _board.Strokes.Count]"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            <MudButton Variant="Variant.Outlined" Href="/modules/whiteboard">@L["BackToBoards"]</MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    @* ------------------------------------------------------------------ Werkzeuge *@
+    <MudPaper Elevation="0" Class="gdm-panel pa-2 mb-3">
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudToggleGroup T="Tool" Value="_tool" ValueChanged="@((Tool tool) => _tool = tool)" Color="Color.Primary">
+                <MudToggleItem T="Tool" Value="Tool.Draw">
+                    <MudTooltip Text="@L["ToolDraw"]"><MudIcon Icon="@Icons.Material.Filled.Draw" Size="Size.Small" /></MudTooltip>
+                </MudToggleItem>
+                <MudToggleItem T="Tool" Value="Tool.Note">
+                    <MudTooltip Text="@L["ToolNote"]"><MudIcon Icon="@Icons.Material.Filled.StickyNote2" Size="Size.Small" /></MudTooltip>
+                </MudToggleItem>
+                <MudToggleItem T="Tool" Value="Tool.Move">
+                    <MudTooltip Text="@L["ToolMove"]"><MudIcon Icon="@Icons.Material.Filled.OpenWith" Size="Size.Small" /></MudTooltip>
+                </MudToggleItem>
+                <MudToggleItem T="Tool" Value="Tool.Erase">
+                    <MudTooltip Text="@L["ToolErase"]"><MudIcon Icon="@Icons.Material.Filled.Backspace" Size="Size.Small" /></MudTooltip>
+                </MudToggleItem>
+            </MudToggleGroup>
+
+            <MudDivider Vertical="true" FlexItem="true" />
+
+            @foreach (var color in Palette)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Circle"
+                               Size="Size.Small"
+                               Style="@($"color:{color};{(color == _color ? "outline:2px solid var(--mud-palette-primary);" : "")}")"
+                               OnClick="@(() => _color = color)"
+                               aria-label="@L["PickColorAria", color]" />
+            }
+
+            <MudSlider T="double"
+                       Value="_strokeWidth"
+                       ValueChanged="@((double v) => _strokeWidth = v)"
+                       Min="1" Max="12" Step="1"
+                       Style="max-width:140px;"
+                       Color="Color.Primary">
+                @L["StrokeWidth", _strokeWidth]
+            </MudSlider>
+
+            <MudSpacer />
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@ToolHint</MudText>
+        </MudStack>
+    </MudPaper>
+
+    @* ---------------------------------------------------------------- Zeichenfläche *@
+    @* Feste Pixelgröße = Zeichenflächen-Einheiten: OffsetX/Y der Maus sind damit direkt
+       Koordinaten, ohne die dargestellte Größe beim Browser erfragen zu müssen. *@
+    <MudPaper Elevation="0" Class="gdm-panel" Style="overflow:auto;">
+        <svg width="@((int)Whiteboard.CanvasWidth)"
+             height="@((int)Whiteboard.CanvasHeight)"
+             viewBox="0 0 @((int)Whiteboard.CanvasWidth) @((int)Whiteboard.CanvasHeight)"
+             style="display:block;background:var(--mud-palette-surface);touch-action:none;@CanvasCursor"
+             role="img"
+             aria-label="@L["CanvasAria"]"
+             @onpointerdown="OnPointerDown"
+             @onpointermove="OnPointerMove"
+             @onpointerup="OnPointerUpAsync"
+             @onpointerleave="OnPointerUpAsync">
+
+            @* Gespeicherte Striche. *@
+            @foreach (var stroke in _board.Strokes)
+            {
+                <polyline points="@ToSvgPoints(stroke.Points)"
+                          fill="none"
+                          stroke="@(stroke.Color ?? "var(--mud-palette-primary)")"
+                          stroke-width="@Fmt(stroke.Width)"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          style="@(_tool == Tool.Erase && !InteractionLocked ? "cursor:pointer;pointer-events:stroke;" : "pointer-events:none;")"
+                          @onpointerdown="@(() => EraseStrokeAsync(stroke))"
+                          @onpointerdown:stopPropagation="@(_tool == Tool.Erase)" />
+            }
+
+            @* Der gerade entstehende Strich. *@
+            @if (_draftPoints.Count > 1)
+            {
+                <polyline points="@ToSvgPoints(WhiteboardStroke.FormatPoints(_draftPoints))"
+                          fill="none"
+                          stroke="@_color"
+                          stroke-width="@Fmt(_strokeWidth)"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-dasharray="4 3"
+                          style="pointer-events:none;" />
+            }
+
+            @* Notizen. *@
+            @foreach (var note in _board.Notes)
+            {
+                <g style="@NoteStyle(note)"
+                   @onpointerdown="@(args => OnNotePointerDown(note, args))"
+                   @onpointerdown:stopPropagation="@(_tool is Tool.Move or Tool.Erase)"
+                   @onclick="@(() => OnNoteClickedAsync(note))"
+                   @onclick:stopPropagation="true">
+                    <rect x="@Fmt(note.X)" y="@Fmt(note.Y)"
+                          width="@NoteWidth" height="@NoteHeight"
+                          fill="@(note.Color ?? Palette[0])"
+                          stroke="var(--mud-palette-lines-default)" />
+                    <foreignObject x="@Fmt(note.X + 8)" y="@Fmt(note.Y + 6)"
+                                   width="@(NoteWidth - 16)" height="@(NoteHeight - 12)"
+                                   style="pointer-events:none;">
+                        <div style="font-size:13px;font-family:inherit;color:#1a1a1a;overflow:hidden;width:100%;height:100%;white-space:pre-wrap;word-break:break-word;">
+                            @note.Text
+                        </div>
+                    </foreignObject>
+                </g>
+            }
+        </svg>
+    </MudPaper>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Whiteboard);
+
+    private enum Tool
+    {
+        Draw,
+        Note,
+        Move,
+        Erase
+    }
+
+    private const int NoteWidth = 180;
+    private const int NoteHeight = 120;
+
+    /// <summary>
+    /// Feste Datenfarben zum Zeichnen — bewusst keine Theme-Farben: Eine Skizze soll in
+    /// Hell und Dunkel gleich aussehen, wie die Farben der Seltenheiten.
+    /// </summary>
+    private static readonly string[] Palette =
+    [
+        "#FFC300", "#4FC3F7", "#81C784", "#E57373", "#BA68C8", "#F5F5F5", "#212121"
+    ];
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private Domain.Entities.Whiteboard? _board;
+    private Tool _tool = Tool.Draw;
+    private string _color = Palette[0];
+    private double _strokeWidth = 3;
+    private readonly List<MapPoint> _draftPoints = [];
+    private bool _drawing;
+    private WhiteboardNote? _draggingNote;
+    private double _dragOffsetX;
+    private double _dragOffsetY;
+    private Guid? _loadedId;
+    private bool _notFound;
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(_board?.Name ?? L["HeadingFallback"], null, disabled: true)];
+
+    /// <summary>Während gezeichnet oder gezogen wird, sollen Kind-Elemente keine Zeiger-Ereignisse fangen.</summary>
+    private bool InteractionLocked => _drawing || _draggingNote is not null;
+
+    private string CanvasCursor => _tool switch
+    {
+        Tool.Draw => "cursor:crosshair;",
+        Tool.Note => "cursor:copy;",
+        _ => string.Empty
+    };
+
+    private string ToolHint => _tool switch
+    {
+        Tool.Draw => L["HintDraw"],
+        Tool.Note => L["HintNote"],
+        Tool.Move => L["HintMove"],
+        _ => L["HintErase"]
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_board is not null && _loadedId == Id)
+        {
+            return;
+        }
+
+        _loadedId = Id;
+        await LoadAsync();
+    }
+
+    protected override void OnInitialized() => Notifier.Changed += OnRemoteChange;
+
+    public void Dispose() => Notifier.Changed -= OnRemoteChange;
+
+    /// <summary>Ein anderer Nutzer hat gespeichert — dieselbe Fläche neu laden.</summary>
+    private void OnRemoteChange(Guid whiteboardId, object? origin)
+    {
+        if (whiteboardId != Id || ReferenceEquals(origin, this))
+        {
+            return;
+        }
+
+        _ = InvokeAsync(async () =>
+        {
+            await LoadAsync();
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _board = await Whiteboards.GetBoardAsync(projectId, Id);
+        _notFound = _board is null;
+    }
+
+    // ----------------------------------------------------------------- Zeigereingabe
+
+    private void OnPointerDown(PointerEventArgs args)
+    {
+        if (_board is null)
+        {
+            return;
+        }
+
+        switch (_tool)
+        {
+            case Tool.Draw:
+                _drawing = true;
+                _draftPoints.Clear();
+                _draftPoints.Add(new MapPoint(args.OffsetX, args.OffsetY));
+                break;
+        }
+    }
+
+    private void OnPointerMove(PointerEventArgs args)
+    {
+        if (_drawing)
+        {
+            var last = _draftPoints[^1];
+
+            // Nicht jede Mausbewegung wird ein Punkt — das hält die Striche schlank.
+            if (Math.Abs(args.OffsetX - last.X) + Math.Abs(args.OffsetY - last.Y) >= 3)
+            {
+                _draftPoints.Add(new MapPoint(args.OffsetX, args.OffsetY));
+            }
+        }
+        else if (_draggingNote is not null)
+        {
+            _draggingNote.X = Math.Clamp(args.OffsetX - _dragOffsetX, 0, Whiteboard.CanvasWidth - NoteWidth);
+            _draggingNote.Y = Math.Clamp(args.OffsetY - _dragOffsetY, 0, Whiteboard.CanvasHeight - NoteHeight);
+        }
+    }
+
+    private async Task OnPointerUpAsync(PointerEventArgs args)
+    {
+        if (_board is null)
+        {
+            return;
+        }
+
+        if (_drawing)
+        {
+            _drawing = false;
+
+            if (_draftPoints.Count > 1)
+            {
+                await Run(() => Whiteboards.AddStrokeAsync(_board.Id, new WhiteboardStroke
+                {
+                    WhiteboardId = _board.Id,
+                    Points = WhiteboardStroke.FormatPoints(_draftPoints),
+                    Color = _color,
+                    Width = _strokeWidth
+                }, this));
+            }
+
+            _draftPoints.Clear();
+            return;
+        }
+
+        if (_draggingNote is not null)
+        {
+            var note = _draggingNote;
+            _draggingNote = null;
+            await Run(() => Whiteboards.SaveNoteAsync(_board.Id, note, this));
+            return;
+        }
+
+        // Notiz-Werkzeug: Loslassen heftet an dieser Stelle einen Zettel an.
+        if (_tool == Tool.Note)
+        {
+            var note = new WhiteboardNote
+            {
+                WhiteboardId = _board.Id,
+                X = Math.Clamp(args.OffsetX - NoteWidth / 2.0, 0, Whiteboard.CanvasWidth - NoteWidth),
+                Y = Math.Clamp(args.OffsetY - NoteHeight / 2.0, 0, Whiteboard.CanvasHeight - NoteHeight),
+                Color = _color
+            };
+
+            await Run(() => Whiteboards.SaveNoteAsync(_board.Id, note, this));
+            await EditNoteAsync(_board.Notes.FirstOrDefault(n => n.Id == note.Id) ?? note);
+        }
+    }
+
+    // ------------------------------------------------------------------------ Notizen
+
+    private string NoteStyle(WhiteboardNote note) =>
+        InteractionLocked
+            ? "pointer-events:none;"
+            : _tool switch
+            {
+                Tool.Move => "cursor:grab;",
+                Tool.Erase => "cursor:pointer;",
+                _ => "pointer-events:none;"
+            };
+
+    private void OnNotePointerDown(WhiteboardNote note, PointerEventArgs args)
+    {
+        if (_tool != Tool.Move)
+        {
+            return;
+        }
+
+        _draggingNote = note;
+        // Der Griffpunkt bleibt unter dem Zeiger, statt dass der Zettel dorthin springt.
+        _dragOffsetX = args.OffsetX - note.X;
+        _dragOffsetY = args.OffsetY - note.Y;
+    }
+
+    private async Task OnNoteClickedAsync(WhiteboardNote note)
+    {
+        if (_board is null)
+        {
+            return;
+        }
+
+        switch (_tool)
+        {
+            case Tool.Erase:
+                await Run(() => Whiteboards.DeleteNoteAsync(note.Id, this));
+                break;
+
+            case Tool.Draw or Tool.Note:
+                break;
+
+            case Tool.Move:
+                await EditNoteAsync(note);
+                break;
+        }
+    }
+
+    private async Task EditNoteAsync(WhiteboardNote note)
+    {
+        if (_board is null)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters<WhiteboardNoteDialog>
+        {
+            { dialog => dialog.NoteText, note.Text },
+            { dialog => dialog.NoteColor, note.Color },
+            { dialog => dialog.Colors, Palette }
+        };
+
+        var reference = await Dialogs.ShowAsync<WhiteboardNoteDialog>(
+            L["NoteDialogTitle"], parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await reference.Result;
+
+        if (result is { Canceled: false, Data: WhiteboardNoteDialog.Outcome outcome })
+        {
+            if (outcome.Delete)
+            {
+                await Run(() => Whiteboards.DeleteNoteAsync(note.Id, this));
+            }
+            else
+            {
+                note.Text = outcome.Text;
+                note.Color = outcome.Color;
+                await Run(() => Whiteboards.SaveNoteAsync(_board.Id, note, this));
+            }
+        }
+    }
+
+    private async Task EraseStrokeAsync(WhiteboardStroke stroke)
+    {
+        if (_tool == Tool.Erase && !InteractionLocked)
+        {
+            await Run(() => Whiteboards.DeleteStrokeAsync(stroke.Id, this));
+        }
+    }
+
+    /// <summary>Führt eine Änderung aus, zeigt Fehler an und lädt die Fläche neu.</summary>
+    private async Task Run(Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+
+        await LoadAsync();
+    }
+
+    private static string ToSvgPoints(string points) =>
+        string.Join(' ', WhiteboardStroke.ParsePoints(points).Select(p => $"{Fmt(p.X)},{Fmt(p.Y)}"));
+
+    private static string Fmt(double value) =>
+        value.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+}

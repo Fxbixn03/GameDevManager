@@ -1,0 +1,102 @@
+@* Eingabefeld für kommagetrennte Stichwörter (Vorlieben, Persönlichkeit): Tippen, mit Komma
+   oder Enter bestätigen, als Chips angezeigt. Gespeichert wird eine kommagetrennte
+   Textspalte — die Komponente ist nur die Bedienung darüber. Alle sichtbaren Texte kommen
+   als Parameter vom Aufrufer, deshalb hat sie keine eigene .resx. *@
+
+<div>
+    <MudTextField T="string"
+                  @bind-Value="_draft"
+                  Label="@Label"
+                  HelperText="@HelperText"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Immediate="true"
+                  Disabled="@Disabled"
+                  OnKeyUp="OnKeyUp"
+                  OnBlur="CommitDraft" />
+
+    @if (Entries.Count > 0)
+    {
+        <div class="mt-1">
+            @foreach (var entry in Entries)
+            {
+                <MudChip T="string"
+                         Size="Size.Small"
+                         Variant="Variant.Outlined"
+                         Disabled="@Disabled"
+                         OnClose="@(() => RemoveAsync(entry))">
+                    @entry
+                </MudChip>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Die kommagetrennte Textspalte, die die Chips tragen.</summary>
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public string? HelperText { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private string? _draft;
+
+    private List<string> Entries =>
+        (Value ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+
+    private async Task OnKeyUp(KeyboardEventArgs args)
+    {
+        // Das Komma bestätigt wie Enter — es ist im Feld selbst nie Teil eines Stichworts.
+        if (args.Key is "Enter" or ",")
+        {
+            await CommitDraft();
+        }
+    }
+
+    private async Task CommitDraft()
+    {
+        if (string.IsNullOrWhiteSpace(_draft))
+        {
+            _draft = null;
+            return;
+        }
+
+        var entries = Entries;
+
+        foreach (var part in _draft.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (!entries.Contains(part, StringComparer.OrdinalIgnoreCase))
+            {
+                entries.Add(part);
+            }
+        }
+
+        _draft = null;
+        await PublishAsync(entries);
+    }
+
+    private Task RemoveAsync(string entry)
+    {
+        var entries = Entries;
+        entries.RemoveAll(e => string.Equals(e, entry, StringComparison.OrdinalIgnoreCase));
+        return PublishAsync(entries);
+    }
+
+    private Task PublishAsync(List<string> entries)
+    {
+        Value = entries.Count == 0 ? null : string.Join(", ", entries);
+        return ValueChanged.InvokeAsync(Value);
+    }
+}

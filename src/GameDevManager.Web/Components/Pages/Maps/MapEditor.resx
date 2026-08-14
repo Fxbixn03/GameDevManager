@@ -210,4 +210,34 @@
   <data name="DeletedMessage" xml:space="preserve">
     <value>Karte gelöscht.</value>
   </data>
+  <data name="SectionLayers" xml:space="preserve">
+    <value>Ebenen</value>
+  </data>
+  <data name="AddLayer" xml:space="preserve">
+    <value>Neue Ebene</value>
+  </data>
+  <data name="BaseLayer" xml:space="preserve">
+    <value>Grundebene</value>
+  </data>
+  <data name="NewLayerName" xml:space="preserve">
+    <value>Ebene {0}</value>
+  </data>
+  <data name="ActivateLayerTooltip" xml:space="preserve">
+    <value>Ebene aktivieren — neue Markierungen landen hier</value>
+  </data>
+  <data name="HideLayerTooltip" xml:space="preserve">
+    <value>Ebene ausblenden</value>
+  </data>
+  <data name="ShowLayerTooltip" xml:space="preserve">
+    <value>Ebene einblenden</value>
+  </data>
+  <data name="RemoveLayerTooltip" xml:space="preserve">
+    <value>Ebene löschen — ihre Markierungen fallen auf die Grundebene zurück</value>
+  </data>
+  <data name="LayersHint" xml:space="preserve">
+    <value>Ebenen ordnen Markierungen in Gruppen — etwa „NPCs“, „Gebiete“ und „Notizen“ —, die sich einzeln ein- und ausblenden lassen. Die aktive Ebene nimmt neu gesetzte Markierungen auf.</value>
+  </data>
+  <data name="MarkerLayerLabel" xml:space="preserve">
+    <value>Ebene</value>
+  </data>
 </root>

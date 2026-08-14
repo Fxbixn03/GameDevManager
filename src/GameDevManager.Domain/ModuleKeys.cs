@@ -47,4 +47,20 @@ public static class ModuleKeys
 
     /// <summary>Das Änderungsprotokoll. Ebenfalls ein Werkzeug-Modul ohne eigene Inhalte.</summary>
     public const string Changelog = "changelog";
+
+    /// <summary>
+    /// Der Verbindungs-Graph: NPCs und Fraktionen als Netz aus Beziehungen und
+    /// Mitgliedschaften. Ein Werkzeug-Modul ohne eigene Entitäten — es zeigt, was das
+    /// NPC- und das Fraktions-Modul ohnehin schon tragen.
+    /// </summary>
+    public const string Connections = "connections";
+
+    /// <summary>
+    /// Kanban-Boards der Projektverwaltung. Werkzeug-Daten wie das Änderungsprotokoll:
+    /// Sie beschreiben die Arbeit am Spiel, nicht das Spiel — und stehen nicht im Export.
+    /// </summary>
+    public const string Todo = "todo";
+
+    /// <summary>Whiteboards zum gemeinsamen Skizzieren. Werkzeug-Daten wie die Kanban-Boards.</summary>
+    public const string Whiteboard = "whiteboard";
 }

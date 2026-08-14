@@ -1,0 +1,127 @@
+@page "/modules/todo"
+@inject KanbanService Kanban
+@inject ProjectContext Project
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IStringLocalizer<BoardList> L
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="CreateAsync">
+            @L["NewBoard"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_boards is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_boards.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.ViewKanban" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            @L["EmptyHint"]
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAsync">
+            @L["FirstBoard"]
+        </MudButton>
+    </div>
+}
+else
+{
+    <MudGrid Spacing="3">
+        @foreach (var board in _boards)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4" Style="height:100%;">
+                    <MudStack Spacing="2" Style="height:100%;">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                            <MudLink Href="@($"/modules/todo/{board.Id}")" Typo="Typo.h6">@board.Name</MudLink>
+                            <MudTooltip Text="@L["DeleteTooltip"]">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteAsync(board))"
+                                               aria-label="@L["DeleteAria", board.Name]" />
+                            </MudTooltip>
+                        </MudStack>
+
+                        @if (!string.IsNullOrWhiteSpace(board.Description))
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@board.Description</MudText>
+                        }
+
+                        <MudSpacer />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @L["BoardStats", board.ColumnCount, board.CardCount]
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Todo);
+
+    private List<KanbanBoardRow>? _boards;
+
+    private string Subtitle => _boards is null ? L["Loading"] : L["SubtitleCount", _boards.Count];
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _boards = await Kanban.GetBoardsAsync(projectId);
+    }
+
+    private async Task CreateAsync()
+    {
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            var board = await Kanban.CreateBoardAsync(projectId, L["NewBoardName", (_boards?.Count ?? 0) + 1]);
+            Navigation.NavigateTo($"/modules/todo/{board.Id}");
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteAsync(KanbanBoardRow board)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", board.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Kanban.DeleteBoardAsync(board.Id);
+            Snackbar.Add(L["DeletedMessage", board.Name], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+
+        await LoadAsync();
+    }
+}

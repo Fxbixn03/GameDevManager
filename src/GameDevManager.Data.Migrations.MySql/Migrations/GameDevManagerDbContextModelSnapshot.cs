@@ -1295,6 +1295,92 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.KanbanBoard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.ToTable("KanbanBoards");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.KanbanCard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ColumnId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar(4000)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("varchar(400)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColumnId");
+
+                    b.ToTable("KanbanCards");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.KanbanColumn", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("BoardId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BoardId");
+
+                    b.ToTable("KanbanColumns");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.LootEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1369,6 +1455,33 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.ToTable("LootTables");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.MapLayer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("MapId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MapId");
+
+                    b.ToTable("MapLayers");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.MapMarker", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1385,6 +1498,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Property<string>("Label")
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
+
+                    b.Property<Guid?>("LayerId")
+                        .HasColumnType("char(36)");
 
                     b.Property<Guid>("MapId")
                         .HasColumnType("char(36)");
@@ -1473,6 +1589,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Property<bool>("IsTrader")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("IsUnique")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<int>("Kind")
                         .HasColumnType("int");
 
@@ -1483,6 +1602,18 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Personality")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("Preferences")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("Traits")
+                        .HasMaxLength(400)
+                        .HasColumnType("varchar(400)");
 
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime(6)");
@@ -1504,6 +1635,64 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.HasIndex("GameProjectId", "Kind");
 
                     b.ToTable("Npcs");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.NpcRelation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("NpcId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("OtherNpcId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("RelationTypeId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Stance")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NpcId");
+
+                    b.HasIndex("OtherNpcId");
+
+                    b.HasIndex("RelationTypeId");
+
+                    b.ToTable("NpcRelations");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.NpcRelationType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("InverseName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.ToTable("NpcRelationTypes");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.PlayerCharacter", b =>
@@ -1878,8 +2067,24 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("varchar(4000)");
 
+                    b.Property<string>("Duration")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("GameDate")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
                     b.Property<Guid>("GameProjectId")
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(400)
+                        .HasColumnType("varchar(400)");
+
+                    b.Property<string>("Mood")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1888,6 +2093,12 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
+
+                    b.Property<Guid?>("TargetMapId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("TargetMapMarkerId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime(6)");
@@ -1900,9 +2111,39 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("Name");
 
+                    b.HasIndex("TargetMapId");
+
                     b.HasIndex("GameProjectId", "SortOrder");
 
                     b.ToTable("StoryEntries");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.StoryLink", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StoryEntryId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("TargetEntryId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoryEntryId");
+
+                    b.HasIndex("TargetEntryId");
+
+                    b.ToTable("StoryLinks");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.StoryParticipant", b =>
@@ -1973,6 +2214,90 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.HasIndex("NpcId");
 
                     b.ToTable("TraderOffers");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Whiteboard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.ToTable("Whiteboards");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.WhiteboardNote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("Text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<Guid>("WhiteboardId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<double>("X")
+                        .HasColumnType("double");
+
+                    b.Property<double>("Y")
+                        .HasColumnType("double");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WhiteboardId");
+
+                    b.ToTable("WhiteboardNotes");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.WhiteboardStroke", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("Points")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("WhiteboardId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<double>("Width")
+                        .HasColumnType("double");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WhiteboardId");
+
+                    b.ToTable("WhiteboardStrokes");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.WorldState", b =>
@@ -2486,6 +2811,39 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.KanbanBoard", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.KanbanCard", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.KanbanColumn", "Column")
+                        .WithMany("Cards")
+                        .HasForeignKey("ColumnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Column");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.KanbanColumn", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.KanbanBoard", "Board")
+                        .WithMany("Columns")
+                        .HasForeignKey("BoardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Board");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.LootEntry", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.LootTable", "LootTable")
@@ -2513,6 +2871,17 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Navigation("ContentType");
 
                     b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.MapLayer", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameMap", "Map")
+                        .WithMany("Layers")
+                        .HasForeignKey("MapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Map");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.MapMarker", b =>
@@ -2551,6 +2920,36 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .IsRequired();
 
                     b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.NpcRelation", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Npc", "Npc")
+                        .WithMany("Relations")
+                        .HasForeignKey("NpcId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GameDevManager.Domain.Entities.NpcRelationType", "RelationType")
+                        .WithMany()
+                        .HasForeignKey("RelationTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Npc");
+
+                    b.Navigation("RelationType");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.NpcRelationType", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("GameProject");
                 });
@@ -2707,6 +3106,17 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.StoryLink", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.StoryEntry", "StoryEntry")
+                        .WithMany("Links")
+                        .HasForeignKey("StoryEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StoryEntry");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.StoryParticipant", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.StoryEntry", "StoryEntry")
@@ -2727,6 +3137,39 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .IsRequired();
 
                     b.Navigation("Npc");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Whiteboard", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.WhiteboardNote", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Whiteboard", "Whiteboard")
+                        .WithMany("Notes")
+                        .HasForeignKey("WhiteboardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Whiteboard");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.WhiteboardStroke", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Whiteboard", "Whiteboard")
+                        .WithMany("Strokes")
+                        .HasForeignKey("WhiteboardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Whiteboard");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.WorldState", b =>
@@ -2815,7 +3258,19 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.GameMap", b =>
                 {
+                    b.Navigation("Layers");
+
                     b.Navigation("Markers");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.KanbanBoard", b =>
+                {
+                    b.Navigation("Columns");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.KanbanColumn", b =>
+                {
+                    b.Navigation("Cards");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.LootTable", b =>
@@ -2826,6 +3281,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.Npc", b =>
                 {
                     b.Navigation("Offers");
+
+                    b.Navigation("Relations");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Recipe", b =>
@@ -2837,7 +3294,16 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.StoryEntry", b =>
                 {
+                    b.Navigation("Links");
+
                     b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Whiteboard", b =>
+                {
+                    b.Navigation("Notes");
+
+                    b.Navigation("Strokes");
                 });
 #pragma warning restore 612, 618
         }

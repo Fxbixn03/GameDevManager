@@ -1,0 +1,43 @@
+@inject IStringLocalizer<BoardRenameDialog> L
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudTextField @bind-Value="BoardName"
+                          Label="@L["NameLabel"]"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          AutoFocus="true" />
+            <MudTextField @bind-Value="BoardDescription"
+                          Label="@L["DescriptionLabel"]"
+                          Variant="Variant.Outlined"
+                          Lines="2" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@string.IsNullOrWhiteSpace(BoardName)"
+                   OnClick="Confirm">
+            @L["Save"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    /// <summary>Das Ergebnis des Dialogs — als eigener Typ, damit die Seite sauber mustern kann.</summary>
+    public sealed record Outcome(string Name, string? Description);
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public string? BoardName { get; set; }
+
+    [Parameter]
+    public string? BoardDescription { get; set; }
+
+    private void Confirm() =>
+        MudDialog.Close(DialogResult.Ok(new Outcome(BoardName!, BoardDescription)));
+}

@@ -96,6 +96,10 @@ public static class DatabaseServiceExtensions
         services.AddScoped<CutsceneService>();
         services.AddScoped<StatisticsService>();
         services.AddScoped<TechTreeService>();
+        services.AddScoped<ConnectionsService>();
+        services.AddScoped<KanbanService>();
+        services.AddScoped<WhiteboardService>();
+        services.AddSingleton<WhiteboardNotifier>();
         services.AddScoped<WorldService>();
         services.AddScoped<LootService>();
         services.AddScoped<MapService>();

@@ -647,4 +647,61 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="PermissionAdminOnly" xml:space="preserve">
     <value>Benutzer verwalten dürfen nur Verwalter.</value>
   </data>
+  <data name="Reference_NpcRelation" xml:space="preserve">
+    <value>Beziehung</value>
+  </data>
+  <data name="MapLayerNameRequired" xml:space="preserve">
+    <value>Jede Ebene braucht einen Namen.</value>
+  </data>
+  <data name="Reference_StoryLink" xml:space="preserve">
+    <value>Szenen-Verknüpfung</value>
+  </data>
+  <data name="Reference_StoryLocation" xml:space="preserve">
+    <value>Schauplatz</value>
+  </data>
+  <data name="WhiteboardNameRequired" xml:space="preserve">
+    <value>Ein Whiteboard braucht einen Namen.</value>
+  </data>
+  <data name="KanbanBoardNameRequired" xml:space="preserve">
+    <value>Ein Board braucht einen Namen.</value>
+  </data>
+  <data name="KanbanColumnNameRequired" xml:space="preserve">
+    <value>Eine Spalte braucht einen Namen.</value>
+  </data>
+  <data name="KanbanCardTitleRequired" xml:space="preserve">
+    <value>Eine Karte braucht einen Titel.</value>
+  </data>
+  <data name="KanbanDefaultColumnOpen" xml:space="preserve">
+    <value>Offen</value>
+  </data>
+  <data name="KanbanDefaultColumnDoing" xml:space="preserve">
+    <value>In Arbeit</value>
+  </data>
+  <data name="KanbanDefaultColumnDone" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+  <data name="StoryLinkEntryRequired" xml:space="preserve">
+    <value>Jede Szenen-Verknüpfung braucht einen Ziel-Abschnitt.</value>
+  </data>
+  <data name="StoryLinkSelf" xml:space="preserve">
+    <value>Ein Abschnitt kann nicht mit sich selbst verknüpft werden.</value>
+  </data>
+  <data name="StoryLinkDuplicate" xml:space="preserve">
+    <value>Dieselbe Szenen-Verknüpfung steht schon in der Liste.</value>
+  </data>
+  <data name="NpcRelationIncomplete" xml:space="preserve">
+    <value>Jede Beziehung braucht einen zweiten NPC und eine Beziehungsart.</value>
+  </data>
+  <data name="NpcRelationSelf" xml:space="preserve">
+    <value>Ein NPC kann keine Beziehung zu sich selbst haben.</value>
+  </data>
+  <data name="NpcRelationDuplicate" xml:space="preserve">
+    <value>Dieselbe Beziehung steht schon in der Liste.</value>
+  </data>
+  <data name="NpcRelationTypeNameRequired" xml:space="preserve">
+    <value>Eine Beziehungsart braucht beide Bezeichnungen — Richtung und Gegenrichtung.</value>
+  </data>
+  <data name="NpcRelationTypeInUse" xml:space="preserve">
+    <value>Diese Beziehungsart wird noch von {0} Beziehung(en) verwendet und kann nicht gelöscht werden.</value>
+  </data>
 </root>

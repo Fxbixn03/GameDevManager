@@ -257,6 +257,7 @@ public class ImportService(
         typesAndFields.ContentTypes.ForEach(t => t.GameProjectId = projectId);
         conditions.ConditionSets.ForEach(s => s.GameProjectId = projectId);
         tags.Tags.ForEach(t => t.GameProjectId = projectId);
+        npcs.RelationTypes.ForEach(t => t.GameProjectId = projectId);
         assetsFile.AssetTags.ForEach(t => t.GameProjectId = projectId);
         assetsFile.Assets.ForEach(a => a.GameProjectId = projectId);
 
@@ -265,6 +266,7 @@ public class ImportService(
         db.Currencies.AddRange(currencies.Currencies);
         db.Rarities.AddRange(rarities.Rarities);
         db.Npcs.AddRange(npcs.Npcs);
+        db.NpcRelationTypes.AddRange(npcs.RelationTypes);
         db.Factions.AddRange(factions.Factions);
         db.DiplomaticRelations.AddRange(diplomacy.Relations);
         db.Maps.AddRange(maps.Maps);
@@ -357,6 +359,7 @@ public class ImportService(
         || await db.Currencies.AnyAsync(e => e.GameProjectId == projectId, ct)
         || await db.Rarities.AnyAsync(e => e.GameProjectId == projectId, ct)
         || await db.Npcs.AnyAsync(e => e.GameProjectId == projectId, ct)
+        || await db.NpcRelationTypes.AnyAsync(t => t.GameProjectId == projectId, ct)
         || await db.Factions.AnyAsync(e => e.GameProjectId == projectId, ct)
         || await db.DiplomaticRelations.AnyAsync(e => e.GameProjectId == projectId, ct)
         || await db.Maps.AnyAsync(e => e.GameProjectId == projectId, ct)
@@ -458,6 +461,8 @@ public class ImportService(
         await db.Currencies.Where(e => e.GameProjectId == projectId).ExecuteDeleteAsync(ct);
         await db.Rarities.Where(e => e.GameProjectId == projectId).ExecuteDeleteAsync(ct);
         await db.Npcs.Where(e => e.GameProjectId == projectId).ExecuteDeleteAsync(ct);
+        // Erst nach den NPCs — der Restrict-Fremdschlüssel der Beziehungen blockierte sonst.
+        await db.NpcRelationTypes.Where(t => t.GameProjectId == projectId).ExecuteDeleteAsync(ct);
         await db.Factions.Where(e => e.GameProjectId == projectId).ExecuteDeleteAsync(ct);
         await db.DiplomaticRelations.Where(e => e.GameProjectId == projectId).ExecuteDeleteAsync(ct);
         await db.Maps.Where(e => e.GameProjectId == projectId).ExecuteDeleteAsync(ct);
@@ -496,7 +501,12 @@ public class ImportService(
 
     private sealed class RaritiesFile { public List<Rarity> Rarities { get; set; } = []; }
 
-    private sealed class NpcsFile { public List<Npc> Npcs { get; set; } = []; }
+    private sealed class NpcsFile
+    {
+        public List<Npc> Npcs { get; set; } = [];
+
+        public List<NpcRelationType> RelationTypes { get; set; } = [];
+    }
 
     private sealed class FactionsFile { public List<Faction> Factions { get; set; } = []; }
 

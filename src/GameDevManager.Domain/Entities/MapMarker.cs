@@ -62,6 +62,14 @@ public class MapMarker
     /// <summary>Farbe als Hex-Wert; ohne Angabe wird das Akzentgelb verwendet.</summary>
     public string? Color { get; set; }
 
+    /// <summary>
+    /// Ebene der Markierung — <c>null</c> heißt Grundebene. Bewusst ohne Fremdschlüssel:
+    /// Er liefe neben der Karten-Kaskade als zweiter Löschpfad auf dieselbe Tabelle, was
+    /// nicht jeder Provider zulässt; der <c>MapService</c> hält die Zuordnung beim
+    /// Speichern konsistent.
+    /// </summary>
+    public Guid? LayerId { get; set; }
+
     public int SortOrder { get; set; }
 
     /// <summary>Ein Kreis-Bereich statt eines Punktes.</summary>

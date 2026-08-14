@@ -12,6 +12,7 @@ public class NpcService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
     AssetService assets,
+    PermissionGuard guard,
     IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<NpcListRow>> GetNpcsAsync(Guid projectId, CancellationToken ct = default)
@@ -85,6 +86,7 @@ public class NpcService(
         var npc = await db.Npcs
             .AsNoTracking()
             .Include(n => n.Offers)
+            .Include(n => n.Relations)
             .FirstOrDefaultAsync(n => n.Id == npcId && n.GameProjectId == projectId, ct);
 
         if (npc is null)
@@ -93,6 +95,7 @@ public class NpcService(
         }
 
         npc.Offers = [.. npc.Offers.OrderBy(offer => offer.SortOrder)];
+        npc.Relations = [.. npc.Relations.OrderBy(relation => relation.SortOrder)];
 
         return new ContentEditContext<Npc>
         {
@@ -121,6 +124,7 @@ public class NpcService(
         var now = DateTime.UtcNow;
         var stored = await db.Npcs
             .Include(n => n.Offers)
+            .Include(n => n.Relations)
             .FirstOrDefaultAsync(n => n.Id == npc.Id, ct);
 
         if (stored is null)
@@ -140,14 +144,21 @@ public class NpcService(
         stored.Name = npc.Name.Trim();
         stored.Description = string.IsNullOrWhiteSpace(npc.Description) ? null : npc.Description.Trim();
         stored.Kind = npc.Kind;
+        stored.IsUnique = npc.IsUnique;
         stored.IsTrader = npc.IsTrader;
         stored.IsQuestGiver = npc.IsQuestGiver;
         stored.LootTableId = npc.LootTableId;
         stored.CharacterClassId = npc.CharacterClassId;
+        stored.Preferences = NormalizeKeywords(npc.Preferences);
+        stored.Personality = NormalizeKeywords(npc.Personality);
+        // Über den Umweg Parse/Format wird die Spalte kanonisch — derselbe Stand ergibt
+        // denselben Export.
+        stored.Traits = NpcTraits.Format(NpcTraits.Parse(npc.Traits));
         stored.UpdatedAtUtc = now;
 
         var removedOfferIds = new List<Guid>();
         SyncOffers(db, stored, npc, removedOfferIds);
+        SyncRelations(db, stored, npc);
 
         // Bedingungen entfernter Posten hängen an deren GUID und fallen nicht von selbst mit.
         await EntityCleanup.DeleteForEntitiesAsync(db, removedOfferIds, ct);
@@ -200,6 +211,46 @@ public class NpcService(
                 throw new ContentValidationException(messages["TraderPriceNeedsCurrency"]);
             }
         }
+
+        // Eine Beziehung ohne Gegenseite oder Art ist eine unfertige Eingabezeile; die Maske
+        // räumt sie vorher weg.
+        if (npc.Relations.Any(relation => relation.OtherNpcId == Guid.Empty || relation.RelationTypeId == Guid.Empty))
+        {
+            throw new ContentValidationException(messages["NpcRelationIncomplete"]);
+        }
+
+        if (npc.Relations.Any(relation => relation.OtherNpcId == npc.Id))
+        {
+            throw new ContentValidationException(messages["NpcRelationSelf"]);
+        }
+
+        var duplicateRelation = npc.Relations
+            .GroupBy(relation => (relation.OtherNpcId, relation.RelationTypeId))
+            .FirstOrDefault(group => group.Count() > 1);
+
+        if (duplicateRelation is not null)
+        {
+            throw new ContentValidationException(messages["NpcRelationDuplicate"]);
+        }
+    }
+
+    /// <summary>
+    /// Kommagetrennte Stichwörter (Vorlieben, Persönlichkeit) aufgeräumt speichern:
+    /// getrimmt, Leereinträge und Dubletten raus — derselbe Stand ergibt denselben Export.
+    /// </summary>
+    private static string? NormalizeKeywords(string? keywords)
+    {
+        if (string.IsNullOrWhiteSpace(keywords))
+        {
+            return null;
+        }
+
+        var parts = keywords
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return parts.Count == 0 ? null : string.Join(", ", parts);
     }
 
     private static void SyncOffers(
@@ -252,6 +303,131 @@ public class NpcService(
         }
     }
 
+    private static void SyncRelations(GameDevManagerDbContext db, Npc stored, Npc incoming)
+    {
+        var wanted = incoming.Relations;
+        var wantedIds = wanted.Select(relation => relation.Id).ToHashSet();
+
+        // Nur aus der Navigationsliste entfernen — der Fremdschlüssel ist pflicht, EF löscht
+        // die Waise dadurch von selbst.
+        foreach (var obsolete in stored.Relations.Where(r => !wantedIds.Contains(r.Id)).ToList())
+        {
+            stored.Relations.Remove(obsolete);
+        }
+
+        for (var index = 0; index < wanted.Count; index++)
+        {
+            var relation = wanted[index];
+            var target = stored.Relations.FirstOrDefault(r => r.Id == relation.Id);
+
+            if (target is null)
+            {
+                // Ausdrücklich über das DbSet — siehe SyncOffers.
+                db.NpcRelations.Add(new NpcRelation
+                {
+                    Id = relation.Id,
+                    NpcId = stored.Id,
+                    OtherNpcId = relation.OtherNpcId,
+                    RelationTypeId = relation.RelationTypeId,
+                    Stance = relation.Stance,
+                    SortOrder = index
+                });
+            }
+            else
+            {
+                target.OtherNpcId = relation.OtherNpcId;
+                target.RelationTypeId = relation.RelationTypeId;
+                target.Stance = relation.Stance;
+                target.SortOrder = index;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Die Beziehungen, die bei anderen NPCs gespeichert sind und auf diesen zeigen — die
+    /// Maske zeigt sie mit der Gegenrichtungs-Bezeichnung („Berta ist Mutter von Anton“).
+    /// </summary>
+    public async Task<List<NpcRelationRow>> GetIncomingRelationsAsync(Guid npcId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        return await db.NpcRelations
+            .AsNoTracking()
+            .Where(relation => relation.OtherNpcId == npcId)
+            .OrderBy(relation => relation.Npc!.Name)
+            .Select(relation => new NpcRelationRow(
+                relation.Id,
+                relation.NpcId,
+                relation.Npc!.Name,
+                relation.RelationType!.InverseName,
+                relation.Stance))
+            .ToListAsync(ct);
+    }
+
+    // ------------------------------------------------------------------ Beziehungsarten
+
+    public async Task<List<NpcRelationType>> GetRelationTypesAsync(Guid projectId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        return await db.NpcRelationTypes
+            .AsNoTracking()
+            .Where(type => type.GameProjectId == projectId)
+            .OrderBy(type => type.Name)
+            .ToListAsync(ct);
+    }
+
+    public async Task SaveRelationTypeAsync(NpcRelationType type, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(type.Name) || string.IsNullOrWhiteSpace(type.InverseName))
+        {
+            throw new ContentValidationException(messages["NpcRelationTypeNameRequired"]);
+        }
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var stored = await db.NpcRelationTypes.FirstOrDefaultAsync(t => t.Id == type.Id, ct);
+
+        if (stored is null)
+        {
+            stored = new NpcRelationType
+            {
+                Id = type.Id,
+                GameProjectId = type.GameProjectId,
+                Name = type.Name.Trim(),
+                InverseName = type.InverseName.Trim()
+            };
+
+            db.NpcRelationTypes.Add(stored);
+        }
+        else
+        {
+            stored.Name = type.Name.Trim();
+            stored.InverseName = type.InverseName.Trim();
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteRelationTypeAsync(Guid typeId, CancellationToken ct = default)
+    {
+        // Reines ExecuteDelete ohne vorheriges Speichern — hier greift der
+        // WriteGuardInterceptor nicht, die Prüfung steht deshalb ausdrücklich da.
+        await guard.EnsureCanWriteAsync(ct);
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        // Verständliche Meldung statt des Restrict-Fremdschlüsselfehlers.
+        var usage = await db.NpcRelations.CountAsync(relation => relation.RelationTypeId == typeId, ct);
+
+        if (usage > 0)
+        {
+            throw new ContentValidationException(messages["NpcRelationTypeInUse", usage]);
+        }
+
+        await db.NpcRelationTypes.Where(type => type.Id == typeId).ExecuteDeleteAsync(ct);
+    }
+
     /// <summary>Löscht einen NPC mit Angebot, Feldwerten, individuellen Feldern und Sprites.</summary>
     public async Task DeleteNpcAsync(Guid npcId, CancellationToken ct = default)
     {
@@ -270,7 +446,13 @@ public class NpcService(
         await ChangeLog.RecordDeletionAsync(db, db.Npcs, npcId, ct);
         await EntityCleanup.DeleteForEntitiesAsync(db, [npcId, .. offerIds], ct);
 
-        // Die Angebote fallen über den Fremdschlüssel mit.
+        // Beziehungen, die bei anderen NPCs gespeichert sind und auf diesen zeigen, hängen
+        // ohne Fremdschlüssel daran und blieben sonst als Waisen zurück.
+        await db.NpcRelations
+            .Where(relation => relation.OtherNpcId == npcId)
+            .ExecuteDeleteAsync(ct);
+
+        // Die Angebote und eigenen Beziehungen fallen über den Fremdschlüssel mit.
         await db.Npcs
             .Where(n => n.Id == npcId)
             .ExecuteDeleteAsync(ct);

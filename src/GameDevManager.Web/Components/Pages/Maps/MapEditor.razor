@@ -50,6 +50,7 @@ else
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        Disabled="_saving"
+                       data-gdm-save
                        OnClick="SaveAsync">
                 @L["Save"]
             </MudButton>
@@ -130,7 +131,7 @@ else
 
                         <MapCanvas ImageAssetId="_imageAssetId"
                                    Alt="@_context.Entity.Name"
-                                   Markers="_context.Entity.Markers"
+                                   Markers="VisibleMarkers"
                                    SelectedId="_selected?.Id"
                                    DraftPoints="_draftPoints"
                                    Placing="@(_mode != PlaceMode.None)"
@@ -351,6 +352,22 @@ else
                                             ColorPickerView="ColorPickerView.Spectrum"
                                             ShowAlpha="false" />
 
+                            @if (_context.Entity.Layers.Count > 0)
+                            {
+                                <MudSelect T="Guid?"
+                                           Value="marker.LayerId"
+                                           ValueChanged="@((Guid? id) => Touch(() => marker.LayerId = id))"
+                                           Label="@L["MarkerLayerLabel"]"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense">
+                                    <MudSelectItem T="Guid?" Value="@((Guid?)null)">@L["BaseLayer"]</MudSelectItem>
+                                    @foreach (var layer in _context.Entity.Layers)
+                                    {
+                                        <MudSelectItem T="Guid?" Value="@((Guid?)layer.Id)">@layer.Name</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+
                             <MudStack Row="true" Spacing="2">
                                 <MudNumericField T="double"
                                                  Value="@(marker.X * 100)"
@@ -372,6 +389,78 @@ else
                                                  Min="0" Max="100" Step="0.5" />
                             </MudStack>
                         </MudStack>
+                    </MudPaper>
+                }
+
+                @* --------------------------------------------------------------- Ebenen *@
+                @if (!_context.IsNew)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionLayers"]</MudText>
+                            <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                       Size="Size.Small"
+                                       OnClick="AddLayer">
+                                @L["AddLayer"]
+                            </MudButton>
+                        </MudStack>
+
+                        @* Die Grundebene: immer da, immer sichtbar — Markierungen ohne Zuordnung. *@
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="gdm-field-row py-1">
+                            <MudTooltip Text="@L["ActivateLayerTooltip"]">
+                                <MudIconButton Icon="@(_activeLayerId is null ? Icons.Material.Filled.RadioButtonChecked : Icons.Material.Filled.RadioButtonUnchecked)"
+                                               Size="Size.Small"
+                                               Color="@(_activeLayerId is null ? Color.Primary : Color.Default)"
+                                               OnClick="@(() => _activeLayerId = null)"
+                                               aria-label="@L["ActivateLayerTooltip"]" />
+                            </MudTooltip>
+                            <MudText Typo="Typo.body2" Style="flex-grow:1;">@L["BaseLayer"]</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                                @MarkerCountFor(null)
+                            </MudText>
+                        </MudStack>
+
+                        @foreach (var layer in _context.Entity.Layers)
+                        {
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="gdm-field-row py-1">
+                                <MudTooltip Text="@L["ActivateLayerTooltip"]">
+                                    <MudIconButton Icon="@(_activeLayerId == layer.Id ? Icons.Material.Filled.RadioButtonChecked : Icons.Material.Filled.RadioButtonUnchecked)"
+                                                   Size="Size.Small"
+                                                   Color="@(_activeLayerId == layer.Id ? Color.Primary : Color.Default)"
+                                                   OnClick="@(() => ActivateLayer(layer))"
+                                                   aria-label="@L["ActivateLayerTooltip"]" />
+                                </MudTooltip>
+                                <MudTextField Value="layer.Name"
+                                              ValueChanged="@((string name) => Touch(() => layer.Name = name))"
+                                              T="string"
+                                              Variant="Variant.Text"
+                                              Margin="Margin.Dense"
+                                              Style="flex-grow:1;" />
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                                    @MarkerCountFor(layer.Id)
+                                </MudText>
+                                <MudTooltip Text="@(layer.IsVisible ? L["HideLayerTooltip"] : L["ShowLayerTooltip"])">
+                                    <MudIconButton Icon="@(layer.IsVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                                   Size="Size.Small"
+                                                   Color="@(layer.IsVisible ? Color.Default : Color.Warning)"
+                                                   OnClick="@(() => ToggleLayerVisibility(layer))"
+                                                   aria-label="@(layer.IsVisible ? L["HideLayerTooltip"] : L["ShowLayerTooltip"])" />
+                                </MudTooltip>
+                                <MudTooltip Text="@L["RemoveLayerTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => RemoveLayer(layer))"
+                                                   aria-label="@L["RemoveLayerTooltip"]" />
+                                </MudTooltip>
+                            </MudStack>
+                        }
+
+                        @if (_context.Entity.Layers.Count == 0)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                                @L["LayersHint"]
+                            </MudText>
+                        }
                     </MudPaper>
                 }
 
@@ -400,6 +489,10 @@ else
                                                      Size="Size.Small"
                                                      Color="@(entry.Id == _selected?.Id ? Color.Primary : Color.Secondary)" />
                                             <MudText Typo="Typo.body2">@MarkerTitle(entry)</MudText>
+                                            @if (LayerNameFor(entry.LayerId) is { } layerName)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@layerName</MudChip>
+                                            }
                                         </MudStack>
                                         <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
                                             @((entry.X * 100).ToString("0")) / @((entry.Y * 100).ToString("0"))
@@ -461,6 +554,7 @@ else
     private PlaceMode _mode = PlaceMode.None;
     private readonly List<MapPoint> _draftPoints = [];
     private Guid? _imageAssetId;
+    private Guid? _activeLayerId;
     private List<AssetLibraryEntry> _markerIcons = [];
     private readonly Dictionary<string, List<EntitySummary>> _targets = [];
     private Guid? _loadedId;
@@ -593,6 +687,87 @@ else
         }
     }
 
+    // ------------------------------------------------------------------------- Ebenen
+
+    /// <summary>Nur Markierungen sichtbarer Ebenen werden gezeichnet; die Grundebene ist immer sichtbar.</summary>
+    private List<MapMarker> VisibleMarkers =>
+        _context is null
+            ? []
+            : [.. _context.Entity.Markers.Where(marker => IsLayerVisible(marker.LayerId))];
+
+    private bool IsLayerVisible(Guid? layerId) =>
+        layerId is null
+        || (_context?.Entity.Layers.FirstOrDefault(layer => layer.Id == layerId)?.IsVisible ?? true);
+
+    private int MarkerCountFor(Guid? layerId) =>
+        _context?.Entity.Markers.Count(marker => marker.LayerId == layerId) ?? 0;
+
+    private string? LayerNameFor(Guid? layerId) =>
+        layerId is null ? null : _context?.Entity.Layers.FirstOrDefault(layer => layer.Id == layerId)?.Name;
+
+    private void AddLayer() =>
+        Touch(() =>
+        {
+            var layer = new MapLayer
+            {
+                MapId = _context!.Entity.Id,
+                Name = L["NewLayerName", _context.Entity.Layers.Count + 1],
+                SortOrder = _context.Entity.Layers.Count
+            };
+
+            _context.Entity.Layers.Add(layer);
+            _activeLayerId = layer.Id;
+        });
+
+    /// <summary>Aktiviert eine Ebene für neue Markierungen; eine ausgeblendete wird dabei eingeblendet.</summary>
+    private void ActivateLayer(MapLayer layer)
+    {
+        _activeLayerId = layer.Id;
+
+        if (!layer.IsVisible)
+        {
+            Touch(() => layer.IsVisible = true);
+        }
+    }
+
+    private void ToggleLayerVisibility(MapLayer layer) =>
+        Touch(() =>
+        {
+            layer.IsVisible = !layer.IsVisible;
+
+            if (!layer.IsVisible)
+            {
+                // Eine unsichtbare Auswahl ließe sich unbemerkt verschieben oder löschen.
+                if (_selected?.LayerId == layer.Id)
+                {
+                    _selected = null;
+                    SetMode(PlaceMode.None);
+                }
+
+                if (_activeLayerId == layer.Id)
+                {
+                    _activeLayerId = null;
+                }
+            }
+        });
+
+    private void RemoveLayer(MapLayer layer) =>
+        Touch(() =>
+        {
+            _context!.Entity.Layers.Remove(layer);
+
+            // Die Markierungen bleiben — sie fallen auf die Grundebene zurück.
+            foreach (var marker in _context.Entity.Markers.Where(m => m.LayerId == layer.Id))
+            {
+                marker.LayerId = null;
+            }
+
+            if (_activeLayerId == layer.Id)
+            {
+                _activeLayerId = null;
+            }
+        });
+
     // ------------------------------------------------------------------- Markierungen
 
     /// <summary>Wechselt den Modus; eine angefangene Polygon-Zeichnung verfällt dabei.</summary>
@@ -638,6 +813,7 @@ else
             Points = MapMarker.FormatPoints(_draftPoints),
             X = _draftPoints.Average(p => p.X),
             Y = _draftPoints.Average(p => p.Y),
+            LayerId = _activeLayerId,
             SortOrder = _context.Entity.Markers.Count
         };
 
@@ -675,6 +851,7 @@ else
                     MapId = _context.Entity.Id,
                     X = point.X,
                     Y = point.Y,
+                    LayerId = _activeLayerId,
                     SortOrder = _context.Entity.Markers.Count
                 };
 
@@ -909,6 +1086,7 @@ else
         reloaded.Entity.Description = entity.Description;
         reloaded.Entity.ContentTypeId = entity.ContentTypeId;
         reloaded.Entity.Markers = entity.Markers;
+        reloaded.Entity.Layers = entity.Layers;
 
         _context = reloaded;
         _dirty = wasDirty;
