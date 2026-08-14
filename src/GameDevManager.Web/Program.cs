@@ -75,6 +75,11 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.Replace(
     ServiceDescriptor.Scoped<IChangeAuthorProvider, BlazorChangeAuthorProvider>());
 
+// Dasselbe Muster für die Berechtigungen: Sie stehen in den Ansprüchen des Cookies, geprüft
+// wird in der Datenschicht (WriteGuardInterceptor, PermissionGuard). Ersetzt „alles erlaubt“.
+builder.Services.Replace(
+    ServiceDescriptor.Scoped<IUserPermissionsProvider, BlazorUserPermissionsProvider>());
+
 // Dasselbe Muster für die Passwortrichtlinie: Konfiguration und Einstellungsseite kennt nur
 // die Web-Schicht, der UserService fragt die Schnittstelle.
 builder.Services.Replace(ServiceDescriptor.Singleton<IPasswordPolicyProvider>(
@@ -127,8 +132,14 @@ app.MapGet("/assets/{id:guid}", async (Guid id, AssetService assets, HttpContext
 // lädt hier direkt herunter. Die Export-Seite baut nur die URL auf diesen Endpunkt.
 app.MapGet("/export/{projectId:guid}", async (
     Guid projectId, string? target, bool? assets, ExportService export,
-    IDbContextFactory<GameDevManagerDbContext> dbFactory, CancellationToken ct) =>
+    IDbContextFactory<GameDevManagerDbContext> dbFactory, HttpContext http, CancellationToken ct) =>
 {
+    // Der Export ist ein eigenes Recht — ohne läuft auch der direkte Aufruf der URL ins Leere.
+    if (!http.User.Permissions().CanExport)
+    {
+        return Results.Forbid();
+    }
+
     await using var db = await dbFactory.CreateDbContextAsync(ct);
     var project = await db.GameProjects.AsNoTracking().FirstOrDefaultAsync(p => p.Id == projectId, ct);
     if (project is null)
@@ -152,8 +163,14 @@ app.MapGet("/export/{projectId:guid}", async (
 
 // Lädt einen aufbewahrten Exportstand herunter. Der Dienst prüft den Dateinamen streng
 // (Zeitstempel plus Projekt-GUID) — alles andere ist ein 404, kein Pfad ins Dateisystem.
-app.MapGet("/export/snapshots/{fileName}", (string fileName, ExportSnapshotService snapshots) =>
+app.MapGet("/export/snapshots/{fileName}", (string fileName, ExportSnapshotService snapshots, HttpContext http) =>
 {
+    // Exportstände sind Teil des Exports — dasselbe Recht wie beim Download darüber.
+    if (!http.User.Permissions().CanExport)
+    {
+        return Results.Forbid();
+    }
+
     var stream = snapshots.OpenRead(fileName);
     return stream is null
         ? Results.NotFound()

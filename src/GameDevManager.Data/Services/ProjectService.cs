@@ -19,6 +19,7 @@ public class ProjectService(
     ExportService export,
     ImportService import,
     ExportSnapshotService snapshots,
+    PermissionGuard guard,
     IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<GameProject>> GetProjectsAsync(CancellationToken ct = default)
@@ -86,6 +87,10 @@ public class ProjectService(
     public async Task<GameProject> DuplicateProjectAsync(
         Guid sourceId, string name, string? description, CancellationToken ct = default)
     {
+        // Duplizieren ist eine Schreiboperation, kein Import — es braucht das Schreibrecht,
+        // aber weder Export- noch Importrecht: Beides sind hier nur interne Zwischenschritte.
+        await guard.EnsureCanWriteAsync(ct);
+
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new ContentValidationException(messages["ProjectNameRequired"].Value);
@@ -123,7 +128,7 @@ public class ProjectService(
             ProjectDuplication.WriteCopy(exported, rewritten, copyName, copyDescription);
             rewritten.Position = 0;
 
-            await import.ImportAsync(copy.Id, rewritten, replaceExisting: false, ct);
+            await import.ImportCoreAsync(copy.Id, rewritten, replaceExisting: false, ct);
 
             // Woher die Kopie stammt, weiß nur diese Stelle — der Import sieht nur ein Archiv.
             await using var log = await factory.CreateDbContextAsync(ct);
@@ -149,6 +154,10 @@ public class ProjectService(
 
     public async Task DeleteProjectAsync(Guid projectId, CancellationToken ct = default)
     {
+        // Der Wipe läuft über ExecuteDelete am WriteGuardInterceptor vorbei — die Prüfung
+        // steht deshalb ausdrücklich hier, vor dem Sicherheitsnetz.
+        await guard.EnsureCanWriteAsync(ct);
+
         await using (var db = await factory.CreateDbContextAsync(ct))
         {
             if (!await db.GameProjects.AnyAsync(p => p.Id == projectId, ct))

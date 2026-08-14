@@ -39,4 +39,13 @@
   <data name="SignOut" xml:space="preserve">
     <value>Abmelden</value>
   </data>
+  <data name="ReadOnlyBadge" xml:space="preserve">
+    <value>Nur Lesen</value>
+  </data>
+  <data name="ReadOnlyTooltip" xml:space="preserve">
+    <value>Dieses Konto darf Inhalte ansehen, aber nicht ändern.</value>
+  </data>
+  <data name="ModuleNotAllowed" xml:space="preserve">
+    <value>Das Modul „{0}“ ist für dieses Konto nicht freigegeben.</value>
+  </data>
 </root>

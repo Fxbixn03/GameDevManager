@@ -11,20 +11,31 @@ public sealed record UserRow(
     string DisplayName,
     bool IsAdministrator,
     bool IsDisabled,
+    bool CanWrite,
+    bool CanExport,
+    bool CanImport,
+    string? AllowedModuleKeys,
     DateTime CreatedAtUtc,
-    DateTime? LastLoginAtUtc);
+    DateTime? LastLoginAtUtc)
+{
+    /// <summary>Die aufgelösten Rechte dieser Zeile — Verwalter bekommen immer alles.</summary>
+    public UserPermissions Permissions =>
+        UserPermissions.For(IsAdministrator, CanWrite, CanExport, CanImport, AllowedModuleKeys);
+}
 
 /// <summary>
 /// Die Benutzer der Installation: anlegen, ändern, sperren, entfernen — und anmelden.
 /// <para>
-/// Benutzer hängen an keinem Projekt, wie die Projekte selbst auch. Wer sich anmeldet, darf
-/// jedes Projekt bearbeiten; feinere Rechte wären eine Rollenverwaltung, die das Konzept nicht
-/// verlangt. Unterschieden wird allein, wer <b>weitere Benutzer</b> verwalten darf.
+/// Benutzer hängen an keinem Projekt, wie die Projekte selbst auch. Unterschieden wird, wer
+/// <b>weitere Benutzer</b> verwalten darf — und je Benutzer, was er darf: lesen oder auch
+/// schreiben, welche Module er sieht, ob Export und Import offenstehen. Die Rechte landen
+/// als Ansprüche im Anmelde-Cookie und gelten deshalb ab der nächsten Anmeldung.
 /// </para>
 /// </summary>
 public class UserService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     IPasswordPolicyProvider passwordPolicy,
+    PermissionGuard guard,
     IStringLocalizer<DataMessages> messages)
 {
     /// <summary>
@@ -50,6 +61,10 @@ public class UserService(
                 user.DisplayName,
                 user.IsAdministrator,
                 user.IsDisabled,
+                user.CanWrite,
+                user.CanExport,
+                user.CanImport,
+                user.AllowedModuleKeys,
                 user.CreatedAtUtc,
                 user.LastLoginAtUtc))
             .ToListAsync(ct);
@@ -68,6 +83,10 @@ public class UserService(
                 user.DisplayName,
                 user.IsAdministrator,
                 user.IsDisabled,
+                user.CanWrite,
+                user.CanExport,
+                user.CanImport,
+                user.AllowedModuleKeys,
                 user.CreatedAtUtc,
                 user.LastLoginAtUtc))
             .FirstOrDefaultAsync(ct);
@@ -76,11 +95,16 @@ public class UserService(
     /// <summary>
     /// Legt einen Benutzer an. Der erste ist immer Verwalter, egal was übergeben wurde —
     /// sonst käme nach der Ersteinrichtung niemand mehr an die Benutzerverwaltung.
+    /// Die Berechtigungen stehen als Vorgabe auf „alles erlaubt“; für Verwalter zählen sie nicht.
     /// </summary>
     public async Task<Guid> CreateUserAsync(
         string userName, string displayName, string password, bool isAdministrator,
+        bool canWrite = true, bool canExport = true, bool canImport = true,
+        string? allowedModuleKeys = null,
         CancellationToken ct = default)
     {
+        await guard.EnsureAdministratorAsync(ct);
+
         var name = Normalize(userName)
             ?? throw new ContentValidationException(messages["UserNameRequired"]);
 
@@ -104,7 +128,12 @@ public class UserService(
             // leer — ein leerer Hash lässt bei wieder eingeschalteten Passwörtern niemanden
             // herein, bis ein Verwalter eines setzt.
             PasswordHash = string.IsNullOrWhiteSpace(password) ? string.Empty : PasswordHasher.Hash(password),
-            IsAdministrator = isAdministrator || isFirst
+            IsAdministrator = isAdministrator || isFirst,
+            CanWrite = canWrite,
+            CanExport = canExport,
+            CanImport = canImport,
+            AllowedModuleKeys = UserPermissions.FormatModuleKeys(
+                UserPermissions.ParseModuleKeys(allowedModuleKeys))
         };
 
         db.AppUsers.Add(created);
@@ -113,11 +142,19 @@ public class UserService(
         return created.Id;
     }
 
-    /// <summary>Ändert Anzeigename, Verwalterrecht und Sperre. Das Passwort läuft über einen eigenen Weg.</summary>
+    /// <summary>
+    /// Ändert Anzeigename, Verwalterrecht, Sperre und Berechtigungen. Das Passwort läuft über
+    /// einen eigenen Weg. Geänderte Rechte greifen ab der nächsten Anmeldung — sie stehen als
+    /// Ansprüche im Cookie, wie das Verwalterrecht auch.
+    /// </summary>
     public async Task UpdateUserAsync(
         Guid userId, string displayName, bool isAdministrator, bool isDisabled,
+        bool canWrite = true, bool canExport = true, bool canImport = true,
+        string? allowedModuleKeys = null,
         CancellationToken ct = default)
     {
+        await guard.EnsureAdministratorAsync(ct);
+
         await using var db = await factory.CreateDbContextAsync(ct);
 
         var user = await db.AppUsers.FirstOrDefaultAsync(u => u.Id == userId, ct)
@@ -134,12 +171,19 @@ public class UserService(
         user.DisplayName = Normalize(displayName) ?? user.UserName;
         user.IsAdministrator = isAdministrator;
         user.IsDisabled = isDisabled;
+        user.CanWrite = canWrite;
+        user.CanExport = canExport;
+        user.CanImport = canImport;
+        user.AllowedModuleKeys = UserPermissions.FormatModuleKeys(
+            UserPermissions.ParseModuleKeys(allowedModuleKeys));
 
         await db.SaveChangesAsync(ct);
     }
 
     public async Task SetPasswordAsync(Guid userId, string password, CancellationToken ct = default)
     {
+        await guard.EnsureAdministratorAsync(ct);
+
         EnsurePasswordsEnabled();
         ValidatePassword(password);
 
@@ -175,6 +219,8 @@ public class UserService(
 
     public async Task DeleteUserAsync(Guid userId, CancellationToken ct = default)
     {
+        await guard.EnsureAdministratorAsync(ct);
+
         await using var db = await factory.CreateDbContextAsync(ct);
 
         var user = await db.AppUsers.FirstOrDefaultAsync(u => u.Id == userId, ct);
@@ -227,8 +273,9 @@ public class UserService(
         await db.SaveChangesAsync(ct);
 
         return new UserRow(
-            user.Id, user.UserName, user.DisplayName, user.IsAdministrator,
-            user.IsDisabled, user.CreatedAtUtc, user.LastLoginAtUtc);
+            user.Id, user.UserName, user.DisplayName, user.IsAdministrator, user.IsDisabled,
+            user.CanWrite, user.CanExport, user.CanImport, user.AllowedModuleKeys,
+            user.CreatedAtUtc, user.LastLoginAtUtc);
     }
 
     /// <summary>Ob außer diesem Benutzer kein einsatzfähiger Verwalter mehr übrig bliebe.</summary>

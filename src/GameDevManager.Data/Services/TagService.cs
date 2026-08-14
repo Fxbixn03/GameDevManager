@@ -8,7 +8,10 @@ namespace GameDevManager.Data.Services;
 /// Das Tag-Modul: modulübergreifende Tags definieren, je Modul freigeben und Entitäten
 /// zuweisen. Die Asset-Stichwörter der Sprite-Bibliothek bleiben davon getrennt.
 /// </summary>
-public class TagService(IDbContextFactory<GameDevManagerDbContext> factory, IStringLocalizer<DataMessages> messages)
+public class TagService(
+    IDbContextFactory<GameDevManagerDbContext> factory,
+    PermissionGuard guard,
+    IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<ContentTagRow>> GetTagsAsync(Guid projectId, CancellationToken ct = default)
     {
@@ -92,6 +95,10 @@ public class TagService(IDbContextFactory<GameDevManagerDbContext> factory, IStr
     /// <summary>Löscht ein Tag; Freigaben und Zuweisungen fallen über den Fremdschlüssel mit.</summary>
     public async Task DeleteTagAsync(Guid tagId, CancellationToken ct = default)
     {
+        // Reines ExecuteDelete ohne vorheriges Speichern — hier greift der
+        // WriteGuardInterceptor nicht, die Prüfung steht deshalb ausdrücklich da.
+        await guard.EnsureCanWriteAsync(ct);
+
         await using var db = await factory.CreateDbContextAsync(ct);
 
         await db.ContentTags
@@ -168,6 +175,9 @@ public class TagService(IDbContextFactory<GameDevManagerDbContext> factory, IStr
 
     public async Task UnassignAsync(Guid tagId, Guid entityId, CancellationToken ct = default)
     {
+        // Wie beim Löschen: ExecuteDelete ohne SaveChanges — Prüfung ausdrücklich hier.
+        await guard.EnsureCanWriteAsync(ct);
+
         await using var db = await factory.CreateDbContextAsync(ct);
 
         await db.ContentTagAssignments

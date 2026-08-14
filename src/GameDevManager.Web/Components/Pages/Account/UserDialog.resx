@@ -86,7 +86,43 @@
     <value>Darf Benutzer verwalten</value>
   </data>
   <data name="AdministratorHelper" xml:space="preserve">
-    <value>Ohne dieses Recht darf der Benutzer alle Inhalte bearbeiten, aber keine Konten anlegen oder ändern.</value>
+    <value>Ohne dieses Recht kann der Benutzer keine Konten anlegen oder ändern; was er sonst darf, regeln die Berechtigungen darunter.</value>
+  </data>
+  <data name="PermissionsTitle" xml:space="preserve">
+    <value>Berechtigungen</value>
+  </data>
+  <data name="AdministratorHasAll" xml:space="preserve">
+    <value>Verwalter haben immer alle Berechtigungen — es gibt hier nichts einzuschränken.</value>
+  </data>
+  <data name="CanWriteLabel" xml:space="preserve">
+    <value>Darf Inhalte ändern</value>
+  </data>
+  <data name="CanWriteHelper" xml:space="preserve">
+    <value>Ohne dieses Recht ist das Konto ein Leser: alles ansehen, nichts speichern oder löschen.</value>
+  </data>
+  <data name="CanExportLabel" xml:space="preserve">
+    <value>Darf exportieren</value>
+  </data>
+  <data name="CanImportLabel" xml:space="preserve">
+    <value>Darf importieren</value>
+  </data>
+  <data name="ImportNeedsWriteHint" xml:space="preserve">
+    <value>Ein Import schreibt den ganzen Bestand — ohne Schreibrecht bleibt er trotzdem gesperrt.</value>
+  </data>
+  <data name="RestrictModulesLabel" xml:space="preserve">
+    <value>Module einschränken</value>
+  </data>
+  <data name="ModulesLabel" xml:space="preserve">
+    <value>Verfügbare Module</value>
+  </data>
+  <data name="ModulesHelper" xml:space="preserve">
+    <value>Nur diese Module erscheinen in Leiste, Suche und Seiten. Keine Auswahl zählt als „alle“.</value>
+  </data>
+  <data name="AllModulesHint" xml:space="preserve">
+    <value>Alle Module sind verfügbar.</value>
+  </data>
+  <data name="PermissionsTakeEffectHint" xml:space="preserve">
+    <value>Geänderte Berechtigungen gelten ab der nächsten Anmeldung des Benutzers.</value>
   </data>
   <data name="DisabledLabel" xml:space="preserve">
     <value>Gesperrt</value>

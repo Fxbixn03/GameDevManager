@@ -82,6 +82,18 @@
   <data name="Disabled" xml:space="preserve">
     <value>gesperrt</value>
   </data>
+  <data name="ReadOnly" xml:space="preserve">
+    <value>nur lesen</value>
+  </data>
+  <data name="NoExport" xml:space="preserve">
+    <value>kein Export</value>
+  </data>
+  <data name="NoImport" xml:space="preserve">
+    <value>kein Import</value>
+  </data>
+  <data name="ModuleCount" xml:space="preserve">
+    <value>{0} Module</value>
+  </data>
   <data name="LastLogin" xml:space="preserve">
     <value>zuletzt {0}</value>
   </data>

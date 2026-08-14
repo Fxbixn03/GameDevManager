@@ -10,6 +10,7 @@
 @inject StatisticsService Statistics
 @inject ExportSnapshotService Snapshots
 @inject IDialogService Dialogs
+@inject IUserPermissionsProvider PermissionsProvider
 @implements IDisposable
 @using Microsoft.EntityFrameworkCore
 
@@ -273,9 +274,12 @@ else
 
     private bool IsEmptyProject => _counts is not null && TotalEntities == 0;
 
+    private UserPermissions _permissions = UserPermissions.Full;
+
     protected override async Task OnInitializedAsync()
     {
         ModuleState.Changed += OnModulesChanged;
+        _permissions = await PermissionsProvider.GetCurrentAsync();
         await ModuleState.EnsureLoadedAsync();
 
         try
@@ -287,12 +291,14 @@ else
             _bands = await Dashboard.GetBandsAsync(_projectId);
             _lastExportUtc = Snapshots.FindLatestExportedAtUtc(_projectId);
 
-            // Doppelt so viele holen wie angezeigt werden: Treffer aus abgeschalteten Modulen
-            // fallen wie in der globalen Suche heraus, und die Liste soll trotzdem voll werden.
+            // Doppelt so viele holen wie angezeigt werden: Treffer aus abgeschalteten oder
+            // dem Benutzer nicht freigegebenen Modulen fallen wie in der globalen Suche
+            // heraus, und die Liste soll trotzdem voll werden.
             _recent =
             [
                 .. (await Overview.GetRecentlyEditedAsync(_projectId, RecentCount * 2))
-                    .Where(entry => ModuleState.IsEnabled(entry.Hit.ModuleKey))
+                    .Where(entry => ModuleState.IsEnabled(entry.Hit.ModuleKey)
+                        && _permissions.CanAccessModule(entry.Hit.ModuleKey))
                     .Take(RecentCount)
             ];
 
@@ -384,6 +390,7 @@ else
                 .Where(entry => entry.Module.Group == group
                     && entry.Module.Implemented
                     && ModuleState.IsEnabled(entry.Module)
+                    && _permissions.CanAccessModule(entry.Module.Id)
                     && _counts?.Any(count => count.ModuleKey == entry.Module.Id) == true)
                 .OrderByDescending(entry => CountOf(entry.Module.Id))
                 .ThenBy(entry => entry.Position)

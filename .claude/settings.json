@@ -109,7 +109,13 @@
       "PowerShell(dotnet build src/GameDevManager.Web)",
       "PowerShell(Stop-Process -Id 19740 -Force -Confirm:$false)",
       "PowerShell(dotnet build 2>$null)",
-      "PowerShell(dotnet test --nologo 2>$null)"
+      "PowerShell(dotnet test --nologo 2>$null)",
+      "PowerShell(Get-Process -Id 10984)",
+      "PowerShell(Stop-Process -Id 10984 -Force -Confirm:$false)",
+      "PowerShell(dotnet tool restore; $env:Database__Provider=\"Sqlite\"; dotnet ef migrations add UserPermissions --project src/GameDevManager.Data.Migrations.Sqlite --startup-project src/GameDevManager.Web)",
+      "PowerShell($env:Database__Provider=\"SqlServer\"; dotnet ef migrations add UserPermissions --project src/GameDevManager.Data.Migrations.SqlServer --startup-project src/GameDevManager.Web)",
+      "PowerShell($env:Database__Provider=\"PostgreSql\"; dotnet ef migrations add UserPermissions --project src/GameDevManager.Data.Migrations.PostgreSql --startup-project src/GameDevManager.Web)",
+      "PowerShell($env:Database__Provider=\"MySql\"; dotnet ef migrations add UserPermissions --project src/GameDevManager.Data.Migrations.MySql --startup-project src/GameDevManager.Web)"
     ],
     "deny": [
       "Bash(rm:*)",

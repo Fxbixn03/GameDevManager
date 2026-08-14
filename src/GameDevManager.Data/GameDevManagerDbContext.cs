@@ -611,6 +611,15 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.Property(u => u.DisplayName).HasMaxLength(200).IsRequired();
             entity.Property(u => u.PasswordHash).HasMaxLength(400).IsRequired();
 
+            // Berechtigungen. Der Datenbank-Standard steht ausdrücklich auf „erlaubt“, damit
+            // Konten aus der Zeit vor diesen Spalten bei der Migration nichts verlieren —
+            // ein C#-Initialisierer allein erreicht Bestandszeilen nicht.
+            entity.Property(u => u.CanWrite).HasDefaultValue(true);
+            entity.Property(u => u.CanExport).HasDefaultValue(true);
+            entity.Property(u => u.CanImport).HasDefaultValue(true);
+            // 26 Modul-Schlüssel à ~12 Zeichen plus Kommas — 1000 lässt Luft für neue Module.
+            entity.Property(u => u.AllowedModuleKeys).HasMaxLength(1000);
+
             // Benutzer hängen an keinem Projekt — der Name ist installationsweit eindeutig.
             // Der UserService prüft das vorher und meldet es verständlich; dieser Index ist
             // die Absicherung dahinter.

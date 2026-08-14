@@ -58,11 +58,23 @@ public sealed record SnapshotDiff(IReadOnlyList<SnapshotFileDiff> Files)
 public partial class ExportSnapshotService(
     ExportService export,
     ExportStorageOptions options,
+    PermissionGuard guard,
     IStringLocalizer<DataMessages> messages)
 {
     /// <summary>Bewahrt den aktuellen Stand des Projekts als neuen Exportstand auf.</summary>
     public async Task<ExportSnapshot> CreateAsync(
         Guid projectId, bool includeAssets, CancellationToken ct = default)
+    {
+        // Nur der von Hand angestoßene Stand verlangt das Exportrecht — das Sicherheitsnetz
+        // (CreateSafetyNetAsync) läuft über CreateCoreAsync daran vorbei: Es gehört zum
+        // Import bzw. Projektlöschen und darf nicht am fehlenden Exportrecht reißen.
+        await guard.EnsureCanExportAsync(ct);
+
+        return await CreateCoreAsync(projectId, includeAssets, ct);
+    }
+
+    private async Task<ExportSnapshot> CreateCoreAsync(
+        Guid projectId, bool includeAssets, CancellationToken ct)
     {
         var stamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
 
@@ -104,7 +116,7 @@ public partial class ExportSnapshotService(
     {
         try
         {
-            return await CreateAsync(projectId, includeAssets: true, ct);
+            return await CreateCoreAsync(projectId, includeAssets: true, ct);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -192,8 +204,12 @@ public partial class ExportSnapshotService(
     }
 
     /// <summary>Entfernt einen Stand. Ein bereits fehlender ist kein Fehler.</summary>
-    public void Delete(string fileName)
+    public async Task DeleteAsync(string fileName, CancellationToken ct = default)
     {
+        // Die Stände sind Teil des Exports — wer ihn nicht nutzen darf, räumt ihn auch
+        // nicht ab. Ein Dateisystem-Vorgang, den kein Interceptor sieht.
+        await guard.EnsureCanExportAsync(ct);
+
         if (!IsValidFileName(fileName))
         {
             throw new ContentValidationException(messages["Export_SnapshotInvalidName"].Value);

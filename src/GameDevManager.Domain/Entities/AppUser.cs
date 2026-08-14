@@ -41,6 +41,26 @@ public class AppUser
     /// </summary>
     public bool IsDisabled { get; set; }
 
+    /// <summary>
+    /// Darf Inhalte anlegen, ändern und löschen. Ohne das Recht ist der Benutzer ein Leser:
+    /// Er sieht alles, was seine Module hergeben, aber jedes Speichern wird abgewiesen.
+    /// Verwalter haben immer alle Rechte — die Spalten hier zählen für sie nicht.
+    /// </summary>
+    public bool CanWrite { get; set; } = true;
+
+    /// <summary>Darf den Export nutzen — Download und Exportstände.</summary>
+    public bool CanExport { get; set; } = true;
+
+    /// <summary>Darf den Import nutzen. Ein Import schreibt — er braucht zusätzlich <see cref="CanWrite"/>.</summary>
+    public bool CanImport { get; set; } = true;
+
+    /// <summary>
+    /// Die Modul-Schlüssel, die dieser Benutzer sehen darf, kommagetrennt — <c>null</c> heißt
+    /// alle. Eine Textspalte statt einer Zuordnungstabelle: Die Liste wird nie abgefragt,
+    /// nur als Ganzes gelesen, und eine Tabelle verlangte vier Migrationen mehr.
+    /// </summary>
+    public string? AllowedModuleKeys { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public DateTime? LastLoginAtUtc { get; set; }

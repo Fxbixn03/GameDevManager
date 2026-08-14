@@ -629,4 +629,16 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="ChangeLog_ProjectDuplicated" xml:space="preserve">
     <value>Als Kopie von „{0}“ angelegt.</value>
   </data>
+  <data name="PermissionWriteDenied" xml:space="preserve">
+    <value>Dieses Konto darf nur lesen — Änderungen sind ihm nicht erlaubt.</value>
+  </data>
+  <data name="PermissionExportDenied" xml:space="preserve">
+    <value>Dieses Konto darf den Export nicht nutzen.</value>
+  </data>
+  <data name="PermissionImportDenied" xml:space="preserve">
+    <value>Dieses Konto darf den Import nicht nutzen.</value>
+  </data>
+  <data name="PermissionAdminOnly" xml:space="preserve">
+    <value>Benutzer verwalten dürfen nur Verwalter.</value>
+  </data>
 </root>

@@ -43,6 +43,7 @@ public class ImportService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     IAssetStorage storage,
     ExportSnapshotService snapshots,
+    PermissionGuard guard,
     IStringLocalizer<DataMessages> messages)
 {
     /// <summary>
@@ -51,6 +52,17 @@ public class ImportService(
     /// Zugriff, und der Upload-Stream aus dem Browser kann nicht springen.
     /// </summary>
     public async Task<ImportResult> ImportAsync(
+        Guid projectId, Stream zipContent, bool replaceExisting, CancellationToken ct = default)
+    {
+        // Das Importrecht gilt nur dem Import selbst; das Duplizieren eines Projekts läuft
+        // über ImportCoreAsync daran vorbei und prüft im ProjectService das Schreibrecht.
+        await guard.EnsureCanImportAsync(ct);
+
+        return await ImportCoreAsync(projectId, zipContent, replaceExisting, ct);
+    }
+
+    /// <summary>Der Import ohne Rechteprüfung — für Aufrufer, die selbst schon geprüft haben.</summary>
+    internal async Task<ImportResult> ImportCoreAsync(
         Guid projectId, Stream zipContent, bool replaceExisting, CancellationToken ct = default)
     {
         var tempPath = Path.Combine(Path.GetTempPath(), $"gdm-import-{Guid.NewGuid():N}.zip");

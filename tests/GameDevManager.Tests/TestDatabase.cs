@@ -36,12 +36,14 @@ public sealed class TestDatabase : IDisposable
         services.AddLogging();
         services.AddLocalization();
 
-        // Wie in der Anwendung: scoped und mit dem ChangeLogInterceptor, damit das
-        // Änderungsprotokoll in den Tests genauso mitschreibt wie im Betrieb.
+        // Wie in der Anwendung: scoped und mit beiden Interceptoren, damit Schreibschutz und
+        // Änderungsprotokoll in den Tests genauso greifen wie im Betrieb.
         services.AddDbContextFactory<GameDevManagerDbContext>(
             (provider, builder) => builder
                 .UseSqlite(_connection)
-                .AddInterceptors(provider.GetRequiredService<ChangeLogInterceptor>()),
+                .AddInterceptors(
+                    provider.GetRequiredService<WriteGuardInterceptor>(),
+                    provider.GetRequiredService<ChangeLogInterceptor>()),
             ServiceLifetime.Scoped);
 
         services.AddSingleton<IAssetStorage, InMemoryAssetStorage>();
@@ -52,6 +54,10 @@ public sealed class TestDatabase : IDisposable
 
         // Ersetzt die Vorgabe „System“ — so lässt sich prüfen, wer im Protokoll landet.
         services.AddScoped<IChangeAuthorProvider>(_ => Author);
+
+        // Ebenso die Berechtigungen: Vorgabe „alles erlaubt“, umstellbar je Test — im
+        // Betrieb kommen sie aus den Ansprüchen des Anmelde-Cookies.
+        services.AddScoped<IUserPermissionsProvider>(_ => Permissions);
 
         // Ebenso die Passwortrichtlinie: veränderbar, damit ein Test sie umstellen kann —
         // im Betrieb kommt sie aus der Einstellungsseite der Benutzerverwaltung.
@@ -81,6 +87,9 @@ public sealed class TestDatabase : IDisposable
     /// <summary>Die Passwortrichtlinie der Tests — Vorgabe, bis ein Test sie umstellt.</summary>
     public MutablePasswordPolicyProvider Policy { get; } = new();
 
+    /// <summary>Die Berechtigungen des handelnden Benutzers — „alles erlaubt“, bis ein Test sie umstellt.</summary>
+    public MutableUserPermissionsProvider Permissions { get; } = new();
+
     /// <summary>
     /// Aus dem Scope und nicht aus dem Wurzel-Container: Die Context-Factory ist scoped
     /// registriert, weil der Interceptor den handelnden Benutzer braucht.
@@ -109,6 +118,15 @@ public sealed class TestDatabase : IDisposable
     public sealed class MutablePasswordPolicyProvider : IPasswordPolicyProvider
     {
         public PasswordPolicy Current { get; set; } = PasswordPolicy.Default;
+    }
+
+    /// <summary>Berechtigungen, die der Test umstellen kann — im Betrieb kommen sie aus dem Cookie.</summary>
+    public sealed class MutableUserPermissionsProvider : IUserPermissionsProvider
+    {
+        public UserPermissions Current { get; set; } = UserPermissions.Full;
+
+        public ValueTask<UserPermissions> GetCurrentAsync(CancellationToken ct = default) =>
+            ValueTask.FromResult(Current);
     }
 
     /// <summary>Ein Urheber, den der Test umstellen kann — im Betrieb kommt er aus der Anmeldung.</summary>

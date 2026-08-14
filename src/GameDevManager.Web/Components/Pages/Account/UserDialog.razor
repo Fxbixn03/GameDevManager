@@ -1,12 +1,17 @@
 @inject UserService Users
 @inject ISnackbar Snackbar
 @inject PasswordPolicySelection Policy
+@inject ModuleLabels Modules
 @inject IStringLocalizer<UserDialog> L
 
 @*
     Anlegen und Ändern eines Benutzers. Das Passwort steht getrennt: Beim Anlegen ist es
     Pflicht, beim Ändern setzt ein leeres Feld es bewusst nicht zurück — sonst löschte jedes
     Umbenennen nebenbei das Passwort.
+
+    Die Berechtigungen (schreiben, Export, Import, Module) stehen nur Nicht-Verwaltern offen —
+    Verwalter haben immer alles, die Schalter wären für sie Attrappen. Geänderte Rechte wandern
+    als Ansprüche ins Anmelde-Cookie und gelten deshalb ab der nächsten Anmeldung.
 *@
 
 <MudDialog>
@@ -45,6 +50,50 @@
                 <MudSwitch @bind-Value="_isDisabled" Color="Color.Warning" Label="@L["DisabledLabel"]" />
                 <MudText Typo="Typo.caption" Color="Color.Secondary">@L["DisabledHelper"]</MudText>
             }
+
+            <MudDivider />
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["PermissionsTitle"]</MudText>
+
+            @if (_isAdministrator)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["AdministratorHasAll"]</MudText>
+            }
+            else
+            {
+                <MudSwitch @bind-Value="_canWrite" Color="Color.Primary" Label="@L["CanWriteLabel"]" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CanWriteHelper"]</MudText>
+
+                <MudSwitch @bind-Value="_canExport" Color="Color.Primary" Label="@L["CanExportLabel"]" />
+
+                <MudSwitch @bind-Value="_canImport" Color="Color.Primary" Label="@L["CanImportLabel"]" />
+                @if (_canImport && !_canWrite)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Warning">@L["ImportNeedsWriteHint"]</MudText>
+                }
+
+                <MudSwitch @bind-Value="_restrictModules" Color="Color.Primary" Label="@L["RestrictModulesLabel"]" />
+                @if (_restrictModules)
+                {
+                    <MudSelect T="string"
+                               MultiSelection="true"
+                               @bind-SelectedValues="_selectedModules"
+                               Label="@L["ModulesLabel"]"
+                               HelperText="@L["ModulesHelper"]"
+                               Variant="Variant.Outlined"
+                               Dense="true">
+                        @foreach (var module in ModuleRegistry.All.Where(m => m.Implemented))
+                        {
+                            <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["AllModulesHint"]</MudText>
+                }
+            }
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["PermissionsTakeEffectHint"]</MudText>
         </MudStack>
     </DialogContent>
     <DialogActions>
@@ -68,6 +117,11 @@
     private string? _password;
     private bool _isAdministrator;
     private bool _isDisabled;
+    private bool _canWrite = true;
+    private bool _canExport = true;
+    private bool _canImport = true;
+    private bool _restrictModules;
+    private IReadOnlyCollection<string> _selectedModules = [];
     private bool _saving;
 
     private bool IsNew => User is null;
@@ -78,7 +132,23 @@
         _userName = User?.UserName;
         _isAdministrator = User?.IsAdministrator ?? false;
         _isDisabled = User?.IsDisabled ?? false;
+        _canWrite = User?.CanWrite ?? true;
+        _canExport = User?.CanExport ?? true;
+        _canImport = User?.CanImport ?? true;
+
+        var allowed = UserPermissions.ParseModuleKeys(User?.AllowedModuleKeys);
+        _restrictModules = allowed is not null;
+        _selectedModules = allowed?.ToList() ?? [];
     }
+
+    /// <summary>
+    /// Die Modulliste zum Speichern: <c>null</c> heißt alle. Eine Einschränkung ganz ohne
+    /// gewähltes Modul wäre ein Konto, das nichts mehr sieht — sie zählt als „alle“.
+    /// </summary>
+    private string? AllowedModuleKeys =>
+        _restrictModules && _selectedModules.Count > 0
+            ? string.Join(",", _selectedModules)
+            : null;
 
     private async Task SaveAsync()
     {
@@ -86,17 +156,37 @@
 
         try
         {
+            // Für Verwalter zählen die Spalten nicht — sie werden auf „alles erlaubt“
+            // gespeichert, damit kein überraschender Rest übrig bleibt, falls das
+            // Verwalterrecht später wieder entzogen wird.
+            var canWrite = _isAdministrator || _canWrite;
+            var canExport = _isAdministrator || _canExport;
+            var canImport = _isAdministrator || _canImport;
+            var allowedModules = _isAdministrator ? null : AllowedModuleKeys;
+
             if (User is null)
             {
                 await Users.CreateUserAsync(
                     _userName ?? string.Empty,
                     _displayName ?? string.Empty,
                     _password ?? string.Empty,
-                    _isAdministrator);
+                    _isAdministrator,
+                    canWrite,
+                    canExport,
+                    canImport,
+                    allowedModules);
             }
             else
             {
-                await Users.UpdateUserAsync(User.Id, _displayName ?? string.Empty, _isAdministrator, _isDisabled);
+                await Users.UpdateUserAsync(
+                    User.Id,
+                    _displayName ?? string.Empty,
+                    _isAdministrator,
+                    _isDisabled,
+                    canWrite,
+                    canExport,
+                    canImport,
+                    allowedModules);
 
                 // Ein leeres Feld lässt das Passwort stehen — nur ein eingetragenes ersetzt es.
                 if (!string.IsNullOrWhiteSpace(_password))

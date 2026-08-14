@@ -9,6 +9,7 @@
 @inject DashboardOverviewService Overview
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogs
+@inject IUserPermissionsProvider PermissionsProvider
 @inject IStringLocalizer<ExportPage> L
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -20,6 +21,12 @@
     @* ------------------------------------------------------------------------ Export *@
     <MudItem xs="12" md="7">
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            @if (!_permissions.CanExport)
+            {
+                <MudAlert Severity="Severity.Info">@L["ExportNotAllowed"]</MudAlert>
+            }
+            else
+            {
             <MudText Typo="Typo.overline" Color="Color.Secondary">@L["TargetHeading"]</MudText>
 
             <MudRadioGroup T="ExportTarget" @bind-Value="_target">
@@ -58,6 +65,7 @@
                        OnClick="Download">
                 @L["DownloadButton"]
             </MudButton>
+            }
         </MudPaper>
     </MudItem>
 
@@ -94,6 +102,12 @@
             <MudText Typo="Typo.overline" Color="Color.Secondary">@L["HistoryHeading"]</MudText>
             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-3">@L["HistoryIntro"]</MudText>
 
+            @if (!_permissions.CanExport)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">@L["ExportNotAllowed"]</MudAlert>
+            }
+            else
+            {
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap" Class="mb-3">
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
@@ -147,6 +161,7 @@
                     </tbody>
                 </MudSimpleTable>
             }
+            }
         </MudPaper>
     </MudItem>
 
@@ -156,6 +171,12 @@
             <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ImportHeading"]</MudText>
             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-3">@L["ImportIntro"]</MudText>
 
+            @if (!CanImport)
+            {
+                <MudAlert Severity="Severity.Info">@L["ImportNotAllowed"]</MudAlert>
+            }
+            else
+            {
             <MudFileUpload T="IBrowserFile"
                            FilesChanged="ImportFileSelected"
                            Accept=".zip"
@@ -210,10 +231,13 @@
                     <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">@warning</MudAlert>
                 }
             }
+            }
         </MudPaper>
     </MudItem>
 
     @* ---------------------------------------------------------------------- Vergleich *@
+    @if (_permissions.CanExport)
+    {
     <MudItem xs="12">
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudText Typo="Typo.overline" Color="Color.Secondary">@L["DiffHeading"]</MudText>
@@ -288,6 +312,7 @@
             }
         </MudPaper>
     </MudItem>
+    }
 </MudGrid>
 
 @code {
@@ -321,11 +346,21 @@
 
     private HealthSummary? _health;
 
+    private UserPermissions _permissions = UserPermissions.Full;
+
+    /// <summary>Ein Import schreibt — ohne Schreibrecht bleibt er auch mit Importrecht zu.</summary>
+    private bool CanImport => _permissions.CanImport && _permissions.CanWrite;
+
     protected override async Task OnInitializedAsync()
     {
+        _permissions = await PermissionsProvider.GetCurrentAsync();
         _projectId = await Project.GetCurrentIdAsync();
         _counts = await Statistics.GetCountsAsync(_projectId);
-        LoadSnapshots();
+
+        if (_permissions.CanExport)
+        {
+            LoadSnapshots();
+        }
     }
 
     /// <summary>
@@ -420,7 +455,7 @@
 
         try
         {
-            Snapshots.Delete(snapshot.FileName);
+            await Snapshots.DeleteAsync(snapshot.FileName);
             Snackbar.Add(L["SnapshotDeletedMessage"], Severity.Success);
 
             // Zeigte der Vergleich auf den gelöschten Stand, fällt er auf den aktuellen zurück.

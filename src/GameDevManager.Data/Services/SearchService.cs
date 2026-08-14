@@ -46,6 +46,7 @@ public sealed record SearchHit(
 public class SearchService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     IEnumerable<IModuleEntitySource> sources,
+    IUserPermissionsProvider permissions,
     IStringLocalizer<DataMessages> messages)
 {
     /// <summary>Ab dieser Länge wird gesucht — kürzer träfe fast alles.</summary>
@@ -63,9 +64,14 @@ public class SearchService(
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
+        // Module, die dem Benutzer nicht freigegeben sind, tauchen auch in Treffern nicht
+        // auf — sonst führte die Suche auf Seiten, die die Modulwache gleich wieder abweist.
+        var current = await permissions.GetCurrentAsync(ct);
+        var visibleSources = sources.Where(source => current.CanAccessModule(source.ModuleKey)).ToList();
+
         if (Guid.TryParse(trimmed, out var id))
         {
-            return await FindByIdAsync(db, projectId, id, ct);
+            return await FindByIdAsync(db, projectId, id, current, visibleSources, ct);
         }
 
         // Kleinschreibung auf beiden Seiten statt LIKE: das übersetzt sich über alle vier
@@ -73,7 +79,7 @@ public class SearchService(
         var needle = trimmed.ToLowerInvariant();
         var hits = new List<SearchHit>();
 
-        foreach (var source in sources)
+        foreach (var source in visibleSources)
         {
             hits.AddRange(await source.SearchAsync(db, projectId, needle, limit, ct));
         }
@@ -83,37 +89,41 @@ public class SearchService(
         var fieldValueHit = messages["Search_FieldValueHit"].Value;
         var found = hits.Select(hit => hit.Id).ToHashSet();
 
-        foreach (var source in sources)
+        foreach (var source in visibleSources)
         {
             hits.AddRange((await source.SearchFieldValuesAsync(db, projectId, needle, limit, ct))
                 .Where(hit => found.Add(hit.Id))
                 .Select(hit => hit with { Subtitle = fieldValueHit }));
         }
 
-        hits.AddRange(await db.Assets
-            .AsNoTracking()
-            .Where(a => a.GameProjectId == projectId
-                && (a.FileName.ToLower().Contains(needle)
-                    || (a.Description != null && a.Description.ToLower().Contains(needle))))
-            .OrderBy(a => a.FileName)
-            .Take(limit)
-            .Select(a => new SearchHit(
-                // Bewusst das Asset-Modul und nicht das der besitzenden Entität: der Treffer
-                // führt in die Bibliothek, also soll dort auch „Assets“ stehen.
-                a.Id, ModuleKeys.Assets, SearchHitKind.Asset,
-                a.FileName, a.Description, a.Id))
-            .ToListAsync(ct));
+        if (current.CanAccessModule(ModuleKeys.Assets))
+        {
+            hits.AddRange(await db.Assets
+                .AsNoTracking()
+                .Where(a => a.GameProjectId == projectId
+                    && (a.FileName.ToLower().Contains(needle)
+                        || (a.Description != null && a.Description.ToLower().Contains(needle))))
+                .OrderBy(a => a.FileName)
+                .Take(limit)
+                .Select(a => new SearchHit(
+                    // Bewusst das Asset-Modul und nicht das der besitzenden Entität: der Treffer
+                    // führt in die Bibliothek, also soll dort auch „Assets“ stehen.
+                    a.Id, ModuleKeys.Assets, SearchHitKind.Asset,
+                    a.FileName, a.Description, a.Id))
+                .ToListAsync(ct));
+        }
 
         var typeLabel = messages["Search_ContentType"].Value;
 
-        hits.AddRange(await db.ContentTypes
+        hits.AddRange((await db.ContentTypes
             .AsNoTracking()
             .Where(t => t.GameProjectId == projectId && t.Name.ToLower().Contains(needle))
             .OrderBy(t => t.Name)
             .Take(limit)
             .Select(t => new SearchHit(
                 t.Id, t.ModuleKey, SearchHitKind.ContentType, t.Name, typeLabel, null))
-            .ToListAsync(ct));
+            .ToListAsync(ct))
+            .Where(hit => current.CanAccessModule(hit.ModuleKey)));
 
         return [.. Rank(hits, needle).Take(limit)];
     }
@@ -123,16 +133,23 @@ public class SearchService(
     /// jede Quelle gefragt, die Referenz-GUIDs vergibt.
     /// </summary>
     private async Task<List<SearchHit>> FindByIdAsync(
-        GameDevManagerDbContext db, Guid projectId, Guid id, CancellationToken ct)
+        GameDevManagerDbContext db, Guid projectId, Guid id,
+        UserPermissions current, IReadOnlyList<IModuleEntitySource> visibleSources,
+        CancellationToken ct)
     {
         var guidHit = messages["Search_GuidHit"].Value;
 
-        foreach (var source in sources)
+        foreach (var source in visibleSources)
         {
             if (await source.FindByIdAsync(db, projectId, id, ct) is { } hit)
             {
                 return [hit with { Subtitle = guidHit }];
             }
+        }
+
+        if (!current.CanAccessModule(ModuleKeys.Assets))
+        {
+            return await FindTypeByIdAsync(db, projectId, id, current, ct);
         }
 
         var asset = await db.Assets
@@ -150,6 +167,12 @@ public class SearchService(
             return [asset];
         }
 
+        return await FindTypeByIdAsync(db, projectId, id, current, ct);
+    }
+
+    private async Task<List<SearchHit>> FindTypeByIdAsync(
+        GameDevManagerDbContext db, Guid projectId, Guid id, UserPermissions current, CancellationToken ct)
+    {
         var guidTypeHit = messages["Search_GuidContentTypeHit"].Value;
 
         var type = await db.ContentTypes
@@ -159,7 +182,7 @@ public class SearchService(
                 t.Id, t.ModuleKey, SearchHitKind.ContentType, t.Name, guidTypeHit, null))
             .FirstOrDefaultAsync(ct);
 
-        return type is null ? [] : [type];
+        return type is null || !current.CanAccessModule(type.ModuleKey) ? [] : [type];
     }
 
     /// <summary>

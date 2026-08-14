@@ -228,4 +228,10 @@
   <data name="Kilobytes" xml:space="preserve">
     <value>{0} KB</value>
   </data>
+  <data name="ExportNotAllowed" xml:space="preserve">
+    <value>Der Export ist für dieses Konto nicht freigegeben.</value>
+  </data>
+  <data name="ImportNotAllowed" xml:space="preserve">
+    <value>Der Import ist für dieses Konto nicht freigegeben.</value>
+  </data>
 </root>

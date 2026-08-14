@@ -15,6 +15,7 @@ public class AssetService(
     IAssetStorage storage,
     AssetStorageOptions options,
     ReferenceService references,
+    PermissionGuard guard,
     IStringLocalizer<DataMessages> messages)
 {
     public AssetStorageOptions Options => options;
@@ -34,6 +35,11 @@ public class AssetService(
         Guid? ownerEntityId = null,
         CancellationToken ct = default)
     {
+        // Vor dem Ablegen der Datei prüfen — das Speichern der Zeile würde zwar ohnehin am
+        // WriteGuardInterceptor scheitern, aber die Datei wäre dann schon geschrieben und
+        // gleich wieder gelöscht.
+        await guard.EnsureCanWriteAsync(ct);
+
         // Manche Browser melden für Sprites nur "application/octet-stream" oder gar nichts.
         // In dem Fall entscheidet die Dateiendung, bevor abgelehnt wird.
         if (!options.AllowedMimeTypes.Contains(mimeType, StringComparer.OrdinalIgnoreCase))
@@ -450,6 +456,10 @@ public class AssetService(
     /// <summary>Löscht ein Stichwort; die Zuordnungen fallen über den Fremdschlüssel mit.</summary>
     public async Task DeleteTagAsync(Guid tagId, CancellationToken ct = default)
     {
+        // Reines ExecuteDelete ohne vorheriges Speichern — hier greift der
+        // WriteGuardInterceptor nicht, die Prüfung steht deshalb ausdrücklich da.
+        await guard.EnsureCanWriteAsync(ct);
+
         await using var db = await factory.CreateDbContextAsync(ct);
 
         await db.AssetTags.Where(tag => tag.Id == tagId).ExecuteDeleteAsync(ct);

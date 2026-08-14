@@ -6,6 +6,7 @@
 @inject ModuleState ModuleState
 @inject IDialogService Dialogs
 @inject AppearanceSelection Appearance
+@inject IUserPermissionsProvider PermissionsProvider
 
 <MudThemeProvider Theme="GameDevManagerTheme.Instance" IsDarkMode="Appearance.IsDarkMode" DefaultScrollbar="true" />
 <MudPopoverProvider />
@@ -27,7 +28,9 @@
         <MudDivider Vertical="true" FlexItem="true" Class="mx-4 my-3" />
 
         <div class="gdm-module-strip">
-            @foreach (var module in ModuleState.EnabledModules)
+            @* Zweifach gefiltert: je Projekt abgeschaltete Module und je Benutzer nicht
+               freigegebene. Die Seiten dahinter schützt zusätzlich die Modulwache unten. *@
+            @foreach (var module in ModuleState.EnabledModules.Where(m => _permissions.CanAccessModule(m.Id)))
             {
                 <MudTooltip Text="@Modules.Name(module)">
                     <MudIconButton Icon="@module.Icon"
@@ -39,6 +42,15 @@
         </div>
 
         <MudSpacer />
+
+        @if (!_permissions.CanWrite)
+        {
+            <MudTooltip Text="@L["ReadOnlyTooltip"]">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning" Class="mr-2">
+                    @L["ReadOnlyBadge"]
+                </MudChip>
+            </MudTooltip>
+        }
 
         <GlobalSearch />
 
@@ -86,17 +98,52 @@
 
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.False" Class="pa-6">
-            @Body
+            @* Die Modulwache: Seiten eines nicht freigegebenen Moduls werden gar nicht erst
+               gerendert — eine Stelle statt einer Prüfung in ~57 Modulseiten. Sie greift auch
+               bei direkt eingetippter URL. *@
+            @if (BlockedModule() is { } blocked)
+            {
+                <MudAlert Severity="Severity.Info">@L["ModuleNotAllowed", Modules.Name(blocked)]</MudAlert>
+            }
+            else
+            {
+                @Body
+            }
         </MudContainer>
     </MudMainContent>
 </MudLayout>
 
 @code {
+    private UserPermissions _permissions = UserPermissions.Full;
+
     protected override async Task OnInitializedAsync()
     {
         Navigation.LocationChanged += OnLocationChanged;
         ModuleState.Changed += OnModulesChanged;
+
+        // Die Berechtigungen des angemeldeten Benutzers — sie stehen in den Ansprüchen des
+        // Cookies und ändern sich innerhalb der Verbindung nicht mehr.
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+
         await ModuleState.EnsureLoadedAsync();
+    }
+
+    /// <summary>
+    /// Das Modul der aktuellen Seite, falls es dem Benutzer nicht freigegeben ist —
+    /// sonst <c>null</c>. Unbekannte Routensegmente bleiben unbehelligt.
+    /// </summary>
+    private ModuleDefinition? BlockedModule()
+    {
+        var path = new Uri(Navigation.Uri).AbsolutePath;
+        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (segments.Length < 2 || !segments[0].Equals("modules", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var module = ModuleRegistry.Find(segments[1]);
+        return module is not null && !_permissions.CanAccessModule(module.Id) ? module : null;
     }
 
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e) =>

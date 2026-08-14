@@ -37,7 +37,11 @@ public static class DatabaseServiceExtensions
         services.AddDbContextFactory<GameDevManagerDbContext>(
             (provider, builder) => builder
                 .UseGameDevManagerProvider(options.Provider, connectionString)
-                .AddInterceptors(provider.GetRequiredService<ChangeLogInterceptor>()),
+                // Der Schreibschutz zuerst: Wer nicht schreiben darf, soll abgewiesen werden,
+                // bevor das Protokoll Einträge anlegt.
+                .AddInterceptors(
+                    provider.GetRequiredService<WriteGuardInterceptor>(),
+                    provider.GetRequiredService<ChangeLogInterceptor>()),
             ServiceLifetime.Scoped);
 
         return services.AddGameDevManagerContentServices();
@@ -54,6 +58,13 @@ public static class DatabaseServiceExtensions
         // Web-Schicht; ohne Anmeldung bleibt es bei „System“.
         services.AddScoped<ChangeLogInterceptor>();
         services.TryAddScoped<IChangeAuthorProvider>(_ => new SystemChangeAuthorProvider());
+
+        // Der Schreibschutz nach demselben Muster: zentral am SaveChanges, die Antwort auf
+        // „was darf der Benutzer?“ kommt im Betrieb aus der Web-Schicht. Ohne Ersatz gilt
+        // „alles erlaubt“ — der Zustand ohne Anmeldung (Start, Ersteinrichtung, Tests).
+        services.AddScoped<WriteGuardInterceptor>();
+        services.TryAddScoped<IUserPermissionsProvider>(_ => new FullUserPermissionsProvider());
+        services.AddScoped<PermissionGuard>();
         services.AddScoped<ChangeLogService>();
         services.AddScoped<UserService>();
         // Die Passwortrichtlinie kommt im Betrieb aus der Web-Schicht (Konfiguration plus
