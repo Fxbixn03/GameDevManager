@@ -53,6 +53,10 @@ public sealed class TestDatabase : IDisposable
         // Ersetzt die Vorgabe „System“ — so lässt sich prüfen, wer im Protokoll landet.
         services.AddScoped<IChangeAuthorProvider>(_ => Author);
 
+        // Ebenso die Passwortrichtlinie: veränderbar, damit ein Test sie umstellen kann —
+        // im Betrieb kommt sie aus der Einstellungsseite der Benutzerverwaltung.
+        services.AddSingleton<IPasswordPolicyProvider>(_ => Policy);
+
         _provider = services.BuildServiceProvider();
         _scope = _provider.CreateScope();
 
@@ -73,6 +77,9 @@ public sealed class TestDatabase : IDisposable
     /// nacheinander arbeiten lassen kann.
     /// </summary>
     public MutableChangeAuthorProvider Author { get; } = new();
+
+    /// <summary>Die Passwortrichtlinie der Tests — Vorgabe, bis ein Test sie umstellt.</summary>
+    public MutablePasswordPolicyProvider Policy { get; } = new();
 
     /// <summary>
     /// Aus dem Scope und nicht aus dem Wurzel-Container: Die Context-Factory ist scoped
@@ -96,6 +103,12 @@ public sealed class TestDatabase : IDisposable
         {
             Directory.Delete(_exportPath, recursive: true);
         }
+    }
+
+    /// <summary>Eine Richtlinie, die der Test umstellen kann — im Betrieb kommt sie aus der Konfiguration.</summary>
+    public sealed class MutablePasswordPolicyProvider : IPasswordPolicyProvider
+    {
+        public PasswordPolicy Current { get; set; } = PasswordPolicy.Default;
     }
 
     /// <summary>Ein Urheber, den der Test umstellen kann — im Betrieb kommt er aus der Anmeldung.</summary>

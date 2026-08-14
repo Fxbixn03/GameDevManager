@@ -79,6 +79,12 @@
   <data name="Failed" xml:space="preserve">
     <value>Anmeldename oder Passwort stimmt nicht.</value>
   </data>
+  <data name="FailedUserNameOnly" xml:space="preserve">
+    <value>Mit diesem Anmeldenamen geht es nicht.</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Angemeldet bleiben</value>
+  </data>
   <data name="LoggedOut" xml:space="preserve">
     <value>Du bist abgemeldet.</value>
   </data>

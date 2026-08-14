@@ -24,6 +24,7 @@ public sealed record UserRow(
 /// </summary>
 public class UserService(
     IDbContextFactory<GameDevManagerDbContext> factory,
+    IPasswordPolicyProvider passwordPolicy,
     IStringLocalizer<DataMessages> messages)
 {
     /// <summary>
@@ -99,7 +100,10 @@ public class UserService(
         {
             UserName = name,
             DisplayName = Normalize(displayName) ?? name,
-            PasswordHash = PasswordHasher.Hash(password),
+            // Ohne Passwort (nur bei deaktivierten Passwörtern erreichbar) bleibt der Hash
+            // leer — ein leerer Hash lässt bei wieder eingeschalteten Passwörtern niemanden
+            // herein, bis ein Verwalter eines setzt.
+            PasswordHash = string.IsNullOrWhiteSpace(password) ? string.Empty : PasswordHasher.Hash(password),
             IsAdministrator = isAdministrator || isFirst
         };
 
@@ -136,6 +140,7 @@ public class UserService(
 
     public async Task SetPasswordAsync(Guid userId, string password, CancellationToken ct = default)
     {
+        EnsurePasswordsEnabled();
         ValidatePassword(password);
 
         await using var db = await factory.CreateDbContextAsync(ct);
@@ -151,6 +156,7 @@ public class UserService(
     public async Task ChangeOwnPasswordAsync(
         Guid userId, string currentPassword, string newPassword, CancellationToken ct = default)
     {
+        EnsurePasswordsEnabled();
         ValidatePassword(newPassword);
 
         await using var db = await factory.CreateDbContextAsync(ct);
@@ -189,12 +195,15 @@ public class UserService(
     /// <summary>
     /// Prüft Anmeldename und Passwort. <c>null</c> heißt abgelehnt — ohne zu verraten, woran
     /// es lag: Ein „diesen Benutzer gibt es nicht“ wäre eine Auskunft über bestehende Konten.
+    /// Sind Passwörter per Richtlinie deaktiviert, genügt der Anmeldename; die Sperre gilt weiter.
     /// </summary>
     public async Task<UserRow?> AuthenticateAsync(
         string userName, string password, CancellationToken ct = default)
     {
+        var policy = passwordPolicy.Current;
+
         var name = Normalize(userName);
-        if (name is null || string.IsNullOrEmpty(password))
+        if (name is null || (!policy.PasswordsDisabled && string.IsNullOrEmpty(password)))
         {
             return null;
         }
@@ -204,7 +213,12 @@ public class UserService(
         var lowered = name.ToLowerInvariant();
         var user = await db.AppUsers.FirstOrDefaultAsync(u => u.UserName.ToLower() == lowered, ct);
 
-        if (user is null || user.IsDisabled || !PasswordHasher.Verify(password, user.PasswordHash))
+        if (user is null || user.IsDisabled)
+        {
+            return null;
+        }
+
+        if (!policy.PasswordsDisabled && !PasswordHasher.Verify(password, user.PasswordHash))
         {
             return null;
         }
@@ -223,11 +237,38 @@ public class UserService(
         !await db.AppUsers
             .AnyAsync(other => other.Id != userId && other.IsAdministrator && !other.IsDisabled, ct);
 
+    /// <summary>Setzen und Ändern von Passwörtern gibt es nur, solange die Richtlinie sie kennt.</summary>
+    private void EnsurePasswordsEnabled()
+    {
+        if (passwordPolicy.Current.PasswordsDisabled)
+        {
+            throw new ContentValidationException(messages["UserPasswordsDisabled"]);
+        }
+    }
+
     private void ValidatePassword(string password)
     {
-        if (string.IsNullOrWhiteSpace(password) || password.Length < PasswordHasher.MinimumLength)
+        var policy = passwordPolicy.Current;
+
+        // Ohne Passwörter gibt es nichts zu prüfen — beim Anlegen bleibt das Feld leer.
+        if (policy.PasswordsDisabled)
         {
-            throw new ContentValidationException(messages["UserPasswordTooShort", PasswordHasher.MinimumLength]);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password) || password.Length < policy.MinimumLength)
+        {
+            throw new ContentValidationException(messages["UserPasswordTooShort", policy.MinimumLength]);
+        }
+
+        if (policy.RequireDigit && !password.Any(char.IsDigit))
+        {
+            throw new ContentValidationException(messages["UserPasswordNeedsDigit"]);
+        }
+
+        if (policy.RequireSpecialCharacter && password.All(char.IsLetterOrDigit))
+        {
+            throw new ContentValidationException(messages["UserPasswordNeedsSpecial"]);
         }
     }
 

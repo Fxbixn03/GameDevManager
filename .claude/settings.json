@@ -107,7 +107,9 @@
       "PowerShell(dotnet test --no-build 2>&1)",
       "PowerShell($out = \"C:\\\\Users\\\\FABIAN~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-FabianStangl-source-repos-GameDevManager\\\\374c7730-babf-47f1-95b4-823d1c9e8c2b\\\\scratchpad\\\\run-out.txt\"; $err = \"C:\\\\Users\\\\FABIAN~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-FabianStangl-source-repos-GameDevManager\\\\374c7730-babf-47f1-95b4-823d1c9e8c2b\\\\scratchpad\\\\run-err.txt\"; $p = Start-Process dotnet -ArgumentList 'run --project src/GameDevManager.Web --no-build' -PassThru -RedirectStandardOutput $out -RedirectStandardError $err -NoNewWindow; Start-Sleep 18; taskkill /PID $p.Id /T /F | Out-Null; Get-Content $out -Tail 10; Write-Output '--- stderr ---'; Get-Content $err -Tail 10)",
       "PowerShell(dotnet build src/GameDevManager.Web)",
-      "PowerShell(Stop-Process -Id 19740 -Force -Confirm:$false)"
+      "PowerShell(Stop-Process -Id 19740 -Force -Confirm:$false)",
+      "PowerShell(dotnet build 2>$null)",
+      "PowerShell(dotnet test --nologo 2>$null)"
     ],
     "deny": [
       "Bash(rm:*)",

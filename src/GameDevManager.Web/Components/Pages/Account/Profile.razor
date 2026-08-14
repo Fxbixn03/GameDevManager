@@ -2,6 +2,7 @@
 @inject UserService Users
 @inject ISnackbar Snackbar
 @inject AuthenticationStateProvider Authentication
+@inject PasswordPolicySelection Policy
 @inject IStringLocalizer<Profile> L
 
 @*
@@ -55,6 +56,12 @@ else
             <MudPaper Elevation="0" Class="gdm-panel pa-4">
                 <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionPassword"]</MudText>
 
+                @if (Policy.Current.PasswordsDisabled)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true">@L["PasswordsDisabledInfo"]</MudAlert>
+                }
+                else
+                {
                 <MudStack Spacing="4">
                     <MudTextField @bind-Value="_currentPassword"
                                   T="string"
@@ -65,7 +72,7 @@ else
                     <MudTextField @bind-Value="_newPassword"
                                   T="string"
                                   Label="@L["NewPasswordLabel"]"
-                                  HelperText="@L["NewPasswordHelper", PasswordHasher.MinimumLength]"
+                                  HelperText="@L["NewPasswordHelper", Policy.Current.MinimumLength]"
                                   Variant="Variant.Outlined"
                                   InputType="InputType.Password" />
 
@@ -84,6 +91,7 @@ else
 
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@L["PasswordHint"]</MudText>
                 </MudStack>
+                }
             </MudPaper>
         </MudItem>
     </MudGrid>

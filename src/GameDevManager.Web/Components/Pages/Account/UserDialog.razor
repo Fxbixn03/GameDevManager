@@ -1,5 +1,6 @@
 @inject UserService Users
 @inject ISnackbar Snackbar
+@inject PasswordPolicySelection Policy
 @inject IStringLocalizer<UserDialog> L
 
 @*
@@ -26,12 +27,15 @@
                           Immediate="true"
                           Disabled="!IsNew" />
 
-            <MudTextField @bind-Value="_password"
-                          T="string"
-                          Label="@(IsNew ? L["PasswordLabel"].Value : L["NewPasswordLabel"].Value)"
-                          HelperText="@(IsNew ? L["PasswordHelper", PasswordHasher.MinimumLength].Value : L["NewPasswordHelper"].Value)"
-                          Variant="Variant.Outlined"
-                          InputType="InputType.Password" />
+            @if (!Policy.Current.PasswordsDisabled)
+            {
+                <MudTextField @bind-Value="_password"
+                              T="string"
+                              Label="@(IsNew ? L["PasswordLabel"].Value : L["NewPasswordLabel"].Value)"
+                              HelperText="@(IsNew ? L["PasswordHelper", Policy.Current.MinimumLength].Value : L["NewPasswordHelper"].Value)"
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Password" />
+            }
 
             <MudSwitch @bind-Value="_isAdministrator" Color="Color.Primary" Label="@L["AdministratorLabel"]" />
             <MudText Typo="Typo.caption" Color="Color.Secondary">@L["AdministratorHelper"]</MudText>

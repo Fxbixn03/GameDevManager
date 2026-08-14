@@ -118,4 +118,34 @@
   <data name="DeletedMessage" xml:space="preserve">
     <value>„{0}“ wurde gelöscht.</value>
   </data>
+  <data name="PolicyTitle" xml:space="preserve">
+    <value>Passwortrichtlinien</value>
+  </data>
+  <data name="PolicyDisabledLabel" xml:space="preserve">
+    <value>Passwörter deaktivieren — Anmeldung nur mit dem Anmeldenamen</value>
+  </data>
+  <data name="PolicyDisabledWarning" xml:space="preserve">
+    <value>Ohne Passwörter meldet jeder an, der einen Anmeldenamen kennt und die Installation erreicht. Nur sinnvoll, wenn das Tool ohnehin nicht von außen erreichbar ist.</value>
+  </data>
+  <data name="PolicyMinimumLengthLabel" xml:space="preserve">
+    <value>Mindestlänge</value>
+  </data>
+  <data name="PolicyMinimumLengthHelper" xml:space="preserve">
+    <value>Zeichen, die ein neues Passwort mindestens braucht.</value>
+  </data>
+  <data name="PolicyRequireDigitLabel" xml:space="preserve">
+    <value>Mindestens eine Ziffer verlangen</value>
+  </data>
+  <data name="PolicyRequireSpecialLabel" xml:space="preserve">
+    <value>Mindestens ein Sonderzeichen verlangen</value>
+  </data>
+  <data name="PolicyHint" xml:space="preserve">
+    <value>Die Richtlinie gilt beim Setzen neuer Passwörter — bestehende bleiben unverändert gültig.</value>
+  </data>
+  <data name="PolicySave" xml:space="preserve">
+    <value>Richtlinie speichern</value>
+  </data>
+  <data name="PolicySaved" xml:space="preserve">
+    <value>Die Passwortrichtlinie wurde gespeichert.</value>
+  </data>
 </root>

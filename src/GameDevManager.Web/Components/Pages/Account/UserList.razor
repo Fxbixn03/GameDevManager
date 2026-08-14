@@ -3,6 +3,7 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject AuthenticationStateProvider Authentication
+@inject PasswordPolicySelection Policy
 @inject IStringLocalizer<UserList> L
 
 @*
@@ -91,12 +92,63 @@ else
             }
         </MudStack>
     </MudPaper>
+
+    @* Die Passwortrichtlinie der Installation — sie gilt für neue Passwörter; bestehende
+       bleiben gültig, geprüft wird erst beim nächsten Setzen. *@
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mt-6">
+        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["PolicyTitle"]</MudText>
+
+        <MudStack Spacing="3">
+            <MudSwitch @bind-Value="_passwordsDisabled" Color="Color.Warning" Label="@L["PolicyDisabledLabel"]" />
+
+            @if (_passwordsDisabled)
+            {
+                <MudAlert Severity="Severity.Warning" Dense="true">@L["PolicyDisabledWarning"]</MudAlert>
+            }
+
+            <MudNumericField @bind-Value="_minimumLength"
+                             T="int"
+                             Label="@L["PolicyMinimumLengthLabel"]"
+                             HelperText="@L["PolicyMinimumLengthHelper"]"
+                             Variant="Variant.Outlined"
+                             Min="PasswordPolicy.MinimumLengthFloor"
+                             Max="PasswordPolicy.MinimumLengthCeiling"
+                             Disabled="_passwordsDisabled"
+                             Style="max-width:280px;" />
+
+            <MudSwitch @bind-Value="_requireDigit"
+                       Color="Color.Primary"
+                       Label="@L["PolicyRequireDigitLabel"]"
+                       Disabled="_passwordsDisabled" />
+
+            <MudSwitch @bind-Value="_requireSpecial"
+                       Color="Color.Primary"
+                       Label="@L["PolicyRequireSpecialLabel"]"
+                       Disabled="_passwordsDisabled" />
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["PolicyHint"]</MudText>
+
+            <div>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           OnClick="SavePolicyAsync">
+                    @L["PolicySave"]
+                </MudButton>
+            </div>
+        </MudStack>
+    </MudPaper>
 }
 
 @code {
     private List<UserRow>? _users;
     private bool _isAdministrator;
     private Guid? _currentUserId;
+
+    private int _minimumLength;
+    private bool _requireDigit;
+    private bool _requireSpecial;
+    private bool _passwordsDisabled;
 
     private string Subtitle => _users is null ? L["Loading"] : L["SubtitleCount", _users.Count];
 
@@ -106,10 +158,22 @@ else
         _isAdministrator = state.User.IsAdministrator();
         _currentUserId = state.User.UserId();
 
+        var policy = Policy.Current;
+        _minimumLength = policy.MinimumLength;
+        _requireDigit = policy.RequireDigit;
+        _requireSpecial = policy.RequireSpecialCharacter;
+        _passwordsDisabled = policy.PasswordsDisabled;
+
         if (_isAdministrator)
         {
             await LoadAsync();
         }
+    }
+
+    private async Task SavePolicyAsync()
+    {
+        await Policy.SetAsync(new PasswordPolicy(_minimumLength, _requireDigit, _requireSpecial, _passwordsDisabled));
+        Snackbar.Add(L["PolicySaved"], Severity.Success);
     }
 
     private async Task LoadAsync() => _users = await Users.GetUsersAsync();

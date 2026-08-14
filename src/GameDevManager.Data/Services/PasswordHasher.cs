@@ -26,9 +26,6 @@ public static class PasswordHasher
     /// <summary>Rundenzahl für neue Passwörter (OWASP-Empfehlung für PBKDF2-HMAC-SHA256).</summary>
     private const int Iterations = 210_000;
 
-    /// <summary>Kürzer nimmt die Ersteinrichtung ein Passwort nicht an.</summary>
-    public const int MinimumLength = 8;
-
     public static string Hash(string password)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(password);

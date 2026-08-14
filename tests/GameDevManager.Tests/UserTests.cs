@@ -134,6 +134,71 @@ public class UserTests
     }
 
     [Fact]
+    public async Task Die_Richtlinie_bestimmt_Mindestlaenge_Ziffer_und_Sonderzeichen()
+    {
+        using var test = new TestDatabase();
+        var users = test.GetService<UserService>();
+
+        test.Policy.Current = new PasswordPolicy(
+            MinimumLength: 12, RequireDigit: true, RequireSpecialCharacter: true, PasswordsDisabled: false);
+
+        // Acht Zeichen reichen der Vorgabe, dieser Richtlinie nicht.
+        await Assert.ThrowsAsync<ContentValidationException>(
+            () => users.CreateUserAsync("fabian", "Fabian", "Geheim12", isAdministrator: true));
+
+        // Lang genug, aber ohne Ziffer …
+        await Assert.ThrowsAsync<ContentValidationException>(
+            () => users.CreateUserAsync("fabian", "Fabian", "GeheimGeheim!", isAdministrator: true));
+
+        // … und ohne Sonderzeichen.
+        await Assert.ThrowsAsync<ContentValidationException>(
+            () => users.CreateUserAsync("fabian", "Fabian", "GeheimGeheim1", isAdministrator: true));
+
+        var id = await users.CreateUserAsync("fabian", "Fabian", "GeheimGeheim1!", isAdministrator: true);
+        Assert.NotNull(await users.GetUserAsync(id));
+    }
+
+    [Fact]
+    public async Task Ohne_Passwoerter_meldet_der_Anmeldename_allein_an()
+    {
+        using var test = new TestDatabase();
+        var users = test.GetService<UserService>();
+
+        test.Policy.Current = PasswordPolicy.Default with { PasswordsDisabled = true };
+
+        // Anlegen ganz ohne Passwort — und die Anmeldung fragt keines ab.
+        var id = await users.CreateUserAsync("fabian", "Fabian", password: "", isAdministrator: true);
+        Assert.NotNull(await users.AuthenticateAsync("fabian", ""));
+
+        // Die Sperre gilt weiter — deaktivierte Passwörter heben sie nicht auf.
+        await users.CreateUserAsync("admin2", "Zweiter", password: "", isAdministrator: true);
+        await users.UpdateUserAsync(id, "Fabian", isAdministrator: true, isDisabled: true);
+        Assert.Null(await users.AuthenticateAsync("fabian", ""));
+
+        // Passwörter setzen gibt es nicht, solange die Richtlinie sie nicht kennt.
+        await Assert.ThrowsAsync<ContentValidationException>(
+            () => users.SetPasswordAsync(id, "Geheim1234"));
+    }
+
+    [Fact]
+    public async Task Wieder_eingeschaltete_Passwoerter_lassen_Konten_ohne_Passwort_nicht_herein()
+    {
+        using var test = new TestDatabase();
+        var users = test.GetService<UserService>();
+
+        test.Policy.Current = PasswordPolicy.Default with { PasswordsDisabled = true };
+        var id = await users.CreateUserAsync("fabian", "Fabian", password: "", isAdministrator: true);
+
+        // Zurück zur Vorgabe: Der leere Hash lässt niemanden herein, bis ein Passwort gesetzt ist.
+        test.Policy.Current = PasswordPolicy.Default;
+        Assert.Null(await users.AuthenticateAsync("fabian", ""));
+        Assert.Null(await users.AuthenticateAsync("fabian", "beliebig"));
+
+        await users.SetPasswordAsync(id, "Geheim1234");
+        Assert.NotNull(await users.AuthenticateAsync("fabian", "Geheim1234"));
+    }
+
+    [Fact]
     public async Task Das_eigene_Passwort_aendert_man_nur_gegen_das_alte()
     {
         using var test = new TestDatabase();

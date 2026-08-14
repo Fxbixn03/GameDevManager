@@ -32,6 +32,7 @@ builder.Services.AddSingleton<ProjectSelection>();
 builder.Services.AddScoped<ModuleState>();
 builder.Services.AddSingleton<LocalSettingsFile>();
 builder.Services.AddSingleton<AppearanceSelection>();
+builder.Services.AddSingleton<PasswordPolicySelection>();
 
 // Beschriftungen, die aus C# statt aus einer Razor-Datei kommen (Modulnamen, Feldtypen,
 // Bedingungen). Sie sind Dienste und keine statischen Klassen mehr, weil sie einen
@@ -73,6 +74,11 @@ builder.Services.AddHttpContextAccessor();
 // Schnittstelle. Ersetzt die Vorgabe „System“ aus AddGameDevManagerContentServices.
 builder.Services.Replace(
     ServiceDescriptor.Scoped<IChangeAuthorProvider, BlazorChangeAuthorProvider>());
+
+// Dasselbe Muster für die Passwortrichtlinie: Konfiguration und Einstellungsseite kennt nur
+// die Web-Schicht, der UserService fragt die Schnittstelle.
+builder.Services.Replace(ServiceDescriptor.Singleton<IPasswordPolicyProvider>(
+    provider => provider.GetRequiredService<PasswordPolicySelection>()));
 
 var app = builder.Build();
 

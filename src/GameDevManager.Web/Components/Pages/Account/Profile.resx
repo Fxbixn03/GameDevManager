@@ -118,4 +118,7 @@
   <data name="PasswordHint" xml:space="preserve">
     <value>Bestehende Anmeldungen bleiben gültig, bis ihr Cookie abläuft.</value>
   </data>
+  <data name="PasswordsDisabledInfo" xml:space="preserve">
+    <value>Passwörter sind per Richtlinie deaktiviert — angemeldet wird nur mit dem Anmeldenamen. Ein Verwalter kann das in der Benutzerverwaltung ändern.</value>
+  </data>
 </root>

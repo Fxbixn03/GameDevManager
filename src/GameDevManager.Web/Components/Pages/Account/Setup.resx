@@ -82,6 +82,9 @@
   <data name="PasswordHint" xml:space="preserve">
     <value>Mindestens {0} Zeichen.</value>
   </data>
+  <data name="PasswordsDisabledHint" xml:space="preserve">
+    <value>Passwörter sind per Richtlinie deaktiviert — das Konto meldet sich allein mit dem Anmeldenamen an.</value>
+  </data>
   <data name="ConfirmLabel" xml:space="preserve">
     <value>Passwort wiederholen</value>
   </data>

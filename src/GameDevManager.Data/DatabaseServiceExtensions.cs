@@ -56,6 +56,9 @@ public static class DatabaseServiceExtensions
         services.TryAddScoped<IChangeAuthorProvider>(_ => new SystemChangeAuthorProvider());
         services.AddScoped<ChangeLogService>();
         services.AddScoped<UserService>();
+        // Die Passwortrichtlinie kommt im Betrieb aus der Web-Schicht (Konfiguration plus
+        // Einstellungsseite); ohne Ersatz gilt die Vorgabe — dasselbe Muster wie der Urheber.
+        services.TryAddSingleton<IPasswordPolicyProvider, DefaultPasswordPolicyProvider>();
 
         services.AddScoped<ProjectService>();
         services.AddScoped<ContentTypeService>();

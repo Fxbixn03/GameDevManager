@@ -4,6 +4,7 @@
 @attribute [ExcludeFromInteractiveRouting]
 @inject UserService Users
 @inject NavigationManager Navigation
+@inject PasswordPolicySelection Policy
 @inject IStringLocalizer<Login> L
 
 @*
@@ -43,9 +44,17 @@
             <label class="gdm-auth-label" for="userName">@L["UserNameLabel"]</label>
             <InputText id="userName" @bind-Value="Input.UserName" class="gdm-auth-input" autocomplete="username" />
 
-            <label class="gdm-auth-label" for="password">@L["PasswordLabel"]</label>
-            <InputText id="password" type="password" @bind-Value="Input.Password"
-                       class="gdm-auth-input" autocomplete="current-password" />
+            @if (!Policy.Current.PasswordsDisabled)
+            {
+                <label class="gdm-auth-label" for="password">@L["PasswordLabel"]</label>
+                <InputText id="password" type="password" @bind-Value="Input.Password"
+                           class="gdm-auth-input" autocomplete="current-password" />
+            }
+
+            <label class="gdm-auth-remember">
+                <InputCheckbox id="rememberMe" @bind-Value="Input.RememberMe" />
+                @L["RememberMe"]
+            </label>
 
             <button type="submit" class="gdm-auth-submit">@L["SignIn"]</button>
         </EditForm>
@@ -86,7 +95,7 @@
         {
             // Bewusst eine Meldung für beide Fälle: Ein „diesen Benutzer gibt es nicht“ wäre
             // eine Auskunft darüber, welche Konten bestehen.
-            _error = L["Failed"];
+            _error = Policy.Current.PasswordsDisabled ? L["FailedUserNameOnly"] : L["Failed"];
             return;
         }
 
@@ -112,9 +121,12 @@
         [Required]
         public string? UserName { get; set; }
 
-        [Required]
+        // Kein [Required]: Bei deaktivierten Passwörtern gibt es das Feld nicht — ein leeres
+        // Passwort bei aktiven Passwörtern weist AuthenticateAsync ohnehin ab.
         public string? Password { get; set; }
 
-        public bool RememberMe { get; set; } = true;
+        // Vorgabe „aus“: Ein nicht angehakter Haken kommt beim Postback gar nicht an und
+        // ließe eine Vorgabe „an“ nie wieder abwählen.
+        public bool RememberMe { get; set; }
     }
 }

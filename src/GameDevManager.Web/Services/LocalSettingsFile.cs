@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using GameDevManager.Data;
+using GameDevManager.Data.Services;
 
 namespace GameDevManager.Web.Services;
 
@@ -66,6 +67,26 @@ public class LocalSettingsFile(IHostEnvironment environment)
         var appearance = root["Appearance"] as JsonObject ?? new JsonObject();
         appearance["DarkMode"] = isDarkMode;
         root["Appearance"] = appearance;
+
+        await File.WriteAllTextAsync(FilePath, root.ToJsonString(WriteOptions), ct);
+    }
+
+    /// <summary>
+    /// Merkt sich die Passwortrichtlinie. Installationsweit wie die übrigen Werte hier — und
+    /// bewusst keine Datenbanktabelle, die eine Migration in allen vier Providern verlangte.
+    /// Beim Start liest die <see cref="PasswordPolicySelection"/> die Werte aus der
+    /// Konfiguration (<c>PasswordPolicy:*</c>).
+    /// </summary>
+    public async Task WritePasswordPolicyAsync(PasswordPolicy policy, CancellationToken ct = default)
+    {
+        var root = await ReadAsync(ct);
+
+        var section = root["PasswordPolicy"] as JsonObject ?? new JsonObject();
+        section["MinimumLength"] = policy.MinimumLength;
+        section["RequireDigit"] = policy.RequireDigit;
+        section["RequireSpecialCharacter"] = policy.RequireSpecialCharacter;
+        section["PasswordsDisabled"] = policy.PasswordsDisabled;
+        root["PasswordPolicy"] = section;
 
         await File.WriteAllTextAsync(FilePath, root.ToJsonString(WriteOptions), ct);
     }

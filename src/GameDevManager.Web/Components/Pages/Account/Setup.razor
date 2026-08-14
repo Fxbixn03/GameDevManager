@@ -4,6 +4,7 @@
 @attribute [ExcludeFromInteractiveRouting]
 @inject UserService Users
 @inject NavigationManager Navigation
+@inject PasswordPolicySelection Policy
 @inject IStringLocalizer<Setup> L
 
 @*
@@ -40,14 +41,21 @@
             <label class="gdm-auth-label" for="userName">@L["UserNameLabel"]</label>
             <InputText id="userName" @bind-Value="Input.UserName" class="gdm-auth-input" autocomplete="username" />
 
-            <label class="gdm-auth-label" for="password">@L["PasswordLabel"]</label>
-            <InputText id="password" type="password" @bind-Value="Input.Password"
-                       class="gdm-auth-input" autocomplete="new-password" />
-            <div class="gdm-auth-hint">@L["PasswordHint", PasswordHasher.MinimumLength]</div>
+            @if (!Policy.Current.PasswordsDisabled)
+            {
+                <label class="gdm-auth-label" for="password">@L["PasswordLabel"]</label>
+                <InputText id="password" type="password" @bind-Value="Input.Password"
+                           class="gdm-auth-input" autocomplete="new-password" />
+                <div class="gdm-auth-hint">@L["PasswordHint", Policy.Current.MinimumLength]</div>
 
-            <label class="gdm-auth-label" for="confirm">@L["ConfirmLabel"]</label>
-            <InputText id="confirm" type="password" @bind-Value="Input.Confirm"
-                       class="gdm-auth-input" autocomplete="new-password" />
+                <label class="gdm-auth-label" for="confirm">@L["ConfirmLabel"]</label>
+                <InputText id="confirm" type="password" @bind-Value="Input.Confirm"
+                           class="gdm-auth-input" autocomplete="new-password" />
+            }
+            else
+            {
+                <div class="gdm-auth-hint">@L["PasswordsDisabledHint"]</div>
+            }
 
             <button type="submit" class="gdm-auth-submit">@L["Create"]</button>
         </EditForm>
@@ -75,7 +83,7 @@
 
     private async Task CreateAsync()
     {
-        if (Input.Password != Input.Confirm)
+        if (!Policy.Current.PasswordsDisabled && Input.Password != Input.Confirm)
         {
             _error = L["PasswordMismatch"];
             return;
@@ -114,10 +122,10 @@
         [Required]
         public string? UserName { get; set; }
 
-        [Required]
+        // Kein [Required]: Bei deaktivierten Passwörtern gibt es die Felder nicht; bei aktiven
+        // weist der UserService ein leeres Passwort mit der Mindestlängen-Meldung ab.
         public string? Password { get; set; }
 
-        [Required]
         public string? Confirm { get; set; }
     }
 }

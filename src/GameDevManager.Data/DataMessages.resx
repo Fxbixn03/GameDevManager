@@ -596,6 +596,15 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="UserPasswordTooShort" xml:space="preserve">
     <value>Das Passwort braucht mindestens {0} Zeichen.</value>
   </data>
+  <data name="UserPasswordNeedsDigit" xml:space="preserve">
+    <value>Das Passwort braucht mindestens eine Ziffer.</value>
+  </data>
+  <data name="UserPasswordNeedsSpecial" xml:space="preserve">
+    <value>Das Passwort braucht mindestens ein Sonderzeichen.</value>
+  </data>
+  <data name="UserPasswordsDisabled" xml:space="preserve">
+    <value>Passwörter sind per Richtlinie deaktiviert — angemeldet wird nur mit dem Anmeldenamen.</value>
+  </data>
   <data name="UserCurrentPasswordWrong" xml:space="preserve">
     <value>Das bisherige Passwort stimmt nicht.</value>
   </data>
