@@ -32,6 +32,7 @@ builder.Services.AddSingleton<ProjectSelection>();
 builder.Services.AddScoped<ModuleState>();
 builder.Services.AddSingleton<LocalSettingsFile>();
 builder.Services.AddSingleton<AppearanceSelection>();
+builder.Services.AddSingleton<TopbarSelection>();
 builder.Services.AddSingleton<PasswordPolicySelection>();
 
 // Beschriftungen, die aus C# statt aus einer Razor-Datei kommen (Modulnamen, Feldtypen,

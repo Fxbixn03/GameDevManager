@@ -7,6 +7,7 @@
 @inject LocalSettingsFile LocalSettings
 @inject ModuleState ModuleState
 @inject ModuleLabels Modules
+@inject TopbarSelection Topbar
 @inject AppearanceSelection Appearance
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
@@ -19,7 +20,8 @@
     Datenbank-Änderungen landen in appsettings.Local.json und gelten erst nach einem Neustart —
     die laufende DbContext-Factory lässt sich nicht umverdrahten. Die Modul-Schalter wirken
     sofort: Sie speichern in die Datenbank und benachrichtigen Topbar, Dashboard und Suche über
-    den ModuleState. Die Darstellung gilt installationsweit (siehe AppearanceSelection).
+    den ModuleState. Topbar-Reihenfolge und Darstellung gelten installationsweit (siehe
+    TopbarSelection und AppearanceSelection).
 *@
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -36,6 +38,9 @@
         </MudNavLink>
         <MudNavLink Href="/einstellungen/module" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Apps">
             @L["TabModules"]
+        </MudNavLink>
+        <MudNavLink Href="/einstellungen/topbar" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewHeadline">
+            @L["TabTopbar"]
         </MudNavLink>
         <MudNavLink Href="/einstellungen/darstellung" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DarkMode">
             @L["TabAppearance"]
@@ -67,6 +72,74 @@
                                        Label="@Modules.Name(module)" />
                         }
                     }
+                </MudStack>
+                break;
+
+            case TopbarSection:
+                <MudStack Spacing="0" Style="max-width: 640px;">
+                    <MudText Typo="Typo.h6">@L["TabTopbar"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["TopbarHint"]</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-3">@L["TopbarOverflowHint"]</MudText>
+
+                    @foreach (var module in _order)
+                    {
+                        @* Verschieben per Drag & Drop: Zeile greifen und auf der Zielzeile
+                           loslassen — die Pfeile daneben bleiben als tastaturfreundlicher Weg.
+                           Ein einfaches div statt MudPaper, weil die Drag-Direktiven
+                           (:preventDefault) nur auf HTML-Elementen erlaubt sind. *@
+                        <div class="mud-paper gdm-panel pa-2 mb-1"
+                             style="@(ReferenceEquals(_dragging, module) ? "opacity:0.4;" : _dragging is not null ? "cursor:grabbing;" : null)"
+                             draggable="true"
+                             @ondragstart="@(() => _dragging = module)"
+                             @ondragend="@(() => _dragging = null)"
+                             @ondragover:preventDefault="true"
+                             @ondrop="@(() => DropOnAsync(module))">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.DragIndicator"
+                                         Size="Size.Small"
+                                         Color="Color.Secondary"
+                                         Style="cursor:grab;"
+                                         title="@L["DragHint"]" />
+                                <MudIcon Icon="@module.Icon" Size="Size.Small" />
+                                <MudText Typo="Typo.body2">@Modules.Name(module)</MudText>
+
+                                @* Abgeschaltete Module bleiben in der Liste: Sie stehen nur
+                                   nicht in der Leiste, ihre Stelle in der Reihenfolge behalten
+                                   sie für den Fall, dass sie wieder eingeschaltet werden. *@
+                                @if (!ModuleState.IsEnabled(module))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default">
+                                        @L["ModuleHidden"]
+                                    </MudChip>
+                                }
+
+                                <MudSpacer />
+
+                                <MudTooltip Text="@L["MoveUpTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
+                                                   Size="Size.Small"
+                                                   Disabled="@(module == _order[0])"
+                                                   OnClick="@(() => MoveAsync(module, up: true))"
+                                                   aria-label="@L["MoveUpAria", Modules.Name(module)]" />
+                                </MudTooltip>
+                                <MudTooltip Text="@L["MoveDownTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward"
+                                                   Size="Size.Small"
+                                                   Disabled="@(module == _order[^1])"
+                                                   OnClick="@(() => MoveAsync(module, up: false))"
+                                                   aria-label="@L["MoveDownAria", Modules.Name(module)]" />
+                                </MudTooltip>
+                            </MudStack>
+                        </div>
+                    }
+
+                    <div class="mt-3">
+                        <MudButton Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Filled.Restore"
+                                   OnClick="ResetOrderAsync">
+                            @L["ResetOrder"]
+                        </MudButton>
+                    </div>
                 </MudStack>
                 break;
 
@@ -138,6 +211,7 @@
 @code {
     private const string DatabaseSection = "datenbank";
     private const string ModulesSection = "module";
+    private const string TopbarSection = "topbar";
     private const string AppearanceSection = "darstellung";
 
     /// <summary>Der Bereich aus der Route — ohne oder mit unbekanntem Segment die Datenbank.</summary>
@@ -147,6 +221,7 @@
     private string CurrentSection => Section?.ToLowerInvariant() switch
     {
         ModulesSection => ModulesSection,
+        TopbarSection => TopbarSection,
         AppearanceSection => AppearanceSection,
         _ => DatabaseSection
     };
@@ -161,6 +236,14 @@
     private bool _testSucceeded;
     private string? _testResult;
 
+    /// <summary>
+    /// Die Reihenfolge der Modulleiste — alle Module, auch abgeschaltete: Die Reihenfolge ist
+    /// vollständig, gezeigt wird davon nur, was eingeschaltet und freigegeben ist.
+    /// </summary>
+    private List<ModuleDefinition> _order = [];
+
+    private ModuleDefinition? _dragging;
+
     /// <summary>Die Arbeitsfelder in der Reihenfolge des Dashboards, Werkzeuge zuletzt.</summary>
     private static IEnumerable<ModuleGroup> Groups =>
         [.. ModuleRegistry.ContentGroups, ModuleGroup.Tools];
@@ -169,6 +252,7 @@
     {
         _provider = DbOptions.Provider;
         _connectionString = StoredConnectionString(_provider);
+        _order = [.. Topbar.Sort(ModuleRegistry.All)];
 
         await ModuleState.EnsureLoadedAsync();
     }
@@ -253,6 +337,54 @@
             Snackbar.Add(ex.Message, Severity.Error);
         }
     }
+
+    /// <summary>Ein Modul einen Platz nach oben oder unten schieben.</summary>
+    private async Task MoveAsync(ModuleDefinition module, bool up)
+    {
+        var index = _order.IndexOf(module);
+        var target = up ? index - 1 : index + 1;
+
+        if (index < 0 || target < 0 || target >= _order.Count)
+        {
+            return;
+        }
+
+        _order.RemoveAt(index);
+        _order.Insert(target, module);
+        await SaveOrderAsync();
+    }
+
+    /// <summary>Das gegriffene Modul an der Stelle des Zielmoduls einsortieren.</summary>
+    private async Task DropOnAsync(ModuleDefinition target)
+    {
+        if (_dragging is null || ReferenceEquals(_dragging, target))
+        {
+            _dragging = null;
+            return;
+        }
+
+        var moved = _dragging;
+        _dragging = null;
+
+        var targetIndex = _order.IndexOf(target);
+        _order.Remove(moved);
+        _order.Insert(targetIndex, moved);
+
+        await SaveOrderAsync();
+    }
+
+    private async Task ResetOrderAsync()
+    {
+        await Topbar.ResetAsync();
+        _order = [.. ModuleRegistry.All];
+        Snackbar.Add(L["OrderReset"], Severity.Success);
+    }
+
+    /// <summary>
+    /// Speichert sofort — wie die Modul-Schalter daneben. Die Topbar zieht über das Ereignis
+    /// der <see cref="TopbarSelection"/> von selbst nach, auch in anderen offenen Fenstern.
+    /// </summary>
+    private Task SaveOrderAsync() => Topbar.SetOrderAsync(_order.Select(m => m.Id));
 
     /// <summary>
     /// Dieselbe Wahl wie der Knopf in der Appbar — sie gilt installationsweit und wird in

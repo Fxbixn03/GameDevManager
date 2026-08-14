@@ -72,6 +72,23 @@ public class LocalSettingsFile(IHostEnvironment environment)
     }
 
     /// <summary>
+    /// Merkt sich die Reihenfolge der Modulleiste in der Topbar. Kommagetrennt wie die
+    /// Modul-Freigaben eines Benutzers und nicht als JSON-Feld: Ein Array läge in der
+    /// Konfiguration als <c>Topbar:ModuleOrder:0</c>, <c>:1</c>, … und wäre von Hand kaum
+    /// zu bearbeiten. Beim Start liest die <see cref="TopbarSelection"/> den Wert.
+    /// </summary>
+    public async Task WriteModuleOrderAsync(IEnumerable<string> moduleKeys, CancellationToken ct = default)
+    {
+        var root = await ReadAsync(ct);
+
+        var topbar = root["Topbar"] as JsonObject ?? new JsonObject();
+        topbar["ModuleOrder"] = string.Join(',', moduleKeys);
+        root["Topbar"] = topbar;
+
+        await File.WriteAllTextAsync(FilePath, root.ToJsonString(WriteOptions), ct);
+    }
+
+    /// <summary>
     /// Merkt sich die Passwortrichtlinie. Installationsweit wie die übrigen Werte hier — und
     /// bewusst keine Datenbanktabelle, die eine Migration in allen vier Providern verlangte.
     /// Beim Start liest die <see cref="PasswordPolicySelection"/> die Werte aus der

@@ -1,15 +1,24 @@
-/* Modul-Leiste in der Appbar: horizontal scrollbar, ohne sichtbaren Balken —
-   bei 22 Modulen wird sie auf schmalen Fenstern sonst zum Blocker. */
+/* Modul-Leiste in der Appbar: Sie nimmt den ganzen Platz zwischen Projektauswahl und den
+   Knöpfen rechts ein. Bewusst flex-basis 0 und kein MudSpacer daneben — ihre Breite darf
+   nicht an der Anzahl der Knöpfe hängen, sonst geriete die Messung im Browser in eine
+   Schleife (weniger Knöpfe → schmalere Leiste → weniger Platz → …).
+
+   overflow: hidden ist nur das Netz für den ersten Frame, in dem noch ungemessen alles
+   gerendert wird; danach passt die Leiste sich selbst an. */
 
 .gdm-module-strip {
     display: flex;
     align-items: center;
-    overflow-x: auto;
-    scrollbar-width: none;
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
 }
 
-.gdm-module-strip::-webkit-scrollbar {
-    height: 0;
+/* Das Flex-Kind je Modul — seine Breite ist der Maßstab der Messung (gdm-topbar.js). */
+.gdm-module-item {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
 }
 
 /* Das aktive Modul bekommt zusätzlich zur gelben Icon-Farbe eine gelbe Unterkante,

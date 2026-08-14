@@ -19,7 +19,7 @@
     <value>Einstellungen</value>
   </data>
   <data name="Subtitle" xml:space="preserve">
-    <value>Datenbankverbindung, Module und Darstellung dieser Installation.</value>
+    <value>Datenbankverbindung, Module, Topbar und Darstellung dieser Installation.</value>
   </data>
   <data name="TabDatabase" xml:space="preserve">
     <value>Datenbank</value>
@@ -27,8 +27,41 @@
   <data name="TabModules" xml:space="preserve">
     <value>Module</value>
   </data>
+  <data name="TabTopbar" xml:space="preserve">
+    <value>Topbar</value>
+  </data>
   <data name="TabAppearance" xml:space="preserve">
     <value>Darstellung</value>
+  </data>
+  <data name="TopbarHint" xml:space="preserve">
+    <value>Reihenfolge der Modul-Symbole in der oberen Leiste. Ziehen oder mit den Pfeilen verschieben — die Änderung gilt sofort.</value>
+  </data>
+  <data name="TopbarOverflowHint" xml:space="preserve">
+    <value>Was auf schmalen Fenstern nicht mehr in die Leiste passt, sammelt sich am rechten Ende unter „Weitere Module“. Das gerade geöffnete Modul bleibt immer sichtbar.</value>
+  </data>
+  <data name="ModuleHidden" xml:space="preserve">
+    <value>ausgeblendet</value>
+  </data>
+  <data name="DragHint" xml:space="preserve">
+    <value>Zum Verschieben ziehen</value>
+  </data>
+  <data name="MoveUpTooltip" xml:space="preserve">
+    <value>Nach vorn</value>
+  </data>
+  <data name="MoveDownTooltip" xml:space="preserve">
+    <value>Nach hinten</value>
+  </data>
+  <data name="MoveUpAria" xml:space="preserve">
+    <value>„{0}“ nach vorn verschieben</value>
+  </data>
+  <data name="MoveDownAria" xml:space="preserve">
+    <value>„{0}“ nach hinten verschieben</value>
+  </data>
+  <data name="ResetOrder" xml:space="preserve">
+    <value>Reihenfolge zurücksetzen</value>
+  </data>
+  <data name="OrderReset" xml:space="preserve">
+    <value>Die Reihenfolge steht wieder auf der Vorgabe.</value>
   </data>
   <data name="RestartHint" xml:space="preserve">
     <value>Änderungen an der Datenbankverbindung werden in appsettings.Local.json gespeichert und gelten erst nach einem Neustart der Anwendung.</value>

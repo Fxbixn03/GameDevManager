@@ -59,9 +59,10 @@ public record ModuleDefinition(string Id, string Icon, ModuleGroup Group, bool I
 /// neue Module werden nur hier ergänzt.
 /// </summary>
 /// <remarks>
-/// Die Reihenfolge dieser Liste ist die der Umsetzung; sie bestimmt die Modulleiste der Topbar
-/// und wird bewusst nicht nach <see cref="ModuleGroup"/> umsortiert — die Leiste steht auf jeder
-/// Seite, und eine wandernde Icon-Reihe kostet mehr, als die Gruppierung dort einbrächte.
+/// Die Reihenfolge dieser Liste ist die der Umsetzung; sie ist die Vorgabe der Modulleiste in
+/// der Topbar (umsortierbar über die <see cref="TopbarSelection"/>) und wird bewusst nicht nach
+/// <see cref="ModuleGroup"/> umsortiert — die Leiste steht auf jeder Seite, und eine wandernde
+/// Icon-Reihe kostet mehr, als die Gruppierung dort einbrächte.
 /// </remarks>
 public static class ModuleRegistry
 {

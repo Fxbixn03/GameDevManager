@@ -1,11 +1,13 @@
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
-@implements IDisposable
+@implements IAsyncDisposable
 @inject IStringLocalizer<MainLayout> L
 @inject ModuleLabels Modules
 @inject ModuleState ModuleState
+@inject TopbarSelection Topbar
 @inject AppearanceSelection Appearance
 @inject IUserPermissionsProvider PermissionsProvider
+@inject IJSRuntime JS
 
 <MudThemeProvider Theme="GameDevManagerTheme.Instance" IsDarkMode="Appearance.IsDarkMode" DefaultScrollbar="true" />
 <MudPopoverProvider />
@@ -26,21 +28,46 @@
 
         <MudDivider Vertical="true" FlexItem="true" Class="mx-4 my-3" />
 
-        <div class="gdm-module-strip">
-            @* Zweifach gefiltert: je Projekt abgeschaltete Module und je Benutzer nicht
-               freigegebene. Die Seiten dahinter schützt zusätzlich die Modulwache unten. *@
-            @foreach (var module in ModuleState.EnabledModules.Where(m => _permissions.CanAccessModule(m.Id)))
+        @* Die Leiste nimmt den Platz bis zu den Knöpfen rechts ein und wird nicht mehr
+           gescrollt: Was nicht hineinpasst, sammelt der Aufklapp-Knopf am rechten Ende.
+           Wie viele Knöpfe hineinpassen, misst der Browser (siehe SetCapacity). *@
+        @{
+            var strip = BuildStrip();
+        }
+        <div class="gdm-module-strip" @ref="_stripElement">
+            @foreach (var module in strip.Visible)
             {
-                <MudTooltip Text="@Modules.Name(module)">
-                    <MudIconButton Icon="@module.Icon"
-                                   Href="@module.Route"
-                                   Class="@(IsActive(module) ? "gdm-module-active" : null)"
-                                   Color="@(IsActive(module) ? Color.Primary : Color.Inherit)" />
-                </MudTooltip>
+                @* Eigenes div um Tooltip und Knopf: Es ist das Flex-Kind, dessen Breite die
+                   Messung im Browser als Maßstab nimmt — ohne es hinge sie am Aufbau der
+                   MudBlazor-Komponenten. *@
+                <div class="gdm-module-item">
+                    <MudTooltip Text="@Modules.Name(module)">
+                        <MudIconButton Icon="@module.Icon"
+                                       Href="@module.Route"
+                                       Class="@(IsActive(module) ? "gdm-module-active" : null)"
+                                       Color="@(IsActive(module) ? Color.Primary : Color.Inherit)" />
+                    </MudTooltip>
+                </div>
+            }
+
+            @if (strip.Overflow.Count > 0)
+            {
+                <div class="gdm-module-item">
+                    <MudMenu Icon="@Icons.Material.Filled.MoreHoriz"
+                             Color="Color.Inherit"
+                             AriaLabel="@L["MoreModules", strip.Overflow.Count]"
+                             AnchorOrigin="Origin.BottomRight"
+                             TransformOrigin="Origin.TopRight">
+                        @foreach (var module in strip.Overflow)
+                        {
+                            <MudMenuItem Href="@module.Route" Icon="@module.Icon">
+                                @Modules.Name(module)
+                            </MudMenuItem>
+                        }
+                    </MudMenu>
+                </div>
             }
         </div>
-
-        <MudSpacer />
 
         @if (!_permissions.CanWrite)
         {
@@ -118,16 +145,95 @@
 @code {
     private UserPermissions _permissions = UserPermissions.Full;
 
+    private ElementReference _stripElement;
+    private DotNetObjectReference<MainLayout>? _jsReference;
+
+    /// <summary>
+    /// Wie viele Modul-Knöpfe nebeneinander Platz haben — gemessen im Browser.
+    /// <c>null</c> vor der ersten Messung, negativ, wenn nichts zu messen war; in beiden
+    /// Fällen zeigt die Leiste alles.
+    /// </summary>
+    private int? _capacity;
+
     protected override async Task OnInitializedAsync()
     {
         Navigation.LocationChanged += OnLocationChanged;
         ModuleState.Changed += OnModulesChanged;
+        Topbar.Changed += OnModulesChanged;
 
         // Die Berechtigungen des angemeldeten Benutzers — sie stehen in den Ansprüchen des
         // Cookies und ändern sich innerhalb der Verbindung nicht mehr.
         _permissions = await PermissionsProvider.GetCurrentAsync();
 
         await ModuleState.EnsureLoadedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _jsReference = DotNetObjectReference.Create(this);
+        await JS.InvokeVoidAsync("gdmTopbar.observe", _stripElement, _jsReference);
+    }
+
+    /// <summary>
+    /// Meldung des Browsers, wie viele Knöpfe in die Leiste passen. Nur die Geometrie kommt
+    /// von dort; welche Module das betrifft, entscheidet <see cref="BuildStrip"/>.
+    /// </summary>
+    [JSInvokable]
+    public void SetCapacity(int capacity)
+    {
+        if (_capacity == capacity)
+        {
+            return;
+        }
+
+        _capacity = capacity;
+        InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Teilt die Module der Leiste in sichtbare und zusammengefasste auf. Zweifach gefiltert:
+    /// je Projekt abgeschaltete Module und je Benutzer nicht freigegebene — die Seiten dahinter
+    /// schützt zusätzlich die Modulwache. Die Reihenfolge kommt aus der
+    /// <see cref="TopbarSelection"/>.
+    /// </summary>
+    private (IReadOnlyList<ModuleDefinition> Visible, IReadOnlyList<ModuleDefinition> Overflow) BuildStrip()
+    {
+        var modules = Topbar.Sort(ModuleState.EnabledModules.Where(m => _permissions.CanAccessModule(m.Id)));
+
+        // Vor der ersten Messung steht alles in der Leiste: ein leeres Band wäre der
+        // auffälligere Fehler als ein Frame mit abgeschnittenen Symbolen.
+        if (_capacity is not { } capacity || capacity < 0 || capacity >= modules.Count)
+        {
+            return (modules, []);
+        }
+
+        // Ein Platz gehört dem Aufklapp-Knopf selbst.
+        var visible = modules.Take(Math.Max(capacity - 1, 0)).ToList();
+        var overflow = modules.Skip(visible.Count).ToList();
+
+        // Das geöffnete Modul steht immer in der Leiste, auch wenn es rechnerisch im Aufklapp-
+        // Knopf läge — sonst verlöre die Seite, auf der man gerade ist, ihre Markierung. Es
+        // verdrängt dafür den letzten sichtbaren Knopf, der an dessen Stelle nach vorn in die
+        // Liste rutscht und dort die Reihenfolge wahrt.
+        if (overflow.FirstOrDefault(IsActive) is { } active)
+        {
+            overflow.Remove(active);
+
+            if (visible.Count > 0)
+            {
+                overflow.Insert(0, visible[^1]);
+                visible.RemoveAt(visible.Count - 1);
+            }
+
+            visible.Add(active);
+        }
+
+        return (visible, overflow);
     }
 
     /// <summary>
@@ -166,9 +272,21 @@
     /// </summary>
     private Task ToggleDarkMode() => Appearance.SetDarkModeAsync(!Appearance.IsDarkMode);
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         Navigation.LocationChanged -= OnLocationChanged;
         ModuleState.Changed -= OnModulesChanged;
+        Topbar.Changed -= OnModulesChanged;
+
+        try
+        {
+            await JS.InvokeVoidAsync("gdmTopbar.unobserve", _stripElement);
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or TaskCanceledException)
+        {
+            // Der Kreis ist schon getrennt — dann ist der Beobachter mit der Seite ohnehin weg.
+        }
+
+        _jsReference?.Dispose();
     }
 }

@@ -48,4 +48,7 @@
   <data name="ModuleNotAllowed" xml:space="preserve">
     <value>Das Modul „{0}“ ist für dieses Konto nicht freigegeben.</value>
   </data>
+  <data name="MoreModules" xml:space="preserve">
+    <value>Weitere Module ({0})</value>
+  </data>
 </root>
