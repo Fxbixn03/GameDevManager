@@ -267,6 +267,7 @@ else
                 {
                     <EntityTagsPanel ModuleKey="@ModuleKeys.Crafting" EntityId="_context.Entity.Id" />
                     <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                    <EntityHistoryPanel @ref="_historyPanel" EntityId="_context.Entity.Id" />
                 }
             </MudStack>
         </MudItem>
@@ -281,6 +282,7 @@ else
 
     private ContentEditContext<Recipe>? _context;
     private ReferencesPanel? _referencesPanel;
+    private EntityHistoryPanel? _historyPanel;
     private List<EntitySummary> _items = [];
 
     /// <summary>Die Icons der ausgewählten Ziel-Items, einmal je Item nachgeschlagen.</summary>
@@ -467,6 +469,11 @@ else
             if (_referencesPanel is not null)
             {
                 await _referencesPanel.RefreshAsync();
+            }
+
+            if (_historyPanel is not null)
+            {
+                await _historyPanel.RefreshAsync();
             }
         }
         catch (ContentValidationException ex)

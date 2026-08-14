@@ -247,6 +247,7 @@ else
 
                     <EntityTagsPanel ModuleKey="@ModuleKeys.Items" EntityId="_context.Entity.Id" />
                     <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                    <EntityHistoryPanel @ref="_historyPanel" EntityId="_context.Entity.Id" />
                 }
             </MudStack>
         </MudItem>
@@ -261,6 +262,7 @@ else
 
     private ContentEditContext<Item>? _context;
     private ReferencesPanel? _referencesPanel;
+    private EntityHistoryPanel? _historyPanel;
     private List<RecipeListRow> _produces = [];
     private List<RecipeListRow> _consumes = [];
     private List<TraderForItem> _traders = [];
@@ -394,6 +396,11 @@ else
             if (_referencesPanel is not null)
             {
                 await _referencesPanel.RefreshAsync();
+            }
+
+            if (_historyPanel is not null)
+            {
+                await _historyPanel.RefreshAsync();
             }
         }
         catch (ContentValidationException ex)

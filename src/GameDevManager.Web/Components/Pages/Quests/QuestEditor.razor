@@ -230,6 +230,7 @@ else
                 {
                     <EntityTagsPanel ModuleKey="@ModuleKeys.Quests" EntityId="_context.Entity.Id" />
                     <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                    <EntityHistoryPanel @ref="_historyPanel" EntityId="_context.Entity.Id" />
                 }
             </MudStack>
         </MudItem>
@@ -244,6 +245,7 @@ else
 
     private ContentEditContext<Quest>? _context;
     private ReferencesPanel? _referencesPanel;
+    private EntityHistoryPanel? _historyPanel;
     private List<EntitySummary> _npcs = [];
     private List<EntitySummary> _storyEntries = [];
     private List<EntitySummary> _dialogues = [];
@@ -353,6 +355,11 @@ else
             if (_referencesPanel is not null)
             {
                 await _referencesPanel.RefreshAsync();
+            }
+
+            if (_historyPanel is not null)
+            {
+                await _historyPanel.RefreshAsync();
             }
         }
         catch (ContentValidationException ex)

@@ -206,6 +206,7 @@ else
                 {
                     <EntityTagsPanel ModuleKey="@ModuleKeys.Player" EntityId="_context.Entity.Id" />
                     <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                    <EntityHistoryPanel @ref="_historyPanel" EntityId="_context.Entity.Id" />
                 }
             </MudStack>
         </MudItem>
@@ -220,6 +221,7 @@ else
 
     private ContentEditContext<Skill>? _context;
     private ReferencesPanel? _referencesPanel;
+    private EntityHistoryPanel? _historyPanel;
     private List<SkillTreeRow> _trees = [];
     private List<SkillListRow> _allSkills = [];
     private List<EntitySummary> _items = [];
@@ -331,6 +333,11 @@ else
             if (_referencesPanel is not null)
             {
                 await _referencesPanel.RefreshAsync();
+            }
+
+            if (_historyPanel is not null)
+            {
+                await _historyPanel.RefreshAsync();
             }
         }
         catch (ContentValidationException ex)

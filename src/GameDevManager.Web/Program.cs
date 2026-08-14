@@ -40,6 +40,7 @@ builder.Services.AddSingleton<PasswordPolicySelection>();
 builder.Services.AddSingleton<ModuleLabels>();
 builder.Services.AddSingleton<ConditionLabels>();
 builder.Services.AddSingleton<FieldTypeLabels>();
+builder.Services.AddSingleton<ChangeActionLabels>();
 builder.Services.AddSingleton<AccountLabels>();
 builder.Services.AddSingleton<ISystemUserName>(sp => sp.GetRequiredService<AccountLabels>());
 

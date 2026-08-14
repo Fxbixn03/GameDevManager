@@ -183,6 +183,39 @@ public class ChangeLogTests
         Assert.Equal("Erstes", Assert.Single(history.Rows).EntityName);
     }
 
+    /// <summary>
+    /// Der Abschnitt „Geschichte“ in der Maske zeigt zunächst nur die jüngsten Einträge und
+    /// lädt auf Knopfdruck nach — geblättert wird über dieselbe Abfrage.
+    /// </summary>
+    [Fact]
+    public async Task Die_Geschichte_einer_Entitaet_laesst_sich_blaettern()
+    {
+        using var test = new TestDatabase();
+        var items = test.GetService<ItemService>();
+
+        var context = await items.LoadForEditAsync(test.ProjectId, null);
+        context!.Entity.Name = "Fackel";
+        await items.SaveItemAsync(context);
+
+        // Drei Änderungen hinterher: zusammen mit dem Anlegen sind das vier Einträge.
+        foreach (var description in new[] { "Brennt.", "Brennt lange.", "Brennt sehr lange." })
+        {
+            var reloaded = await items.LoadForEditAsync(test.ProjectId, context.Entity.Id);
+            reloaded!.Entity.Description = description;
+            await items.SaveItemAsync(reloaded);
+        }
+
+        var log = test.GetService<ChangeLogService>();
+
+        var first = await log.GetForEntityAsync(test.ProjectId, context.Entity.Id, 0, 3);
+        var rest = await log.GetForEntityAsync(test.ProjectId, context.Entity.Id, 3, 3);
+
+        Assert.Equal(4, first.Total);
+        Assert.Equal(3, first.Rows.Count);
+        // Jüngste zuerst — das Anlegen steht auf der zweiten Seite ganz unten.
+        Assert.Equal(ChangeAction.Created, Assert.Single(rest.Rows).Action);
+    }
+
     [Fact]
     public async Task Auch_eine_Art_landet_im_Protokoll()
     {

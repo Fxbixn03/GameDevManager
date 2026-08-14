@@ -1,0 +1,156 @@
+@inject ChangeLogService ChangeLog
+@inject ProjectContext Project
+@inject IUserPermissionsProvider Permissions
+@inject ChangeActionLabels Actions
+@inject IStringLocalizer<EntityHistoryPanel> L
+
+@*
+    Die Geschichte einer einzelnen Entität — der Ausschnitt des Änderungsprotokolls, der zu
+    dieser GUID gehört, neben der Referenzansicht in jeder Bearbeitungsmaske einbindbar:
+    <EntityHistoryPanel @ref="…" EntityId="…" />
+
+    Gelesen wird über ChangeLogService.GetForEntityAsync; geschrieben wird das Protokoll an
+    ganz anderer Stelle — vom ChangeLogInterceptor beim Speichern und von
+    ChangeLog.RecordDeletionAsync beim Löschen.
+
+    Wer das Protokoll-Modul nicht sehen darf, bekommt auch diesen Abschnitt nicht: dieselbe
+    Linie wie bei der globalen Suche und den Dashboard-Bändern.
+*@
+
+@if (_visible)
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SectionHistory"]</MudText>
+            @if (_loaded)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">@_total</MudChip>
+            }
+        </MudStack>
+
+        @if (!_loaded)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+        }
+        else if (_rows.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["EmptyHint"]</MudText>
+        }
+        else
+        {
+            <MudStack Spacing="0">
+                @foreach (var row in _rows)
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="3" Class="py-2 gdm-field-row">
+                        <MudTooltip Text="@Actions.Describe(row.Action)">
+                            <MudIcon Icon="@ChangeActionLabels.Icon(row.Action)"
+                                     Color="@ChangeActionLabels.Accent(row.Action)"
+                                     Size="Size.Small" />
+                        </MudTooltip>
+
+                        <div style="flex:1 1 auto;min-width:0;">
+                            <MudText Typo="Typo.body2">
+                                @L["RowHeader", row.AtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm"), row.UserName]
+                            </MudText>
+
+                            @if (Actions.Describe(row.Action, row.Details) is { } details)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@details</MudText>
+                            }
+                        </div>
+                    </MudStack>
+                }
+            </MudStack>
+
+            @if (_rows.Count < _total)
+            {
+                <MudButton Variant="Variant.Text"
+                           Size="Size.Small"
+                           Class="mt-2"
+                           OnClick="LoadMoreAsync">
+                    @L["LoadMore", _total - _rows.Count]
+                </MudButton>
+            }
+        }
+    </MudPaper>
+}
+
+@code {
+    /// <summary>So viele Einträge auf einmal — der Abschnitt sitzt in einer schmalen Seitenleiste.</summary>
+    private const int PageSize = 10;
+
+    [Parameter, EditorRequired]
+    public Guid EntityId { get; set; }
+
+    private readonly List<ChangeLogRow> _rows = [];
+    private Guid _loadedFor;
+    private int _total;
+    private bool _loaded;
+
+    /// <summary>Beginnt verborgen: Bis die Rechte da sind, soll kein Abschnitt aufblitzen, den es nicht geben darf.</summary>
+    private bool _visible;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedFor == EntityId)
+        {
+            return;
+        }
+
+        _loadedFor = EntityId;
+        _loaded = false;
+
+        // Beim Wechsel auf eine andere Entität von vorn: Sonst zeigte die nächste Maske so
+        // viele Einträge, wie in der vorigen aufgeklappt waren.
+        _rows.Clear();
+        _total = 0;
+
+        _visible = (await Permissions.GetCurrentAsync()).CanAccessModule(ModuleKeys.Changelog);
+
+        if (_visible)
+        {
+            await LoadAsync();
+        }
+    }
+
+    /// <summary>Lädt die Geschichte neu — nach dem Speichern aufzurufen.</summary>
+    public async Task RefreshAsync()
+    {
+        if (!_visible)
+        {
+            return;
+        }
+
+        await LoadAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Liest von vorn und behält dabei, wie weit schon aufgeklappt war: Nach dem Speichern
+    /// soll der Abschnitt nicht auf die erste Seite zurückspringen.
+    /// </summary>
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        var take = Math.Max(PageSize, _rows.Count);
+        var page = await ChangeLog.GetForEntityAsync(projectId, EntityId, 0, take);
+
+        _rows.Clear();
+        _rows.AddRange(page.Rows);
+        _total = page.Total;
+        _loaded = true;
+    }
+
+    /// <summary>
+    /// Blättert nach. Die Gesamtzahl kommt bei jedem Nachladen frisch mit, damit der Knopf
+    /// nichts anbietet, was inzwischen weg ist.
+    /// </summary>
+    private async Task LoadMoreAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        var page = await ChangeLog.GetForEntityAsync(projectId, EntityId, _rows.Count, PageSize);
+
+        _rows.AddRange(page.Rows);
+        _total = page.Total;
+    }
+}

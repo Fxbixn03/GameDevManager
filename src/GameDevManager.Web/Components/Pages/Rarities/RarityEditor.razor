@@ -140,6 +140,7 @@ else
                 {
                     <EntityTagsPanel ModuleKey="@ModuleKeys.Rarities" EntityId="_rarity.Id" />
                     <ReferencesPanel @ref="_referencesPanel" EntityId="_rarity.Id" />
+                    <EntityHistoryPanel @ref="_historyPanel" EntityId="_rarity.Id" />
                 }
             </MudStack>
         </MudItem>
@@ -154,6 +155,7 @@ else
 
     private Rarity? _rarity;
     private ReferencesPanel? _referencesPanel;
+    private EntityHistoryPanel? _historyPanel;
     private Guid? _loadedId;
     private bool _isNew;
     private bool _notFound;
@@ -238,6 +240,11 @@ else
             if (_referencesPanel is not null)
             {
                 await _referencesPanel.RefreshAsync();
+            }
+
+            if (_historyPanel is not null)
+            {
+                await _historyPanel.RefreshAsync();
             }
         }
         catch (ContentValidationException ex)

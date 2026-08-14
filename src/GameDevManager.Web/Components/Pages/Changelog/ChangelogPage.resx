@@ -100,21 +100,6 @@
   <data name="EmptyFiltered" xml:space="preserve">
     <value>Zu diesem Filter gibt es keine Einträge.</value>
   </data>
-  <data name="Action_Created" xml:space="preserve">
-    <value>Angelegt</value>
-  </data>
-  <data name="Action_Updated" xml:space="preserve">
-    <value>Geändert</value>
-  </data>
-  <data name="Action_Deleted" xml:space="preserve">
-    <value>Gelöscht</value>
-  </data>
-  <data name="Action_Imported" xml:space="preserve">
-    <value>Importiert</value>
-  </data>
-  <data name="ChangedFields" xml:space="preserve">
-    <value>Geändert: {0}</value>
-  </data>
   <data name="LoadMore" xml:space="preserve">
     <value>Weitere laden ({0})</value>
   </data>

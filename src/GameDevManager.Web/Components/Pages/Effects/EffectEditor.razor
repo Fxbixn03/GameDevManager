@@ -195,6 +195,7 @@ else
                 {
                     <EntityTagsPanel ModuleKey="@ModuleKeys.Effects" EntityId="_context.Entity.Id" />
                     <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                    <EntityHistoryPanel @ref="_historyPanel" EntityId="_context.Entity.Id" />
                 }
             </MudStack>
         </MudItem>
@@ -209,6 +210,7 @@ else
 
     private ContentEditContext<GameEffect>? _context;
     private ReferencesPanel? _referencesPanel;
+    private EntityHistoryPanel? _historyPanel;
     private List<EntitySummary> _items = [];
     private Guid? _loadedId;
     private bool _notFound;
@@ -314,6 +316,11 @@ else
             if (_referencesPanel is not null)
             {
                 await _referencesPanel.RefreshAsync();
+            }
+
+            if (_historyPanel is not null)
+            {
+                await _historyPanel.RefreshAsync();
             }
         }
         catch (ContentValidationException ex)

@@ -66,10 +66,10 @@ public class ChangeLogService(IDbContextFactory<GameDevManagerDbContext> factory
         return new ChangeLogPage(rows, total);
     }
 
-    /// <summary>Die Geschichte einer einzelnen Entität — für die Referenzansicht in der Maske.</summary>
+    /// <summary>Die Geschichte einer einzelnen Entität — für den Abschnitt „Geschichte“ in der Maske.</summary>
     public Task<ChangeLogPage> GetForEntityAsync(
-        Guid projectId, Guid entityId, int take = 20, CancellationToken ct = default) =>
-        GetEntriesAsync(projectId, new ChangeLogFilter(EntityId: entityId), 0, take, ct);
+        Guid projectId, Guid entityId, int skip = 0, int take = 20, CancellationToken ct = default) =>
+        GetEntriesAsync(projectId, new ChangeLogFilter(EntityId: entityId), skip, take, ct);
 
     /// <summary>Die Benutzer, die in diesem Projekt überhaupt schon etwas getan haben — für den Filter.</summary>
     public async Task<List<ChangeLogAuthor>> GetAuthorsAsync(Guid projectId, CancellationToken ct = default)

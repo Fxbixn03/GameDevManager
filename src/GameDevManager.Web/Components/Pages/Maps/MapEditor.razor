@@ -522,6 +522,7 @@ else
                 {
                     <EntityTagsPanel ModuleKey="@ModuleKeys.Maps" EntityId="_context.Entity.Id" />
                     <ReferencesPanel @ref="_referencesPanel" EntityId="_context.Entity.Id" />
+                    <EntityHistoryPanel @ref="_historyPanel" EntityId="_context.Entity.Id" />
                 }
             </MudStack>
         </MudItem>
@@ -550,6 +551,7 @@ else
 
     private ContentEditContext<GameMap>? _context;
     private ReferencesPanel? _referencesPanel;
+    private EntityHistoryPanel? _historyPanel;
     private MapMarker? _selected;
     private PlaceMode _mode = PlaceMode.None;
     private readonly List<MapPoint> _draftPoints = [];
@@ -1022,6 +1024,11 @@ else
             if (_referencesPanel is not null)
             {
                 await _referencesPanel.RefreshAsync();
+            }
+
+            if (_historyPanel is not null)
+            {
+                await _historyPanel.RefreshAsync();
             }
         }
         catch (ContentValidationException ex)

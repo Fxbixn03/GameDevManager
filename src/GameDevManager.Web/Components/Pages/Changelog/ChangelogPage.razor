@@ -2,6 +2,7 @@
 @inject ChangeLogService ChangeLog
 @inject ProjectContext Project
 @inject ModuleLabels Modules
+@inject ChangeActionLabels Actions
 @inject NavigationManager Navigation
 @inject IStringLocalizer<ChangelogPage> L
 
@@ -89,7 +90,9 @@ else
             {
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="pa-3 gdm-field-row">
                     <MudTooltip Text="@ActionName(row.Action)">
-                        <MudIcon Icon="@ActionIcon(row.Action)" Color="@ActionColor(row.Action)" Size="Size.Small" />
+                        <MudIcon Icon="@ChangeActionLabels.Icon(row.Action)"
+                                 Color="@ChangeActionLabels.Accent(row.Action)"
+                                 Size="Size.Small" />
                     </MudTooltip>
 
                     <div style="min-width:132px;">
@@ -110,10 +113,10 @@ else
                             </MudLink>
                         }
 
-                        @if (!string.IsNullOrWhiteSpace(row.Details))
+                        @if (Actions.Describe(row.Action, row.Details) is { } details)
                         {
                             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-ellipsis">
-                                @(row.Action == ChangeAction.Updated ? L["ChangedFields", row.Details].Value : row.Details)
+                                @details
                             </MudText>
                         }
                     </div>
@@ -209,21 +212,5 @@ else
             : $"{module.Route}/{row.EntityId}";
     }
 
-    private string ActionName(ChangeAction action) => L[$"Action_{action}"];
-
-    private static string ActionIcon(ChangeAction action) => action switch
-    {
-        ChangeAction.Created => Icons.Material.Filled.AddCircleOutline,
-        ChangeAction.Updated => Icons.Material.Filled.EditNote,
-        ChangeAction.Deleted => Icons.Material.Filled.DeleteOutline,
-        _ => Icons.Material.Filled.CloudDownload
-    };
-
-    private static Color ActionColor(ChangeAction action) => action switch
-    {
-        ChangeAction.Created => Color.Success,
-        ChangeAction.Deleted => Color.Error,
-        ChangeAction.Imported => Color.Warning,
-        _ => Color.Default
-    };
+    private string ActionName(ChangeAction action) => Actions.Describe(action);
 }
