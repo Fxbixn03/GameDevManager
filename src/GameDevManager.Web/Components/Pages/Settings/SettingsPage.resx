@@ -12,14 +12,23 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Title" xml:space="preserve">
+  <data name="PageTitle" xml:space="preserve">
     <value>Einstellungen</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Datenbankverbindung, Module und Darstellung dieser Installation.</value>
   </data>
   <data name="TabDatabase" xml:space="preserve">
     <value>Datenbank</value>
   </data>
   <data name="TabModules" xml:space="preserve">
     <value>Module</value>
+  </data>
+  <data name="TabAppearance" xml:space="preserve">
+    <value>Darstellung</value>
   </data>
   <data name="RestartHint" xml:space="preserve">
     <value>Änderungen an der Datenbankverbindung werden in appsettings.Local.json gespeichert und gelten erst nach einem Neustart der Anwendung.</value>
@@ -66,7 +75,10 @@
   <data name="ProviderSqlite" xml:space="preserve">
     <value>SQLite</value>
   </data>
-  <data name="Close" xml:space="preserve">
-    <value>Schließen</value>
+  <data name="DarkModeLabel" xml:space="preserve">
+    <value>Dunkles Design</value>
+  </data>
+  <data name="DarkModeHint" xml:space="preserve">
+    <value>Gilt installationsweit — dieselbe Wahl wie der Knopf in der Kopfleiste. Andere offene Verbindungen ziehen beim nächsten Laden nach.</value>
   </data>
 </root>

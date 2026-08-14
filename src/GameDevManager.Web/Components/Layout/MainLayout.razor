@@ -4,7 +4,6 @@
 @inject IStringLocalizer<MainLayout> L
 @inject ModuleLabels Modules
 @inject ModuleState ModuleState
-@inject IDialogService Dialogs
 @inject AppearanceSelection Appearance
 @inject IUserPermissionsProvider PermissionsProvider
 
@@ -61,10 +60,12 @@
                            OnClick="ToggleDarkMode" />
         </MudTooltip>
 
+        @* Führt auf die Einstellungsseite — früher ein Dialog, dem für Modulliste und
+           Verbindungsdaten der Platz fehlte. *@
         <MudTooltip Text="@L["Settings"]">
             <MudIconButton Icon="@Icons.Material.Filled.Settings"
                            Color="Color.Inherit"
-                           OnClick="OpenSettingsAsync" />
+                           Href="/einstellungen" />
         </MudTooltip>
 
         @* Konto und Abmelden. Das Abmelden ist ein echter Seitenaufruf (forceLoad), weil
@@ -150,14 +151,6 @@
         InvokeAsync(StateHasChanged);
 
     private void OnModulesChanged() => InvokeAsync(StateHasChanged);
-
-    private Task OpenSettingsAsync() =>
-        Dialogs.ShowAsync<SettingsDialog>(L["Settings"], new DialogOptions
-        {
-            MaxWidth = MaxWidth.Small,
-            FullWidth = true,
-            CloseButton = true
-        });
 
     private bool IsActive(ModuleDefinition module)
     {

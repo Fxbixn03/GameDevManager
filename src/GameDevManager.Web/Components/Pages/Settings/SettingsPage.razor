@@ -1,0 +1,270 @@
+@page "/einstellungen"
+@page "/einstellungen/{Section}"
+@using Microsoft.Extensions.Configuration
+@inject IStringLocalizer<SettingsPage> L
+@inject IConfiguration Configuration
+@inject DatabaseOptions DbOptions
+@inject LocalSettingsFile LocalSettings
+@inject ModuleState ModuleState
+@inject ModuleLabels Modules
+@inject AppearanceSelection Appearance
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+@*
+    Die Einstellungen als ganz normale Seite: links eine Navigationsleiste, rechts der Inhalt
+    des gewählten Bereichs — kein Kasten um alles herum. Jeder Bereich hat seine eigene Route
+    und ist damit direkt verlinkbar; die Leiste hebt den aktiven Eintrag über den NavLink hervor.
+
+    Datenbank-Änderungen landen in appsettings.Local.json und gelten erst nach einem Neustart —
+    die laufende DbContext-Factory lässt sich nicht umverdrahten. Die Modul-Schalter wirken
+    sofort: Sie speichern in die Datenbank und benachrichtigen Topbar, Dashboard und Suche über
+    den ModuleState. Die Darstellung gilt installationsweit (siehe AppearanceSelection).
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">@L["Heading"]</MudText>
+<MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">@L["Subtitle"]</MudText>
+
+<div class="d-flex align-start">
+    @* Ebenen trennen sich im Tool über 1px-Linien, nicht über Schatten oder Kästen. *@
+    <MudNavMenu Style="width: 220px; flex: 0 0 auto; border-right: 1px solid var(--mud-palette-lines-default); min-height: 60vh;"
+                Class="pr-2">
+        <MudNavLink Href="/einstellungen/datenbank" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Storage">
+            @L["TabDatabase"]
+        </MudNavLink>
+        <MudNavLink Href="/einstellungen/module" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Apps">
+            @L["TabModules"]
+        </MudNavLink>
+        <MudNavLink Href="/einstellungen/darstellung" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DarkMode">
+            @L["TabAppearance"]
+        </MudNavLink>
+    </MudNavMenu>
+
+    <div class="pl-8" style="flex: 1 1 auto; min-width: 0;">
+        @switch (CurrentSection)
+        {
+            case ModulesSection:
+                <MudStack Spacing="0" Style="max-width: 640px;">
+                    <MudText Typo="Typo.h6">@L["TabModules"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">@L["ModulesHint"]</MudText>
+
+                    @* Gruppiert wie der Inhaltsbestand des Dashboards — 26 Schalter in einer
+                       flachen Liste waren eine Wand, in Gruppen lesen sie sich. *@
+                    @foreach (var group in Groups)
+                    {
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mt-4">
+                            @Modules.GroupName(group)
+                        </MudText>
+
+                        @foreach (var module in ModuleRegistry.All.Where(m => m.Group == group))
+                        {
+                            <MudSwitch T="bool"
+                                       Value="ModuleState.IsEnabled(module)"
+                                       ValueChanged="@((bool enabled) => ToggleModuleAsync(module, enabled))"
+                                       Color="Color.Primary"
+                                       Label="@Modules.Name(module)" />
+                        }
+                    }
+                </MudStack>
+                break;
+
+            case AppearanceSection:
+                <MudStack Spacing="3" Style="max-width: 640px;">
+                    <MudText Typo="Typo.h6">@L["TabAppearance"]</MudText>
+
+                    <MudSwitch T="bool"
+                               Value="Appearance.IsDarkMode"
+                               ValueChanged="ToggleDarkModeAsync"
+                               Color="Color.Primary"
+                               Label="@L["DarkModeLabel"]" />
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["DarkModeHint"]</MudText>
+                </MudStack>
+                break;
+
+            default:
+                <MudStack Spacing="3" Style="max-width: 640px;">
+                    <MudText Typo="Typo.h6">@L["TabDatabase"]</MudText>
+                    <MudAlert Severity="Severity.Info" Dense="true">@L["RestartHint"]</MudAlert>
+
+                    <MudSelect T="DatabaseProvider"
+                               Value="_provider"
+                               ValueChanged="OnProviderChanged"
+                               Label="@L["ProviderLabel"]"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense">
+                        @foreach (var provider in Enum.GetValues<DatabaseProvider>())
+                        {
+                            <MudSelectItem T="DatabaseProvider" Value="provider">@ProviderName(provider)</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudTextField T="string"
+                                  @bind-Value="_connectionString"
+                                  Label="@L["ConnectionStringLabel"]"
+                                  HelperText="@L["ConnectionStringHelper"]"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Lines="2" />
+
+                    @if (_testResult is not null)
+                    {
+                        <MudAlert Severity="@(_testSucceeded ? Severity.Success : Severity.Error)" Dense="true">
+                            @_testResult
+                        </MudAlert>
+                    }
+
+                    <MudStack Row="true" Spacing="2">
+                        <MudButton Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Filled.Cable"
+                                   OnClick="TestConnectionAsync"
+                                   Disabled="_testing">
+                            @L["TestButton"]
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Save"
+                                   OnClick="SaveDatabaseAsync">
+                            @L["SaveButton"]
+                        </MudButton>
+                    </MudStack>
+                </MudStack>
+                break;
+        }
+    </div>
+</div>
+
+@code {
+    private const string DatabaseSection = "datenbank";
+    private const string ModulesSection = "module";
+    private const string AppearanceSection = "darstellung";
+
+    /// <summary>Der Bereich aus der Route — ohne oder mit unbekanntem Segment die Datenbank.</summary>
+    [Parameter]
+    public string? Section { get; set; }
+
+    private string CurrentSection => Section?.ToLowerInvariant() switch
+    {
+        ModulesSection => ModulesSection,
+        AppearanceSection => AppearanceSection,
+        _ => DatabaseSection
+    };
+
+    private DatabaseProvider _provider;
+    private string _connectionString = string.Empty;
+
+    // Merkt sich Eingaben je Provider — wer im Auswahlfeld hin- und herwechselt, verliert nichts.
+    private readonly Dictionary<DatabaseProvider, string> _edited = [];
+
+    private bool _testing;
+    private bool _testSucceeded;
+    private string? _testResult;
+
+    /// <summary>Die Arbeitsfelder in der Reihenfolge des Dashboards, Werkzeuge zuletzt.</summary>
+    private static IEnumerable<ModuleGroup> Groups =>
+        [.. ModuleRegistry.ContentGroups, ModuleGroup.Tools];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _provider = DbOptions.Provider;
+        _connectionString = StoredConnectionString(_provider);
+
+        await ModuleState.EnsureLoadedAsync();
+    }
+
+    /// <summary>
+    /// Ohne Bereich auf den ersten umleiten — so trägt die Leiste immer eine aktive
+    /// Markierung. In OnParametersSet statt OnInitializedAsync, weil Blazor die Komponente
+    /// bei einem erneuten Aufruf von „/einstellungen“ wiederverwendet, ohne neu zu
+    /// initialisieren.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrEmpty(Section))
+        {
+            Navigation.NavigateTo($"/einstellungen/{DatabaseSection}", replace: true);
+        }
+    }
+
+    private string StoredConnectionString(DatabaseProvider provider) =>
+        Configuration.GetConnectionString(provider.ToString()) ?? string.Empty;
+
+    private void OnProviderChanged(DatabaseProvider provider)
+    {
+        _edited[_provider] = _connectionString;
+        _provider = provider;
+        _connectionString = _edited.TryGetValue(provider, out var edited)
+            ? edited
+            : StoredConnectionString(provider);
+        _testResult = null;
+    }
+
+    private async Task TestConnectionAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_connectionString))
+        {
+            Snackbar.Add(L["ConnectionStringRequired"], Severity.Warning);
+            return;
+        }
+
+        _testing = true;
+        _testResult = null;
+
+        try
+        {
+            await DatabaseServiceExtensions.TestConnectionAsync(_provider, _connectionString.Trim());
+            _testSucceeded = true;
+            _testResult = L["TestSucceeded"];
+        }
+        catch (Exception ex)
+        {
+            _testSucceeded = false;
+            _testResult = L["TestFailed", ex.Message];
+        }
+        finally
+        {
+            _testing = false;
+        }
+    }
+
+    private async Task SaveDatabaseAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_connectionString))
+        {
+            Snackbar.Add(L["ConnectionStringRequired"], Severity.Warning);
+            return;
+        }
+
+        await LocalSettings.WriteDatabaseSettingsAsync(_provider, _connectionString.Trim());
+        Snackbar.Add(L["SavedRestartRequired"], Severity.Success);
+    }
+
+    private async Task ToggleModuleAsync(ModuleDefinition module, bool enabled)
+    {
+        try
+        {
+            await ModuleState.SetEnabledAsync(module, enabled);
+        }
+        catch (ContentValidationException ex)
+        {
+            // Ein Nur-Lese-Konto darf die Moduleinstellungen nicht ändern — die Meldung
+            // kommt aus dem Schreibschutz der Datenschicht.
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    /// <summary>
+    /// Dieselbe Wahl wie der Knopf in der Appbar — sie gilt installationsweit und wird in
+    /// appsettings.Local.json gemerkt (<see cref="AppearanceSelection"/>).
+    /// </summary>
+    private Task ToggleDarkModeAsync(bool darkMode) => Appearance.SetDarkModeAsync(darkMode);
+
+    private string ProviderName(DatabaseProvider provider) => provider switch
+    {
+        DatabaseProvider.SqlServer => L["ProviderSqlServer"],
+        DatabaseProvider.PostgreSql => L["ProviderPostgreSql"],
+        DatabaseProvider.MySql => L["ProviderMySql"],
+        _ => L["ProviderSqlite"]
+    };
+}
