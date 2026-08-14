@@ -114,4 +114,10 @@
   <data name="DarkModeHint" xml:space="preserve">
     <value>Gilt installationsweit — dieselbe Wahl wie der Knopf in der Kopfleiste. Andere offene Verbindungen ziehen beim nächsten Laden nach.</value>
   </data>
+  <data name="LanguageLabel" xml:space="preserve">
+    <value>Sprache der Oberfläche</value>
+  </data>
+  <data name="LanguageHint" xml:space="preserve">
+    <value>Gilt für die Bedienoberfläche, nicht für die Spielinhalte — die stehen im Modul „Lokalisierung“. Die Wahl gilt installationsweit und übersteht einen Neustart.</value>
+  </data>
 </root>

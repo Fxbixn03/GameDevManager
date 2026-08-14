@@ -152,6 +152,8 @@ public class ImportService(
         var audio = await ReadAsync<AudioFile>("audio.json");
         var cutscenes = await ReadAsync<CutscenesFile>("cutscenes.json");
         var tags = await ReadAsync<TagsFile>("tags.json");
+        var localization = await ReadAsync<LocalizationFile>("localization.json");
+        var enginePresets = await ReadAsync<EnginePresetsFile>("engine-presets.json");
         var typesAndFields = await ReadAsync<TypesAndFieldsFile>("types-and-fields.json");
         var fieldValues = await ReadAsync<FieldValuesFile>("field-values.json");
         var conditions = await ReadAsync<ConditionsFile>("conditions.json");
@@ -257,6 +259,9 @@ public class ImportService(
         typesAndFields.ContentTypes.ForEach(t => t.GameProjectId = projectId);
         conditions.ConditionSets.ForEach(s => s.GameProjectId = projectId);
         tags.Tags.ForEach(t => t.GameProjectId = projectId);
+        localization.Languages.ForEach(l => l.GameProjectId = projectId);
+        localization.Translations.ForEach(t => t.GameProjectId = projectId);
+        enginePresets.Presets.ForEach(p => p.GameProjectId = projectId);
         npcs.RelationTypes.ForEach(t => t.GameProjectId = projectId);
         assetsFile.AssetTags.ForEach(t => t.GameProjectId = projectId);
         assetsFile.Assets.ForEach(a => a.GameProjectId = projectId);
@@ -286,6 +291,9 @@ public class ImportService(
         db.LootTables.AddRange(loot.LootTables);
         db.WorldStates.AddRange(world.WorldStates);
         db.ContentTags.AddRange(tags.Tags);
+        db.ContentLanguages.AddRange(localization.Languages);
+        db.ContentTranslations.AddRange(localization.Translations);
+        db.EnginePresets.AddRange(enginePresets.Presets);
         db.ContentTypes.AddRange(typesAndFields.ContentTypes);
         db.FieldDefinitions.AddRange(typesAndFields.IndividualFields);
         db.FieldValues.AddRange(fieldValues.Values);
@@ -449,6 +457,14 @@ public class ImportService(
         await db.ContentTags.Where(t => t.GameProjectId == projectId).ExecuteDeleteAsync(ct);
         await db.AssetTags.Where(t => t.GameProjectId == projectId).ExecuteDeleteAsync(ct);
 
+        // Übersetzungen vor den Sprachen: Sie hängen über das Kürzel daran, nicht über einen
+        // Fremdschlüssel — sonst blieben sie als Waisen stehen.
+        await db.ContentTranslations.Where(t => t.GameProjectId == projectId).ExecuteDeleteAsync(ct);
+        await db.ContentLanguages.Where(l => l.GameProjectId == projectId).ExecuteDeleteAsync(ct);
+
+        // Presets samt Zuordnungen (Kaskade) — sie hängen am Projekt, nicht am Inhalt.
+        await db.EnginePresets.Where(p => p.GameProjectId == projectId).ExecuteDeleteAsync(ct);
+
         var assetKeys = await db.Assets
             .Where(a => a.GameProjectId == projectId)
             .Select(a => a.StorageKey)
@@ -548,6 +564,15 @@ public class ImportService(
     private sealed class CutscenesFile { public List<Cutscene> Cutscenes { get; set; } = []; }
 
     private sealed class TagsFile { public List<ContentTag> Tags { get; set; } = []; }
+
+    private sealed class EnginePresetsFile { public List<EnginePreset> Presets { get; set; } = []; }
+
+    private sealed class LocalizationFile
+    {
+        public List<ContentLanguage> Languages { get; set; } = [];
+
+        public List<ContentTranslation> Translations { get; set; } = [];
+    }
 
     private sealed class TypesAndFieldsFile
     {

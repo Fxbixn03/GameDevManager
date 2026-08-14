@@ -1,0 +1,444 @@
+@page "/modules/localization"
+@inject LocalizationService Localization
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject IStringLocalizer<LocalizationPage> L
+
+@*
+    Die Lokalisierung der Spielinhalte. Eine Seite für alle Module — dieselbe Überlegung wie bei
+    der Massenbearbeitung: Übersetzt wird in Sitzungen quer über den Bestand, nicht Entität für
+    Entität in zwanzig Masken.
+
+    Die Ausgangssprache steht in den Inhalten selbst; hier stehen nur die Übersetzungen daneben.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle" />
+
+@if (_languages is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid Spacing="3">
+        @* -------------------------------------------------------------------- Sprachen *@
+        <MudItem xs="12" md="5">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">@L["LanguagesHeading"]</MudText>
+                    <MudSpacer />
+                    @if (_permissions.CanWrite)
+                    {
+                        <MudButton Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="@(() => StartEdit(null))">
+                            @L["AddLanguage"]
+                        </MudButton>
+                    }
+                </MudStack>
+
+                @if (_languages.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoLanguages"]</MudText>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Elevation="0">
+                        <tbody>
+                            @foreach (var language in _languages)
+                            {
+                                <tr>
+                                    <td class="gdm-mono">@language.Code</td>
+                                    <td>
+                                        @language.Name
+                                        @if (language.IsSource)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">
+                                                @L["SourceLanguage"]
+                                            </MudChip>
+                                        }
+                                    </td>
+                                    <td style="text-align:right;white-space:nowrap;">
+                                        @if (_permissions.CanWrite)
+                                        {
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => StartEdit(language))"
+                                                           aria-label="@L["EditLanguage"]" />
+                                            @if (!language.IsSource)
+                                            {
+                                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => DeleteLanguageAsync(language))"
+                                                               aria-label="@L["DeleteLanguage"]" />
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+
+                @if (_editing is not null)
+                {
+                    <MudDivider Class="my-4" />
+                    <MudStack Spacing="2">
+                        <MudTextField @bind-Value="_editing.Code"
+                                      Label="@L["CodeLabel"]"
+                                      HelperText="@L["CodeHelper"]"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+                        <MudTextField @bind-Value="_editing.Name"
+                                      Label="@L["NameLabel"]"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+                        <MudSwitch T="bool" @bind-Value="_editing.IsSource" Color="Color.Primary" Label="@L["IsSourceLabel"]" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["IsSourceHelper"]</MudText>
+
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveLanguageAsync">
+                                @L["SaveLanguage"]
+                            </MudButton>
+                            <MudButton OnClick="@(() => _editing = null)">@L["Cancel"]</MudButton>
+                        </MudStack>
+                    </MudStack>
+                }
+            </MudPaper>
+        </MudItem>
+
+        @* ----------------------------------------------------------------- Fortschritt *@
+        <MudItem xs="12" md="7">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ProgressHeading"]</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-3">@L["ProgressHint"]</MudText>
+
+                @if (_progress is null)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+                else if (_progress.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoTargets"]</MudText>
+                }
+                else
+                {
+                    @foreach (var progress in _progress)
+                    {
+                        <div class="mb-3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudText Typo="Typo.body2"><b>@progress.LanguageName</b></MudText>
+                                <MudSpacer />
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @L["ProgressCounts", progress.Translated, progress.Total, progress.Missing, progress.Stale]
+                                </MudText>
+                            </MudStack>
+                            <MudProgressLinear Value="@progress.Percent" Color="Color.Primary" Class="mt-1" />
+                        </div>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+
+        @* ------------------------------------------------------------------ Arbeitsliste *@
+        <MudItem xs="12">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["WorkHeading"]</MudText>
+
+                <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-2 mb-3">
+                    <MudSelect T="string"
+                               Value="_languageCode"
+                               ValueChanged="SelectLanguageAsync"
+                               Label="@L["TargetLanguage"]"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Style="min-width:200px;">
+                        @foreach (var language in _languages.Where(language => !language.IsSource))
+                        {
+                            <MudSelectItem T="string" Value="@language.Code">@language.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudSelect T="string"
+                               Value="_moduleKey"
+                               ValueChanged="SelectModuleAsync"
+                               Label="@L["ModuleLabel"]"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Style="min-width:200px;">
+                        @foreach (var module in ContentModules)
+                        {
+                            <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudSwitch T="bool" Value="_openOnly" ValueChanged="ToggleOpenOnly" Color="Color.Primary" Label="@L["OpenOnly"]" />
+
+                    <MudSpacer />
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["RowCount", VisibleRows.Count]</MudText>
+                </MudStack>
+
+                @if (_rowsLoading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+                else if (_languageCode is null || _moduleKey is null)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["PickHint"]</MudText>
+                }
+                else if (VisibleRows.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NothingOpen"]</MudText>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Elevation="0">
+                        <thead>
+                            <tr>
+                                <th style="width:22%;">@L["ColumnOwner"]</th>
+                                <th style="width:12%;">@L["ColumnSlot"]</th>
+                                <th style="width:30%;">@L["ColumnSource"]</th>
+                                <th>@L["ColumnTranslation"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in VisibleRows)
+                            {
+                                <tr>
+                                    <td class="gdm-ellipsis">@row.OwnerName</td>
+                                    <td>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@SlotLabel(row)</MudText>
+                                        @if (row.IsStale)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Text">
+                                                @L["Stale"]
+                                            </MudChip>
+                                        }
+                                    </td>
+                                    <td>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@row.SourceText</MudText>
+                                        @if (row.IsStale)
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Warning">
+                                                @L["StaleHint", row.TranslatedFrom ?? string.Empty]
+                                            </MudText>
+                                        }
+                                    </td>
+                                    <td>
+                                        <MudTextField T="string"
+                                                      Value="@row.Text"
+                                                      ValueChanged="@((string? text) => SaveRowAsync(row, text))"
+                                                      Variant="Variant.Outlined"
+                                                      Margin="Margin.Dense"
+                                                      Disabled="@(!_permissions.CanWrite)"
+                                                      Placeholder="@L["TranslationPlaceholder"]" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Localization);
+
+    private UserPermissions _permissions = UserPermissions.Full;
+
+    private List<ContentLanguage>? _languages;
+    private List<TranslationProgress>? _progress;
+    private ContentLanguage? _editing;
+
+    private string? _languageCode;
+    private string? _moduleKey;
+    private bool _openOnly = true;
+    private bool _rowsLoading;
+    private List<TranslationRow> _rows = [];
+
+    private List<ModuleDefinition> ContentModules =>
+    [
+        .. ModuleRegistry.All
+            .Where(module => module.Implemented
+                && module.Group != ModuleGroup.Tools
+                && _permissions.CanAccessModule(module.Id))
+    ];
+
+    /// <summary>„Nur Offenes“ heißt: fehlt ganz oder ist veraltet — beides ist Arbeit.</summary>
+    private List<TranslationRow> VisibleRows =>
+        _openOnly ? [.. _rows.Where(row => row.IsMissing || row.IsStale)] : _rows;
+
+    private string Subtitle => _languages is null
+        ? L["Loading"]
+        : L["SubtitleCount", _languages.Count];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+        await LoadLanguagesAsync();
+    }
+
+    private async Task LoadLanguagesAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+
+        _languages = await Localization.GetLanguagesAsync(projectId);
+        _languageCode ??= _languages.FirstOrDefault(language => !language.IsSource)?.Code;
+        _moduleKey ??= ContentModules.FirstOrDefault()?.Id;
+
+        _progress = await Localization.GetProgressAsync(projectId);
+    }
+
+    // -------------------------------------------------------------------------- Sprachen
+
+    private void StartEdit(ContentLanguage? language) =>
+        _editing = language is null
+            ? new ContentLanguage { Code = string.Empty, Name = string.Empty }
+            : new ContentLanguage
+            {
+                Id = language.Id,
+                Code = language.Code,
+                Name = language.Name,
+                IsSource = language.IsSource,
+                SortOrder = language.SortOrder
+            };
+
+    private async Task SaveLanguageAsync()
+    {
+        if (_editing is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            await Localization.SaveLanguageAsync(projectId, _editing);
+
+            Snackbar.Add(L["LanguageSaved"], Severity.Success);
+            _editing = null;
+            await LoadLanguagesAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteLanguageAsync(ContentLanguage language)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteLanguageTitle"],
+            L["DeleteLanguageMessage", language.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["Cancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Localization.DeleteLanguageAsync(language.Id);
+            Snackbar.Add(L["LanguageDeleted"], Severity.Success);
+
+            if (_languageCode == language.Code)
+            {
+                _languageCode = null;
+                _rows = [];
+            }
+
+            await LoadLanguagesAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    // ---------------------------------------------------------------------- Arbeitsliste
+
+    private async Task SelectLanguageAsync(string? code)
+    {
+        _languageCode = code;
+        await LoadRowsAsync();
+    }
+
+    private async Task SelectModuleAsync(string? moduleKey)
+    {
+        _moduleKey = moduleKey;
+        await LoadRowsAsync();
+    }
+
+    private void ToggleOpenOnly(bool value) => _openOnly = value;
+
+    private async Task LoadRowsAsync()
+    {
+        if (_languageCode is null || _moduleKey is null)
+        {
+            _rows = [];
+            return;
+        }
+
+        _rowsLoading = true;
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            _rows = await Localization.GetRowsAsync(projectId, _moduleKey, _languageCode);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            _rows = [];
+        }
+        finally
+        {
+            _rowsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Gespeichert wird je Zelle, nicht über einen Speichern-Knopf: Eine Übersetzungssitzung
+    /// geht über hunderte Zeilen, und ein vergessener Klick verlöre sie alle.
+    /// </summary>
+    private async Task SaveRowAsync(TranslationRow row, string? text)
+    {
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+
+            await Localization.SaveAsync(
+                projectId, row.OwnerEntityId, row.OwnerModuleKey, row.Slot,
+                _languageCode!, text, row.SourceText);
+
+            // Die Zeile in der Liste mitziehen, statt alles neu zu laden — sonst sprünge die
+            // Liste unter dem Cursor weg, sobald „nur Offenes“ eingeschaltet ist.
+            var index = _rows.IndexOf(row);
+            if (index >= 0)
+            {
+                _rows[index] = row with { Text = text, TranslatedFrom = row.SourceText };
+            }
+
+            _progress = await Localization.GetProgressAsync(projectId);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private string SlotLabel(TranslationRow row) => row.Slot switch
+    {
+        TranslationSlots.Name => L["SlotName"],
+        TranslationSlots.Description => L["SlotDescription"],
+        _ => row.SlotLabel
+    };
+}

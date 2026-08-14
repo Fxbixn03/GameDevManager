@@ -51,4 +51,7 @@
   <data name="MoreModules" xml:space="preserve">
     <value>Weitere Module ({0})</value>
   </data>
+  <data name="ApiKeys" xml:space="preserve">
+    <value>API-Schlüssel</value>
+  </data>
 </root>

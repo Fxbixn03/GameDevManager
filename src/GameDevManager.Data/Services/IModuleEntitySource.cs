@@ -41,6 +41,27 @@ public interface IModuleEntitySource
         GameDevManagerDbContext db, List<Guid> ids, CancellationToken ct);
 
     /// <summary>
+    /// Lädt Entitäten des Projekts <b>verfolgt</b> für die Massenbearbeitung. Verfolgt und
+    /// nicht über <c>ExecuteUpdate</c>, damit Schreibschutz und Änderungsprotokoll greifen —
+    /// beide hängen am <c>SaveChanges</c> und sähen ein Massen-Update sonst nie.
+    /// </summary>
+    Task<List<ContentEntity>> LoadForBulkAsync(
+        GameDevManagerDbContext db, Guid projectId, IReadOnlyCollection<Guid> ids, CancellationToken ct);
+
+    /// <summary>
+    /// Der ganze Bestand des Moduls im Projekt, verfolgt — für den CSV-Export und den
+    /// CSV-Import, der bestehende Zeilen über GUID oder Name wiederfindet.
+    /// </summary>
+    Task<List<ContentEntity>> LoadAllAsync(
+        GameDevManagerDbContext db, Guid projectId, CancellationToken ct);
+
+    /// <summary>
+    /// Legt eine neue, noch nicht angehängte Entität dieses Moduls an — der CSV-Import erzeugt
+    /// damit Zeilen, die es noch nicht gibt.
+    /// </summary>
+    ContentEntity CreateNew(Guid projectId, string name);
+
+    /// <summary>
     /// Volltextsuche über Name und Beschreibung — Module mit eigenen Texten (Dialogzeilen)
     /// suchen zusätzlich dort. <paramref name="needle"/> ist kleingeschrieben.
     /// </summary>
@@ -146,6 +167,43 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
             .AsNoTracking()
             .Where(entity => ids.Contains(entity.Id))
             .ToDictionaryAsync(entity => entity.Id, entity => entity.Name, ct);
+
+    /// <summary>
+    /// Die Projektgrenze steht bewusst mit in der Abfrage: Die GUIDs kommen aus der Auswahl
+    /// der Oberfläche, und ein untergeschobener Fremdschlüssel soll auch dann nichts ändern,
+    /// wenn er zufällig existiert.
+    /// </summary>
+    public async Task<List<ContentEntity>> LoadForBulkAsync(
+        GameDevManagerDbContext db, Guid projectId, IReadOnlyCollection<Guid> ids, CancellationToken ct) =>
+    [
+        .. await Set(db)
+            .Where(entity => entity.GameProjectId == projectId && ids.Contains(entity.Id))
+            .ToListAsync(ct)
+    ];
+
+    public async Task<List<ContentEntity>> LoadAllAsync(
+        GameDevManagerDbContext db, Guid projectId, CancellationToken ct) =>
+    [
+        .. await Set(db)
+            .Where(entity => entity.GameProjectId == projectId)
+            .OrderBy(entity => entity.Name)
+            .ToListAsync(ct)
+    ];
+
+    /// <summary>
+    /// <see cref="Activator"/> statt <c>new TEntity()</c>: <see cref="ContentEntity.Name"/> ist
+    /// <c>required</c>, und ein parameterloses <c>new</c> an einem Typparameter ließe der
+    /// Compiler deshalb nicht zu. EF legt seine Entitäten auf demselben Weg an.
+    /// </summary>
+    public ContentEntity CreateNew(Guid projectId, string name)
+    {
+        var entity = Activator.CreateInstance<TEntity>();
+
+        entity.GameProjectId = projectId;
+        entity.Name = name;
+
+        return entity;
+    }
 
     /// <summary>
     /// Name und Beschreibung. Virtuell aus demselben Grund wie

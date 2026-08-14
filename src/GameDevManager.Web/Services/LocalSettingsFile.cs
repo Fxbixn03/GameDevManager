@@ -72,6 +72,21 @@ public class LocalSettingsFile(IHostEnvironment environment)
     }
 
     /// <summary>
+    /// Merkt sich die Sprache der Oberfläche. Wie die Hell/Dunkel-Wahl eine Angabe des
+    /// Bildschirms und nicht des Projekts — sie steht deshalb hier und nicht in der Datenbank.
+    /// </summary>
+    public async Task WriteLanguageAsync(string code, CancellationToken ct = default)
+    {
+        var root = await ReadAsync(ct);
+
+        var ui = root["Ui"] as JsonObject ?? new JsonObject();
+        ui["Language"] = code;
+        root["Ui"] = ui;
+
+        await File.WriteAllTextAsync(FilePath, root.ToJsonString(WriteOptions), ct);
+    }
+
+    /// <summary>
     /// Merkt sich die Reihenfolge der Modulleiste in der Topbar. Kommagetrennt wie die
     /// Modul-Freigaben eines Benutzers und nicht als JSON-Feld: Ein Array läge in der
     /// Konfiguration als <c>Topbar:ModuleOrder:0</c>, <c>:1</c>, … und wäre von Hand kaum

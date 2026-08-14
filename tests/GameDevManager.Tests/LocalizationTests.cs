@@ -1,0 +1,271 @@
+using GameDevManager.Data.Services;
+using GameDevManager.Domain;
+using GameDevManager.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Xunit;
+
+namespace GameDevManager.Tests;
+
+/// <summary>
+/// Die Lokalisierung der Spielinhalte: Sprachen, Übersetzungen und der Fortschritt. Der
+/// interessante Teil ist nicht das Speichern, sondern die Frage „was ist noch offen?“ — dazu
+/// gehört auch das, was <b>veraltet</b> ist, weil sich das Original geändert hat.
+/// </summary>
+public class LocalizationTests
+{
+    private static async Task<Guid> SeedItemAsync(TestDatabase database, string name, string? description = null)
+    {
+        await using var db = database.CreateContext();
+
+        var item = new Item
+        {
+            GameProjectId = database.ProjectId,
+            Name = name,
+            Description = description
+        };
+
+        db.Items.Add(item);
+        await db.SaveChangesAsync();
+
+        return item.Id;
+    }
+
+    private static async Task<(string Source, string Target)> SeedLanguagesAsync(TestDatabase database)
+    {
+        var service = database.GetService<LocalizationService>();
+
+        await service.SaveLanguageAsync(database.ProjectId, new ContentLanguage { Code = "de", Name = "Deutsch" });
+        await service.SaveLanguageAsync(database.ProjectId, new ContentLanguage { Code = "en", Name = "Englisch" });
+
+        return ("de", "en");
+    }
+
+    [Fact]
+    public async Task Die_erste_Sprache_wird_zur_Ausgangssprache()
+    {
+        using var database = new TestDatabase();
+        var (source, target) = await SeedLanguagesAsync(database);
+
+        var languages = await database.GetService<LocalizationService>().GetLanguagesAsync(database.ProjectId);
+
+        Assert.True(languages.Single(l => l.Code == source).IsSource);
+        Assert.False(languages.Single(l => l.Code == target).IsSource);
+    }
+
+    [Fact]
+    public async Task Es_gibt_immer_nur_eine_Ausgangssprache()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+
+        var service = database.GetService<LocalizationService>();
+        var english = (await service.GetLanguagesAsync(database.ProjectId)).Single(l => l.Code == "en");
+
+        english.IsSource = true;
+        await service.SaveLanguageAsync(database.ProjectId, english);
+
+        var languages = await service.GetLanguagesAsync(database.ProjectId);
+
+        Assert.Single(languages, language => language.IsSource);
+        Assert.True(languages.Single(l => l.Code == "en").IsSource);
+    }
+
+    [Fact]
+    public async Task Die_Ausgangssprache_laesst_sich_nicht_loeschen()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+
+        var service = database.GetService<LocalizationService>();
+        var german = (await service.GetLanguagesAsync(database.ProjectId)).Single(l => l.Code == "de");
+
+        await Assert.ThrowsAsync<ContentValidationException>(() => service.DeleteLanguageAsync(german.Id));
+    }
+
+    [Fact]
+    public async Task Ein_doppeltes_Kuerzel_wird_abgelehnt()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+
+        await Assert.ThrowsAsync<ContentValidationException>(() =>
+            database.GetService<LocalizationService>().SaveLanguageAsync(
+                database.ProjectId, new ContentLanguage { Code = "en", Name = "English" }));
+    }
+
+    [Fact]
+    public async Task Die_Arbeitsliste_zeigt_Name_Beschreibung_und_Textfelder()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+        var itemId = await SeedItemAsync(database, "Schwert", "Scharf.");
+
+        await using (var db = database.CreateContext())
+        {
+            var type = new ContentType
+            {
+                GameProjectId = database.ProjectId,
+                ModuleKey = ModuleKeys.Items,
+                Name = "Waffe"
+            };
+            var lore = new FieldDefinition
+            {
+                ContentTypeId = type.Id,
+                ModuleKey = ModuleKeys.Items,
+                Name = "Legende",
+                Type = ContentFieldType.MultilineText
+            };
+            // Eine Zahl ist in jeder Sprache dieselbe — sie darf nicht in der Liste stehen.
+            var damage = new FieldDefinition
+            {
+                ContentTypeId = type.Id,
+                ModuleKey = ModuleKeys.Items,
+                Name = "Schaden",
+                Type = ContentFieldType.Integer
+            };
+
+            var item = await db.Items.FirstAsync(i => i.Id == itemId);
+            item.ContentTypeId = type.Id;
+
+            db.ContentTypes.Add(type);
+            db.FieldDefinitions.AddRange(lore, damage);
+            db.FieldValues.AddRange(
+                new FieldValue
+                {
+                    OwnerEntityId = itemId,
+                    OwnerModuleKey = ModuleKeys.Items,
+                    FieldDefinitionId = lore.Id,
+                    TextValue = "Geschmiedet im Berg."
+                },
+                new FieldValue
+                {
+                    OwnerEntityId = itemId,
+                    OwnerModuleKey = ModuleKeys.Items,
+                    FieldDefinitionId = damage.Id,
+                    NumberValue = 12
+                });
+
+            await db.SaveChangesAsync();
+        }
+
+        var rows = await database.GetService<LocalizationService>()
+            .GetRowsAsync(database.ProjectId, ModuleKeys.Items, "en");
+
+        Assert.Equal(
+            new[] { "Schwert", "Scharf.", "Geschmiedet im Berg." },
+            rows.Select(row => row.SourceText));
+        Assert.All(rows, row => Assert.True(row.IsMissing));
+    }
+
+    [Fact]
+    public async Task Eine_gespeicherte_Uebersetzung_gilt_und_ein_leerer_Text_loescht_sie()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+        var itemId = await SeedItemAsync(database, "Schwert");
+
+        var service = database.GetService<LocalizationService>();
+
+        await service.SaveAsync(
+            database.ProjectId, itemId, ModuleKeys.Items, TranslationSlots.Name, "en", "Sword", "Schwert");
+
+        var rows = await service.GetRowsAsync(database.ProjectId, ModuleKeys.Items, "en");
+        Assert.Equal("Sword", Assert.Single(rows).Text);
+
+        await service.SaveAsync(
+            database.ProjectId, itemId, ModuleKeys.Items, TranslationSlots.Name, "en", "  ", "Schwert");
+
+        await using var db = database.CreateContext();
+        Assert.Empty(await db.ContentTranslations.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Aendert_sich_das_Original_gilt_die_Uebersetzung_als_veraltet()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+        var itemId = await SeedItemAsync(database, "Schwert");
+
+        var service = database.GetService<LocalizationService>();
+        await service.SaveAsync(
+            database.ProjectId, itemId, ModuleKeys.Items, TranslationSlots.Name, "en", "Sword", "Schwert");
+
+        Assert.False(Assert.Single(await service.GetRowsAsync(database.ProjectId, ModuleKeys.Items, "en")).IsStale);
+
+        // Das Original wandert weiter — die Übersetzung bleibt stehen und ist damit falsch.
+        await using (var db = database.CreateContext())
+        {
+            var item = await db.Items.FirstAsync(i => i.Id == itemId);
+            item.Name = "Langschwert";
+            await db.SaveChangesAsync();
+        }
+
+        var row = Assert.Single(await service.GetRowsAsync(database.ProjectId, ModuleKeys.Items, "en"));
+
+        Assert.True(row.IsStale);
+        Assert.False(row.IsMissing);
+        Assert.Equal("Schwert", row.TranslatedFrom);
+    }
+
+    [Fact]
+    public async Task Der_Fortschritt_zaehlt_Uebersetztes_Offenes_und_Veraltetes()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+
+        var first = await SeedItemAsync(database, "Schwert");
+        await SeedItemAsync(database, "Axt");
+
+        var service = database.GetService<LocalizationService>();
+        await service.SaveAsync(
+            database.ProjectId, first, ModuleKeys.Items, TranslationSlots.Name, "en", "Sword", "Schwert");
+
+        var progress = Assert.Single(await service.GetProgressAsync(database.ProjectId));
+
+        Assert.Equal("en", progress.LanguageCode);
+        Assert.Equal(2, progress.Total);
+        Assert.Equal(1, progress.Translated);
+        Assert.Equal(1, progress.Missing);
+        Assert.Equal(0, progress.Stale);
+        Assert.Equal(50, progress.Percent);
+    }
+
+    [Fact]
+    public async Task Beim_Loeschen_einer_Entitaet_gehen_ihre_Uebersetzungen_mit()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+        var itemId = await SeedItemAsync(database, "Schwert");
+
+        await database.GetService<LocalizationService>().SaveAsync(
+            database.ProjectId, itemId, ModuleKeys.Items, TranslationSlots.Name, "en", "Sword", "Schwert");
+
+        await database.GetService<ItemService>().DeleteItemAsync(itemId);
+
+        await using var db = database.CreateContext();
+        Assert.Empty(await db.ContentTranslations.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Sprachen_und_Uebersetzungen_ueberstehen_Export_und_Import()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+        var itemId = await SeedItemAsync(database, "Schwert");
+
+        await database.GetService<LocalizationService>().SaveAsync(
+            database.ProjectId, itemId, ModuleKeys.Items, TranslationSlots.Name, "en", "Sword", "Schwert");
+
+        using var zip = new MemoryStream();
+        await database.GetService<ExportService>()
+            .WriteExportAsync(database.ProjectId, ExportTarget.Json, includeAssets: false, zip);
+        zip.Position = 0;
+
+        await database.GetService<ImportService>().ImportAsync(database.ProjectId, zip, replaceExisting: true);
+
+        var service = database.GetService<LocalizationService>();
+
+        Assert.Equal(2, (await service.GetLanguagesAsync(database.ProjectId)).Count);
+        Assert.Equal("Sword", Assert.Single(await service.GetRowsAsync(database.ProjectId, ModuleKeys.Items, "en")).Text);
+    }
+}

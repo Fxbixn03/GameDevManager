@@ -40,6 +40,7 @@ public enum ExportTarget
 public class ExportService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     IAssetStorage storage,
+    EngineExportWriter engineWriter,
     IStringLocalizer<DataMessages> messages)
 {
     /// <summary>
@@ -58,7 +59,7 @@ public class ExportService(
     /// <c>isTagList</c> — Textfelder mit mehreren Stichwörtern, deren Wert kommagetrennt in
     /// <c>content/field-values.json</c> steht.
     /// </remarks>
-    public const int FormatVersion = 6;
+    public const int FormatVersion = 7;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -159,6 +160,24 @@ public class ExportService(
             .OrderBy(t => t.Name).ThenBy(t => t.Id)
             .ToListAsync(ct);
 
+        var languages = await db.ContentLanguages.AsNoTracking()
+            .Where(l => l.GameProjectId == projectId)
+            .OrderByDescending(l => l.IsSource).ThenBy(l => l.SortOrder).ThenBy(l => l.Code)
+            .ToListAsync(ct);
+
+        var translations = await db.ContentTranslations.AsNoTracking()
+            .Where(t => t.GameProjectId == projectId)
+            .OrderBy(t => t.LanguageCode).ThenBy(t => t.OwnerModuleKey)
+            .ThenBy(t => t.OwnerEntityId).ThenBy(t => t.Slot)
+            .ToListAsync(ct);
+
+        var enginePresets = await db.EnginePresets.AsNoTracking()
+            .Include(preset => preset.Mappings)
+            .Where(preset => preset.GameProjectId == projectId)
+            .OrderBy(preset => preset.Engine).ThenBy(preset => preset.SortOrder)
+            .ThenBy(preset => preset.Name).ThenBy(preset => preset.Id)
+            .ToListAsync(ct);
+
         var assetTags = await db.AssetTags.AsNoTracking()
             .Where(t => t.GameProjectId == projectId)
             .OrderBy(t => t.Name).ThenBy(t => t.Id)
@@ -248,6 +267,7 @@ public class ExportService(
             t.Assignments = [.. t.Assignments.OrderBy(a => a.TargetModuleKey).ThenBy(a => a.TargetEntityId).ThenBy(a => a.Id)];
         });
         assets.ForEach(a => a.Tags = [.. a.Tags.OrderBy(t => t.AssetTagId)]);
+        enginePresets.ForEach(p => p.Mappings = [.. p.Mappings.OrderBy(m => m.SortOrder).ThenBy(m => m.Id)]);
 
         // ------------------------------------------------------------------ ZIP schreiben
         var prefix = target switch
@@ -289,10 +309,28 @@ public class ExportService(
         await WriteJsonAsync("content/audio.json", new { soundEffects });
         await WriteJsonAsync("content/cutscenes.json", new { cutscenes });
         await WriteJsonAsync("content/tags.json", new { tags = contentTags });
+        await WriteJsonAsync("content/localization.json", new { languages, translations });
+        await WriteJsonAsync("content/engine-presets.json", new { presets = enginePresets });
         await WriteJsonAsync("content/types-and-fields.json", new { contentTypes, individualFields });
         await WriteJsonAsync("content/field-values.json", new { values = fieldValues });
         await WriteJsonAsync("content/conditions.json", new { conditionSets });
         await WriteJsonAsync("content/assets.json", new { assetTags, assets });
+
+        // Je Sprache eine fertige Zeichenketten-Tabelle unter „localization/“. Sie ist
+        // vollständig aus content/localization.json abgeleitet und steht trotzdem daneben:
+        // Eine Engine lädt zur Laufzeit eine Sprache, und sie soll dafür nicht den gesamten
+        // Übersetzungsbestand durchsuchen müssen. Die Sprachwahl fällt damit dort, wo sie
+        // hingehört — im Spiel, nicht im Export.
+        foreach (var language in languages.Where(language => !language.IsSource))
+        {
+            var table = translations
+                .Where(t => t.LanguageCode == language.Code)
+                .ToDictionary(t => $"{t.OwnerEntityId:N}.{t.Slot}", t => t.Text);
+
+            await WriteJsonAsync(
+                $"localization/{language.Code}.json",
+                new { language = language.Code, name = language.Name, strings = table });
+        }
 
         // Die Dateien selbst; ihr Pfad im Archiv ist der StorageKey aus content/assets.json.
         var missingAssetFiles = new List<string>();
@@ -345,6 +383,8 @@ public class ExportService(
             [ModuleKeys.Audio] = soundEffects.Count,
             [ModuleKeys.Cutscenes] = cutscenes.Count,
             [ModuleKeys.Tags] = contentTags.Count,
+            [ModuleKeys.Localization] = translations.Count,
+            [ModuleKeys.EnginePresets] = enginePresets.Count,
             [ModuleKeys.Assets] = assets.Count
         };
 
@@ -358,6 +398,27 @@ public class ExportService(
             counts,
             missingAssetFiles
         });
+
+        // Die engine-nativen Dateien aus den Presets — nur beim Export in eine Engine und nur,
+        // wenn es dafür Presets gibt. Sie liegen unter dem Engine-Präfix wie die Inhalte, denn
+        // sie gehören ins Engine-Projekt.
+        if (target != ExportTarget.Json)
+        {
+            var engine = target switch
+            {
+                ExportTarget.Unity => TargetEngine.Unity,
+                ExportTarget.Unreal => TargetEngine.Unreal,
+                _ => TargetEngine.Godot
+            };
+
+            foreach (var file in await engineWriter.BuildAsync(db, projectId, engine, ct))
+            {
+                var entry = archive.CreateEntry(prefix + file.Path, CompressionLevel.Optimal);
+                await using var entryStream = entry.Open();
+                await using var entryWriter = new StreamWriter(entryStream);
+                await entryWriter.WriteAsync(file.Content);
+            }
+        }
 
         var readmeKey = target switch
         {

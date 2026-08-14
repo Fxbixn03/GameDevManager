@@ -569,6 +569,87 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="Import_AssetFileMissing" xml:space="preserve">
     <value>Die Datei zum Asset „{0}“ fehlt im Archiv.</value>
   </data>
+  <data name="ApiKey_NameRequired" xml:space="preserve">
+    <value>Der Schlüssel braucht einen Namen — sonst weiß später niemand, wozu er gehört.</value>
+  </data>
+  <data name="Preset_NameRequired" xml:space="preserve">
+    <value>Das Preset braucht einen Namen.</value>
+  </data>
+  <data name="Preset_TypeNameRequired" xml:space="preserve">
+    <value>Das Preset braucht einen Typnamen — so heißt das Objekt später in der Engine.</value>
+  </data>
+  <data name="Preset_ModuleRequired" xml:space="preserve">
+    <value>Das Preset braucht ein Modul, dessen Einträge es abbildet.</value>
+  </data>
+  <data name="Preset_TargetRequired" xml:space="preserve">
+    <value>Jede Zuordnung braucht einen Eigenschaftsnamen.</value>
+  </data>
+  <data name="Preset_TargetDuplicate" xml:space="preserve">
+    <value>Die Eigenschaft „{0}“ ist mehrfach zugeordnet — welcher Wert gewönne, hinge an der Reihenfolge.</value>
+  </data>
+  <data name="Preset_FieldRequired" xml:space="preserve">
+    <value>Eine Zuordnung auf ein Feld braucht auch ein Feld.</value>
+  </data>
+  <data name="Locale_CodeRequired" xml:space="preserve">
+    <value>Die Sprache braucht ein Kürzel, z. B. „en“.</value>
+  </data>
+  <data name="Locale_NameRequired" xml:space="preserve">
+    <value>Die Sprache braucht einen Namen.</value>
+  </data>
+  <data name="Locale_CodeExists" xml:space="preserve">
+    <value>Das Kürzel „{0}“ ist in diesem Projekt schon vergeben.</value>
+  </data>
+  <data name="Locale_SourceUndeletable" xml:space="preserve">
+    <value>Die Ausgangssprache lässt sich nicht löschen — in ihr stehen die Inhalte selbst.</value>
+  </data>
+  <data name="Locale_LanguageUnknown" xml:space="preserve">
+    <value>Die Sprache „{0}“ gibt es in diesem Projekt nicht.</value>
+  </data>
+  <data name="Csv_Empty" xml:space="preserve">
+    <value>Die Datei enthält außer der Kopfzeile keine Zeilen.</value>
+  </data>
+  <data name="Csv_KeyColumnMissing" xml:space="preserve">
+    <value>Die Datei braucht eine Spalte „{0}“ oder „{1}“ — sonst ist nicht zu erkennen, welchen Eintrag eine Zeile meint.</value>
+  </data>
+  <data name="Csv_RowSkipped" xml:space="preserve">
+    <value>Zeile {0}: „{1}“ gibt es noch nicht und Neuanlegen ist ausgeschaltet.</value>
+  </data>
+  <data name="Csv_RowNameMissing" xml:space="preserve">
+    <value>Zeile {0}: ohne Namen lässt sich kein neuer Eintrag anlegen.</value>
+  </data>
+  <data name="Csv_TypeUnknown" xml:space="preserve">
+    <value>Zeile {0}: Die Art „{1}“ gibt es in diesem Modul nicht.</value>
+  </data>
+  <data name="Csv_CellInvalid" xml:space="preserve">
+    <value>Zeile {0}, Spalte „{1}“: {2}</value>
+  </data>
+  <data name="Csv_NotANumber" xml:space="preserve">
+    <value>keine Zahl</value>
+  </data>
+  <data name="Csv_NotABoolean" xml:space="preserve">
+    <value>kein Ja/Nein-Wert</value>
+  </data>
+  <data name="Csv_NotADate" xml:space="preserve">
+    <value>kein Datum</value>
+  </data>
+  <data name="Csv_NotAGuid" xml:space="preserve">
+    <value>keine GUID</value>
+  </data>
+  <data name="Csv_NotAnOption" xml:space="preserve">
+    <value>keine bekannte Auswahl</value>
+  </data>
+  <data name="Bulk_ModuleUnknown" xml:space="preserve">
+    <value>Das Modul „{0}“ kennt die Massenbearbeitung nicht.</value>
+  </data>
+  <data name="Bulk_TypeInvalid" xml:space="preserve">
+    <value>Diese Art gehört nicht zu diesem Modul oder Projekt.</value>
+  </data>
+  <data name="Bulk_FieldInvalid" xml:space="preserve">
+    <value>Dieses Feld gibt es nicht mehr.</value>
+  </data>
+  <data name="Bulk_TagInvalid" xml:space="preserve">
+    <value>Dieses Tag gehört nicht zu diesem Projekt.</value>
+  </data>
   <data name="ConcurrentEdit" xml:space="preserve">
     <value>„{0}“ wurde zwischenzeitlich von jemand anderem gespeichert ({1}). Zum Überschreiben die Maske neu laden — sonst gingen die fremden Änderungen verloren.</value>
   </data>

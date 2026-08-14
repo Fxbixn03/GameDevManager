@@ -1,5 +1,6 @@
 using GameDevManager.Data;
 using GameDevManager.Data.Services;
+using GameDevManager.Domain.Entities;
 using GameDevManager.Web.Components;
 using GameDevManager.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -32,6 +33,7 @@ builder.Services.AddSingleton<ProjectSelection>();
 builder.Services.AddScoped<ModuleState>();
 builder.Services.AddSingleton<LocalSettingsFile>();
 builder.Services.AddSingleton<AppearanceSelection>();
+builder.Services.AddSingleton<LanguageSelection>();
 builder.Services.AddSingleton<TopbarSelection>();
 builder.Services.AddSingleton<PasswordPolicySelection>();
 
@@ -167,6 +169,101 @@ app.MapGet("/export/{projectId:guid}", async (
         fileDownloadName: fileName);
 }).RequireAuthorization();
 
+// ---------------------------------------------------------------- Lesende HTTP-API (v1)
+//
+// Die Vorstufe zu einem Editor-Plugin: Inhalte je Projekt als JSON, mit denselben
+// Serialisierungsregeln wie der Export — wer das ZIP lesen kann, kann auch das hier lesen.
+//
+// Bewusst **nur lesend**: Ein Schlüssel, der schreiben dürfte, wäre ein zweiter Weg an
+// Rechteprüfung, Änderungsprotokoll und Schreibkonflikt-Erkennung vorbei.
+//
+// Die Anmeldung läuft über den Header „X-API-Key“ (alternativ „Authorization: Bearer …“) und
+// nicht über das Cookie: Ein Plugin hat keinen Browser, in dem eines läge.
+var api = app.MapGroup("/api/v1");
+
+api.AddEndpointFilter(async (context, next) =>
+{
+    var http = context.HttpContext;
+    var keys = http.RequestServices.GetRequiredService<ApiKeyService>();
+
+    var presented = http.Request.Headers["X-API-Key"].FirstOrDefault()
+        ?? (http.Request.Headers.Authorization.FirstOrDefault() is { } header
+            && header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                ? header["Bearer ".Length..]
+                : null);
+
+    var key = await keys.ValidateAsync(presented, http.RequestAborted);
+    if (key is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    // Ein auf ein Projekt beschränkter Schlüssel sieht nur dieses — geprüft an einer Stelle
+    // statt in jedem Endpunkt.
+    if (key.GameProjectId is { } allowed
+        && http.Request.RouteValues.TryGetValue("projectId", out var requested)
+        && Guid.TryParse(requested?.ToString(), out var projectId)
+        && projectId != allowed)
+    {
+        return Results.Forbid();
+    }
+
+    http.Items["ApiKey"] = key;
+    return await next(context);
+});
+
+api.MapGet("/projects", async (ContentApiService content, HttpContext http, CancellationToken ct) =>
+{
+    var key = (ApiKey)http.Items["ApiKey"]!;
+    return Results.Json(await content.GetProjectsAsync(key.GameProjectId, ct), ContentApiService.JsonOptions);
+});
+
+api.MapGet("/modules", (ContentApiService content) =>
+    Results.Json(new { modules = content.ModuleKeys }, ContentApiService.JsonOptions));
+
+api.MapGet("/projects/{projectId:guid}/modules/{moduleKey}", async (
+    Guid projectId, string moduleKey, string? language, ContentApiService content, CancellationToken ct) =>
+{
+    var payload = await content.GetModuleAsync(projectId, moduleKey, language, ct);
+
+    return payload is null
+        ? Results.NotFound()
+        : Results.Json(payload, ContentApiService.JsonOptions);
+});
+
+api.MapGet("/projects/{projectId:guid}/modules/{moduleKey}/{entityId:guid}", async (
+    Guid projectId, string moduleKey, Guid entityId, ContentApiService content, CancellationToken ct) =>
+{
+    var payload = await content.GetEntityAsync(projectId, moduleKey, entityId, ct);
+
+    return payload is null
+        ? Results.NotFound()
+        : Results.Json(payload, ContentApiService.JsonOptions);
+});
+
+// Der CSV-Export eines einzelnen Moduls — der Weg Tabelle ↔ Tool fürs Balancing. Wie beim
+// ZIP über einen Endpunkt und nicht über den Blazor-Kreis: Über SignalR lässt sich kein
+// Download anstoßen.
+app.MapGet("/export/csv/{projectId:guid}/{moduleKey}", async (
+    Guid projectId, string moduleKey, CsvContentService csv, HttpContext http, CancellationToken ct) =>
+{
+    if (!http.User.Permissions().CanExport || !http.User.Permissions().CanAccessModule(moduleKey))
+    {
+        return Results.Forbid();
+    }
+
+    var content = await csv.ExportAsync(projectId, moduleKey, ct);
+
+    // Mit BOM: Sonst zeigt Excel Umlaute aus einer UTF-8-Datei als Buchstabensalat, und der
+    // CSV-Leser überspringt es beim Wiedereinlesen ohnehin.
+    byte[] bytes = [0xEF, 0xBB, 0xBF, .. System.Text.Encoding.UTF8.GetBytes(content)];
+
+    return Results.File(
+        bytes,
+        "text/csv; charset=utf-8",
+        fileDownloadName: $"{moduleKey}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
+}).RequireAuthorization();
+
 // Lädt einen aufbewahrten Exportstand herunter. Der Dienst prüft den Dateinamen streng
 // (Zeitstempel plus Projekt-GUID) — alles andere ist ein 404, kein Pfad ins Dateisystem.
 app.MapGet("/export/snapshots/{fileName}", (string fileName, ExportSnapshotService snapshots, HttpContext http) =>
@@ -186,6 +283,11 @@ app.MapGet("/export/snapshots/{fileName}", (string fileName, ExportSnapshotServi
 // Ausstehende Migrationen beim Start anwenden (abschaltbar über "Database:AutoMigrate": false).
 // Über einen eigenen Scope, weil die Context-Factory scoped registriert ist — sie zieht sich
 // den ChangeLogInterceptor, und der braucht den angemeldeten Benutzer der Verbindung.
+// Die Sprache der Oberfläche gilt für alles, was danach gerendert wird — gesetzt einmal beim
+// Start, geändert über die Einstellungen. Blazor Server rendert serverseitig, also ist die
+// Kultur des Prozesses das, was der IStringLocalizer liest.
+app.Services.GetRequiredService<LanguageSelection>().Apply();
+
 if (app.Services.GetRequiredService<DatabaseOptions>().AutoMigrate)
 {
     using var scope = app.Services.CreateScope();

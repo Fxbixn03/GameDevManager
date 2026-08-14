@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <data name="items_Name" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="items_Description" xml:space="preserve">
+    <value>Define items and item types with their own fields</value>
+  </data>
+  <data name="crafting_Name" xml:space="preserve">
+    <value>Crafting</value>
+  </data>
+  <data name="crafting_Description" xml:space="preserve">
+    <value>Recipes and crafting trees built on the items</value>
+  </data>
+  <data name="currencies_Name" xml:space="preserve">
+    <value>Currencies</value>
+  </data>
+  <data name="currencies_Description" xml:space="preserve">
+    <value>In-game currencies in any variation</value>
+  </data>
+  <data name="rarities_Name" xml:space="preserve">
+    <value>Rarities</value>
+  </data>
+  <data name="rarities_Description" xml:space="preserve">
+    <value>Rarity tiers, usable in every module through reference fields</value>
+  </data>
+  <data name="npcs_Name" xml:space="preserve">
+    <value>NPCs</value>
+  </data>
+  <data name="npcs_Description" xml:space="preserve">
+    <value>NPCs and mobs, traders, spawns and conditions</value>
+  </data>
+  <data name="factions_Name" xml:space="preserve">
+    <value>Factions</value>
+  </data>
+  <data name="factions_Description" xml:space="preserve">
+    <value>Factions, roles and ranks for NPCs</value>
+  </data>
+  <data name="diplomacy_Name" xml:space="preserve">
+    <value>Diplomacy</value>
+  </data>
+  <data name="diplomacy_Description" xml:space="preserve">
+    <value>Alliances and hostilities as a graph</value>
+  </data>
+  <data name="maps_Name" xml:space="preserve">
+    <value>Maps</value>
+  </data>
+  <data name="maps_Description" xml:space="preserve">
+    <value>World and detail maps with markers and areas</value>
+  </data>
+  <data name="dialogs_Name" xml:space="preserve">
+    <value>Dialogues</value>
+  </data>
+  <data name="dialogs_Description" xml:space="preserve">
+    <value>Dialogues, barks and answer options</value>
+  </data>
+  <data name="story_Name" xml:space="preserve">
+    <value>Story</value>
+  </data>
+  <data name="story_Description" xml:space="preserve">
+    <value>Storyline on a timeline with links</value>
+  </data>
+  <data name="quests_Name" xml:space="preserve">
+    <value>Quests</value>
+  </data>
+  <data name="quests_Description" xml:space="preserve">
+    <value>Main and side missions and events with conditions</value>
+  </data>
+  <data name="assets_Name" xml:space="preserve">
+    <value>Assets</value>
+  </data>
+  <data name="assets_Description" xml:space="preserve">
+    <value>Sprite library across all entities</value>
+  </data>
+  <data name="player_Name" xml:space="preserve">
+    <value>Skill trees</value>
+  </data>
+  <data name="player_Description" xml:space="preserve">
+    <value>Skill trees and skills — the player character is an NPC in the NPC module</value>
+  </data>
+  <data name="classes_Name" xml:space="preserve">
+    <value>Classes</value>
+  </data>
+  <data name="classes_Description" xml:space="preserve">
+    <value>Classes for players and NPCs</value>
+  </data>
+  <data name="loot_Name" xml:space="preserve">
+    <value>Loot tables</value>
+  </data>
+  <data name="loot_Description" xml:space="preserve">
+    <value>Drop chances and amounts</value>
+  </data>
+  <data name="effects_Name" xml:space="preserve">
+    <value>Effects</value>
+  </data>
+  <data name="effects_Description" xml:space="preserve">
+    <value>Effects and what they do, e.g. burning</value>
+  </data>
+  <data name="achievements_Name" xml:space="preserve">
+    <value>Achievements</value>
+  </data>
+  <data name="achievements_Description" xml:space="preserve">
+    <value>Achievements the player can earn</value>
+  </data>
+  <data name="collectibles_Name" xml:space="preserve">
+    <value>Collectibles</value>
+  </data>
+  <data name="collectibles_Description" xml:space="preserve">
+    <value>Statues, notes and other collectibles</value>
+  </data>
+  <data name="events_Name" xml:space="preserve">
+    <value>Events</value>
+  </data>
+  <data name="events_Description" xml:space="preserve">
+    <value>Random events with spawns, loot and locations</value>
+  </data>
+  <data name="tags_Name" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="tags_Description" xml:space="preserve">
+    <value>Tags/labels, usable across modules</value>
+  </data>
+  <data name="audio_Name" xml:space="preserve">
+    <value>SFX/Audio</value>
+  </data>
+  <data name="audio_Description" xml:space="preserve">
+    <value>Sounds and music with audio files</value>
+  </data>
+  <data name="cutscenes_Name" xml:space="preserve">
+    <value>Cutscenes</value>
+  </data>
+  <data name="cutscenes_Description" xml:space="preserve">
+    <value>Cutscenes as a storyboard with links</value>
+  </data>
+  <data name="statistics_Name" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="statistics_Description" xml:space="preserve">
+    <value>Figures and health checks across all modules</value>
+  </data>
+  <data name="Group_World_Name" xml:space="preserve">
+    <value>World</value>
+  </data>
+  <data name="Group_Content_Name" xml:space="preserve">
+    <value>Content</value>
+  </data>
+  <data name="Group_Characters_Name" xml:space="preserve">
+    <value>Characters</value>
+  </data>
+  <data name="Group_Narrative_Name" xml:space="preserve">
+    <value>Narrative</value>
+  </data>
+  <data name="Group_Progress_Name" xml:space="preserve">
+    <value>Progress</value>
+  </data>
+  <data name="Group_Production_Name" xml:space="preserve">
+    <value>Production</value>
+  </data>
+  <data name="Group_Tools_Name" xml:space="preserve">
+    <value>Analysis</value>
+  </data>
+  <data name="world_Name" xml:space="preserve">
+    <value>World</value>
+  </data>
+  <data name="world_Description" xml:space="preserve">
+    <value>Times of day, weather and biomes that conditions hang on</value>
+  </data>
+  <data name="techtree_Name" xml:space="preserve">
+    <value>Unlocks</value>
+  </data>
+  <data name="techtree_Description" xml:space="preserve">
+    <value>What unlocks what — the tech tree read from the condition system</value>
+  </data>
+  <data name="localization_Name" xml:space="preserve">
+    <value>Localization</value>
+  </data>
+  <data name="localization_Description" xml:space="preserve">
+    <value>The game content in several languages: manage languages, translate and see what is still missing.</value>
+  </data>
+  <data name="enginepresets_Name" xml:space="preserve">
+    <value>Engine presets</value>
+  </data>
+  <data name="enginepresets_Description" xml:space="preserve">
+    <value>Blueprints per engine: how an entry of a module looks as an object in Unity, Unreal or Godot.</value>
+  </data>
+  <data name="bulkedit_Name" xml:space="preserve">
+    <value>Bulk edit</value>
+  </data>
+  <data name="bulkedit_Description" xml:space="preserve">
+    <value>Change many entries at once: assign a type, apply tags or set a field value.</value>
+  </data>
+  <data name="connections_Name" xml:space="preserve">
+    <value>Connections</value>
+  </data>
+  <data name="connections_Description" xml:space="preserve">
+    <value>Who knows whom: NPCs and their relations as a network, coloured by faction.</value>
+  </data>
+  <data name="todo_Name" xml:space="preserve">
+    <value>ToDo</value>
+  </data>
+  <data name="todo_Description" xml:space="preserve">
+    <value>Kanban boards for project management — as many per project as you like.</value>
+  </data>
+  <data name="whiteboard_Name" xml:space="preserve">
+    <value>Whiteboard</value>
+  </data>
+  <data name="whiteboard_Description" xml:space="preserve">
+    <value>Sketch together and pin notes — several users, one board.</value>
+  </data>
+  <data name="changelog_Name" xml:space="preserve">
+    <value>Changes</value>
+  </data>
+  <data name="changelog_Description" xml:space="preserve">
+    <value>Who changed what and when</value>
+  </data>
+</root>

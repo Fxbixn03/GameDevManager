@@ -183,6 +183,24 @@
   <data name="techtree_Description" xml:space="preserve">
     <value>Was schaltet was frei — der Tech-Tree aus dem Bedingungssystem</value>
   </data>
+  <data name="localization_Name" xml:space="preserve">
+    <value>Lokalisierung</value>
+  </data>
+  <data name="localization_Description" xml:space="preserve">
+    <value>Die Spielinhalte in mehreren Sprachen: Sprachen verwalten, übersetzen und sehen, was noch fehlt.</value>
+  </data>
+  <data name="enginepresets_Name" xml:space="preserve">
+    <value>Engine-Presets</value>
+  </data>
+  <data name="enginepresets_Description" xml:space="preserve">
+    <value>Baupläne je Engine: wie ein Eintrag eines Moduls als Objekt in Unity, Unreal oder Godot aussieht.</value>
+  </data>
+  <data name="bulkedit_Name" xml:space="preserve">
+    <value>Massenbearbeitung</value>
+  </data>
+  <data name="bulkedit_Description" xml:space="preserve">
+    <value>Viele Einträge auf einmal ändern: Art zuweisen, Tags vergeben oder einen Feldwert setzen.</value>
+  </data>
   <data name="connections_Name" xml:space="preserve">
     <value>Verbindungen</value>
   </data>

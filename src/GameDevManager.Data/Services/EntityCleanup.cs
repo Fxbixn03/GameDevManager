@@ -4,7 +4,8 @@ namespace GameDevManager.Data.Services;
 
 /// <summary>
 /// Räumt alles ab, was über die GUID einer Entität an ihr hängt statt über einen
-/// Fremdschlüssel — Feldwerte, individuelle Felder und Bedingungssätze.
+/// Fremdschlüssel — Feldwerte, individuelle Felder, Tag-Zuweisungen, Übersetzungen und
+/// Bedingungssätze.
 /// <para>
 /// Diese Dinge sind bewusst modulübergreifend und deshalb ohne Fremdschlüssel angebunden; sie
 /// fallen beim Löschen also nicht von selbst mit. An einer Stelle gebündelt, damit kein Modul
@@ -43,6 +44,12 @@ public static class EntityCleanup
         // Tag-Zuweisungen hängen ebenfalls nur über die GUID an der Entität.
         await db.ContentTagAssignments
             .Where(assignment => entityIds.Contains(assignment.TargetEntityId))
+            .ExecuteDeleteAsync(ct);
+
+        // Übersetzungen ebenso — sie zeigen auf Name, Beschreibung und Textfelder genau
+        // dieser Entität und wären ohne sie sinnlos.
+        await db.ContentTranslations
+            .Where(translation => entityIds.Contains(translation.OwnerEntityId))
             .ExecuteDeleteAsync(ct);
 
         await ConditionService.DeleteForOwnersAsync(db, entityIds, ct);

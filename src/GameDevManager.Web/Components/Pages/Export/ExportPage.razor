@@ -6,6 +6,7 @@
 @inject NavigationManager Nav
 @inject ExportSnapshotService Snapshots
 @inject ExportStorageOptions ExportStorage
+@inject CsvContentService Csv
 @inject ImportService Importer
 @inject DashboardOverviewService Overview
 @inject ISnackbar Snackbar
@@ -250,6 +251,97 @@
         </MudPaper>
     </MudItem>
 
+    @* -------------------------------------------------------------------- CSV je Modul *@
+    <MudItem xs="12">
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["CsvHeading"]</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-3">@L["CsvIntro"]</MudText>
+
+            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="string"
+                           @bind-Value="_csvModule"
+                           Label="@L["CsvModuleLabel"]"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Style="min-width:240px;">
+                    @foreach (var module in CsvModules)
+                    {
+                        <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+                    }
+                </MudSelect>
+
+                @if (_permissions.CanExport)
+                {
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.TableView"
+                               Disabled="@(_projectId == Guid.Empty || _csvModule is null)"
+                               OnClick="DownloadCsv">
+                        @L["CsvDownloadButton"]
+                    </MudButton>
+                }
+
+                @if (CanImport)
+                {
+                    <MudFileUpload T="IBrowserFile" FilesChanged="CsvFileSelected" Accept=".csv,.txt" Disabled="@_csvImporting">
+                        <CustomContent Context="upload">
+                            <MudButton Variant="Variant.Outlined"
+                                       StartIcon="@Icons.Material.Filled.UploadFile"
+                                       Disabled="@_csvImporting"
+                                       OnClick="@(() => upload.OpenFilePickerAsync())">
+                                @L["CsvSelectButton"]
+                            </MudButton>
+                        </CustomContent>
+                    </MudFileUpload>
+
+                    <MudSwitch T="bool" @bind-Value="_csvCreateMissing" Color="Color.Primary" Label="@L["CsvCreateMissing"]" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.FileUpload"
+                               Disabled="@(_csvFile is null || _csvModule is null || _csvImporting)"
+                               OnClick="ImportCsvAsync">
+                        @L["CsvImportButton"]
+                    </MudButton>
+                }
+            </MudStack>
+
+            @if (_csvFile is not null)
+            {
+                <MudText Typo="Typo.body2" Class="mt-2">
+                    @_csvFile.Name
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Inline="true" Class="gdm-mono ml-1">
+                        @FormatSize(_csvFile.Size)
+                    </MudText>
+                </MudText>
+            }
+
+            @if (_csvImporting)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-3" />
+            }
+
+            @if (_csvResult is not null)
+            {
+                <MudAlert Severity="Severity.Success" Dense="true" Class="mt-3">
+                    @L["CsvImportedMessage", _csvResult.Created, _csvResult.Updated, _csvResult.Unchanged]
+                </MudAlert>
+
+                @foreach (var warning in _csvResult.Warnings.Take(20))
+                {
+                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">@warning</MudAlert>
+                }
+
+                @if (_csvResult.Warnings.Count > 20)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">
+                        @L["CsvMoreWarnings", _csvResult.Warnings.Count - 20]
+                    </MudText>
+                }
+            }
+        </MudPaper>
+    </MudItem>
+
     @* ---------------------------------------------------------------------- Vergleich *@
     @if (_permissions.CanExport)
     {
@@ -340,6 +432,9 @@
     /// <summary>Obergrenze für das Import-ZIP — großzügig, ein Export mit Assets kann groß sein.</summary>
     private const long MaxImportSizeBytes = 2L * 1024 * 1024 * 1024;
 
+    /// <summary>Obergrenze fürs CSV — eine Balancing-Tabelle bleibt weit darunter.</summary>
+    private const long MaxCsvSizeBytes = 32L * 1024 * 1024;
+
     private ExportTarget _target = ExportTarget.Json;
     private bool _includeAssets = true;
     private Guid _projectId;
@@ -360,7 +455,25 @@
     private bool _diffing;
     private SnapshotDiff? _diff;
 
+    private string? _csvModule;
+    private IBrowserFile? _csvFile;
+    private bool _csvCreateMissing = true;
+    private bool _csvImporting;
+    private CsvImportResult? _csvResult;
+
     private HealthSummary? _health;
+
+    /// <summary>
+    /// Nur Module mit eigenem Inhalt — Werkzeug-Module (Statistik, Protokoll, Graphen) tragen
+    /// keine Entitäten, die sich in eine Tabelle schreiben ließen.
+    /// </summary>
+    private List<ModuleDefinition> CsvModules =>
+    [
+        .. ModuleRegistry.All
+            .Where(module => module.Implemented
+                && module.Group != ModuleGroup.Tools
+                && _permissions.CanAccessModule(module.Id))
+    ];
 
     private UserPermissions _permissions = UserPermissions.Full;
 
@@ -597,6 +710,54 @@
         finally
         {
             _importing = false;
+        }
+    }
+
+    // ------------------------------------------------------------------- CSV je Modul
+
+    private void DownloadCsv() =>
+        Nav.NavigateTo($"/export/csv/{_projectId}/{_csvModule}", forceLoad: true);
+
+    private void CsvFileSelected(IBrowserFile? file)
+    {
+        _csvFile = file;
+        _csvResult = null;
+    }
+
+    private async Task ImportCsvAsync()
+    {
+        if (_csvFile is null || _csvModule is null)
+        {
+            return;
+        }
+
+        _csvImporting = true;
+        _csvResult = null;
+
+        try
+        {
+            // Eine Tabelle ist Text und klein — anders als beim ZIP wird sie ganz gelesen.
+            await using var content = _csvFile.OpenReadStream(MaxCsvSizeBytes);
+            using var reader = new StreamReader(content);
+            var text = await reader.ReadToEndAsync();
+
+            _csvResult = await Csv.ImportAsync(_projectId, _csvModule, text, _csvCreateMissing);
+
+            Snackbar.Add(
+                L["CsvImportedMessage", _csvResult.Created, _csvResult.Updated, _csvResult.Unchanged],
+                Severity.Success);
+
+            _csvFile = null;
+            _counts = await Statistics.GetCountsAsync(_projectId);
+            _health = null;
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _csvImporting = false;
         }
     }
 

@@ -83,6 +83,14 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
     /// <summary>Modulübergreifende Tags; die Asset-Stichwörter bleiben davon getrennt.</summary>
     public DbSet<ContentTag> ContentTags => Set<ContentTag>();
 
+    public DbSet<ContentLanguage> ContentLanguages => Set<ContentLanguage>();
+
+    public DbSet<EnginePreset> EnginePresets => Set<EnginePreset>();
+
+    public DbSet<EnginePresetMapping> EnginePresetMappings => Set<EnginePresetMapping>();
+
+    public DbSet<ContentTranslation> ContentTranslations => Set<ContentTranslation>();
+
     public DbSet<ContentTagScope> ContentTagScopes => Set<ContentTagScope>();
 
     public DbSet<ContentTagAssignment> ContentTagAssignments => Set<ContentTagAssignment>();
@@ -143,6 +151,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     /// <summary>Die Benutzer der Installation. Hängen bewusst an keinem Projekt.</summary>
     public DbSet<AppUser> AppUsers => Set<AppUser>();
+
+    /// <summary>Schlüssel für die lesende HTTP-API. Gehören wie die Benutzer der Installation.</summary>
+    public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
 
     /// <summary>Das Änderungsprotokoll: wer hat wann was getan.</summary>
     public DbSet<ChangeLogEntry> ChangeLogEntries => Set<ChangeLogEntry>();
@@ -654,6 +665,86 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             // Ein Tag gibt es je Projekt nur einmal; der TagService prüft das vorher und
             // meldet es verständlich, dieser Index ist die Absicherung dahinter.
             entity.HasIndex(t => new { t.GameProjectId, t.Name }).IsUnique();
+        });
+
+        modelBuilder.Entity<ApiKey>(entity =>
+        {
+            entity.Property(k => k.Name).HasMaxLength(200).IsRequired();
+            entity.Property(k => k.Prefix).HasMaxLength(16).IsRequired();
+            entity.Property(k => k.KeyHash).HasMaxLength(400).IsRequired();
+
+            // Wird ein Projekt gelöscht, gilt der Schlüssel wieder für alle statt ins Leere
+            // zu zeigen — gesperrt wird er dadurch nicht.
+            entity.HasOne(k => k.GameProject)
+                .WithMany()
+                .HasForeignKey(k => k.GameProjectId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(k => k.Prefix);
+        });
+
+        modelBuilder.Entity<EnginePreset>(entity =>
+        {
+            entity.Property(p => p.Name).HasMaxLength(200).IsRequired();
+            entity.Property(p => p.Description).HasMaxLength(2000);
+            entity.Property(p => p.ModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Property(p => p.TypeName).HasMaxLength(200).IsRequired();
+
+            entity.HasOne(p => p.GameProject)
+                .WithMany()
+                .HasForeignKey(p => p.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Die Art nur als Einschränkung — verschwindet sie, gilt das Preset für alle
+            // Einträge des Moduls statt zu blockieren.
+            entity.HasOne(p => p.ContentType)
+                .WithMany()
+                .HasForeignKey(p => p.ContentTypeId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<EnginePresetMapping>(entity =>
+        {
+            entity.Property(m => m.Target).HasMaxLength(200).IsRequired();
+            entity.Property(m => m.ConstantValue).HasMaxLength(2000);
+
+            entity.HasOne(m => m.EnginePreset)
+                .WithMany(p => p.Mappings)
+                .HasForeignKey(m => m.EnginePresetId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ContentLanguage>(entity =>
+        {
+            entity.Property(l => l.Code).HasMaxLength(20).IsRequired();
+            entity.Property(l => l.Name).HasMaxLength(100).IsRequired();
+
+            entity.HasOne(l => l.GameProject)
+                .WithMany()
+                .HasForeignKey(l => l.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Ein Kürzel je Projekt nur einmal: Zwei Sprachen „en“ wären in jeder Übersetzung
+            // dieselbe — dieselbe Überlegung wie bei den Währungsnamen.
+            entity.HasIndex(l => new { l.GameProjectId, l.Code }).IsUnique();
+        });
+
+        modelBuilder.Entity<ContentTranslation>(entity =>
+        {
+            entity.Property(t => t.OwnerModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Property(t => t.Slot).HasMaxLength(64).IsRequired();
+            entity.Property(t => t.LanguageCode).HasMaxLength(20).IsRequired();
+            entity.Property(t => t.Text).IsRequired();
+
+            entity.HasOne(t => t.GameProject)
+                .WithMany()
+                .HasForeignKey(t => t.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Kein Fremdschlüssel auf die Entität — sie liegt in irgendeinem Modul, adressiert
+            // wird über die GUID wie bei Feldwerten, Bedingungen und Assets.
+            entity.HasIndex(t => new { t.OwnerEntityId, t.Slot, t.LanguageCode }).IsUnique();
+            entity.HasIndex(t => new { t.GameProjectId, t.LanguageCode });
         });
 
         modelBuilder.Entity<ContentTagScope>(entity =>

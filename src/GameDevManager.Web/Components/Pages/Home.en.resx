@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Dashboard – GameDevManager</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="ConfigureTooltip" xml:space="preserve">
+    <value>Customise dashboard</value>
+  </data>
+  <data name="ConfigureAria" xml:space="preserve">
+    <value>Customise dashboard</value>
+  </data>
+  <data name="ConfigureTitle" xml:space="preserve">
+    <value>Customise dashboard</value>
+  </data>
+  <data name="NoConnection" xml:space="preserve">
+    <value>No connection: {0}</value>
+  </data>
+  <data name="TotalLabel" xml:space="preserve">
+    <value>Content</value>
+  </data>
+  <data name="FilledModules" xml:space="preserve">
+    <value>{0} of {1} modules filled</value>
+  </data>
+  <data name="HealthLabel" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="HealthChecking" xml:space="preserve">
+    <value>checking …</value>
+  </data>
+  <data name="HealthClean" xml:space="preserve">
+    <value>clean</value>
+  </data>
+  <data name="HealthFindings" xml:space="preserve">
+    <value>{0} findings</value>
+  </data>
+  <data name="LastExportLabel" xml:space="preserve">
+    <value>Last export snapshot</value>
+  </data>
+  <data name="LastExportNever" xml:space="preserve">
+    <value>none yet</value>
+  </data>
+  <data name="RecentHeading" xml:space="preserve">
+    <value>Continue working</value>
+  </data>
+  <data name="RecentEmpty" xml:space="preserve">
+    <value>Nothing edited yet. Whatever you created or changed last will show up here.</value>
+  </data>
+  <data name="HealthHeading" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="ToStatistics" xml:space="preserve">
+    <value>To the statistics</value>
+  </data>
+  <data name="Check_deadItems" xml:space="preserve">
+    <value>Items without a source</value>
+  </data>
+  <data name="Check_craftingCycles" xml:space="preserve">
+    <value>Cyclic recipes</value>
+  </data>
+  <data name="Check_questsWithoutCompletion" xml:space="preserve">
+    <value>Quests without completion</value>
+  </data>
+  <data name="Check_dialogueDeadEnds" xml:space="preserve">
+    <value>Dialogue dead ends</value>
+  </data>
+  <data name="Check_overfullLoot" xml:space="preserve">
+    <value>Loot above 100 %</value>
+  </data>
+  <data name="Check_orphanedAssets" xml:space="preserve">
+    <value>Orphaned sprites</value>
+  </data>
+  <data name="Check_impossibleConditions" xml:space="preserve">
+    <value>Impossible conditions</value>
+  </data>
+  <data name="InventoryHeading" xml:space="preserve">
+    <value>Content inventory</value>
+  </data>
+  <data name="ToExport" xml:space="preserve">
+    <value>Import / export</value>
+  </data>
+  <data name="ProviderLabel" xml:space="preserve">
+    <value>Provider:</value>
+  </data>
+  <data name="ConnectionOk" xml:space="preserve">
+    <value>Connection OK</value>
+  </data>
+  <data name="ProjectCountLabel" xml:space="preserve">
+    <value>Game projects created:</value>
+  </data>
+  <data name="StarterHeading" xml:space="preserve">
+    <value>Where to start</value>
+  </data>
+  <data name="StarterItemsTitle" xml:space="preserve">
+    <value>Create items</value>
+  </data>
+  <data name="StarterItemsHint" xml:space="preserve">
+    <value>Most modules refer to items sooner or later — the usual starting point.</value>
+  </data>
+  <data name="StarterAssetsTitle" xml:space="preserve">
+    <value>Upload sprites</value>
+  </data>
+  <data name="StarterAssetsHint" xml:space="preserve">
+    <value>Images first: the lists then show icons instead of placeholders.</value>
+  </data>
+  <data name="StarterImportTitle" xml:space="preserve">
+    <value>Import content</value>
+  </data>
+  <data name="StarterImportHint" xml:space="preserve">
+    <value>Read in an export ZIP from another project or a backup.</value>
+  </data>
+  <data name="TimeJustNow" xml:space="preserve">
+    <value>just now</value>
+  </data>
+  <data name="TimeMinutes" xml:space="preserve">
+    <value>{0} min ago</value>
+  </data>
+  <data name="TimeHours" xml:space="preserve">
+    <value>{0} h ago</value>
+  </data>
+  <data name="TimeYesterday" xml:space="preserve">
+    <value>yesterday, {0}</value>
+  </data>
+  <data name="TimeDays" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
+  <data name="Band_project" xml:space="preserve">
+    <value>Project bar</value>
+  </data>
+  <data name="Band_recent" xml:space="preserve">
+    <value>Continue working</value>
+  </data>
+  <data name="Band_health" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="Band_inventory" xml:space="preserve">
+    <value>Content inventory</value>
+  </data>
+  <data name="Band_database" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="Check_unlockCycles" xml:space="preserve">
+    <value>Cycles in the unlock tree</value>
+  </data>
+</root>

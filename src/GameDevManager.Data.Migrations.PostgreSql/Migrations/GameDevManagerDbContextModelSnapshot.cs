@@ -63,6 +63,51 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.ToTable("Achievements");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ApiKey", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("GameProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDisabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("KeyHash")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<DateTime?>("LastUsedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Prefix")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Prefix");
+
+                    b.ToTable("ApiKeys");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.AppUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -433,6 +478,39 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.ToTable("ConditionSets");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentLanguage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsSource")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("ContentLanguages");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -509,6 +587,53 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.HasIndex("ContentTagId");
 
                     b.ToTable("ContentTagScopes");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTranslation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("OwnerEntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("OwnerModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Slot")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("SourceText")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId", "LanguageCode");
+
+                    b.HasIndex("OwnerEntityId", "Slot", "LanguageCode")
+                        .IsUnique();
+
+                    b.ToTable("ContentTranslations");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
@@ -897,6 +1022,89 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.HasIndex("ItemId");
 
                     b.ToTable("EffectAssignments");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EnginePreset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("Engine")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TypeName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.ToTable("EnginePresets");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EnginePresetMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConstantValue")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("EnginePresetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("FieldDefinitionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnginePresetId");
+
+                    b.ToTable("EnginePresetMappings");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.EventSpawn", b =>
@@ -2374,6 +2582,16 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ApiKey", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("GameProject");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Asset", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -2484,6 +2702,17 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentLanguage", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTag", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -2515,6 +2744,17 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .IsRequired();
 
                     b.Navigation("ContentTag");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTranslation", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
@@ -2671,6 +2911,35 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .IsRequired();
 
                     b.Navigation("GameEffect");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EnginePreset", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EnginePresetMapping", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.EnginePreset", "EnginePreset")
+                        .WithMany("Mappings")
+                        .HasForeignKey("EnginePresetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EnginePreset");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.EventSpawn", b =>
@@ -3240,6 +3509,11 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.DialogueLine", b =>
                 {
                     b.Navigation("Choices");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EnginePreset", b =>
+                {
+                    b.Navigation("Mappings");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>

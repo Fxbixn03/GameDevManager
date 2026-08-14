@@ -6,22 +6,22 @@ Stand 14.08.2026 — **die offenen Punkte aus dem Konzept sind abgearbeitet, ebe
 
 ### Inhaltspflege & Editor-Komfort
 
-- [ ] **Massenbearbeitung.** Mehrere Entitäten markieren und gemeinsam Art zuweisen, Tags vergeben oder einen Feldwert setzen — bei hunderten Items lohnt das schnell.
-- [ ] **CSV-Import/-Export je Modul.** Balancing wird oft in Tabellen gepflegt; ein Spalten-Mapping auf die Felder der Art (Import aktualisiert über die GUID- oder Namensspalte) würde den Weg Tabelle ↔ Tool schließen.
-- [ ] **Lokalisierung der Spielinhalte.** Item-Namen, Beschreibungen, Dialog- und Quest-Texte in mehreren Sprachen pflegen und mit exportieren. Das größte der Ideen-Themen (eigene Übersetzungstabelle je Text, Sprachwahl im Export, Fortschrittsanzeige „was ist noch unübersetzt“) — für jedes Spiel mit mehr als einer Sprache aber zentral.
+- [x] **Massenbearbeitung.** *(umgesetzt)* Eigenes Werkzeug-Modul: Modul wählen, Einträge markieren, dann Art zuweisen, Tags vergeben/entziehen oder einen Feldwert setzen bzw. leeren. Über die `IModuleEntitySource` deckt die eine Seite jedes Modul ab.
+- [x] **CSV-Import/-Export je Modul.** *(umgesetzt)* Auf der Export-Seite: ein Modul als Tabelle herunterladen (Spalten `id`, `name`, `beschreibung`, `art` plus je Feld eine) und wieder einlesen. Der Import aktualisiert über `id`, sonst über `name`, legt Unbekanntes wahlweise an und lässt alles unangetastet, was in keiner Zeile steht.
+- [x] **Lokalisierung der Spielinhalte.** *(umgesetzt)* Eigenes Modul: Sprachen je Projekt (eine davon Ausgangssprache), Übersetzungen zu Name, Beschreibung und Textfeldern jeder Entität, Arbeitsliste „nur Offenes“ samt Veraltet-Erkennung und Fortschritt je Sprache. Der Export trägt `content/localization.json` plus je Sprache eine fertige Zeichenketten-Tabelle unter `localization/`.
 - [x] **Kurven vergleichen.** *(umgesetzt)* Das Diagramm zeichnet beliebig viele Kurven übereinander; im Kurvenfeld lädt „Vergleichen“ die gefüllten Kurven des Projekts (modulübergreifend über `CurveService`) und legt die gewählten mit eigener Farbe und eigenem Strichmuster darüber.
 
 ### Betrieb & Sicherheit
 
 - [x] **Aufräumen alter Exportstände.** *(umgesetzt)* `Exports:MaxPerProject` (Vorgabe 20) und `Exports:MaxAgeDays` (Vorgabe aus) stehen neben `Exports:StoragePath`; aufgeräumt wird bei jedem neu angelegten Stand — dem von Hand wie dem Sicherheitsnetz — und über „Jetzt aufräumen“ auf der Export-Seite. Der jüngste Stand bleibt in jedem Fall stehen.
 - [x] **Aufräumen des Änderungsprotokolls.** *(umgesetzt)* `ChangeLog:MaxAgeDays` (Vorgabe 365) und `ChangeLog:MaxPerProject` (Vorgabe aus); gekürzt wird von einem täglichen Wartungslauf im Hintergrund, und Verwalter können es auf der Protokollseite über „Jetzt aufräumen“ sofort anwenden.
-- [ ] **Englische Oberfläche.** Die resx-Struktur ist darauf vorbereitet (neutral = Deutsch, Satelliten-resx je Sprache plus Sprachwahl) — reine Übersetzungsarbeit, kein Umbau.
+- [~] **Englische Oberfläche.** *(Mechanik fertig, Übersetzung angefangen)* Die Sprachwahl steht unter „Einstellungen → Darstellung“ (`LanguageSelection`, gehalten über `Ui:Language`), und die Satelliten-Dateien werden gefunden — geprüft in `LanguageTests`. **Übersetzt sind 466 von 3128 Texten**: alle Meldungen der Datenschicht (`DataMessages`), die Modul-, Bedingungs-, Feldtyp- und Änderungs-Beschriftungen sowie Rahmen, Dashboard, Start- und Fehlerseiten. **Offen sind die rund 2660 Texte der Modulseiten** (Listen, Masken, Dialoge je Modul) — dort greift die Rückfallregel: Ohne `.en.resx` zeigt die Seite die deutsche Fassung. Es bleibt reine Übersetzungsarbeit ohne Codeänderung; die Werkzeuge dafür stehen unter „Englische Oberfläche“ in [CLAUDE.md](../CLAUDE.md).
 
 ### Richtung Engine-Anbindung
 
-- [ ] **Engine-nativere Exporte** (später): z. B. ScriptableObject-Generierung für Unity, DataTable-taugliche Dateien für Unreal, Godot-Ressourcen; ggf. weitere Engines.
-- [ ] **Read-only-HTTP-API.** Die Vorstufe dazu: Inhalte je Projekt als JSON-Endpunkte (dieselben Serialisierungsregeln wie der Export), damit ein Unity-/Godot-Editor-Plugin den Stand direkt ziehen kann statt über das ZIP zu gehen. Mit der Benutzeranmeldung stünde jetzt auch die Grundlage für API-Schlüssel.
+- [x] **Engine-nativere Exporte.** *(umgesetzt)* Aus den Presets entstehen beim Export in eine Engine Dateien unter `engine/`: Unity eine `ScriptableObject`-Klasse plus je Eintrag eine JSON, Unreal eine DataTable-taugliche CSV, Godot je Eintrag eine `.tres`-Ressource. Weitere Engines kämen als neuer Wert in `TargetEngine` plus ein Schreiber dazu.
+- [x] **Read-only-HTTP-API.** *(umgesetzt)* `/api/v1/…` liefert Projekte, Module und einzelne Einträge als JSON mit denselben Regeln wie der Export, wahlweise samt Übersetzungen einer Sprache. Angemeldet wird über einen API-Schlüssel im Header `X-API-Key` (oder `Authorization: Bearer`); Schlüssel verwaltet ein Verwalter unter „API-Schlüssel“, gespeichert wird nur ihr Hash.
 
 ### Neues Game Engine Modul
 
-- Hier können Pro GameEngine verschiedene Presets gebaut werden zb für einen NPC, beim einem Export in eine Gameengine kann dann ein Preset der GameEngine ausgewählt werden sodass dann dieses GameObject nurnoch gefüllt und in die Game Engine Exportiert wird.
+- [x] **Engine-Presets.** *(umgesetzt)* Je Engine lassen sich Presets bauen (z. B. für einen NPC): Modul, optional eine Art, der Typname in der Engine und die Zuordnung Eigenschaft → Quelle (Name, Beschreibung, Feld, fester Wert, GUID, Art, Icon-Dateiname). Beim Export in diese Engine entsteht daraus je Eintrag ein fertig gefülltes Objekt.

@@ -1,0 +1,433 @@
+@page "/modules/bulkedit"
+@inject ReferenceService References
+@inject ContentTypeService ContentTypes
+@inject TagService Tags
+@inject BulkEditService Bulk
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject IStringLocalizer<BulkEditPage> L
+
+@*
+    Die Massenbearbeitung. Eine Seite für alle Module statt einer Mehrfachauswahl in jeder der
+    gut zwanzig Modul-Listen: Die sind je Modul eigen gebaut (Kachelraster, Tabelle,
+    Zeitstreifen), und dieselbe Auswahl zwanzigmal nachzubauen hieße, sie zwanzigmal zu pflegen.
+    Über die IModuleEntitySource deckt eine Seite alle ab — auch die künftigen.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle" />
+
+<MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+        <MudSelect T="string"
+                   Value="_moduleKey"
+                   ValueChanged="SelectModuleAsync"
+                   Label="@L["ModuleLabel"]"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Style="min-width:240px;">
+            @foreach (var module in AvailableModules)
+            {
+                <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudTextField @bind-Value="_search"
+                      Placeholder="@L["SearchPlaceholder"]"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true"
+                      Clearable="true"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Style="max-width:320px;" />
+
+        <MudSpacer />
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["SelectedCount", _selected.Count]</MudText>
+    </MudStack>
+</MudPaper>
+
+@if (!_permissions.CanWrite)
+{
+    <MudAlert Severity="Severity.Info" Class="mb-4">@L["ReadOnly"]</MudAlert>
+}
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_moduleKey is null)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Checklist" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["PickModuleTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["PickModuleHint"]</MudText>
+    </div>
+}
+else
+{
+    var visible = Visible;
+
+    <MudGrid Spacing="3">
+        @* ------------------------------------------------------------------- Auswahl *@
+        <MudItem xs="12" md="7">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-2" Wrap="Wrap.Wrap">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">@L["EntriesHeading"]</MudText>
+                    <MudSpacer />
+                    <MudButton Size="Size.Small" OnClick="@(() => SelectAll(visible))">@L["SelectAll"]</MudButton>
+                    <MudButton Size="Size.Small" OnClick="ClearSelection">@L["SelectNone"]</MudButton>
+                </MudStack>
+
+                @if (visible.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoEntries"]</MudText>
+                }
+                else
+                {
+                    <div style="max-height:520px;overflow-y:auto;">
+                        @foreach (var entity in visible)
+                        {
+                            <div class="d-flex align-center gap-2 gdm-field-row py-1">
+                                <MudCheckBox T="bool"
+                                             Value="@_selected.Contains(entity.Id)"
+                                             ValueChanged="@((bool on) => Toggle(entity.Id, on))"
+                                             Dense="true"
+                                             Color="Color.Primary" />
+                                <MudText Typo="Typo.body2" Class="gdm-ellipsis" Style="flex:1 1 auto;min-width:0;">
+                                    @entity.Name
+                                </MudText>
+                                @if (entity.TypeName is not null)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@entity.TypeName</MudChip>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </MudPaper>
+        </MudItem>
+
+        @* ------------------------------------------------------------------ Änderung *@
+        <MudItem xs="12" md="5">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ActionHeading"]</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-3">@L["ActionHint"]</MudText>
+
+                <MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true">
+                    <MudTabPanel Text="@L["TabType"]">
+                        <MudSelect T="Guid?"
+                                   @bind-Value="_typeId"
+                                   Label="@L["TypeLabel"]"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
+                                   Clearable="true">
+                            @foreach (var type in _types)
+                            {
+                                <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">@L["TypeHint"]</MudText>
+
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Class="mt-4"
+                                   Disabled="@CannotApply"
+                                   OnClick="ApplyTypeAsync">
+                            @L["ApplyButton"]
+                        </MudButton>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="@L["TabTags"]">
+                        @if (_tags.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoTags"]</MudText>
+                        }
+                        else
+                        {
+                            <MudSelect T="Guid?"
+                                       @bind-Value="_tagId"
+                                       Label="@L["TagLabel"]"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense">
+                                @foreach (var tag in _tags)
+                                {
+                                    <MudSelectItem T="Guid?" Value="@tag.Id">@tag.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <MudRadioGroup T="bool" @bind-Value="_tagAssign" Class="mt-2">
+                                <MudRadio T="bool" Value="true" Color="Color.Primary" Dense="true">@L["TagAssign"]</MudRadio>
+                                <MudRadio T="bool" Value="false" Color="Color.Primary" Dense="true">@L["TagUnassign"]</MudRadio>
+                            </MudRadioGroup>
+
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Class="mt-4"
+                                       Disabled="@(CannotApply || _tagId is null)"
+                                       OnClick="ApplyTagAsync">
+                                @L["ApplyButton"]
+                            </MudButton>
+                        }
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="@L["TabField"]">
+                        @if (_fields.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoFields"]</MudText>
+                        }
+                        else
+                        {
+                            <MudSelect T="Guid?"
+                                       Value="_fieldId"
+                                       ValueChanged="SelectFieldAsync"
+                                       Label="@L["FieldLabel"]"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense">
+                                @foreach (var field in _fields)
+                                {
+                                    <MudSelectItem T="Guid?" Value="@field.Id">@FieldLabel(field)</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            @if (SelectedField is { } selected)
+                            {
+                                <div class="mt-3">
+                                    <DynamicFieldInput Definition="selected"
+                                                       Value="_fieldTemplate"
+                                                       ReferenceOptions="_referenceOptions" />
+                                </div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">
+                                    @L["FieldHint"]
+                                </MudText>
+
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           Class="mt-4"
+                                           Disabled="@CannotApply"
+                                           OnClick="ApplyFieldAsync">
+                                    @L["ApplyButton"]
+                                </MudButton>
+                            }
+                        }
+                    </MudTabPanel>
+                </MudTabs>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.BulkEdit);
+
+    private UserPermissions _permissions = UserPermissions.Full;
+
+    private string? _moduleKey;
+    private List<EntitySummary> _entities = [];
+    private List<ContentType> _types = [];
+    private List<ContentTagRow> _tags = [];
+    private List<FieldDefinition> _fields = [];
+    private List<EntitySummary> _referenceOptions = [];
+
+    private readonly HashSet<Guid> _selected = [];
+    private string? _search;
+    private bool _loading;
+    private bool _working;
+
+    private Guid? _typeId;
+    private Guid? _tagId;
+    private bool _tagAssign = true;
+    private Guid? _fieldId;
+    private FieldValue _fieldTemplate = NewTemplate();
+
+    /// <summary>
+    /// Werkzeug-Module tragen keinen eigenen Inhalt — bearbeiten lässt sich, was in einer der
+    /// Inhaltsgruppen steht und für den Benutzer freigegeben ist.
+    /// </summary>
+    private List<ModuleDefinition> AvailableModules =>
+    [
+        .. ModuleRegistry.All
+            .Where(module => module.Implemented
+                && module.Group != ModuleGroup.Tools
+                && _permissions.CanAccessModule(module.Id))
+    ];
+
+    private string Subtitle => _moduleKey is null
+        ? L["SubtitleEmpty"]
+        : L["SubtitleCount", _entities.Count, Modules.NameOrKey(_moduleKey)];
+
+    private bool CannotApply => _working || _selected.Count == 0 || !_permissions.CanWrite;
+
+    // „field" ist ab C# 14 innerhalb eines Eigenschaftsaccessors ein Schlüsselwort — deshalb
+    // heißt die Laufvariable hier „definition" und nicht wie in den Methoden unten.
+    private FieldDefinition? SelectedField =>
+        _fields.FirstOrDefault(definition => definition.Id == _fieldId);
+
+    private List<EntitySummary> Visible =>
+    [
+        .. string.IsNullOrWhiteSpace(_search)
+            ? _entities
+            : _entities.Where(entity => entity.Name.Contains(_search, StringComparison.OrdinalIgnoreCase))
+    ];
+
+    protected override async Task OnInitializedAsync() =>
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+
+    private async Task SelectModuleAsync(string? moduleKey)
+    {
+        _moduleKey = moduleKey;
+        _selected.Clear();
+        _typeId = null;
+        _tagId = null;
+        _fieldId = null;
+        _fieldTemplate = NewTemplate();
+
+        if (moduleKey is null)
+        {
+            return;
+        }
+
+        _loading = true;
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+
+            _entities = await References.GetEntitiesAsync(projectId, moduleKey);
+            _types = await ContentTypes.GetTypesAsync(projectId, moduleKey);
+            _tags = await Tags.GetTagsAsync(projectId);
+
+            // Alle Felder des Moduls — eigene und geerbte, ohne Dubletten. Ein Feld, das an
+            // mehreren Arten hängt, soll einmal in der Auswahl stehen.
+            _fields =
+            [
+                .. _types
+                    .SelectMany(type => type.Fields.Concat(type.InheritedFields))
+                    .GroupBy(field => field.Id)
+                    .Select(group => group.First())
+                    .OrderBy(field => field.Name, StringComparer.CurrentCultureIgnoreCase)
+            ];
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Toggle(Guid id, bool on)
+    {
+        if (on)
+        {
+            _selected.Add(id);
+        }
+        else
+        {
+            _selected.Remove(id);
+        }
+    }
+
+    /// <summary>Markiert, was der Filter gerade zeigt — nicht den ganzen Bestand.</summary>
+    private void SelectAll(List<EntitySummary> visible)
+    {
+        foreach (var entity in visible)
+        {
+            _selected.Add(entity.Id);
+        }
+    }
+
+    private void ClearSelection() => _selected.Clear();
+
+    /// <summary>
+    /// Beim Feldwechsel eine frische Vorlage: Der Wert des vorigen Feldes stünde sonst in der
+    /// falschen Spalte. Referenzfelder holen sich dabei die Auswahl ihres Zielmoduls.
+    /// </summary>
+    private async Task SelectFieldAsync(Guid? fieldId)
+    {
+        _fieldId = fieldId;
+        _fieldTemplate = NewTemplate();
+        _referenceOptions = [];
+
+        if (SelectedField is { Type: ContentFieldType.EntityReference, ReferenceModuleKey: { } target })
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            _referenceOptions = await References.GetEntitiesAsync(projectId, target);
+        }
+    }
+
+    private string FieldLabel(FieldDefinition field) =>
+        field.ContentType is null ? field.Name : L["FieldOption", field.Name, field.ContentType.Name];
+
+    // ------------------------------------------------------------------------ Anwenden
+
+    private async Task ApplyTypeAsync() =>
+        await ApplyAsync(
+            L["ConfirmTypeMessage", _selected.Count],
+            (projectId, ids) => Bulk.AssignTypeAsync(projectId, _moduleKey!, ids, _typeId));
+
+    private async Task ApplyTagAsync() =>
+        await ApplyAsync(
+            L[_tagAssign ? "ConfirmTagAssignMessage" : "ConfirmTagUnassignMessage", _selected.Count],
+            (projectId, ids) => Bulk.SetTagAsync(projectId, _moduleKey!, ids, _tagId!.Value, _tagAssign));
+
+    private async Task ApplyFieldAsync() =>
+        await ApplyAsync(
+            L["ConfirmFieldMessage", _selected.Count, SelectedField?.Name ?? string.Empty],
+            (projectId, ids) => Bulk.SetFieldValueAsync(projectId, _moduleKey!, ids, _fieldId!.Value, _fieldTemplate));
+
+    /// <summary>
+    /// Rückfrage, ausführen, melden — für alle drei Änderungen gleich. Eine Massenänderung
+    /// trifft viele Einträge auf einmal und lässt sich nicht mit einem Klick zurücknehmen.
+    /// </summary>
+    private async Task ApplyAsync(
+        string question, Func<Guid, IReadOnlyCollection<Guid>, Task<BulkEditResult>> change)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["ConfirmTitle"],
+            question,
+            yesText: L["ConfirmYes"],
+            cancelText: L["ConfirmCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        _working = true;
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            var result = await change(projectId, [.. _selected]);
+
+            Snackbar.Add(
+                result.Changed == 0 ? L["NothingChanged"] : L["ChangedMessage", result.Changed],
+                result.Changed == 0 ? Severity.Info : Severity.Success);
+
+            if (result.Skipped > 0 && result.Changed > 0)
+            {
+                Snackbar.Add(L["SkippedMessage", result.Skipped], Severity.Info);
+            }
+
+            // Arten und Namen können sich geändert haben — die Liste kommt frisch, die
+            // Auswahl bleibt stehen, damit sich mehrere Änderungen nacheinander anwenden lassen.
+            var keep = _selected.ToList();
+            await SelectModuleAsync(_moduleKey);
+            foreach (var id in keep)
+            {
+                _selected.Add(id);
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+
+    private static FieldValue NewTemplate() => new() { OwnerModuleKey = string.Empty };
+}

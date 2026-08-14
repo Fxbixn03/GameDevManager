@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Massenbearbeitung</value>
+  </data>
+  <data name="SubtitleEmpty" xml:space="preserve">
+    <value>Erst ein Modul wählen, dann die Einträge markieren.</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Einträge in {1}</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Einträge durchsuchen …</value>
+  </data>
+  <data name="SelectedCount" xml:space="preserve">
+    <value>{0} markiert</value>
+  </data>
+  <data name="ReadOnly" xml:space="preserve">
+    <value>Dieses Konto darf nur lesen — Änderungen sind hier nicht möglich.</value>
+  </data>
+  <data name="PickModuleTitle" xml:space="preserve">
+    <value>Modul wählen</value>
+  </data>
+  <data name="PickModuleHint" xml:space="preserve">
+    <value>Die Massenbearbeitung ändert viele Einträge auf einmal — Art, Tags oder einen Feldwert. Sie erreicht jedes Modul, das eigenen Inhalt trägt.</value>
+  </data>
+  <data name="EntriesHeading" xml:space="preserve">
+    <value>Einträge</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Alle sichtbaren</value>
+  </data>
+  <data name="SelectNone" xml:space="preserve">
+    <value>Auswahl leeren</value>
+  </data>
+  <data name="NoEntries" xml:space="preserve">
+    <value>Zu diesem Filter gibt es keine Einträge.</value>
+  </data>
+  <data name="ActionHeading" xml:space="preserve">
+    <value>Änderung</value>
+  </data>
+  <data name="ActionHint" xml:space="preserve">
+    <value>Wirkt auf alle markierten Einträge auf einmal. Jede Änderung steht danach einzeln im Änderungsprotokoll.</value>
+  </data>
+  <data name="TabType" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Art zuweisen</value>
+  </data>
+  <data name="TypeHint" xml:space="preserve">
+    <value>Ohne Auswahl wird die Art entfernt. Feldwerte, die zur neuen Art nicht mehr gehören, fallen dabei weg.</value>
+  </data>
+  <data name="TabTags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="TagLabel" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="TagAssign" xml:space="preserve">
+    <value>vergeben</value>
+  </data>
+  <data name="TagUnassign" xml:space="preserve">
+    <value>entziehen</value>
+  </data>
+  <data name="NoTags" xml:space="preserve">
+    <value>Im Projekt gibt es noch keine Tags.</value>
+  </data>
+  <data name="TabField" xml:space="preserve">
+    <value>Feldwert</value>
+  </data>
+  <data name="FieldLabel" xml:space="preserve">
+    <value>Feld</value>
+  </data>
+  <data name="FieldOption" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="FieldHint" xml:space="preserve">
+    <value>Ein leerer Wert löscht das Feld bei allen markierten Einträgen. Einträge, deren Art dieses Feld nicht führt, bleiben unberührt.</value>
+  </data>
+  <data name="NoFields" xml:space="preserve">
+    <value>Die Arten dieses Moduls haben noch keine Felder.</value>
+  </data>
+  <data name="ApplyButton" xml:space="preserve">
+    <value>Auf Auswahl anwenden</value>
+  </data>
+  <data name="ConfirmTitle" xml:space="preserve">
+    <value>Massenänderung anwenden?</value>
+  </data>
+  <data name="ConfirmYes" xml:space="preserve">
+    <value>Anwenden</value>
+  </data>
+  <data name="ConfirmCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="ConfirmTypeMessage" xml:space="preserve">
+    <value>Die Art von {0} markierten Einträgen wird gesetzt. Feldwerte, die dann nicht mehr gelten, werden entfernt.</value>
+  </data>
+  <data name="ConfirmTagAssignMessage" xml:space="preserve">
+    <value>Das Tag wird an {0} markierte Einträge vergeben.</value>
+  </data>
+  <data name="ConfirmTagUnassignMessage" xml:space="preserve">
+    <value>Das Tag wird {0} markierten Einträgen entzogen.</value>
+  </data>
+  <data name="ConfirmFieldMessage" xml:space="preserve">
+    <value>Bei {0} markierten Einträgen wird das Feld „{1}“ gesetzt.</value>
+  </data>
+  <data name="ChangedMessage" xml:space="preserve">
+    <value>{0} Einträge geändert.</value>
+  </data>
+  <data name="NothingChanged" xml:space="preserve">
+    <value>Es hat sich nichts geändert — die Einträge trugen den Wert schon.</value>
+  </data>
+  <data name="SkippedMessage" xml:space="preserve">
+    <value>{0} Einträge blieben unberührt.</value>
+  </data>
+</root>

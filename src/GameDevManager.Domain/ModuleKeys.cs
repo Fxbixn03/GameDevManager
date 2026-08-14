@@ -63,4 +63,30 @@ public static class ModuleKeys
 
     /// <summary>Whiteboards zum gemeinsamen Skizzieren. Werkzeug-Daten wie die Kanban-Boards.</summary>
     public const string Whiteboard = "whiteboard";
+
+    /// <summary>
+    /// Die Lokalisierung der Spielinhalte: Sprachen des Projekts und die Übersetzungen zu
+    /// Namen, Beschreibungen und Textfeldern. Ein Modul ohne eigene Entitäten — es übersetzt
+    /// die der anderen.
+    /// </summary>
+    public const string Localization = "localization";
+
+    /// <summary>
+    /// Die Presets der Game Engines: Baupläne dafür, wie ein Eintrag eines Moduls als Objekt
+    /// in Unity, Unreal oder Godot aussieht. Kein Spielinhalt, sondern eine Vorschrift für
+    /// den Export.
+    /// </summary>
+    public const string EnginePresets = "enginepresets";
+
+    /// <summary>
+    /// Die Massenbearbeitung. Ein Werkzeug-Modul ohne eigene Entitäten: Es ändert die Inhalte
+    /// der anderen Module — Art, Tags und einzelne Feldwerte für viele Einträge auf einmal.
+    /// <para>
+    /// Bewusst eine eigene Seite statt einer Mehrfachauswahl in jeder der gut zwanzig
+    /// Modul-Listen: Die sind je Modul eigen gebaut (Kachelraster, Tabelle, Zeitstreifen), und
+    /// dieselbe Auswahl zwanzigmal nachzubauen hieße, sie zwanzigmal zu pflegen. Über die
+    /// <c>IModuleEntitySource</c> deckt eine Seite alle Module ab — auch die künftigen.
+    /// </para>
+    /// </summary>
+    public const string BulkEdit = "bulkedit";
 }

@@ -1,0 +1,408 @@
+@page "/modules/enginepresets"
+@inject EnginePresetService Presets
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject IStringLocalizer<EnginePresetsPage> L
+
+@*
+    Die Presets der Game Engines: „so sieht ein NPC in Unity aus“. Beim Export in eine Engine
+    entsteht aus jedem Eintrag des zugeordneten Moduls ein fertig gefülltes Objekt — statt die
+    Werte in der Engine von Hand zusammenzusuchen.
+
+    Ein Preset ist kein Spielinhalt, sondern eine Vorschrift für den Export; es trägt deshalb
+    weder Arten noch Felder und taucht nicht in Suche und Referenzansicht auf.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        @if (_permissions.CanWrite)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(() => StartEdit(null))">
+                @L["NewPreset"]
+            </MudButton>
+        }
+    </Actions>
+</ModuleHeader>
+
+@if (_presets is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid Spacing="3">
+        <MudItem xs="12" md="@(_editing is null ? 12 : 5)">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ListHeading"]</MudText>
+
+                @if (_presets.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">@L["EmptyHint"]</MudText>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Elevation="0" Class="mt-2">
+                        <thead>
+                            <tr>
+                                <th>@L["ColumnEngine"]</th>
+                                <th>@L["ColumnName"]</th>
+                                <th>@L["ColumnModule"]</th>
+                                <th>@L["ColumnType"]</th>
+                                <th style="text-align:right;">@L["ColumnMappings"]</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var preset in _presets)
+                            {
+                                <tr>
+                                    <td><MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@preset.Engine</MudChip></td>
+                                    <td>
+                                        <b>@preset.Name</b>
+                                        @if (preset.ContentType is not null)
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">
+                                                @L["OnlyType", preset.ContentType.Name]
+                                            </MudText>
+                                        }
+                                    </td>
+                                    <td>@Modules.NameOrKey(preset.ModuleKey)</td>
+                                    <td class="gdm-mono">@preset.TypeName</td>
+                                    <td class="gdm-mono" style="text-align:right;">@preset.Mappings.Count</td>
+                                    <td style="text-align:right;white-space:nowrap;">
+                                        @if (_permissions.CanWrite)
+                                        {
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => StartEdit(preset))"
+                                                           aria-label="@L["Edit"]" />
+                                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => DeleteAsync(preset))"
+                                                           aria-label="@L["Delete"]" />
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-3">@L["ExportHint"]</MudText>
+            </MudPaper>
+        </MudItem>
+
+        @if (_editing is not null)
+        {
+            <MudItem xs="12" md="7">
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">@L["EditHeading"]</MudText>
+
+                    <MudGrid Spacing="2" Class="mt-1">
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="_editing.Name"
+                                          Label="@L["NameLabel"]"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="TargetEngine" @bind-Value="_editing.Engine"
+                                       Label="@L["EngineLabel"]"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense">
+                                @foreach (var engine in Enum.GetValues<TargetEngine>())
+                                {
+                                    <MudSelectItem T="TargetEngine" Value="@engine">@engine</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="string" Value="_editing.ModuleKey"
+                                       ValueChanged="SelectModuleAsync"
+                                       Label="@L["ModuleLabel"]"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense">
+                                @foreach (var module in ContentModules)
+                                {
+                                    <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="Guid?" @bind-Value="_editing.ContentTypeId"
+                                       Label="@L["TypeFilterLabel"]"
+                                       HelperText="@L["TypeFilterHelper"]"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Clearable="true">
+                                @foreach (var type in _types)
+                                {
+                                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_editing.TypeName"
+                                          Label="@L["TypeNameLabel"]"
+                                          HelperText="@L["TypeNameHelper"]"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_editing.Description"
+                                          Label="@L["DescriptionLabel"]"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Lines="2" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudDivider Class="my-4" />
+
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["MappingsHeading"]</MudText>
+                        <MudSpacer />
+                        <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="AddMapping">
+                            @L["AddMapping"]
+                        </MudButton>
+                    </MudStack>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-3">@L["MappingsHint"]</MudText>
+
+                    @foreach (var mapping in _editing.Mappings)
+                    {
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-2" Wrap="Wrap.Wrap">
+                            <MudTextField @bind-Value="mapping.Target"
+                                          Label="@L["TargetLabel"]"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Style="max-width:200px;" />
+
+                            <MudSelect T="PresetSource" @bind-Value="mapping.Source"
+                                       Label="@L["SourceLabel"]"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Style="max-width:200px;">
+                                @foreach (var source in Enum.GetValues<PresetSource>())
+                                {
+                                    <MudSelectItem T="PresetSource" Value="@source">@L[$"Source_{source}"]</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            @if (mapping.Source == PresetSource.Field)
+                            {
+                                <MudSelect T="Guid?" @bind-Value="mapping.FieldDefinitionId"
+                                           Label="@L["FieldLabel"]"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Style="max-width:220px;">
+                                    @foreach (var definition in _fields)
+                                    {
+                                        <MudSelectItem T="Guid?" Value="@definition.Id">@definition.Name</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            else if (mapping.Source == PresetSource.Constant)
+                            {
+                                <MudTextField @bind-Value="mapping.ConstantValue"
+                                              Label="@L["ConstantLabel"]"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Style="max-width:220px;" />
+                            }
+
+                            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                           Size="Size.Small"
+                                           OnClick="@(() => _editing.Mappings.Remove(mapping))"
+                                           aria-label="@L["RemoveMapping"]" />
+                        </MudStack>
+                    }
+
+                    <MudStack Row="true" Spacing="2" Class="mt-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync">
+                            @L["Save"]
+                        </MudButton>
+                        <MudButton OnClick="@(() => _editing = null)">@L["Cancel"]</MudButton>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.EnginePresets);
+
+    private UserPermissions _permissions = UserPermissions.Full;
+
+    private List<EnginePreset>? _presets;
+    private EnginePreset? _editing;
+    private List<ContentType> _types = [];
+    private List<FieldDefinition> _fields = [];
+
+    private List<ModuleDefinition> ContentModules =>
+    [
+        .. ModuleRegistry.All
+            .Where(module => module.Implemented
+                && module.Group != ModuleGroup.Tools
+                && _permissions.CanAccessModule(module.Id))
+    ];
+
+    private string Subtitle => _presets is null ? L["Loading"] : L["SubtitleCount", _presets.Count];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _presets = await Presets.GetPresetsAsync(projectId);
+    }
+
+    private async Task StartEdit(EnginePreset? preset)
+    {
+        _editing = preset is null
+            ? new EnginePreset
+            {
+                Name = string.Empty,
+                ModuleKey = ContentModules.FirstOrDefault()?.Id ?? ModuleKeys.Items,
+                TypeName = string.Empty
+            }
+            : new EnginePreset
+            {
+                Id = preset.Id,
+                Engine = preset.Engine,
+                Name = preset.Name,
+                Description = preset.Description,
+                ModuleKey = preset.ModuleKey,
+                ContentTypeId = preset.ContentTypeId,
+                TypeName = preset.TypeName,
+                SortOrder = preset.SortOrder,
+                // Kopien: Ein Abbrechen soll die geladene Liste nicht schon verändert haben.
+                Mappings =
+                [
+                    .. preset.Mappings.Select(mapping => new EnginePresetMapping
+                    {
+                        Id = mapping.Id,
+                        EnginePresetId = mapping.EnginePresetId,
+                        Target = mapping.Target,
+                        Source = mapping.Source,
+                        FieldDefinitionId = mapping.FieldDefinitionId,
+                        ConstantValue = mapping.ConstantValue,
+                        SortOrder = mapping.SortOrder
+                    })
+                ]
+            };
+
+        await LoadFieldsAsync(_editing.ModuleKey);
+    }
+
+    private async Task SelectModuleAsync(string moduleKey)
+    {
+        if (_editing is null)
+        {
+            return;
+        }
+
+        _editing.ModuleKey = moduleKey;
+
+        // Art und Feldzuordnungen gehören zum alten Modul — sie ergäben im neuen keinen Sinn.
+        _editing.ContentTypeId = null;
+        _editing.Mappings
+            .Where(mapping => mapping.Source == PresetSource.Field)
+            .ToList()
+            .ForEach(mapping => mapping.FieldDefinitionId = null);
+
+        await LoadFieldsAsync(moduleKey);
+    }
+
+    private async Task LoadFieldsAsync(string moduleKey)
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+
+        _types = await ContentTypes.GetTypesAsync(projectId, moduleKey);
+        _fields =
+        [
+            .. _types
+                .SelectMany(type => type.Fields.Concat(type.InheritedFields))
+                .GroupBy(definition => definition.Id)
+                .Select(group => group.First())
+                .OrderBy(definition => definition.Name, StringComparer.CurrentCultureIgnoreCase)
+        ];
+    }
+
+    private void AddMapping() =>
+        _editing?.Mappings.Add(new EnginePresetMapping
+        {
+            EnginePresetId = _editing.Id,
+            Target = string.Empty,
+            Source = PresetSource.Name,
+            SortOrder = _editing.Mappings.Count
+        });
+
+    private async Task SaveAsync()
+    {
+        if (_editing is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            await Presets.SavePresetAsync(projectId, _editing);
+
+            Snackbar.Add(L["Saved"], Severity.Success);
+            _editing = null;
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteAsync(EnginePreset preset)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteTitle"],
+            L["DeleteMessage", preset.Name],
+            yesText: L["Delete"],
+            cancelText: L["Cancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Presets.DeletePresetAsync(preset.Id);
+            Snackbar.Add(L["Deleted"], Severity.Success);
+
+            if (_editing?.Id == preset.Id)
+            {
+                _editing = null;
+            }
+
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

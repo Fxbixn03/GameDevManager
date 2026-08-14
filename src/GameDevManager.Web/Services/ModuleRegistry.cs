@@ -96,7 +96,13 @@ public static class ModuleRegistry
         new(ModuleKeys.Changelog, Icons.Material.Filled.History, ModuleGroup.Tools, Implemented: true),
         new(ModuleKeys.Connections, Icons.Material.Filled.Hub, ModuleGroup.Tools, Implemented: true),
         new(ModuleKeys.Todo, Icons.Material.Filled.ViewKanban, ModuleGroup.Tools, Implemented: true),
-        new(ModuleKeys.Whiteboard, Icons.Material.Filled.Draw, ModuleGroup.Tools, Implemented: true)
+        new(ModuleKeys.Whiteboard, Icons.Material.Filled.Draw, ModuleGroup.Tools, Implemented: true),
+        new(ModuleKeys.BulkEdit, Icons.Material.Filled.Checklist, ModuleGroup.Tools, Implemented: true),
+        // Werkzeug-Modul und nicht „Produktion“: Es trägt zwar eigene Daten (Sprachen und
+        // Übersetzungen), aber keine ContentEntity — Massenbearbeitung, CSV und der
+        // Inhaltsbestand des Dashboards fragen nach genau der und fänden hier nichts.
+        new(ModuleKeys.Localization, Icons.Material.Filled.Translate, ModuleGroup.Tools, Implemented: true),
+        new(ModuleKeys.EnginePresets, Icons.Material.Filled.Extension, ModuleGroup.Tools, Implemented: true)
     ];
 
     /// <summary>

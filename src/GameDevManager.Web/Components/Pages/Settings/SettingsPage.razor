@@ -9,6 +9,8 @@
 @inject ModuleLabels Modules
 @inject TopbarSelection Topbar
 @inject AppearanceSelection Appearance
+@inject LanguageSelection Language
+@inject NavigationManager Navigation
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -153,6 +155,22 @@
                                Color="Color.Primary"
                                Label="@L["DarkModeLabel"]" />
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@L["DarkModeHint"]</MudText>
+
+                    <MudDivider Class="my-2" />
+
+                    <MudSelect T="string"
+                               Value="Language.Code"
+                               ValueChanged="SetLanguageAsync"
+                               Label="@L["LanguageLabel"]"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense">
+                        @* Nicht „code" als Laufvariable: „@code" ist eine Razor-Direktive. *@
+                        @foreach (var language in LanguageSelection.Available)
+                        {
+                            <MudSelectItem T="string" Value="@language.Code">@language.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["LanguageHint"]</MudText>
                 </MudStack>
                 break;
 
@@ -391,6 +409,18 @@
     /// appsettings.Local.json gemerkt (<see cref="AppearanceSelection"/>).
     /// </summary>
     private Task ToggleDarkModeAsync(bool darkMode) => Appearance.SetDarkModeAsync(darkMode);
+
+    /// <summary>
+    /// Nach dem Wechsel wird die Anwendung neu geladen — dieselbe Linie wie beim Projektwechsel:
+    /// Jede offene Seite hat ihre Texte bereits gerendert, und ein Ereignis an ~60 Seiten wäre
+    /// der aufwendigere Weg zum selben Ergebnis.
+    /// </summary>
+    private async Task SetLanguageAsync(string code)
+    {
+        await Language.SetLanguageAsync(code);
+
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
 
     private string ProviderName(DatabaseProvider provider) => provider switch
     {

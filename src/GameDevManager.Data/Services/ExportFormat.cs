@@ -56,6 +56,8 @@ internal static class ExportFormat
             ["audio.json"] = ModuleKeys.Audio,
             ["cutscenes.json"] = ModuleKeys.Cutscenes,
             ["tags.json"] = ModuleKeys.Tags,
+            ["localization.json"] = ModuleKeys.Localization,
+            ["engine-presets.json"] = ModuleKeys.EnginePresets,
             ["assets.json"] = ModuleKeys.Assets,
             ["types-and-fields.json"] = null,
             ["field-values.json"] = null,

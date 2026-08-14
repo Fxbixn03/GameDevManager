@@ -61,6 +61,30 @@ Das Tool liegt hinter einer Anmeldung. Beim ersten Start führt der Weg in die *
 
 Darauf baut das **Änderungsprotokoll** auf: Jedes Anlegen, Ändern und Löschen einer Entität landet mit Zeitpunkt, Benutzer und den geänderten Eigenschaften unter „Änderungen“, filterbar nach Modul, Benutzer und Art der Änderung. Ein Import erscheint als ein einziger Eintrag statt als tausend. Wer wissen will, was mit *einer* Entität geschehen ist, muss dorthin gar nicht erst: Jede Bearbeitungsmaske zeigt neben der Referenzansicht den Abschnitt **„Geschichte“** mit den jüngsten Einträgen genau dieser Entität. Dazu kommt eine **Schreibkonflikt-Erkennung**: Wer auf einem Stand speichert, den inzwischen jemand anderes geändert hat, bekommt eine Meldung statt die fremde Arbeit stillschweigend zu überschreiben. Damit das Protokoll nicht endlos wächst, kürzt es ein täglicher Wartungslauf auf die eingestellte **Aufbewahrung** (`ChangeLog:MaxAgeDays`, Vorgabe ein Jahr, und `ChangeLog:MaxPerProject`, Vorgabe aus); die geltende Regel steht auf der Seite, und Verwalter können sie über „Jetzt aufräumen“ sofort anwenden.
 
+## Sprache der Oberfläche
+
+Die Bedienoberfläche gibt es auf Deutsch und Englisch; gewählt wird sie unter „Einstellungen → Darstellung“, die Wahl gilt installationsweit und übersteht einen Neustart. Deutsch ist die neutrale Fassung — englische Texte liegen als Satelliten-Dateien daneben. Übersetzt sind bisher die geteilten Ebenen (alle Meldungen und Prüftexte, Modul- und Feldbeschriftungen, Rahmen, Dashboard, Start- und Fehlerseiten); die Texte der einzelnen Modulseiten stehen noch aus und erscheinen dort weiter auf Deutsch.
+
+## Lokalisierung der Spielinhalte
+
+Davon getrennt lassen sich die **Spielinhalte** in mehreren Sprachen pflegen. Eine Sprache je Projekt ist die **Ausgangssprache** — ihre Texte stehen dort, wo sie ohnehin stehen: im Namen der Entität, ihrer Beschreibung und ihren Textfeldern. Alle weiteren Sprachen hängen als Übersetzung daneben, ein Projekt mit nur einer Sprache zahlt also nichts dafür.
+
+Übersetzt wird auf einer eigenen Seite quer über den Bestand: Zielsprache und Modul wählen, „nur Offenes“ einschalten, Zeile für Zeile eintragen — gespeichert wird je Zelle. Ändert sich ein Original, gilt seine Übersetzung als **veraltet** statt still falsch zu bleiben; die Fortschrittsanzeige zählt beides getrennt. Im Export steht der ganze Bestand als `content/localization.json`, dazu je Sprache eine fertige Zeichenketten-Tabelle unter `localization/` — die Sprachwahl fällt damit im Spiel, nicht im Export.
+
+## Lesende HTTP-API
+
+Neben dem ZIP-Export gibt es eine **nur lesende** HTTP-API — die Grundlage für ein Editor-Plugin, das den Stand direkt zieht:
+
+```
+GET /api/v1/projects
+GET /api/v1/modules
+GET /api/v1/projects/{projektId}/modules/items
+GET /api/v1/projects/{projektId}/modules/items?language=en
+GET /api/v1/projects/{projektId}/modules/items/{eintragId}
+```
+
+Angemeldet wird über einen **API-Schlüssel** im Header `X-API-Key` (alternativ `Authorization: Bearer …`). Schlüssel legt ein Verwalter unter „API-Schlüssel“ an: mit Namen, wahlweise auf ein Projekt beschränkt und mit Ablaufdatum; sperren und löschen geht dort ebenso. Gespeichert wird nur ihr Hash — der Klartext steht genau einmal da, nach dem Anlegen. Geschrieben werden kann über die API bewusst nichts: Das wäre ein zweiter Weg an Rechteprüfung, Änderungsprotokoll und Schreibkonflikt-Erkennung vorbei.
+
 ## Import & Export
 
 Die Seite „Import &amp; Export“ deckt den kompletten Kreislauf ab:
@@ -68,6 +92,8 @@ Die Seite „Import &amp; Export“ deckt den kompletten Kreislauf ab:
 - **Export** als JSON zusammen mit Bildern, Sounds und VFX als ZIP-Archiv — wahlweise im Ordner-Layout von Unity, Unreal Engine oder Godot, damit sich das Archiv direkt ins Engine-Projekt entpacken lässt
 - **Import** des Export-ZIPs, um ein Projekt umzuziehen oder eine Sicherung wiederherzustellen (alle GUID-Referenzen bleiben erhalten)
 - **Exportstände**: Stände lassen sich aufbewahren, herunterladen und paarweise — oder gegen den aktuellen Stand — vergleichen; der Diff zeigt je Modul, was dazukam, wegfiel und welche Eigenschaften sich geändert haben
+- **Engine-Presets**: Je Engine lässt sich ein Bauplan hinterlegen („so sieht ein NPC in Unity aus“) — Modul, optional eine Art, der Typname in der Engine und die Zuordnung Eigenschaft → Quelle. Beim Export in diese Engine entstehen daraus unter `engine/` fertige Objekte: eine `ScriptableObject`-Klasse plus Werte je Eintrag (Unity), eine DataTable-taugliche CSV (Unreal) oder eine `.tres`-Ressource je Eintrag (Godot)
+- **CSV je Modul**: Ein einzelnes Modul als Tabelle herunterladen, in der Tabellenkalkulation pflegen und wieder einlesen — der Weg, auf dem Balancing-Zahlen entstehen. Der Import aktualisiert über die Spalte `id`, sonst über `name`, und lässt alles unangetastet, was in keiner Zeile steht
 - **Sicherheitsnetz**: Vor einem ersetzenden Import und vor dem Löschen eines Projekts entsteht automatisch ein Exportstand — der bisherige Bestand ist damit immer wiederherstellbar
 - **Aufbewahrung**: Damit das Verzeichnis nicht endlos wächst, fallen alte Stände nach einer Obergrenze je Projekt und wahlweise nach einem Höchstalter weg (`Exports:MaxPerProject`, Vorgabe 20, und `Exports:MaxAgeDays`, Vorgabe aus); der jüngste Stand bleibt in jedem Fall stehen
 - **Hinweis statt Sperre**: Offene Health-Check-Funde zeigt die Seite vor dem Export an, blockiert ihn aber nicht — ein Zwischenstand muss sich exportieren lassen
@@ -83,7 +109,7 @@ Projekte lassen sich über dieselbe Strecke **duplizieren** („Kopie anlegen“
 5. Story-Ebene: Dialoge, Story, Quests, Events - Ham wa drin 👌
 6. Erweiterung und Härtung bestehende Module - Ham wa drin 👌
 7. Import/Export in JSON mit Sprites/Assets als ZIP, inkl. Exportständen mit Diff - Ham wa drin 👌
-8. Import/Export mit Engine-Anbindung (Ordner-Layouts für Unity/Unreal/Godot - Ham wa drin 👌; engine-native Formate wie ScriptableObjects später)
+8. Import/Export mit Engine-Anbindung (Ordner-Layouts für Unity/Unreal/Godot sowie engine-native Dateien aus Presets - Ham wa drin 👌)
 9. Benutzeranmeldung und Änderungsprotokoll - Ham wa drin 👌
 
 ## Lizenz

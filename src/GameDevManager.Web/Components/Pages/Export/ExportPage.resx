@@ -258,4 +258,31 @@
   <data name="ImportNotAllowed" xml:space="preserve">
     <value>Der Import ist für dieses Konto nicht freigegeben.</value>
   </data>
+  <data name="CsvHeading" xml:space="preserve">
+    <value>CSV je Modul</value>
+  </data>
+  <data name="CsvIntro" xml:space="preserve">
+    <value>Der Weg Tabelle ↔ Tool fürs Balancing: ein Modul als Tabelle herunterladen, in der Tabellenkalkulation pflegen und wieder einlesen. Der Import aktualisiert über die Spalte „id“, sonst über „name“ — was in keiner Zeile steht, bleibt unangetastet. Kind-Sammlungen, Bedingungen und Assets kann eine Tabelle nicht tragen; dafür bleibt der ZIP-Export.</value>
+  </data>
+  <data name="CsvModuleLabel" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="CsvDownloadButton" xml:space="preserve">
+    <value>Als CSV herunterladen</value>
+  </data>
+  <data name="CsvSelectButton" xml:space="preserve">
+    <value>CSV wählen</value>
+  </data>
+  <data name="CsvCreateMissing" xml:space="preserve">
+    <value>Unbekannte Zeilen neu anlegen</value>
+  </data>
+  <data name="CsvImportButton" xml:space="preserve">
+    <value>CSV einlesen</value>
+  </data>
+  <data name="CsvImportedMessage" xml:space="preserve">
+    <value>CSV eingelesen: {0} neu, {1} geändert, {2} unverändert.</value>
+  </data>
+  <data name="CsvMoreWarnings" xml:space="preserve">
+    <value>… und {0} weitere Hinweise.</value>
+  </data>
 </root>

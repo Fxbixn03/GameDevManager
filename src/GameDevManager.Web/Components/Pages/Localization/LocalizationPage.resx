@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Lokalisierung</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>lädt …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} Sprachen im Projekt</value>
+  </data>
+  <data name="LanguagesHeading" xml:space="preserve">
+    <value>Sprachen</value>
+  </data>
+  <data name="AddLanguage" xml:space="preserve">
+    <value>Sprache anlegen</value>
+  </data>
+  <data name="NoLanguages" xml:space="preserve">
+    <value>Noch keine Sprache angelegt. Die erste wird die Ausgangssprache — die, in der die Inhalte erfasst sind.</value>
+  </data>
+  <data name="SourceLanguage" xml:space="preserve">
+    <value>Ausgangssprache</value>
+  </data>
+  <data name="EditLanguage" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="DeleteLanguage" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="CodeLabel" xml:space="preserve">
+    <value>Kürzel</value>
+  </data>
+  <data name="CodeHelper" xml:space="preserve">
+    <value>Unter diesem Kürzel sucht die Engine die Texte — „de“, „en“, „pt-BR“.</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="IsSourceLabel" xml:space="preserve">
+    <value>Ausgangssprache</value>
+  </data>
+  <data name="IsSourceHelper" xml:space="preserve">
+    <value>Die Ausgangssprache steht in den Inhalten selbst und wird nicht übersetzt. Genau eine Sprache je Projekt trägt den Schalter.</value>
+  </data>
+  <data name="SaveLanguage" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="LanguageSaved" xml:space="preserve">
+    <value>Die Sprache wurde gespeichert.</value>
+  </data>
+  <data name="LanguageDeleted" xml:space="preserve">
+    <value>Die Sprache wurde gelöscht.</value>
+  </data>
+  <data name="DeleteLanguageTitle" xml:space="preserve">
+    <value>Sprache löschen?</value>
+  </data>
+  <data name="DeleteLanguageMessage" xml:space="preserve">
+    <value>„{0}“ und alle Übersetzungen in dieser Sprache werden endgültig entfernt.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="ProgressHeading" xml:space="preserve">
+    <value>Fortschritt</value>
+  </data>
+  <data name="ProgressHint" xml:space="preserve">
+    <value>Gezählt wird über alle Module: Name, Beschreibung und jedes Textfeld jeder Entität. Veraltet heißt: übersetzt, aber das Original hat sich seitdem geändert.</value>
+  </data>
+  <data name="ProgressCounts" xml:space="preserve">
+    <value>{0} von {1} übersetzt · {2} offen · {3} veraltet</value>
+  </data>
+  <data name="NoTargets" xml:space="preserve">
+    <value>Es gibt noch keine zweite Sprache — bis dahin gibt es nichts zu übersetzen.</value>
+  </data>
+  <data name="WorkHeading" xml:space="preserve">
+    <value>Übersetzen</value>
+  </data>
+  <data name="TargetLanguage" xml:space="preserve">
+    <value>Zielsprache</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="OpenOnly" xml:space="preserve">
+    <value>Nur Offenes</value>
+  </data>
+  <data name="RowCount" xml:space="preserve">
+    <value>{0} Zeilen</value>
+  </data>
+  <data name="PickHint" xml:space="preserve">
+    <value>Erst Zielsprache und Modul wählen.</value>
+  </data>
+  <data name="NothingOpen" xml:space="preserve">
+    <value>In diesem Modul ist nichts mehr offen.</value>
+  </data>
+  <data name="ColumnOwner" xml:space="preserve">
+    <value>Eintrag</value>
+  </data>
+  <data name="ColumnSlot" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="ColumnSource" xml:space="preserve">
+    <value>Ausgangssprache</value>
+  </data>
+  <data name="ColumnTranslation" xml:space="preserve">
+    <value>Übersetzung</value>
+  </data>
+  <data name="SlotName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="SlotDescription" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="Stale" xml:space="preserve">
+    <value>veraltet</value>
+  </data>
+  <data name="StaleHint" xml:space="preserve">
+    <value>Übersetzt wurde: {0}</value>
+  </data>
+  <data name="TranslationPlaceholder" xml:space="preserve">
+    <value>noch nicht übersetzt</value>
+  </data>
+</root>

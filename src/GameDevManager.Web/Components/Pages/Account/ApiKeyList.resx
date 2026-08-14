@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>API-Schlüssel</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>API-Schlüssel</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Schlüssel für die lesende HTTP-API — damit zieht ein Editor-Plugin den Stand direkt, statt über das Export-ZIP zu gehen.</value>
+  </data>
+  <data name="AdminOnly" xml:space="preserve">
+    <value>API-Schlüssel verwaltet, wer auch Benutzer verwaltet.</value>
+  </data>
+  <data name="NewKey" xml:space="preserve">
+    <value>Schlüssel anlegen</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NameHelper" xml:space="preserve">
+    <value>Wozu er gehört — „Unity-Plugin“, „Build-Server“.</value>
+  </data>
+  <data name="ProjectLabel" xml:space="preserve">
+    <value>Nur dieses Projekt</value>
+  </data>
+  <data name="ProjectHelper" xml:space="preserve">
+    <value>Ohne Auswahl gilt der Schlüssel für alle Projekte.</value>
+  </data>
+  <data name="ExpiresLabel" xml:space="preserve">
+    <value>Läuft ab am</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Anlegen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="CreatedTitle" xml:space="preserve">
+    <value>Der Schlüssel wurde angelegt — er steht nur jetzt im Klartext da:</value>
+  </data>
+  <data name="CreatedHint" xml:space="preserve">
+    <value>Gespeichert wird nur sein Hash. Wer ihn verliert, legt einen neuen an.</value>
+  </data>
+  <data name="CreatedMessage" xml:space="preserve">
+    <value>Der Schlüssel wurde angelegt.</value>
+  </data>
+  <data name="Empty" xml:space="preserve">
+    <value>Noch kein Schlüssel angelegt.</value>
+  </data>
+  <data name="ColumnName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ColumnPrefix" xml:space="preserve">
+    <value>Erkennungszeichen</value>
+  </data>
+  <data name="ColumnScope" xml:space="preserve">
+    <value>Gilt für</value>
+  </data>
+  <data name="ColumnLastUsed" xml:space="preserve">
+    <value>Zuletzt benutzt</value>
+  </data>
+  <data name="ColumnState" xml:space="preserve">
+    <value>Zustand</value>
+  </data>
+  <data name="AllProjects" xml:space="preserve">
+    <value>alle Projekte</value>
+  </data>
+  <data name="NeverUsed" xml:space="preserve">
+    <value>noch nie</value>
+  </data>
+  <data name="StateActive" xml:space="preserve">
+    <value>gültig</value>
+  </data>
+  <data name="StateDisabled" xml:space="preserve">
+    <value>gesperrt</value>
+  </data>
+  <data name="StateExpired" xml:space="preserve">
+    <value>abgelaufen</value>
+  </data>
+  <data name="Enable" xml:space="preserve">
+    <value>Freigeben</value>
+  </data>
+  <data name="Disable" xml:space="preserve">
+    <value>Sperren</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>Der Schlüssel wurde gelöscht.</value>
+  </data>
+  <data name="DeleteTitle" xml:space="preserve">
+    <value>Schlüssel löschen?</value>
+  </data>
+  <data name="DeleteMessage" xml:space="preserve">
+    <value>„{0}“ endgültig löschen? Was ihn benutzt, kommt danach nicht mehr herein.</value>
+  </data>
+  <data name="UsageHeading" xml:space="preserve">
+    <value>Benutzung</value>
+  </data>
+  <data name="UsageIntro" xml:space="preserve">
+    <value>Der Schlüssel geht als Header mit. Die API antwortet ausschließlich lesend und mit denselben JSON-Regeln wie der Export.</value>
+  </data>
+  <data name="UsageExample" xml:space="preserve">
+    <value>GET /api/v1/projects
+GET /api/v1/modules
+GET /api/v1/projects/{projektId}/modules/items
+GET /api/v1/projects/{projektId}/modules/items?language=en
+GET /api/v1/projects/{projektId}/modules/items/{eintragId}
+
+Header: X-API-Key: gdm_…
+   oder: Authorization: Bearer gdm_…</value>
+  </data>
+</root>

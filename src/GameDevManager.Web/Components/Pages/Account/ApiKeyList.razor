@@ -1,0 +1,227 @@
+@page "/konto/api-schluessel"
+@inject ApiKeyService Keys
+@inject ProjectService Projects
+@inject IUserPermissionsProvider PermissionsProvider
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<ApiKeyList> L
+
+@*
+    Die Schlüssel der lesenden HTTP-API. Sichtbar nur für Verwalter — ein Schlüssel öffnet den
+    Bestand für alles, was ihn kennt.
+
+    Der Klartext steht genau einmal da: nach dem Anlegen. In der Datenbank liegt nur sein Hash,
+    dieselbe Überlegung wie bei den Passwörtern.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<div class="gdm-panel-head mb-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
+        <div>
+            <MudText Typo="Typo.h5">@L["Title"]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Subtitle"]</MudText>
+        </div>
+        @if (_permissions.IsAdministrator)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Key"
+                       OnClick="@(() => _creating = true)">
+                @L["NewKey"]
+            </MudButton>
+        }
+    </MudStack>
+</div>
+
+@if (!_permissions.IsAdministrator)
+{
+    <MudAlert Severity="Severity.Info">@L["AdminOnly"]</MudAlert>
+}
+else
+{
+    @if (_created is not null)
+    {
+        <MudAlert Severity="Severity.Success" Class="mb-4">
+            <MudText Typo="Typo.body2"><b>@L["CreatedTitle"]</b></MudText>
+            <MudText Typo="Typo.body2" Class="gdm-mono my-2">@_created.PlainText</MudText>
+            <MudText Typo="Typo.caption">@L["CreatedHint"]</MudText>
+        </MudAlert>
+    }
+
+    @if (_creating)
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="5">
+                    <MudTextField @bind-Value="_name"
+                                  Label="@L["NameLabel"]"
+                                  HelperText="@L["NameHelper"]"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudSelect T="Guid?" @bind-Value="_projectId"
+                               Label="@L["ProjectLabel"]"
+                               HelperText="@L["ProjectHelper"]"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Clearable="true">
+                        @foreach (var project in _projects)
+                        {
+                            <MudSelectItem T="Guid?" Value="@project.Id">@project.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudDatePicker @bind-Date="_expires"
+                                   Label="@L["ExpiresLabel"]"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
+                                   Clearable="true" />
+                </MudItem>
+            </MudGrid>
+
+            <MudStack Row="true" Spacing="2" Class="mt-3">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAsync">@L["Create"]</MudButton>
+                <MudButton OnClick="@(() => _creating = false)">@L["Cancel"]</MudButton>
+            </MudStack>
+        </MudPaper>
+    }
+
+    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+        @if (_keys.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Empty"]</MudText>
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Elevation="0">
+                <thead>
+                    <tr>
+                        <th>@L["ColumnName"]</th>
+                        <th>@L["ColumnPrefix"]</th>
+                        <th>@L["ColumnScope"]</th>
+                        <th>@L["ColumnLastUsed"]</th>
+                        <th>@L["ColumnState"]</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var key in _keys)
+                    {
+                        <tr>
+                            <td>@key.Name</td>
+                            <td class="gdm-mono">@key.Prefix…</td>
+                            <td>@(key.GameProject?.Name ?? L["AllProjects"])</td>
+                            <td>@(key.LastUsedAtUtc is { } used ? used.ToLocalTime().ToString("g") : L["NeverUsed"])</td>
+                            <td>
+                                @if (key.IsValidNow)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">@L["StateActive"]</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Text">
+                                        @(key.IsDisabled ? L["StateDisabled"] : L["StateExpired"])
+                                    </MudChip>
+                                }
+                            </td>
+                            <td style="text-align:right;white-space:nowrap;">
+                                <MudIconButton Icon="@(key.IsDisabled ? Icons.Material.Filled.LockOpen : Icons.Material.Filled.Lock)"
+                                               Size="Size.Small"
+                                               title="@(key.IsDisabled ? L["Enable"] : L["Disable"])"
+                                               OnClick="@(() => ToggleAsync(key))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Size="Size.Small"
+                                               title="@L["Delete"]"
+                                               OnClick="@(() => DeleteAsync(key))" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+
+        <MudDivider Class="my-4" />
+        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["UsageHeading"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">@L["UsageIntro"]</MudText>
+        <pre class="gdm-mono" style="white-space:pre-wrap;">@L["UsageExample"]</pre>
+    </MudPaper>
+}
+
+@code {
+    private UserPermissions _permissions = UserPermissions.Full;
+
+    private List<ApiKey> _keys = [];
+    private List<GameProject> _projects = [];
+
+    private bool _creating;
+    private string _name = string.Empty;
+    private Guid? _projectId;
+    private DateTime? _expires;
+    private CreatedApiKey? _created;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+
+        if (!_permissions.IsAdministrator)
+        {
+            return;
+        }
+
+        _projects = await Projects.GetProjectsAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync() => _keys = await Keys.GetKeysAsync();
+
+    private async Task CreateAsync()
+    {
+        try
+        {
+            // Ein Ablaufdatum meint den ganzen Tag — sonst liefe der Schlüssel um Mitternacht
+            // der Vornacht ab, was niemand meint, der ein Datum wählt.
+            _created = await Keys.CreateAsync(_name, _projectId, _expires?.Date.AddDays(1).ToUniversalTime());
+
+            Snackbar.Add(L["CreatedMessage"], Severity.Success);
+
+            _creating = false;
+            _name = string.Empty;
+            _projectId = null;
+            _expires = null;
+
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task ToggleAsync(ApiKey key)
+    {
+        await Keys.SetDisabledAsync(key.Id, !key.IsDisabled);
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(ApiKey key)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteTitle"],
+            L["DeleteMessage", key.Name],
+            yesText: L["Delete"],
+            cancelText: L["Cancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Keys.DeleteAsync(key.Id);
+        Snackbar.Add(L["Deleted"], Severity.Success);
+
+        await LoadAsync();
+    }
+}

@@ -213,8 +213,12 @@ public static class ContentFields
         return value;
     }
 
-    /// <summary>Überträgt die Wertspalten, ohne Id und Zuordnung anzufassen.</summary>
-    private static void CopyValues(FieldValue source, FieldValue target)
+    /// <summary>
+    /// Überträgt die Wertspalten, ohne Id und Zuordnung anzufassen. <c>internal</c>, weil die
+    /// Massenbearbeitung denselben Wert auf viele Entitäten überträgt und dabei genau diese
+    /// Spalten meint — zweimal aufgezählt liefen sie beim nächsten neuen Feldtyp auseinander.
+    /// </summary>
+    internal static void CopyValues(FieldValue source, FieldValue target)
     {
         target.TextValue = string.IsNullOrWhiteSpace(source.TextValue) ? null : source.TextValue.Trim();
         target.NumberValue = source.NumberValue;

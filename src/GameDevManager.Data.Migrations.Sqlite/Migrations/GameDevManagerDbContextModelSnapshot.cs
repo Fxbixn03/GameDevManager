@@ -58,6 +58,51 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("Achievements");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ApiKey", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ExpiresAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDisabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("KeyHash")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("LastUsedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Prefix")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("Prefix");
+
+                    b.ToTable("ApiKeys");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.AppUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -428,6 +473,39 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("ConditionSets");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentLanguage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsSource")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("ContentLanguages");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -504,6 +582,53 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("ContentTagId");
 
                     b.ToTable("ContentTagScopes");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTranslation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OwnerEntityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OwnerModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Slot")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceText")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId", "LanguageCode");
+
+                    b.HasIndex("OwnerEntityId", "Slot", "LanguageCode")
+                        .IsUnique();
+
+                    b.ToTable("ContentTranslations");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
@@ -892,6 +1017,89 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("ItemId");
 
                     b.ToTable("EffectAssignments");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EnginePreset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Engine")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TypeName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentTypeId");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.ToTable("EnginePresets");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EnginePresetMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ConstantValue")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EnginePresetId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("FieldDefinitionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnginePresetId");
+
+                    b.ToTable("EnginePresetMappings");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.EventSpawn", b =>
@@ -2369,6 +2577,16 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ApiKey", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("GameProject");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Asset", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -2479,6 +2697,17 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentLanguage", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTag", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -2510,6 +2739,17 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .IsRequired();
 
                     b.Navigation("ContentTag");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTranslation", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentType", b =>
@@ -2666,6 +2906,35 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .IsRequired();
 
                     b.Navigation("GameEffect");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EnginePreset", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EnginePresetMapping", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.EnginePreset", "EnginePreset")
+                        .WithMany("Mappings")
+                        .HasForeignKey("EnginePresetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EnginePreset");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.EventSpawn", b =>
@@ -3235,6 +3504,11 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.DialogueLine", b =>
                 {
                     b.Navigation("Choices");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.EnginePreset", b =>
+                {
+                    b.Navigation("Mappings");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>

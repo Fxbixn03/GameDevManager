@@ -1,0 +1,834 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a2c561934e089</value>
+  </resheader>
+  <data name="ProjectNameRequired" xml:space="preserve">
+    <value>The project needs a name.</value>
+  </data>
+  <data name="ProjectNameExists" xml:space="preserve">
+    <value>There is already a project called “{0}”.</value>
+  </data>
+  <data name="ProjectLastOne" xml:space="preserve">
+    <value>The last project cannot be deleted — at least one has to remain.</value>
+  </data>
+  <data name="RequiredFieldEmpty" xml:space="preserve">
+    <value>The required field “{0}” is empty.</value>
+  </data>
+  <data name="TypeNameRequired" xml:space="preserve">
+    <value>The type needs a name.</value>
+  </data>
+  <data name="TypeGone" xml:space="preserve">
+    <value>The type no longer exists.</value>
+  </data>
+  <data name="TypeInUse" xml:space="preserve">
+    <value>“{0}” is still used by {1} entry/entries. Please move or delete them first.</value>
+  </data>
+  <data name="TypeHasChildren" xml:space="preserve">
+    <value>“{0}” still has {1} subtype(s) that inherit its fields. Move or delete those first.</value>
+  </data>
+  <data name="TypeParentSelf" xml:space="preserve">
+    <value>A type cannot be its own subtype.</value>
+  </data>
+  <data name="TypeParentForeign" xml:space="preserve">
+    <value>The parent type has to come from the same module and the same project.</value>
+  </data>
+  <data name="TypeParentCycle" xml:space="preserve">
+    <value>This assignment would close a cycle — the parent type is itself a subtype of this type.</value>
+  </data>
+  <data name="FieldNameInHierarchy" xml:space="preserve">
+    <value>A field called “{0}” already exists in this inheritance line — inherited and own fields would otherwise sit side by side under the same name.</value>
+  </data>
+  <data name="FieldNameRequired" xml:space="preserve">
+    <value>The field needs a name.</value>
+  </data>
+  <data name="FieldOwnerAmbiguous" xml:space="preserve">
+    <value>A field belongs either to a type or to exactly one entity.</value>
+  </data>
+  <data name="FieldReferenceModuleRequired" xml:space="preserve">
+    <value>A reference needs a target module.</value>
+  </data>
+  <data name="FieldOptionsNotEmpty" xml:space="preserve">
+    <value>Choices must not be empty.</value>
+  </data>
+  <data name="AssetMimeNotAllowed" xml:space="preserve">
+    <value>“{0}” is of type {1}. Allowed are: {2}.</value>
+  </data>
+  <data name="AssetGone" xml:space="preserve">
+    <value>The asset no longer exists.</value>
+  </data>
+  <data name="AssetPrimaryNeedsOwner" xml:space="preserve">
+    <value>Only an asset that belongs to an entity can be its icon.</value>
+  </data>
+  <data name="AssetTagNameRequired" xml:space="preserve">
+    <value>The keyword needs a name.</value>
+  </data>
+  <data name="AssetTagExists" xml:space="preserve">
+    <value>The keyword “{0}” already exists.</value>
+  </data>
+  <data name="AchievementNameRequired" xml:space="preserve">
+    <value>The achievement needs a name.</value>
+  </data>
+  <data name="SoundNameRequired" xml:space="preserve">
+    <value>The sound needs a name.</value>
+  </data>
+  <data name="ClassNameRequired" xml:space="preserve">
+    <value>The class needs a name.</value>
+  </data>
+  <data name="CollectibleNameRequired" xml:space="preserve">
+    <value>The collectible needs a name.</value>
+  </data>
+  <data name="ItemNameRequired" xml:space="preserve">
+    <value>The item needs a name.</value>
+  </data>
+  <data name="QuestNameRequired" xml:space="preserve">
+    <value>The quest needs a name.</value>
+  </data>
+  <data name="CurrencyNameRequired" xml:space="preserve">
+    <value>The currency needs a name.</value>
+  </data>
+  <data name="CurrencyNameExists" xml:space="preserve">
+    <value>There is already a currency called “{0}”.</value>
+  </data>
+  <data name="RarityNameRequired" xml:space="preserve">
+    <value>The rarity needs a name.</value>
+  </data>
+  <data name="RarityNameExists" xml:space="preserve">
+    <value>There is already a rarity called “{0}”.</value>
+  </data>
+  <data name="TagNameRequired" xml:space="preserve">
+    <value>The tag needs a name.</value>
+  </data>
+  <data name="TagNameExists" xml:space="preserve">
+    <value>There is already a tag called “{0}”.</value>
+  </data>
+  <data name="ConditionTargetRequired" xml:space="preserve">
+    <value>This condition refers to an entity — please pick one.</value>
+  </data>
+  <data name="ConditionNumberRequired" xml:space="preserve">
+    <value>This condition needs a number.</value>
+  </data>
+  <data name="ConditionFlagNameRequired" xml:space="preserve">
+    <value>A flag needs a name.</value>
+  </data>
+  <data name="ConditionCustomTextRequired" xml:space="preserve">
+    <value>A free condition needs a description.</value>
+  </data>
+  <data name="ConditionTargetGone" xml:space="preserve">
+    <value>The condition refers to an entity that no longer exists.</value>
+  </data>
+  <data name="ConditionContradictionBoolean" xml:space="preserve">
+    <value>“{0}” is meant to apply and not apply at the same time.</value>
+  </data>
+  <data name="ConditionContradictionRange" xml:space="preserve">
+    <value>“{0}” is meant to be at least {1} and at most {2} at the same time.</value>
+  </data>
+  <data name="ConditionKind_HasItem" xml:space="preserve">
+    <value>Item owned</value>
+  </data>
+  <data name="ConditionKind_HasCurrency" xml:space="preserve">
+    <value>Currency owned</value>
+  </data>
+  <data name="RecipeWithoutOutput" xml:space="preserve">
+    <value>Recipe without a target item</value>
+  </data>
+  <data name="RecipeOutputQuantity" xml:space="preserve">
+    <value>Every target item needs an amount of at least 1.</value>
+  </data>
+  <data name="RecipeOutputDuplicate" xml:space="preserve">
+    <value>The same item appears more than once in the target list. Please merge the amounts.</value>
+  </data>
+  <data name="RecipeIngredientQuantity" xml:space="preserve">
+    <value>Every required item needs an amount of at least 1.</value>
+  </data>
+  <data name="RecipeIngredientDuplicate" xml:space="preserve">
+    <value>The same item appears more than once in the list of required items. Please merge the amounts.</value>
+  </data>
+  <data name="DeletedItem" xml:space="preserve">
+    <value>(deleted item)</value>
+  </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>(deleted)</value>
+  </data>
+  <data name="CutsceneNameRequired" xml:space="preserve">
+    <value>The cutscene needs a name.</value>
+  </data>
+  <data name="CutsceneShotTextRequired" xml:space="preserve">
+    <value>Every shot needs a text.</value>
+  </data>
+  <data name="DialogueNameRequired" xml:space="preserve">
+    <value>The dialogue needs a name.</value>
+  </data>
+  <data name="DialogueParticipantNpcRequired" xml:space="preserve">
+    <value>Every participant needs an NPC.</value>
+  </data>
+  <data name="DialogueParticipantDuplicate" xml:space="preserve">
+    <value>The same NPC takes part more than once.</value>
+  </data>
+  <data name="DialogueLineTextRequired" xml:space="preserve">
+    <value>Every line needs a text.</value>
+  </data>
+  <data name="DialogueSpeakerNotParticipant" xml:space="preserve">
+    <value>A line is spoken by an NPC that does not take part at all.</value>
+  </data>
+  <data name="DialoguePlayerNotParticipant" xml:space="preserve">
+    <value>A line is spoken by the player although they do not take part.</value>
+  </data>
+  <data name="DialogueBarkHasNoChoices" xml:space="preserve">
+    <value>Barks have no answer options.</value>
+  </data>
+  <data name="DialogueChoiceTextRequired" xml:space="preserve">
+    <value>Every answer option needs a text.</value>
+  </data>
+  <data name="DialogueChoiceTargetMissing" xml:space="preserve">
+    <value>An answer option leads to a line that does not exist in this dialogue.</value>
+  </data>
+  <data name="DialogueLineUnreachable" xml:space="preserve">
+    <value>The line “{0}” cannot be reached from any answer.</value>
+  </data>
+  <data name="DialogueGraph_Player" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="DialogueGraph_UnknownSpeaker" xml:space="preserve">
+    <value>Unknown speaker</value>
+  </data>
+  <data name="RelationNameRequired" xml:space="preserve">
+    <value>The relation needs a name — “non-aggression pact”, for instance.</value>
+  </data>
+  <data name="RelationNeedsTwoFactions" xml:space="preserve">
+    <value>A relation needs two factions.</value>
+  </data>
+  <data name="RelationSelfReference" xml:space="preserve">
+    <value>A faction cannot have a relation with itself.</value>
+  </data>
+  <data name="RelationDuplicate" xml:space="preserve">
+    <value>There is already a relation between these two factions. Please adjust the existing one — a duplicate edge would be meaningless in the graph.</value>
+  </data>
+  <data name="Stance_Alliance" xml:space="preserve">
+    <value>Alliance</value>
+  </data>
+  <data name="Stance_Friendship" xml:space="preserve">
+    <value>Friendship</value>
+  </data>
+  <data name="Stance_Neutral" xml:space="preserve">
+    <value>Neutral</value>
+  </data>
+  <data name="Stance_Hostility" xml:space="preserve">
+    <value>Hostility</value>
+  </data>
+  <data name="Stance_War" xml:space="preserve">
+    <value>War</value>
+  </data>
+  <data name="EffectNameRequired" xml:space="preserve">
+    <value>The effect needs a name.</value>
+  </data>
+  <data name="EffectAssignmentItemRequired" xml:space="preserve">
+    <value>Every assignment needs an item.</value>
+  </data>
+  <data name="EffectAssignmentDuplicate" xml:space="preserve">
+    <value>The same item appears more than once in the assignments.</value>
+  </data>
+  <data name="EventNameRequired" xml:space="preserve">
+    <value>The event needs a name.</value>
+  </data>
+  <data name="EventChanceRange" xml:space="preserve">
+    <value>The chance is between 0 and 100 per cent.</value>
+  </data>
+  <data name="EventSpawnNpcRequired" xml:space="preserve">
+    <value>Every spawn needs an NPC/mob.</value>
+  </data>
+  <data name="EventSpawnDuplicate" xml:space="preserve">
+    <value>The same mob appears more than once in the spawns. Please raise the count on the existing entry.</value>
+  </data>
+  <data name="EventSpawnCount" xml:space="preserve">
+    <value>Every spawn needs a count of at least 1.</value>
+  </data>
+  <data name="FactionNameRequired" xml:space="preserve">
+    <value>The faction needs a name.</value>
+  </data>
+  <data name="FactionMemberNpcRequired" xml:space="preserve">
+    <value>Every membership needs an NPC.</value>
+  </data>
+  <data name="FactionMemberDuplicate" xml:space="preserve">
+    <value>The same NPC appears more than once in the member list. An NPC holds one rank per faction.</value>
+  </data>
+  <data name="LootNameRequired" xml:space="preserve">
+    <value>The loot table needs a name.</value>
+  </data>
+  <data name="LootEntryItemRequired" xml:space="preserve">
+    <value>Every entry needs an item.</value>
+  </data>
+  <data name="LootChanceRange" xml:space="preserve">
+    <value>Chances are between 0 and 100 per cent.</value>
+  </data>
+  <data name="LootMinQuantity" xml:space="preserve">
+    <value>The smallest amount is 1.</value>
+  </data>
+  <data name="LootMaxBelowMin" xml:space="preserve">
+    <value>The upper amount must not be smaller than the lower one.</value>
+  </data>
+  <data name="MapNameRequired" xml:space="preserve">
+    <value>The map needs a name.</value>
+  </data>
+  <data name="MapMarkerRange" xml:space="preserve">
+    <value>Markers sit between 0 and 1 relative to the image.</value>
+  </data>
+  <data name="MapRadiusRange" xml:space="preserve">
+    <value>The radius of an area is between 0 and 1 of the image width.</value>
+  </data>
+  <data name="MapSelfLink" xml:space="preserve">
+    <value>A map cannot link to itself.</value>
+  </data>
+  <data name="MapPolygonTooFewPoints" xml:space="preserve">
+    <value>An area needs at least three readable corner points.</value>
+  </data>
+  <data name="MapPolygonRange" xml:space="preserve">
+    <value>Corner points of an area sit between 0 and 1 relative to the image.</value>
+  </data>
+  <data name="NpcNameRequired" xml:space="preserve">
+    <value>The NPC needs a name.</value>
+  </data>
+  <data name="TraderOfferItemRequired" xml:space="preserve">
+    <value>Every offer needs an item.</value>
+  </data>
+  <data name="TraderOfferDuplicate" xml:space="preserve">
+    <value>The same item appears more than once in the offer. Please merge the entries.</value>
+  </data>
+  <data name="TraderPriceNegative" xml:space="preserve">
+    <value>Prices must not be negative.</value>
+  </data>
+  <data name="TraderStockNegative" xml:space="preserve">
+    <value>The stock must not be negative.</value>
+  </data>
+  <data name="TraderRestockNegative" xml:space="preserve">
+    <value>The restock time must not be negative.</value>
+  </data>
+  <data name="TraderPriceNeedsCurrency" xml:space="preserve">
+    <value>A price needs a currency — otherwise the number cannot be read.</value>
+  </data>
+  <data name="CharacterNameRequired" xml:space="preserve">
+    <value>The player character needs a name.</value>
+  </data>
+  <data name="SkillTreeNameRequired" xml:space="preserve">
+    <value>The skill tree needs a name.</value>
+  </data>
+  <data name="SkillNameRequired" xml:space="preserve">
+    <value>The skill needs a name.</value>
+  </data>
+  <data name="SkillPointsNegative" xml:space="preserve">
+    <value>Skill points must not be negative.</value>
+  </data>
+  <data name="SkillCostAmountMin" xml:space="preserve">
+    <value>The resource amount has to be at least 1.</value>
+  </data>
+  <data name="SkillSelfParent" xml:space="preserve">
+    <value>A skill cannot require itself.</value>
+  </data>
+  <data name="SkillParentGone" xml:space="preserve">
+    <value>The required skill no longer exists.</value>
+  </data>
+  <data name="SkillParentOtherTree" xml:space="preserve">
+    <value>The required skill sits in a different tree. Requirements apply per skill tree.</value>
+  </data>
+  <data name="SkillParentCycle" xml:space="preserve">
+    <value>This requirement would form a cycle — the skill would indirectly require itself.</value>
+  </data>
+  <data name="StoryEntryNameRequired" xml:space="preserve">
+    <value>The story section needs a name.</value>
+  </data>
+  <data name="StoryParticipantEntityRequired" xml:space="preserve">
+    <value>Every participant needs an entity.</value>
+  </data>
+  <data name="StoryParticipantDuplicate" xml:space="preserve">
+    <value>The same entity appears more than once among the participants.</value>
+  </data>
+  <data name="QuestKind_MainMission" xml:space="preserve">
+    <value>Main mission</value>
+  </data>
+  <data name="QuestKind_SideMission" xml:space="preserve">
+    <value>Side mission</value>
+  </data>
+  <data name="QuestKind_Event" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="DeletedEntity" xml:space="preserve">
+    <value>(deleted entity)</value>
+  </data>
+  <data name="NpcSubtitle_Mob" xml:space="preserve">
+    <value>Mob</value>
+  </data>
+  <data name="NpcSubtitle_Trader" xml:space="preserve">
+    <value>Trader</value>
+  </data>
+  <data name="Reference_TradeGoods" xml:space="preserve">
+    <value>Trade goods</value>
+  </data>
+  <data name="Reference_OfferCurrency" xml:space="preserve">
+    <value>Currency in the offer</value>
+  </data>
+  <data name="Reference_LootTable" xml:space="preserve">
+    <value>Loot table</value>
+  </data>
+  <data name="Reference_MapArea" xml:space="preserve">
+    <value>Area on the map</value>
+  </data>
+  <data name="Reference_MapMarker" xml:space="preserve">
+    <value>Marker on the map</value>
+  </data>
+  <data name="LootSubtitle_Entries" xml:space="preserve">
+    <value>{0} entry/entries</value>
+  </data>
+  <data name="Reference_StoryParticipant" xml:space="preserve">
+    <value>Takes part in the story</value>
+  </data>
+  <data name="Reference_QuestDialogue" xml:space="preserve">
+    <value>Dialogue for the quest</value>
+  </data>
+  <data name="Reference_EventSpawn" xml:space="preserve">
+    <value>Spawns during the event</value>
+  </data>
+  <data name="Reference_SkillParent" xml:space="preserve">
+    <value>Requires this skill</value>
+  </data>
+  <data name="Reference_ItemEffect" xml:space="preserve">
+    <value>Effect on the item</value>
+  </data>
+  <data name="Reference_CutsceneStory" xml:space="preserve">
+    <value>Cutscene for the story</value>
+  </data>
+  <data name="Reference_CutsceneDialogue" xml:space="preserve">
+    <value>Dialogue in cutscene</value>
+  </data>
+  <data name="Search_GuidHit" xml:space="preserve">
+    <value>GUID match</value>
+  </data>
+  <data name="Search_GuidContentTypeHit" xml:space="preserve">
+    <value>GUID match, type</value>
+  </data>
+  <data name="Search_ContentType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Search_FieldValueHit" xml:space="preserve">
+    <value>Match in a field value</value>
+  </data>
+  <data name="Search_RecipeYields" xml:space="preserve">
+    <value>yields </value>
+  </data>
+  <data name="Search_Mob" xml:space="preserve">
+    <value>Mob</value>
+  </data>
+  <data name="Search_Trader" xml:space="preserve">
+    <value>Trader</value>
+  </data>
+  <data name="Search_Barks" xml:space="preserve">
+    <value>Barks</value>
+  </data>
+  <data name="Search_LineCount" xml:space="preserve">
+    <value> line(s)</value>
+  </data>
+  <data name="Search_MarkerCount" xml:space="preserve">
+    <value> marker(s)</value>
+  </data>
+  <data name="Search_EntryCount" xml:space="preserve">
+    <value> entry/entries</value>
+  </data>
+  <data name="Search_MemberCount" xml:space="preserve">
+    <value> member(s)</value>
+  </data>
+  <data name="Search_StoryChapter" xml:space="preserve">
+    <value>Section </value>
+  </data>
+  <data name="Search_PercentSuffix" xml:space="preserve">
+    <value> %</value>
+  </data>
+  <data name="Search_SkillFallback" xml:space="preserve">
+    <value>Skill</value>
+  </data>
+  <data name="Search_ItemCount" xml:space="preserve">
+    <value> item(s)</value>
+  </data>
+  <data name="Search_Secret" xml:space="preserve">
+    <value>Hidden</value>
+  </data>
+  <data name="Search_FileCount" xml:space="preserve">
+    <value> file(s)</value>
+  </data>
+  <data name="Search_ShotCount" xml:space="preserve">
+    <value> shot(s)</value>
+  </data>
+  <data name="Reference_FactionMember" xml:space="preserve">
+    <value>Member</value>
+  </data>
+  <data name="Reference_RecipeOutput" xml:space="preserve">
+    <value>Target item</value>
+  </data>
+  <data name="Reference_RecipeIngredient" xml:space="preserve">
+    <value>Required item</value>
+  </data>
+  <data name="Reference_QuestStory" xml:space="preserve">
+    <value>Story link</value>
+  </data>
+  <data name="Reference_SkillCost" xml:space="preserve">
+    <value>Skill cost</value>
+  </data>
+  <data name="Reference_Class" xml:space="preserve">
+    <value>Class</value>
+  </data>
+  <data name="ConditionKind_QuestState" xml:space="preserve">
+    <value>Quest state</value>
+  </data>
+  <data name="ConditionKind_NpcDefeated" xml:space="preserve">
+    <value>NPC defeated</value>
+  </data>
+  <data name="ConditionKind_Flag" xml:space="preserve">
+    <value>Flag</value>
+  </data>
+  <data name="ConditionKind_PlayerLevel" xml:space="preserve">
+    <value>Player level</value>
+  </data>
+  <data name="ConditionKind_Default" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="Export_ProjectMissing" xml:space="preserve">
+    <value>The game project was not found.</value>
+  </data>
+  <data name="Export_ReadmeCommon" xml:space="preserve">
+    <value># GameDevManager export
+
+Project: {0}
+Format version: {1}
+
+All content sits as JSON under `content/`, one file per module. Entities refer to each other exclusively through GUIDs — every `…Id` property is the `id` of an entity from one of the other files. User-defined types and fields are in `content/types-and-fields.json`, their values in `content/field-values.json`, conditions in `content/conditions.json`, tags in `content/tags.json`.
+
+The metadata of the uploaded files is in `content/assets.json`; the files themselves sit under `assets/files/` — their path there is the `storageKey` from the metadata. `project.json` is the manifest of the export (format version, timestamp, number of entries per module).</value>
+  </data>
+  <data name="Export_ReadmeJson" xml:space="preserve">
+    <value>## Usage
+
+This ZIP is not tailored to a specific engine — unpack it wherever your game or pipeline expects it and read the JSON files with any JSON parser.</value>
+  </data>
+  <data name="Export_ReadmeUnity" xml:space="preserve">
+    <value>## Usage in Unity
+
+Unpack the ZIP into the root directory of your Unity project: the content lands under `Assets/StreamingAssets/GameDevManager/` and ships with the build unchanged. At runtime you reach it through `Application.streamingAssetsPath`.
+
+For reading it, the package `com.unity.nuget.newtonsoft-json` (Newtonsoft Json.NET) is recommended, because Unity's `JsonUtility` handles neither nested lists nor GUIDs as strings comfortably.</value>
+  </data>
+  <data name="Export_ReadmeUnreal" xml:space="preserve">
+    <value>## Usage in Unreal Engine
+
+Unpack the ZIP into the root directory of your Unreal project: the content lands under `Content/GameDevManager/`. JSON files can be read at runtime with `FFileHelper::LoadFileToString` and `FJsonSerializer`; alternatively you can import individual files as a DataTable in the editor.</value>
+  </data>
+  <data name="Export_ReadmeGodot" xml:space="preserve">
+    <value>## Usage in Godot
+
+Unpack the ZIP into the root directory of your Godot project: the content lands under `res://gamedevmanager/`. At runtime you load it with `FileAccess.get_file_as_string()` and `JSON.parse_string()`.</value>
+  </data>
+  <data name="Export_SnapshotMissing" xml:space="preserve">
+    <value>The export snapshot was not found.</value>
+  </data>
+  <data name="Export_SnapshotInvalidName" xml:space="preserve">
+    <value>The name of the export snapshot is invalid.</value>
+  </data>
+  <data name="Export_SafetyNetFailed" xml:space="preserve">
+    <value>No safety snapshot could be created before this action — it was cancelled. Cause: {0}</value>
+  </data>
+  <data name="Duplicate_NotSupported" xml:space="preserve">
+    <value>Entries of this module cannot be copied.</value>
+  </data>
+  <data name="Duplicate_Missing" xml:space="preserve">
+    <value>The entry was not found — it has probably been deleted in the meantime.</value>
+  </data>
+  <data name="Duplicate_NameSuffix" xml:space="preserve">
+    <value>{0} (copy)</value>
+  </data>
+  <data name="Duplicate_NameSuffixNumbered" xml:space="preserve">
+    <value>{0} (copy {1})</value>
+  </data>
+  <data name="Import_ManifestMissing" xml:space="preserve">
+    <value>The ZIP contains no project.json — it is not a GameDevManager export.</value>
+  </data>
+  <data name="Import_FormatVersionMismatch" xml:space="preserve">
+    <value>The export format (version {0}) is not supported — this tool expects version {1}.</value>
+  </data>
+  <data name="Import_ProjectNotEmpty" xml:space="preserve">
+    <value>The project already contains content. To overwrite it, switch on the “Replace existing content” option.</value>
+  </data>
+  <data name="Import_ArchiveWithoutAssetFiles" xml:space="preserve">
+    <value>The export was created without asset files — the assets have been imported with their metadata only.</value>
+  </data>
+  <data name="Import_AssetFileMissing" xml:space="preserve">
+    <value>The file for asset “{0}” is missing from the archive.</value>
+  </data>
+  <data name="ApiKey_NameRequired" xml:space="preserve">
+    <value>The key needs a name — otherwise nobody will know later what it belongs to.</value>
+  </data>
+  <data name="Preset_NameRequired" xml:space="preserve">
+    <value>The preset needs a name.</value>
+  </data>
+  <data name="Preset_TypeNameRequired" xml:space="preserve">
+    <value>The preset needs a type name — that is what the object will be called in the engine.</value>
+  </data>
+  <data name="Preset_ModuleRequired" xml:space="preserve">
+    <value>The preset needs a module whose entries it maps.</value>
+  </data>
+  <data name="Preset_TargetRequired" xml:space="preserve">
+    <value>Every mapping needs a property name.</value>
+  </data>
+  <data name="Preset_TargetDuplicate" xml:space="preserve">
+    <value>The property “{0}” is mapped more than once — which value would win depends on the order.</value>
+  </data>
+  <data name="Preset_FieldRequired" xml:space="preserve">
+    <value>A mapping onto a field needs a field as well.</value>
+  </data>
+  <data name="Locale_CodeRequired" xml:space="preserve">
+    <value>The language needs a code, e.g. “en”.</value>
+  </data>
+  <data name="Locale_NameRequired" xml:space="preserve">
+    <value>The language needs a name.</value>
+  </data>
+  <data name="Locale_CodeExists" xml:space="preserve">
+    <value>The code “{0}” is already taken in this project.</value>
+  </data>
+  <data name="Locale_SourceUndeletable" xml:space="preserve">
+    <value>The source language cannot be deleted — the content itself is written in it.</value>
+  </data>
+  <data name="Locale_LanguageUnknown" xml:space="preserve">
+    <value>The language “{0}” does not exist in this project.</value>
+  </data>
+  <data name="Csv_Empty" xml:space="preserve">
+    <value>Apart from the header the file contains no rows.</value>
+  </data>
+  <data name="Csv_KeyColumnMissing" xml:space="preserve">
+    <value>The file needs a column “{0}” or “{1}” — otherwise there is no way to tell which entry a row means.</value>
+  </data>
+  <data name="Csv_RowSkipped" xml:space="preserve">
+    <value>Row {0}: “{1}” does not exist yet and creating new entries is switched off.</value>
+  </data>
+  <data name="Csv_RowNameMissing" xml:space="preserve">
+    <value>Row {0}: without a name no new entry can be created.</value>
+  </data>
+  <data name="Csv_TypeUnknown" xml:space="preserve">
+    <value>Row {0}: the type “{1}” does not exist in this module.</value>
+  </data>
+  <data name="Csv_CellInvalid" xml:space="preserve">
+    <value>Row {0}, column “{1}”: {2}</value>
+  </data>
+  <data name="Csv_NotANumber" xml:space="preserve">
+    <value>not a number</value>
+  </data>
+  <data name="Csv_NotABoolean" xml:space="preserve">
+    <value>not a yes/no value</value>
+  </data>
+  <data name="Csv_NotADate" xml:space="preserve">
+    <value>not a date</value>
+  </data>
+  <data name="Csv_NotAGuid" xml:space="preserve">
+    <value>not a GUID</value>
+  </data>
+  <data name="Csv_NotAnOption" xml:space="preserve">
+    <value>not a known choice</value>
+  </data>
+  <data name="Bulk_ModuleUnknown" xml:space="preserve">
+    <value>The module “{0}” does not know bulk editing.</value>
+  </data>
+  <data name="Bulk_TypeInvalid" xml:space="preserve">
+    <value>This type does not belong to this module or project.</value>
+  </data>
+  <data name="Bulk_FieldInvalid" xml:space="preserve">
+    <value>This field no longer exists.</value>
+  </data>
+  <data name="Bulk_TagInvalid" xml:space="preserve">
+    <value>This tag does not belong to this project.</value>
+  </data>
+  <data name="ConcurrentEdit" xml:space="preserve">
+    <value>“{0}” has been saved by someone else in the meantime ({1}). To overwrite it, reload the form — otherwise the other changes would be lost.</value>
+  </data>
+  <data name="WorldStateNameRequired" xml:space="preserve">
+    <value>The world state needs a name.</value>
+  </data>
+  <data name="WorldStateNameExists" xml:space="preserve">
+    <value>“{0}” already exists in this kind.</value>
+  </data>
+  <data name="WorldStateKind_TimeOfDay" xml:space="preserve">
+    <value>Time of day</value>
+  </data>
+  <data name="WorldStateKind_Weather" xml:space="preserve">
+    <value>Weather</value>
+  </data>
+  <data name="WorldStateKind_Biome" xml:space="preserve">
+    <value>Biome</value>
+  </data>
+  <data name="UnlockCycle" xml:space="preserve">
+    <value>Unlock cycle: {0}</value>
+  </data>
+  <data name="UserNameRequired" xml:space="preserve">
+    <value>The user needs a login name.</value>
+  </data>
+  <data name="UserNameExists" xml:space="preserve">
+    <value>The login name “{0}” already exists.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>This user no longer exists.</value>
+  </data>
+  <data name="UserPasswordTooShort" xml:space="preserve">
+    <value>The password needs at least {0} characters.</value>
+  </data>
+  <data name="UserPasswordNeedsDigit" xml:space="preserve">
+    <value>The password needs at least one digit.</value>
+  </data>
+  <data name="UserPasswordNeedsSpecial" xml:space="preserve">
+    <value>The password needs at least one special character.</value>
+  </data>
+  <data name="UserPasswordsDisabled" xml:space="preserve">
+    <value>Passwords are switched off by policy — signing in works with the login name alone.</value>
+  </data>
+  <data name="UserCurrentPasswordWrong" xml:space="preserve">
+    <value>The current password is not correct.</value>
+  </data>
+  <data name="UserLastAdministrator" xml:space="preserve">
+    <value>This is the last administrator — without them nobody could reach user management any more.</value>
+  </data>
+  <data name="ConditionKind_TimeOfDay" xml:space="preserve">
+    <value>Time of day</value>
+  </data>
+  <data name="ConditionKind_Weather" xml:space="preserve">
+    <value>Weather</value>
+  </data>
+  <data name="ConditionKind_Biome" xml:space="preserve">
+    <value>Biome</value>
+  </data>
+  <data name="ConditionKind_Unlocked" xml:space="preserve">
+    <value>Unlocked</value>
+  </data>
+  <data name="ChangeLog_ProjectImported" xml:space="preserve">
+    <value>Project state imported: {0}</value>
+  </data>
+  <data name="ChangeLog_ProjectDuplicated" xml:space="preserve">
+    <value>Created as a copy of “{0}”.</value>
+  </data>
+  <data name="PermissionWriteDenied" xml:space="preserve">
+    <value>This account may only read — changes are not allowed for it.</value>
+  </data>
+  <data name="PermissionExportDenied" xml:space="preserve">
+    <value>This account may not use the export.</value>
+  </data>
+  <data name="PermissionImportDenied" xml:space="preserve">
+    <value>This account may not use the import.</value>
+  </data>
+  <data name="PermissionAdminOnly" xml:space="preserve">
+    <value>Only administrators may manage users.</value>
+  </data>
+  <data name="Reference_NpcRelation" xml:space="preserve">
+    <value>Relation</value>
+  </data>
+  <data name="MapLayerNameRequired" xml:space="preserve">
+    <value>Every layer needs a name.</value>
+  </data>
+  <data name="Reference_StoryLink" xml:space="preserve">
+    <value>Scene link</value>
+  </data>
+  <data name="Reference_StoryLocation" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="WhiteboardNameRequired" xml:space="preserve">
+    <value>A whiteboard needs a name.</value>
+  </data>
+  <data name="KanbanBoardNameRequired" xml:space="preserve">
+    <value>A board needs a name.</value>
+  </data>
+  <data name="KanbanColumnNameRequired" xml:space="preserve">
+    <value>A column needs a name.</value>
+  </data>
+  <data name="KanbanCardTitleRequired" xml:space="preserve">
+    <value>A card needs a title.</value>
+  </data>
+  <data name="KanbanDefaultColumnOpen" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="KanbanDefaultColumnDoing" xml:space="preserve">
+    <value>In progress</value>
+  </data>
+  <data name="KanbanDefaultColumnDone" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="StoryLinkEntryRequired" xml:space="preserve">
+    <value>Every scene link needs a target section.</value>
+  </data>
+  <data name="StoryLinkSelf" xml:space="preserve">
+    <value>A section cannot be linked to itself.</value>
+  </data>
+  <data name="StoryLinkDuplicate" xml:space="preserve">
+    <value>The same scene link is already in the list.</value>
+  </data>
+  <data name="NpcRelationIncomplete" xml:space="preserve">
+    <value>Every relation needs a second NPC and a relation type.</value>
+  </data>
+  <data name="NpcRelationSelf" xml:space="preserve">
+    <value>An NPC cannot have a relation with itself.</value>
+  </data>
+  <data name="NpcRelationDuplicate" xml:space="preserve">
+    <value>The same relation is already in the list.</value>
+  </data>
+  <data name="NpcRelationTypeNameRequired" xml:space="preserve">
+    <value>A relation type needs both labels — the direction and the reverse direction.</value>
+  </data>
+  <data name="NpcRelationTypeInUse" xml:space="preserve">
+    <value>This relation type is still used by {0} relation(s) and cannot be deleted.</value>
+  </data>
+</root>
