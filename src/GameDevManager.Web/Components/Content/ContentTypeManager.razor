@@ -131,6 +131,12 @@ else
                                         <div>
                                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                                 <MudText Typo="Typo.body1">@field.Name</MudText>
+                                                @if (!string.IsNullOrWhiteSpace(field.GroupName))
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                                        @field.GroupName
+                                                    </MudChip>
+                                                }
                                                 @if (field.IsRequired)
                                                 {
                                                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">
@@ -333,12 +339,28 @@ else
     private Task EditFieldAsync(FieldDefinition field) =>
         ShowFieldDialogAsync(field.Clone(), isNew: false);
 
+    private List<string> KnownGroups =>
+    [
+        // Der Lambda-Parameter heißt nicht „field“: Ab C# 14 ist das innerhalb eines
+        // Eigenschaftsaccessors ein Schlüsselwort.
+        .. (_types ?? [])
+            .SelectMany(type => type.Fields)
+            .Select(definition => definition.GroupName)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.CurrentCultureIgnoreCase)
+    ];
+
     private async Task ShowFieldDialogAsync(FieldDefinition draft, bool isNew)
     {
         var parameters = new DialogParameters<FieldDefinitionDialog>
         {
             { dialog => dialog.Field, draft },
-            { dialog => dialog.IsNew, isNew }
+            { dialog => dialog.IsNew, isNew },
+            // Vorschläge aus dem ganzen Modul, nicht nur aus dieser Art: Wer „Kampfwerte“ an
+            // der Waffe angelegt hat, meint an der Rüstung denselben Abschnitt.
+            { dialog => dialog.KnownGroups, KnownGroups }
         };
 
         var reference = await Dialogs.ShowAsync<FieldDefinitionDialog>(

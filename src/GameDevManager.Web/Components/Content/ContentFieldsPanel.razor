@@ -33,15 +33,42 @@
         }
         else
         {
-            <MudStack Spacing="4">
-                @foreach (var field in Context.TypeFields)
-                {
-                    <DynamicFieldInput Definition="field"
-                                       Value="Context.ValueFor(field)"
-                                       ReferenceOptions="OptionsFor(field)"
-                                       OnValueChanged="OnValueChanged" />
-                }
-            </MudStack>
+            @* Felder ohne Gruppe stehen oben wie bisher — eine Art ohne Gruppen sieht damit
+               aus wie zuvor. *@
+            @if (Ungrouped.Count > 0)
+            {
+                <MudStack Spacing="4">
+                    @foreach (var field in Ungrouped)
+                    {
+                        <DynamicFieldInput Definition="field"
+                                           Value="Context.ValueFor(field)"
+                                           ReferenceOptions="OptionsFor(field)"
+                                           OnValueChanged="OnValueChanged" />
+                    }
+                </MudStack>
+            }
+
+            @if (Groups.Count > 0)
+            {
+                <MudExpansionPanels Elevation="0" MultiExpansion="true" Class="@(Ungrouped.Count > 0 ? "mt-4" : null)">
+                    @foreach (var group in Groups)
+                    {
+                        @* Aufgeklappt: Ein zugeklappter Abschnitt versteckte auch Pflichtfelder,
+                           und die Maske meldete beim Speichern etwas, das nicht zu sehen ist. *@
+                        <MudExpansionPanel Text="@L["GroupHeading", group.Name, group.Fields.Count]" Expanded="true">
+                            <MudStack Spacing="4">
+                                @foreach (var field in group.Fields)
+                                {
+                                    <DynamicFieldInput Definition="field"
+                                                       Value="Context.ValueFor(field)"
+                                                       ReferenceOptions="OptionsFor(field)"
+                                                       OnValueChanged="OnValueChanged" />
+                                }
+                            </MudStack>
+                        </MudExpansionPanel>
+                    }
+                </MudExpansionPanels>
+            }
         }
     </MudPaper>
 }
@@ -118,6 +145,27 @@
     private string IndividualHintText =>
         string.IsNullOrWhiteSpace(IndividualHint) ? L["DefaultIndividualHint"] : IndividualHint;
 
+    @* In diesen Eigenschaften heißt der Lambda-Parameter nicht „field“: Ab C# 14 ist das
+       innerhalb eines Eigenschaftsaccessors ein Schlüsselwort. *@
+
+    /// <summary>Die Felder ohne Abschnitt, in ihrer Reihenfolge.</summary>
+    private List<FieldDefinition> Ungrouped =>
+        [.. Context.TypeFields.Where(definition => string.IsNullOrWhiteSpace(definition.GroupName))];
+
+    /// <summary>
+    /// Die Abschnitte in der Reihenfolge ihres ersten Feldes — nicht alphabetisch: Wer die
+    /// Felder sortiert hat, hat damit auch die Abschnitte sortiert. Innerhalb eines Abschnitts
+    /// bleibt die Reihenfolge aus <see cref="ContentEditContext{TEntity}.TypeFields"/>, also
+    /// geerbte Felder vor eigenen.
+    /// </summary>
+    private List<(string Name, List<FieldDefinition> Fields)> Groups =>
+    [
+        .. Context.TypeFields
+            .Where(definition => !string.IsNullOrWhiteSpace(definition.GroupName))
+            .GroupBy(definition => definition.GroupName!, StringComparer.OrdinalIgnoreCase)
+            .Select(group => (group.First().GroupName!, group.ToList()))
+    ];
+
     /// <summary>Meldet der Seite eine Wertänderung — für „ungespeicherte Änderungen“.</summary>
     [Parameter]
     public EventCallback OnValueChanged { get; set; }
@@ -158,6 +206,16 @@
         }
     }
 
+    private List<string> KnownGroups =>
+    [
+        .. Context.ApplicableFields
+            .Select(definition => definition.GroupName)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.CurrentCultureIgnoreCase)
+    ];
+
     private IReadOnlyList<EntitySummary> OptionsFor(FieldDefinition field) =>
         field.ReferenceModuleKey is { } targetModule && _referenceOptions.TryGetValue(targetModule, out var options)
             ? options
@@ -180,7 +238,9 @@
         var parameters = new DialogParameters<FieldDefinitionDialog>
         {
             { dialog => dialog.Field, draft },
-            { dialog => dialog.IsNew, isNew }
+            { dialog => dialog.IsNew, isNew },
+            // Vorschläge aus allem, was hier schon gilt — Art-Felder wie individuelle.
+            { dialog => dialog.KnownGroups, KnownGroups }
         };
 
         var reference = await Dialogs.ShowAsync<FieldDefinitionDialog>(

@@ -263,6 +263,7 @@ public class ContentTypeService(
                 Unit = Normalize(field.Unit),
                 ReferenceModuleKey = ResolveReferenceModule(field),
                 SortOrder = field.SortOrder,
+                GroupName = Normalize(field.GroupName),
                 Options = field.Type == ContentFieldType.Select
                     ? [.. field.Options.Select((o, index) => new FieldOption
                     {
@@ -297,6 +298,7 @@ public class ContentTypeService(
         stored.Unit = Normalize(field.Unit);
         stored.ReferenceModuleKey = ResolveReferenceModule(field);
         stored.SortOrder = field.SortOrder;
+        stored.GroupName = Normalize(field.GroupName);
 
         await SyncOptionsAsync(db, stored, field, ct);
         await db.SaveChangesAsync(ct);

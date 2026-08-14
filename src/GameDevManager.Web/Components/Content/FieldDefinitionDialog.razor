@@ -113,6 +113,20 @@
                 </div>
             }
 
+            @* Ein Abschnitt ist eine Überschrift, kein Verweis — deshalb Freitext mit
+               Vorschlägen statt einer Auswahlliste: Der erste Abschnitt einer Art muss sich
+               anlegen lassen, ohne ihn vorher irgendwo zu definieren. *@
+            <MudAutocomplete T="string"
+                             Value="Field.GroupName"
+                             ValueChanged="@((string? name) => Field.GroupName = name)"
+                             SearchFunc="SearchGroupsAsync"
+                             Label="@L["GroupLabel"]"
+                             HelperText="@L["GroupHelper"]"
+                             Variant="Variant.Outlined"
+                             Clearable="true"
+                             CoerceValue="true"
+                             ResetValueOnEmptyText="true" />
+
             <MudSwitch @bind-Value="Field.IsRequired"
                        Color="Color.Primary"
                        Label="@L["RequiredLabel"]" />
@@ -141,10 +155,26 @@
     [Parameter]
     public bool IsNew { get; set; }
 
+    /// <summary>
+    /// Die Abschnitte, die es an dieser Art schon gibt — als Vorschlagsliste. Ohne sie
+    /// entstünden „Kampfwerte“ und „Kampfwerte “ als zwei Abschnitte.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyCollection<string> KnownGroups { get; set; } = [];
+
     private ContentFieldType _originalType;
     private string? _error;
 
     protected override void OnInitialized() => _originalType = Field.Type;
+
+    private Task<IEnumerable<string>> SearchGroupsAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<string> matches = string.IsNullOrWhiteSpace(search)
+            ? KnownGroups
+            : KnownGroups.Where(group => group.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
 
     private void ChangeType(ContentFieldType type)
     {

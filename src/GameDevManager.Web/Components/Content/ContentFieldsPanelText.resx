@@ -21,6 +21,9 @@
   <data name="TypeWithoutFields" xml:space="preserve">
     <value>Diese Art hat noch keine Felder.</value>
   </data>
+  <data name="GroupHeading" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
   <data name="SectionIndividualFields" xml:space="preserve">
     <value>Individuelle Felder</value>
   </data>

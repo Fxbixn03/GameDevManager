@@ -63,8 +63,10 @@ public class ExportService(
     /// der Antwort), Cutscene-Einstellungen (ebenso) und den Story-Text (Slot <c>body</c> an
     /// der GUID des Abschnitts). Version 9: Quests tragen ihre <c>objectives</c> — die
     /// einzelnen Ziele, deren Abschlussbedingung als Bedingungssatz an ihrer eigenen GUID hängt.
+    /// Version 10: Felddefinitionen tragen einen <c>groupName</c> — den benannten Abschnitt,
+    /// in dem das Feld in der Maske steht.
     /// </remarks>
-    public const int FormatVersion = 9;
+    public const int FormatVersion = 10;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.

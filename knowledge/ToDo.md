@@ -51,7 +51,7 @@ sonst findet die Referenzansicht diese Verwendungen nicht und eine Kopie zeigt a
 
 *Aufwand: M · Migration: ja (ein Schalter) · Format: +1*
 
-### F3 — Feldgruppen und Feldreihenfolge
+### F3 — Feldgruppen und Feldreihenfolge ✅ umgesetzt
 
 > **Als** Nutzer mit einer Item-Art aus 25 Feldern **möchte ich** die Felder in benannte Abschnitte
 > gruppieren („Kampfwerte", „Wirtschaft", „Darstellung") und ihre Reihenfolge festlegen, **damit**
@@ -64,6 +64,10 @@ geerbte Felder stehen vor eigenen, innerhalb dessen greift die Sortierung. Ohne 
 verhält sich alles wie heute.
 
 *Aufwand: S · Migration: ja · Format: +1*
+
+**Umgesetzt.** `FieldDefinition.SortOrder` gab es bereits; hinzu kam `GroupName`, Migration
+`FieldGroups` in allen vier Providern, `FormatVersion` auf **10**. Die Maske baut je Abschnitt
+einen aufgeklappten `MudExpansionPanel`, Felder ohne Abschnitt stehen wie bisher oben.
 
 ### F4 — Wertebereiche und Formatprüfung an Feldern
 

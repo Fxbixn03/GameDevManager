@@ -1213,6 +1213,10 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
+                    b.Property<string>("GroupName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<bool>("IsRequired")
                         .HasColumnType("boolean");
 

@@ -68,6 +68,18 @@ public class FieldDefinition
 
     public int SortOrder { get; set; }
 
+    /// <summary>
+    /// Benannter Abschnitt, in dem das Feld in der Bearbeitungsmaske steht („Kampfwerte“,
+    /// „Wirtschaft“, „Darstellung“). Leer heißt: kein Abschnitt, das Feld steht wie bisher
+    /// unmittelbar unter den Stammdaten.
+    /// <para>
+    /// Eine Textspalte und keine eigene Gruppentabelle: Eine Gruppe ist eine Überschrift und
+    /// trägt nichts weiter — dieselbe Überlegung wie beim <c>Slot</c> der Bedingungssätze.
+    /// Zwei Felder gehören zusammen, wenn ihr Gruppenname gleich ist.
+    /// </para>
+    /// </summary>
+    public string? GroupName { get; set; }
+
     /// <summary>Auswahlmöglichkeiten bei <see cref="ContentFieldType.Select"/>.</summary>
     public List<FieldOption> Options { get; set; } = [];
 
@@ -92,6 +104,7 @@ public class FieldDefinition
         Unit = Unit,
         ReferenceModuleKey = ReferenceModuleKey,
         SortOrder = SortOrder,
+        GroupName = GroupName,
         Options = [.. Options.Select(option => option.Clone())]
     };
 }

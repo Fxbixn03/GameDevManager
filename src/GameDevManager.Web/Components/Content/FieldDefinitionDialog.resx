@@ -63,6 +63,12 @@
   <data name="UnitHelper" xml:space="preserve">
     <value>Reine Anzeige, z. B. „kg“, „s“ oder „%“.</value>
   </data>
+  <data name="GroupLabel" xml:space="preserve">
+    <value>Abschnitt (optional)</value>
+  </data>
+  <data name="GroupHelper" xml:space="preserve">
+    <value>Fasst Felder in der Maske unter einer Überschrift zusammen — „Kampfwerte“, „Wirtschaft“, „Darstellung“. Ohne Abschnitt steht das Feld oben.</value>
+  </data>
   <data name="TagListLabel" xml:space="preserve">
     <value>Als Stichwörter</value>
   </data>
