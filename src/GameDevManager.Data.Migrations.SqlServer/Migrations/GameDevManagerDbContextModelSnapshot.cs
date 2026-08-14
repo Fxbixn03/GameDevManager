@@ -1217,6 +1217,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("IsMultiValue")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsRequired")
                         .HasColumnType("bit");
 

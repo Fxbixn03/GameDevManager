@@ -25,10 +25,17 @@ public class ReferenceService(
 
         var hits = new List<EntityReferenceHit>();
 
-        // Verweise über benutzerdefinierte Referenzfelder.
+        // Verweise über benutzerdefinierte Referenzfelder. Eine Referenz<b>liste</b> steht als
+        // semikolongetrennter Text in derselben Zeile — gesucht wird deshalb zusätzlich dort,
+        // sonst fehlten in der Referenzansicht ausgerechnet die Mehrfachverweise.
+        var needle = entityId.ToString();
+
         var raw = await db.FieldValues
             .AsNoTracking()
-            .Where(v => v.ReferenceValue == entityId)
+            .Where(v => v.ReferenceValue == entityId
+                || (v.FieldDefinition!.IsMultiValue
+                    && v.TextValue != null
+                    && v.TextValue.Contains(needle)))
             .Select(v => new
             {
                 v.OwnerEntityId,

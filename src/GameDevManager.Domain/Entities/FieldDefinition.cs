@@ -57,6 +57,22 @@ public class FieldDefinition
     /// <summary>Trägt dieses Feld eine Stichwortliste? Nur Textfelder können das.</summary>
     public bool IsKeywordField => IsTagList && Type == ContentFieldType.Text;
 
+    /// <summary>
+    /// Nur bei <see cref="ContentFieldType.EntityReference"/>: Das Feld nimmt statt einer
+    /// einzelnen Entität <b>mehrere</b> auf — die drei Effekte eines Schwerts, die vier
+    /// erlaubten Klassen einer Rüstung.
+    /// <para>
+    /// Dieselbe Bauweise wie der Stichwort-Schalter: ein Schalter am vorhandenen Typ statt eines
+    /// eigenen <see cref="ContentFieldType"/>, gespeichert als kanonische, semikolongetrennte
+    /// GUID-Liste in <see cref="FieldValue.TextValue"/> (siehe <see cref="GuidList"/>). Damit
+    /// geht die Liste ohne Zutun durch Export, Import, Duplizieren und Feldvererbung.
+    /// </para>
+    /// </summary>
+    public bool IsMultiValue { get; set; }
+
+    /// <summary>Trägt dieses Feld eine Referenzliste? Nur Referenzfelder können das.</summary>
+    public bool IsReferenceList => IsMultiValue && Type == ContentFieldType.EntityReference;
+
     /// <summary>Einheit zur reinen Anzeige, z. B. „kg", „s" oder „%".</summary>
     public string? Unit { get; set; }
 
@@ -124,6 +140,7 @@ public class FieldDefinition
         Type = Type,
         IsRequired = IsRequired,
         IsTagList = IsTagList,
+        IsMultiValue = IsMultiValue,
         Unit = Unit,
         MinValue = MinValue,
         MaxValue = MaxValue,

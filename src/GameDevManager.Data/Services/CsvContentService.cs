@@ -351,7 +351,11 @@ public class CsvContentService(
                 value.NumberValue?.ToString("0.##########", CultureInfo.InvariantCulture),
             ContentFieldType.Boolean => value.BooleanValue?.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
             ContentFieldType.Date => value.DateValue?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            ContentFieldType.EntityReference => value.ReferenceValue?.ToString(),
+            // Eine Referenzliste steht schon als semikolongetrennter Text da — sie geht als
+            // solcher heraus und wieder herein.
+            ContentFieldType.EntityReference => field.IsMultiValue
+                ? value.TextValue
+                : value.ReferenceValue?.ToString(),
             ContentFieldType.Select => options.GetValueOrDefault(field.Id)
                 ?.FirstOrDefault(option => option.Id == value.OptionId)?.Label,
             _ => value.TextValue
@@ -405,6 +409,17 @@ public class CsvContentService(
 
                 problem = "Csv_NotADate";
                 return false;
+
+            case ContentFieldType.EntityReference when field.IsMultiValue:
+                var list = GuidList.Normalize(text);
+                if (list is null)
+                {
+                    problem = "Csv_NotAGuid";
+                    return false;
+                }
+
+                target.TextValue = list;
+                return true;
 
             case ContentFieldType.EntityReference:
                 if (Guid.TryParse(text, out var reference))

@@ -62,6 +62,15 @@
                         </MudSelectItem>
                     }
                 </MudSelect>
+
+                @* Mehrere Ziele gibt es nur an einer Referenz — die anderen Typen tragen je
+                   einen Wert, dieselbe Überlegung wie beim Stichwort-Schalter. *@
+                <div>
+                    <MudSwitch @bind-Value="Field.IsMultiValue"
+                               Color="Color.Primary"
+                               Label="@L["MultiValueLabel"]" />
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["MultiValueHelper"]</MudText>
+                </div>
             }
 
             @if (Field.Type == ContentFieldType.Select)
@@ -222,6 +231,12 @@
         if (type != ContentFieldType.Text)
         {
             Field.IsTagList = false;
+        }
+
+        // Dasselbe für die Mehrfachauswahl: Sie gehört zur Referenz.
+        if (type != ContentFieldType.EntityReference)
+        {
+            Field.IsMultiValue = false;
         }
 
         // Dasselbe für Grenzen und Muster — sie gehören zu Zahl bzw. Text.

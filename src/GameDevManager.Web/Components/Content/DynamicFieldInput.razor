@@ -110,6 +110,39 @@
         </MudSelect>
         break;
 
+    @* Referenzliste vor der einzelnen Referenz: Beides ist Typ „Referenz“, die Bedienung
+       unterscheidet der Schalter an der Felddefinition — dieselbe Bauart wie bei den
+       Stichwörtern. Mehrfachauswahl statt Autocomplete, weil hier nichts eingetippt wird. *@
+    case ContentFieldType.EntityReference when Definition.IsMultiValue:
+        @if (ReferenceOptions.Count == 0)
+        {
+            <MudTextField T="string"
+                          Value="@ReferenceModuleName"
+                          Label="@Label"
+                          HelperText="@L["NothingToReference", ReferenceModuleName]"
+                          Variant="Variant.Outlined"
+                          Disabled="true" />
+        }
+        else
+        {
+            <MudSelect T="Guid"
+                       MultiSelection="true"
+                       SelectedValues="SelectedReferences"
+                       SelectedValuesChanged="SetReferenceList"
+                       ToStringFunc="ReferenceName"
+                       MultiSelectionTextFunc="@(selected => ReferenceListText(selected))"
+                       Label="@Label"
+                       HelperText="@ReferenceHelperText"
+                       Variant="Variant.Outlined"
+                       Clearable="true">
+                @foreach (var option in ReferenceOptions)
+                {
+                    <MudSelectItem T="Guid" Value="@option.Id">@option.Name</MudSelectItem>
+                }
+            </MudSelect>
+        }
+        break;
+
     case ContentFieldType.EntityReference:
     case ContentFieldType.Rarity:
         @if (ReferenceOptions.Count == 0)
@@ -268,6 +301,37 @@
     private Task SetOption(Guid? optionId) => ApplyAsync(() => Value.OptionId = optionId);
 
     private Task SetReference(EntitySummary? entity) => ApplyAsync(() => Value.ReferenceValue = entity?.Id);
+
+    /// <summary>
+    /// Eine Referenzliste steht als semikolongetrennter Text in derselben Spalte wie ein
+    /// Stichwortfeld — kanonisiert wird beim Speichern, hier genügt die geordnete Fassung.
+    /// </summary>
+    private Task SetReferenceList(IReadOnlyCollection<Guid>? selected) =>
+        ApplyAsync(() => Value.TextValue = GuidList.Format(selected ?? []));
+
+    private IReadOnlyCollection<Guid> SelectedReferences => GuidList.Parse(Value.TextValue);
+
+    private string ReferenceName(Guid id) =>
+        ReferenceOptions.FirstOrDefault(option => option.Id == id)?.Name ?? L["DeletedReference"].Value;
+
+    /// <summary>
+    /// Die Anzeige der Auswahl: bis zu drei Namen, danach die Anzahl. Zwanzig Namen
+    /// nebeneinander sprengten das Feld und sagten weniger als „20 ausgewählt“.
+    /// </summary>
+    private string ReferenceListText(IReadOnlyList<string>? selected)
+    {
+        var ids = (selected ?? [])
+            .Select(text => Guid.TryParse(text, out var id) ? id : Guid.Empty)
+            .Where(id => id != Guid.Empty)
+            .ToList();
+
+        return ids.Count switch
+        {
+            0 => string.Empty,
+            <= 3 => string.Join(", ", ids.Select(ReferenceName)),
+            _ => L["ReferenceListCount", ids.Count].Value
+        };
+    }
 
     private async Task ApplyAsync(Action change)
     {

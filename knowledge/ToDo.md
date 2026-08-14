@@ -36,7 +36,7 @@ Providern, `FormatVersion` auf **9**. Die Abschlussbedingung hängt im Slot `Com
 GUID des Ziels; der Health Check verlangt bei Zielen eine Bedingung je Ziel statt einer an der
 Quest. Die Ziel-Texte sind über F8 gleich mit übersetzbar.
 
-### F2 — Feldtyp „Referenzliste"
+### F2 — Feldtyp „Referenzliste" ✅ umgesetzt
 
 > **Als** Nutzer **möchte ich** in einem Feld mehrere Entitäten auswählen (die drei Effekte eines
 > Schwerts, die vier erlaubten Klassen einer Rüstung), **damit** ich dafür nicht „Effekt 1",
@@ -50,6 +50,12 @@ wie bei `KeywordList`. Zu bedenken: `ReferenceService` und `GuidRemap` müssen d
 sonst findet die Referenzansicht diese Verwendungen nicht und eine Kopie zeigt auf die Originale.
 
 *Aufwand: M · Migration: ja (ein Schalter) · Format: +1*
+
+**Umgesetzt.** Schalter `IsMultiValue` an der `FieldDefinition`, kanonische GUID-Liste über
+`GuidList` (Semikolon, damit sie sich nicht mit den kommagetrennten Stichwörtern in derselben
+Spalte beißt), Migration `FieldMultiValue` in allen vier Providern, `FormatVersion` auf **12**.
+Der `ReferenceService` sucht zusätzlich im Text; `GuidRemap` traf die Liste ohne Änderung, weil
+er über den gesamten JSON-Text tauscht.
 
 ### F3 — Feldgruppen und Feldreihenfolge ✅ umgesetzt
 

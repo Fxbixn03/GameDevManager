@@ -261,6 +261,7 @@ public class ContentTypeService(
                 Type = field.Type,
                 IsRequired = field.IsRequired,
                 IsTagList = ResolveTagList(field),
+                IsMultiValue = ResolveMultiValue(field),
                 Unit = Normalize(field.Unit),
                 MinValue = ResolveMinimum(field),
                 MaxValue = ResolveMaximum(field),
@@ -299,6 +300,7 @@ public class ContentTypeService(
         stored.Type = field.Type;
         stored.IsRequired = field.IsRequired;
         stored.IsTagList = ResolveTagList(field);
+        stored.IsMultiValue = ResolveMultiValue(field);
         stored.Unit = Normalize(field.Unit);
         stored.MinValue = ResolveMinimum(field);
         stored.MaxValue = ResolveMaximum(field);
@@ -538,6 +540,13 @@ public class ContentTypeService(
     /// </summary>
     private static bool ResolveTagList(FieldDefinition field) =>
         field.Type == ContentFieldType.Text && field.IsTagList;
+
+    /// <summary>
+    /// Mehrere Ziele gibt es nur an einer Referenz — an einer Zahl oder einem Schalter wäre die
+    /// Liste bedeutungslos. Wie beim Stichwort-Schalter wird sie beim Typwechsel hier gelöscht.
+    /// </summary>
+    private static bool ResolveMultiValue(FieldDefinition field) =>
+        field.Type == ContentFieldType.EntityReference && field.IsMultiValue;
 
     /// <summary>
     /// Grenzen gelten nur an Zahlen, ein Muster nur an Texten. Wie beim Stichwort-Schalter wird

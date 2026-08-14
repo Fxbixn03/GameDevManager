@@ -310,6 +310,15 @@ public static class ContentFields
             value.TextValue = KeywordList.Normalize(value.TextValue);
         }
 
+        if (field.IsReferenceList)
+        {
+            value.TextValue = GuidList.Normalize(value.TextValue);
+
+            // Die Einzelspalte bleibt leer: Zwei Orte für dasselbe Feld ließen Referenzansicht
+            // und Export auseinanderlaufen, je nachdem, welchen sie lesen.
+            value.ReferenceValue = null;
+        }
+
         return value;
     }
 

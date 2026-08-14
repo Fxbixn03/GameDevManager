@@ -30,6 +30,12 @@
   <data name="PatternHint" xml:space="preserve">
     <value>Muster: {0}</value>
   </data>
+  <data name="ReferenceListCount" xml:space="preserve">
+    <value>{0} ausgewählt</value>
+  </data>
+  <data name="DeletedReference" xml:space="preserve">
+    <value>Gelöschter Eintrag</value>
+  </data>
   <data name="ReferenceHelper" xml:space="preserve">
     <value>Verweist auf: {0}</value>
   </data>

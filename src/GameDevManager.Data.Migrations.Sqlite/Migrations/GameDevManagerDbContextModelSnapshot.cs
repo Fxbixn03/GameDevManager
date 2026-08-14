@@ -1212,6 +1212,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsMultiValue")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsRequired")
                         .HasColumnType("INTEGER");
 

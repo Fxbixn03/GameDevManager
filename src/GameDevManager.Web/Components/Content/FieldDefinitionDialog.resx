@@ -63,6 +63,12 @@
   <data name="UnitHelper" xml:space="preserve">
     <value>Reine Anzeige, z. B. „kg“, „s“ oder „%“.</value>
   </data>
+  <data name="MultiValueLabel" xml:space="preserve">
+    <value>Mehrere Ziele erlauben</value>
+  </data>
+  <data name="MultiValueHelper" xml:space="preserve">
+    <value>Das Feld nimmt dann eine Liste von Entitäten auf — die drei Effekte eines Schwerts, die vier erlaubten Klassen einer Rüstung.</value>
+  </data>
   <data name="MinLabel" xml:space="preserve">
     <value>Mindestwert</value>
   </data>
