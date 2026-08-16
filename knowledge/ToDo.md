@@ -560,7 +560,7 @@ wäre die Wahl geraten), dann in einem Rutsch zuordnen und das erste je Entität
 
 *Aufwand: S · Migration: nein · Format: unverändert*
 
-### F35 — Verwaiste Dateien im Speicher finden
+### F35 — Verwaiste Dateien im Speicher finden ✅ umgesetzt
 
 > **Als** Betreiber **möchte ich** wissen, welche Dateien im Asset-Verzeichnis liegen, zu denen es
 > keine Datenbankzeile mehr gibt, **damit** der Speicher nicht unbemerkt zuwächst.
@@ -573,6 +573,10 @@ zweiter, ausdrücklicher Klick. Dieselbe Zurückhaltung wie bei `ExportSnapshotS
 das fremde Dateien im Exportverzeichnis bewusst stehen lässt.
 
 *Aufwand: S · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `IAssetStorage.ListKeys` plus `AssetService.FindOrphanedFilesAsync` und
+`DeleteOrphanedFilesAsync`, Oberfläche unter „Einstellungen → Speicher“. Angezeigt statt
+gelöscht; vor dem Löschen wird erneut geprüft.
 
 ---
 

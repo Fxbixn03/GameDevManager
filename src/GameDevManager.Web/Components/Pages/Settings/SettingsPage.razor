@@ -12,6 +12,8 @@
 @inject LanguageSelection Language
 @inject NavigationManager Navigation
 @inject NavigationManager Navigation
+@inject AssetService Assets
+@inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 
 @*
@@ -46,6 +48,9 @@
         </MudNavLink>
         <MudNavLink Href="/einstellungen/darstellung" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DarkMode">
             @L["TabAppearance"]
+        </MudNavLink>
+        <MudNavLink Href="/einstellungen/speicher" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CleaningServices">
+            @L["TabStorage"]
         </MudNavLink>
     </MudNavMenu>
 
@@ -222,6 +227,65 @@
                     </MudStack>
                 </MudStack>
                 break;
+
+            @* --------------------------------------------------------------- Speicher *@
+            case StorageSection:
+                <MudStack Spacing="0" Style="max-width: 760px;">
+                    <MudText Typo="Typo.h6">@L["TabStorage"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["StorageHint"]</MudText>
+
+                    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mb-3">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Search"
+                                   Disabled="_scanning"
+                                   OnClick="ScanOrphansAsync">
+                            @L["StorageScan"]
+                        </MudButton>
+
+                        @* Angezeigt statt gelöscht — das Löschen ist ein zweiter, ausdrücklicher
+                           Klick, dieselbe Zurückhaltung wie beim Aufräumen der Exportstände. *@
+                        @if (_orphans is { Count: > 0 })
+                        {
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Error"
+                                       StartIcon="@Icons.Material.Filled.DeleteSweep"
+                                       Disabled="_scanning"
+                                       OnClick="DeleteOrphansAsync">
+                                @L["StorageDelete", _orphans.Count]
+                            </MudButton>
+                        }
+                    </MudStack>
+
+                    @if (_scanning)
+                    {
+                        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                    }
+                    else if (_orphans is null)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["StorageNotScanned"]</MudText>
+                    }
+                    else if (_orphans.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Success" Dense="true" Square="true">@L["StorageClean"]</MudAlert>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Dense="true" Square="true" Class="mb-3">
+                            @L["StorageFound", _orphans.Count]
+                        </MudAlert>
+
+                        <MudSimpleTable Dense="true" Elevation="0">
+                            <tbody>
+                                @foreach (var key in _orphans)
+                                {
+                                    <tr><td class="gdm-mono">@key</td></tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    }
+                </MudStack>
+                break;
         }
     </div>
 </div>
@@ -231,6 +295,7 @@
     private const string ModulesSection = "module";
     private const string TopbarSection = "topbar";
     private const string AppearanceSection = "darstellung";
+    private const string StorageSection = "speicher";
 
     /// <summary>Der Bereich aus der Route — ohne oder mit unbekanntem Segment die Datenbank.</summary>
     [Parameter]
@@ -241,6 +306,7 @@
         ModulesSection => ModulesSection,
         TopbarSection => TopbarSection,
         AppearanceSection => AppearanceSection,
+        StorageSection => StorageSection,
         _ => DatabaseSection
     };
 
@@ -261,6 +327,11 @@
     private List<ModuleDefinition> _order = [];
 
     private ModuleDefinition? _dragging;
+
+    /// <summary>Verwaiste Dateien: <c>null</c> heißt „noch nicht nachgesehen“.</summary>
+    private List<string>? _orphans;
+
+    private bool _scanning;
 
     /// <summary>Die Arbeitsfelder in der Reihenfolge des Dashboards, Werkzeuge zuletzt.</summary>
     private static IEnumerable<ModuleGroup> Groups =>
@@ -286,6 +357,53 @@
         if (string.IsNullOrEmpty(Section))
         {
             Navigation.NavigateTo($"/einstellungen/{DatabaseSection}", replace: true);
+        }
+    }
+
+    // ------------------------------------------------------------------------- Speicher
+
+    private async Task ScanOrphansAsync()
+    {
+        _scanning = true;
+
+        try
+        {
+            _orphans = await Assets.FindOrphanedFilesAsync();
+        }
+        finally
+        {
+            _scanning = false;
+        }
+    }
+
+    private async Task DeleteOrphansAsync()
+    {
+        if (_orphans is not { Count: > 0 })
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["StorageDeleteTitle"],
+            L["StorageDeleteMessage", _orphans.Count],
+            yesText: L["StorageDeleteYes"],
+            cancelText: L["Cancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var deleted = await Assets.DeleteOrphanedFilesAsync(_orphans);
+            Snackbar.Add(L["StorageDeletedMessage", deleted], Severity.Success);
+
+            await ScanOrphansAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
         }
     }
 

@@ -30,6 +30,42 @@
   <data name="TabTopbar" xml:space="preserve">
     <value>Topbar</value>
   </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="TabStorage" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="StorageHint" xml:space="preserve">
+    <value>Dateien im Asset-Verzeichnis, zu denen es keine Zeile in der Datenbank gibt. Sie entstehen bei abgebrochenen Importen — gefunden wird installationsweit, über alle Projekte.</value>
+  </data>
+  <data name="StorageScan" xml:space="preserve">
+    <value>Speicher prüfen</value>
+  </data>
+  <data name="StorageNotScanned" xml:space="preserve">
+    <value>Noch nicht nachgesehen.</value>
+  </data>
+  <data name="StorageClean" xml:space="preserve">
+    <value>Keine verwaisten Dateien — jede Datei hat ihre Zeile.</value>
+  </data>
+  <data name="StorageFound" xml:space="preserve">
+    <value>{0} Datei(en) ohne Zeile in der Datenbank:</value>
+  </data>
+  <data name="StorageDelete" xml:space="preserve">
+    <value>{0} Datei(en) löschen</value>
+  </data>
+  <data name="StorageDeleteTitle" xml:space="preserve">
+    <value>Verwaiste Dateien löschen?</value>
+  </data>
+  <data name="StorageDeleteMessage" xml:space="preserve">
+    <value>{0} Datei(en) werden endgültig aus dem Speicher entfernt. Vor dem Löschen wird noch einmal geprüft, dass wirklich keine Zeile daran hängt.</value>
+  </data>
+  <data name="StorageDeleteYes" xml:space="preserve">
+    <value>Endgültig löschen</value>
+  </data>
+  <data name="StorageDeletedMessage" xml:space="preserve">
+    <value>{0} Datei(en) gelöscht.</value>
+  </data>
   <data name="TabAppearance" xml:space="preserve">
     <value>Darstellung</value>
   </data>

@@ -157,17 +157,30 @@ public sealed class TestDatabase : IDisposable
             ValueTask.FromResult(Current);
     }
 
-    /// <summary>Dateispeicher-Attrappe: es geht in den Tests nie um echte Dateien.</summary>
-    private sealed class InMemoryAssetStorage : IAssetStorage
+    /// <summary>
+    /// Dateispeicher-Attrappe: es geht in den Tests nie um echte Dateien. Die Schlüssel führt
+    /// sie trotzdem mit — die Suche nach verwaisten Dateien braucht die Gegenrichtung.
+    /// </summary>
+    public sealed class InMemoryAssetStorage : IAssetStorage
     {
+        private readonly HashSet<string> _keys = new(StringComparer.Ordinal);
+
         public Task<string> SaveAsync(
-            Guid projectId, Guid assetId, string extension, Stream content, CancellationToken ct = default) =>
-            Task.FromResult($"{projectId:N}/{assetId:N}{extension}");
+            Guid projectId, Guid assetId, string extension, Stream content, CancellationToken ct = default)
+        {
+            var key = $"{projectId:N}/{assetId:N}{extension}";
+            _keys.Add(key);
+
+            return Task.FromResult(key);
+        }
 
         public Stream? OpenRead(string storageKey) => null;
 
-        public void Delete(string storageKey)
-        {
-        }
+        public void Delete(string storageKey) => _keys.Remove(storageKey);
+
+        public IReadOnlyList<string> ListKeys() => [.. _keys.Order(StringComparer.Ordinal)];
+
+        /// <summary>Legt einen Schlüssel ab, ohne dass es dazu eine Zeile gäbe — ein Waise.</summary>
+        public void AddStrayFile(string storageKey) => _keys.Add(storageKey);
     }
 }

@@ -15,4 +15,11 @@ public interface IAssetStorage
 
     /// <summary>Entfernt eine Datei. Eine bereits fehlende Datei ist kein Fehler.</summary>
     void Delete(string storageKey);
+
+    /// <summary>
+    /// Alle Schlüssel, die im Speicher liegen — die Gegenrichtung zu den Zeilen in der
+    /// Datenbank. Nur dafür da, verwaiste Dateien zu finden; nichts im laufenden Betrieb
+    /// zählt den Speicher durch.
+    /// </summary>
+    IReadOnlyList<string> ListKeys();
 }

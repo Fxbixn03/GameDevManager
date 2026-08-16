@@ -400,6 +400,70 @@ public class AssetService(
 
     // ------------------------------------------------------------------------------ Stichwörter
 
+    // ------------------------------------------------------------------------ Verwaiste Dateien
+
+    /// <summary>
+    /// Dateien im Speicher, zu denen es keine Zeile in der Datenbank gibt. Sie entstehen bei
+    /// jedem abgebrochenen Import und bei jedem Fehler zwischen Dateisystem und Transaktion —
+    /// der Health Check „verwaiste Sprites“ prüft die Gegenrichtung.
+    /// <para>
+    /// Gelistet wird <b>installationsweit</b> und nicht je Projekt: Die Dateien eines
+    /// gelöschten Projekts sind genau der Fall, den man sucht, und deren Projekt-GUID steht in
+    /// keiner Tabelle mehr.
+    /// </para>
+    /// </summary>
+    public async Task<List<string>> FindOrphanedFilesAsync(CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var known = (await db.Assets
+                .AsNoTracking()
+                .Select(asset => asset.StorageKey)
+                .ToListAsync(ct))
+            .ToHashSet(StringComparer.Ordinal);
+
+        return [.. storage.ListKeys().Where(key => !known.Contains(key))];
+    }
+
+    /// <summary>
+    /// Löscht die übergebenen verwaisten Dateien. Ein zweiter, ausdrücklicher Klick — dieselbe
+    /// Zurückhaltung wie bei den Exportständen, die fremde Dateien bewusst stehen lassen.
+    /// <para>
+    /// Geprüft wird <b>erneut</b>, ob der Schlüssel wirklich verwaist ist: Zwischen Anzeigen
+    /// und Klicken kann ein Upload dazwischengekommen sein, und eine Datei zu löschen, an der
+    /// eine Zeile hängt, wäre der schlimmere Fehler.
+    /// </para>
+    /// </summary>
+    public async Task<int> DeleteOrphanedFilesAsync(
+        IReadOnlyCollection<string> storageKeys, CancellationToken ct = default)
+    {
+        await guard.EnsureCanWriteAsync(ct);
+
+        if (storageKeys.Count == 0)
+        {
+            return 0;
+        }
+
+        var orphans = (await FindOrphanedFilesAsync(ct)).ToHashSet(StringComparer.Ordinal);
+        var deleted = 0;
+
+        foreach (var key in storageKeys.Where(orphans.Contains))
+        {
+            try
+            {
+                storage.Delete(key);
+                deleted++;
+            }
+            catch (IOException)
+            {
+                // Eine Datei, die gerade gelesen wird, bleibt stehen und fällt beim nächsten
+                // Lauf — dasselbe Verhalten wie beim Aufräumen der Exportstände.
+            }
+        }
+
+        return deleted;
+    }
+
     public async Task<List<AssetTag>> GetTagsAsync(Guid projectId, CancellationToken ct = default)
     {
         await using var db = await factory.CreateDbContextAsync(ct);
