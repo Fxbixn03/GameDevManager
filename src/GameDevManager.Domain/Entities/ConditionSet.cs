@@ -65,4 +65,10 @@ public static class ConditionSlots
 
     /// <summary>„Wird freigeschaltet, wenn …“ — für Achievements.</summary>
     public const string Unlock = "unlock";
+
+    /// <summary>
+    /// „Erscheint, wenn …“ — an einer <see cref="SpawnRule"/>. Getrennt von der Verfügbarkeit,
+    /// weil ein NPC mehrere Spawn-Regeln mit je eigenen Bedingungen haben darf.
+    /// </summary>
+    public const string Spawn = "spawn";
 }

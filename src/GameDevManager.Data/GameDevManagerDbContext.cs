@@ -41,6 +41,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<TraderOffer> TraderOffers => Set<TraderOffer>();
 
+    /// <summary>Spawn-Regeln der NPCs — wo, wie viele, wie oft.</summary>
+    public DbSet<SpawnRule> SpawnRules => Set<SpawnRule>();
+
     /// <summary>Vom Nutzer definierte Beziehungsarten zwischen NPCs („Ist Vater von“).</summary>
     public DbSet<NpcRelationType> NpcRelationTypes => Set<NpcRelationType>();
 
@@ -376,6 +379,19 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Frage „welche NPCs haben diese Klasse?“.
             entity.HasIndex(n => n.CharacterClassId);
+        });
+
+        modelBuilder.Entity<SpawnRule>(entity =>
+        {
+            entity.HasOne(rule => rule.Npc)
+                .WithMany(npc => npc.SpawnRules)
+                .HasForeignKey(rule => rule.NpcId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „welche NPCs spawnen auf dieser Karte?“ — die der Karten-Editor
+            // an jeder Markierung stellt.
+            entity.HasIndex(rule => rule.TargetMapId);
+            entity.HasIndex(rule => rule.TargetMarkerId);
         });
 
         modelBuilder.Entity<NpcRelationType>(entity =>

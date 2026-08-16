@@ -346,6 +346,14 @@ public class MapService(
                 .SetProperty(s => s.TargetMapId, (Guid?)null)
                 .SetProperty(s => s.TargetMapMarkerId, (Guid?)null), ct);
 
+        // Und für Spawn-Regeln, die auf diese Karte zeigten. Die Regel bleibt stehen — sie
+        // sagt weiterhin, wie viele und wie oft; nur das Wo ist offen.
+        await db.SpawnRules
+            .Where(rule => rule.TargetMapId == mapId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(rule => rule.TargetMapId, (Guid?)null)
+                .SetProperty(rule => rule.TargetMarkerId, (Guid?)null), ct);
+
         // Die eigenen Markierungen fallen über den Fremdschlüssel mit.
         await db.Maps
             .Where(m => m.Id == mapId)

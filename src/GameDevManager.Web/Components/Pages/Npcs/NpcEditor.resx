@@ -255,6 +255,51 @@
   <data name="UniqueOffHint" xml:space="preserve">
     <value>Diese Figur kann mehrfach und immer wieder spawnen — etwa ein Waschbär.</value>
   </data>
+  <data name="SpawnSection" xml:space="preserve">
+    <value>Spawn-Regeln</value>
+  </data>
+  <data name="AddSpawnRule" xml:space="preserve">
+    <value>Regel hinzufügen</value>
+  </data>
+  <data name="NoSpawnRules" xml:space="preserve">
+    <value>Keine Spawn-Regel. Ohne Regel sagt nur die Karten-Markierung, wo dieser NPC steht — aber nicht, wie viele und wie oft.</value>
+  </data>
+  <data name="SpawnMapLabel" xml:space="preserve">
+    <value>Karte</value>
+  </data>
+  <data name="SpawnMinLabel" xml:space="preserve">
+    <value>Mindestens</value>
+  </data>
+  <data name="SpawnMaxLabel" xml:space="preserve">
+    <value>Höchstens</value>
+  </data>
+  <data name="SpawnRespawnLabel" xml:space="preserve">
+    <value>Respawn</value>
+  </data>
+  <data name="SpawnRespawnHelper" xml:space="preserve">
+    <value>Leer heißt: wächst nicht nach.</value>
+  </data>
+  <data name="SpawnConditions" xml:space="preserve">
+    <value>Erscheint, wenn …</value>
+  </data>
+  <data name="SpawnConditionsShort" xml:space="preserve">
+    <value>Bedingung</value>
+  </data>
+  <data name="SpawnConditionsAfterSave" xml:space="preserve">
+    <value>Erst speichern — die Bedingung hängt an der GUID der Regel.</value>
+  </data>
+  <data name="SpawnConditionsDialogTitle" xml:space="preserve">
+    <value>Erscheint, wenn …</value>
+  </data>
+  <data name="SpawnConditionSubject" xml:space="preserve">
+    <value>Spawn-Regel von {0}</value>
+  </data>
+  <data name="SpawnConditionEmptyHint" xml:space="preserve">
+    <value>Ohne Bedingung erscheint der NPC immer — Tageszeit, Wetter und Freischaltungen stehen hier.</value>
+  </data>
+  <data name="RemoveSpawnRule" xml:space="preserve">
+    <value>Regel entfernen</value>
+  </data>
   <data name="PersonalitySection" xml:space="preserve">
     <value>Persönlichkeit &amp; Wesenszüge</value>
   </data>

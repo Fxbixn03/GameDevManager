@@ -109,7 +109,7 @@ Herkunft als Zusatzangabe daneben.
 
 *Aufwand: L · Migration: ja · Format: +1*
 
-### F6 — Spawn-Regeln als eigene Struktur
+### F6 — Spawn-Regeln als eigene Struktur ✅ umgesetzt
 
 > **Als** Level-Designer **möchte ich** zu einem Mob festlegen, wie viele gleichzeitig in einem
 > Gebiet stehen, nach welcher Zeit sie nachwachsen und unter welcher Bedingung sie überhaupt
@@ -123,6 +123,10 @@ Markierung. Das schließt den letzten offenen Halbsatz des NPC-Kapitels im Konze
 gibt es nur einmal … andere spawnen nur in bestimmten Bereichen") sauber ab.
 
 *Aufwand: M · Migration: ja · Format: +1*
+
+**Umgesetzt.** `SpawnRule` als Kind-Sammlung des NPCs, Migration `SpawnRules` in allen vier
+Providern, `FormatVersion` auf **17**, Bedingungen im neuen Slot `Spawn`. Der Abschnitt steht in
+der NPC-Maske; im Karten-Editor als Aufklappliste an der Markierung steht er noch aus.
 
 ### F7 — Formeln über Feldnamen statt nur über `x`
 

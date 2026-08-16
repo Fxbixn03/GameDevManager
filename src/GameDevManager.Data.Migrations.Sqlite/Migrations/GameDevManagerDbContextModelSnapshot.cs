@@ -2521,6 +2521,44 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("SoundEffects");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.SpawnRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MaxCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MinCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("NpcId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("RespawnSeconds")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("TargetMapId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("TargetMarkerId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NpcId");
+
+                    b.HasIndex("TargetMapId");
+
+                    b.HasIndex("TargetMarkerId");
+
+                    b.ToTable("SpawnRules");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.StoryEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3707,6 +3745,17 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.SpawnRule", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Npc", "Npc")
+                        .WithMany("SpawnRules")
+                        .HasForeignKey("NpcId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Npc");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.StoryEntry", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.ContentType", "ContentType")
@@ -3926,6 +3975,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("Offers");
 
                     b.Navigation("Relations");
+
+                    b.Navigation("SpawnRules");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Quest", b =>

@@ -70,13 +70,15 @@ public class ExportService(
     /// deren Wert semikolongetrennt in <c>content/field-values.json</c> steht. Version 13:
     /// Inhalte tragen einen <c>status</c> (Entwurf, in Arbeit, im Review, fertig); das Manifest
     /// nennt unter <c>minimumStatus</c> den Mindeststand, auf den ein Export eingeschränkt war.
+    /// Version 17: NPCs tragen <c>spawnRules</c> — wo, wie viele und wie oft sie erscheinen;
+    /// die Bedingung „erscheint, wenn …“ hängt als Bedingungssatz an der GUID der Regel.
     /// Version 16: Währungen tragen einen <c>exchangeRate</c> — die Grundlage der
     /// Wirtschafts-Prüfung. Version 15: <c>content/export-profiles.json</c> kommt dazu — die
     /// benannten Exporte eines Projekts. Version 14: Cutscene-Einstellungen tragen <c>durationSeconds</c> und <c>cameraNote</c>;
     /// ihr Skizzenbild hängt als Asset an ihrer GUID und steht damit ohne neue Spalte im
     /// Archiv.
     /// </remarks>
-    public const int FormatVersion = 16;
+    public const int FormatVersion = 17;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -128,7 +130,8 @@ public class ExportService(
             .Include(r => r.Outputs).Include(r => r.Ingredients));
         var currencies = await LoadContentAsync(db.Currencies);
         var rarities = await LoadContentAsync(db.Rarities);
-        var npcs = await LoadContentAsync(db.Npcs.Include(n => n.Offers).Include(n => n.Relations));
+        var npcs = await LoadContentAsync(db.Npcs
+            .Include(n => n.Offers).Include(n => n.Relations).Include(n => n.SpawnRules));
         var factions = await LoadContentAsync(db.Factions.Include(f => f.Members));
         var relations = await LoadContentAsync(db.DiplomaticRelations);
         var maps = await LoadContentAsync(db.Maps.Include(m => m.Markers).Include(m => m.Layers));
@@ -311,6 +314,7 @@ public class ExportService(
         {
             n.Offers = [.. n.Offers.OrderBy(o => o.SortOrder).ThenBy(o => o.Id)];
             n.Relations = [.. n.Relations.OrderBy(r => r.SortOrder).ThenBy(r => r.Id)];
+            n.SpawnRules = [.. n.SpawnRules.OrderBy(r => r.SortOrder).ThenBy(r => r.Id)];
         });
         factions.ForEach(f => f.Members = [.. f.Members.OrderBy(m => m.SortOrder).ThenBy(m => m.Id)]);
         maps.ForEach(m =>

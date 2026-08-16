@@ -77,6 +77,9 @@ public class Npc : ContentEntity
     public List<TraderOffer> Offers { get; set; } = [];
 
     public List<NpcRelation> Relations { get; set; } = [];
+
+    /// <summary>Wo, wie viele und wie oft dieser NPC erscheint — siehe <see cref="SpawnRule"/>.</summary>
+    public List<SpawnRule> SpawnRules { get; set; } = [];
 }
 
 /// <summary>
@@ -144,4 +147,56 @@ public static class NpcTraits
 
         return parts.Count == 0 ? null : string.Join(';', parts);
     }
+}
+
+/// <summary>
+/// Eine Spawn-Regel: <b>wo</b>, <b>wie viele</b> und <b>wie oft</b> ein NPC erscheint.
+/// <para>
+/// Die Karten-Markierung deckt allein das <i>Wo</i> ab; alles Übrige stand bisher bestenfalls
+/// in benutzerdefinierten Feldern und war damit nicht auswertbar. Das schließt den letzten
+/// offenen Halbsatz des NPC-Kapitels im Konzept ab („manche NPCs gibt es nur einmal … andere
+/// spawnen nur in bestimmten Bereichen“).
+/// </para>
+/// <para>
+/// <b>Wann</b> er erscheint, steht nicht hier, sondern als <see cref="ConditionSet"/> im Slot
+/// <see cref="ConditionSlots.Spawn"/> an der GUID der Regel — Tageszeit, Wetter und
+/// Freischaltung gibt es im Bedingungssystem längst, und eine zweite Fassung davon liefe beim
+/// ersten neuen Bedingungstyp auseinander.
+/// </para>
+/// </summary>
+public class SpawnRule
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public Guid NpcId { get; set; }
+
+    public Npc? Npc { get; set; }
+
+    /// <summary>
+    /// Die Karte, auf der er erscheint. GUID-Referenz über die Modulgrenze, ohne
+    /// Fremdschlüssel — der <c>MapService</c> nullt sie beim Löschen einer Karte.
+    /// </summary>
+    public Guid? TargetMapId { get; set; }
+
+    /// <summary>
+    /// Die Markierung auf <see cref="TargetMapId"/> — der genaue Ort oder das Gebiet. Ohne
+    /// Markierung meint die Regel die ganze Karte.
+    /// </summary>
+    public Guid? TargetMarkerId { get; set; }
+
+    /// <summary>Untere Grenze der Anzahl; gleich der oberen für eine feste Zahl.</summary>
+    public int MinCount { get; set; } = 1;
+
+    public int MaxCount { get; set; } = 1;
+
+    /// <summary>
+    /// Nach wie vielen Sekunden nachgewachsen wird. <c>null</c> heißt „gar nicht“ — der
+    /// einmalige NPC des Konzepts.
+    /// </summary>
+    public int? RespawnSeconds { get; set; }
+
+    public int SortOrder { get; set; }
+
+    /// <summary>Kurzfassung der Anzahl für Listen: „3“ oder „1–5“.</summary>
+    public string DescribeCount() => MinCount == MaxCount ? MinCount.ToString() : $"{MinCount}–{MaxCount}";
 }

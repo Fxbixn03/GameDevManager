@@ -87,6 +87,7 @@ public class NpcService(
             .AsNoTracking()
             .Include(n => n.Offers)
             .Include(n => n.Relations)
+            .Include(n => n.SpawnRules)
             .FirstOrDefaultAsync(n => n.Id == npcId && n.GameProjectId == projectId, ct);
 
         if (npc is null)
@@ -125,6 +126,7 @@ public class NpcService(
         var stored = await db.Npcs
             .Include(n => n.Offers)
             .Include(n => n.Relations)
+            .Include(n => n.SpawnRules)
             .FirstOrDefaultAsync(n => n.Id == npc.Id, ct);
 
         if (stored is null)
@@ -159,8 +161,10 @@ public class NpcService(
         var removedOfferIds = new List<Guid>();
         SyncOffers(db, stored, npc, removedOfferIds);
         SyncRelations(db, stored, npc);
+        SyncSpawnRules(db, stored, npc, removedOfferIds);
 
-        // Bedingungen entfernter Posten hängen an deren GUID und fallen nicht von selbst mit.
+        // Bedingungen entfernter Posten und Spawn-Regeln hängen an deren GUID und fallen
+        // nicht von selbst mit.
         await EntityCleanup.DeleteForEntitiesAsync(db, removedOfferIds, ct);
 
         // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier
@@ -235,6 +239,64 @@ public class NpcService(
         if (duplicateRelation is not null)
         {
             throw new ContentValidationException(messages["NpcRelationDuplicate"]);
+        }
+    }
+
+    /// <summary>
+    /// Gleicht die Spawn-Regeln ab — dasselbe Muster wie <see cref="SyncOffers"/>, samt
+    /// EF-Fallstrick bei Kind-Sammlungen. Entfernte GUIDs kommen in dieselbe Liste: Ihre
+    /// Bedingungen räumt derselbe Aufruf ab.
+    /// </summary>
+    private static void SyncSpawnRules(
+        GameDevManagerDbContext db, Npc stored, Npc incoming, List<Guid> removedIds)
+    {
+        var wanted = incoming.SpawnRules;
+        var wantedIds = wanted.Select(rule => rule.Id).ToHashSet();
+
+        foreach (var obsolete in stored.SpawnRules.Where(r => !wantedIds.Contains(r.Id)).ToList())
+        {
+            stored.SpawnRules.Remove(obsolete);
+            removedIds.Add(obsolete.Id);
+        }
+
+        for (var index = 0; index < wanted.Count; index++)
+        {
+            var rule = wanted[index];
+            var target = stored.SpawnRules.FirstOrDefault(r => r.Id == rule.Id);
+
+            // Mindestens einer, und die obere Grenze nie unter der unteren — eine verdrehte
+            // Spanne ließe sich nicht auswürfeln.
+            var min = Math.Max(1, rule.MinCount);
+            var max = Math.Max(min, rule.MaxCount);
+
+            // Eine Markierung ohne Karte wäre nicht zu deuten — dieselbe Regel wie beim
+            // Schauplatz eines Story-Abschnitts.
+            var markerId = rule.TargetMapId is null ? null : rule.TargetMarkerId;
+
+            if (target is null)
+            {
+                // Ausdrücklich über das DbSet — siehe SyncOffers.
+                db.SpawnRules.Add(new SpawnRule
+                {
+                    Id = rule.Id,
+                    NpcId = stored.Id,
+                    TargetMapId = rule.TargetMapId,
+                    TargetMarkerId = markerId,
+                    MinCount = min,
+                    MaxCount = max,
+                    RespawnSeconds = rule.RespawnSeconds,
+                    SortOrder = index
+                });
+            }
+            else
+            {
+                target.TargetMapId = rule.TargetMapId;
+                target.TargetMarkerId = markerId;
+                target.MinCount = min;
+                target.MaxCount = max;
+                target.RespawnSeconds = rule.RespawnSeconds;
+                target.SortOrder = index;
+            }
         }
     }
 
@@ -428,8 +490,14 @@ public class NpcService(
             .Select(offer => offer.Id)
             .ToListAsync(ct);
 
+        // Spawn-Regeln tragen ihre Bedingungen unter der eigenen GUID.
+        var spawnRuleIds = await db.SpawnRules
+            .Where(rule => rule.NpcId == npcId)
+            .Select(rule => rule.Id)
+            .ToListAsync(ct);
+
         await ChangeLog.RecordDeletionAsync(db, db.Npcs, npcId, ct);
-        await EntityCleanup.DeleteForEntitiesAsync(db, [npcId, .. offerIds], ct);
+        await EntityCleanup.DeleteForEntitiesAsync(db, [npcId, .. offerIds, .. spawnRuleIds], ct);
 
         // Beziehungen, die bei anderen NPCs gespeichert sind und auf diesen zeigen, hängen
         // ohne Fremdschlüssel daran und blieben sonst als Waisen zurück.

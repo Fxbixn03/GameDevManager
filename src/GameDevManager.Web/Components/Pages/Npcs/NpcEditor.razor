@@ -343,6 +343,100 @@ else
                     </MudPaper>
                 }
 
+                @* --------------------------------------------------------- Spawn-Regeln *@
+                @* Die Karten-Markierung sagt das Wo; hier stehen wie viele und wie oft.
+                   Das Wann steht als Bedingungssatz an der GUID der Regel — Tageszeit und
+                   Wetter gibt es im Bedingungssystem längst. *@
+                <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SpawnSection"]</MudText>
+                        <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="AddSpawnRule">
+                            @L["AddSpawnRule"]
+                        </MudButton>
+                    </MudStack>
+
+                    @if (_context.Entity.SpawnRules.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoSpawnRules"]</MudText>
+                    }
+                    else
+                    {
+                        @foreach (var rule in _context.Entity.SpawnRules)
+                        {
+                            var conditionCount = _spawnConditionCounts.GetValueOrDefault(rule.Id);
+
+                            <div class="pa-2 gdm-field-row">
+                                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                    <MudSelect T="Guid?"
+                                               Value="rule.TargetMapId"
+                                               ValueChanged="@((Guid? id) => Touch(() => { rule.TargetMapId = id; rule.TargetMarkerId = null; }))"
+                                               Label="@L["SpawnMapLabel"]"
+                                               Variant="Variant.Outlined"
+                                               Margin="Margin.Dense"
+                                               Clearable="true"
+                                               Style="min-width:180px;">
+                                        @foreach (var map in _maps)
+                                        {
+                                            <MudSelectItem T="Guid?" Value="@map.Id">@map.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                    <MudNumericField T="int"
+                                                     Value="rule.MinCount"
+                                                     ValueChanged="@((int value) => Touch(() => rule.MinCount = value))"
+                                                     Label="@L["SpawnMinLabel"]"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Min="1"
+                                                     Style="max-width:100px;" />
+
+                                    <MudNumericField T="int"
+                                                     Value="rule.MaxCount"
+                                                     ValueChanged="@((int value) => Touch(() => rule.MaxCount = value))"
+                                                     Label="@L["SpawnMaxLabel"]"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Min="1"
+                                                     Style="max-width:100px;" />
+
+                                    <MudNumericField T="int?"
+                                                     Value="rule.RespawnSeconds"
+                                                     ValueChanged="@((int? value) => Touch(() => rule.RespawnSeconds = value))"
+                                                     Label="@L["SpawnRespawnLabel"]"
+                                                     HelperText="@L["SpawnRespawnHelper"]"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Min="0"
+                                                     Clearable="true"
+                                                     Adornment="Adornment.End"
+                                                     AdornmentText="s"
+                                                     Style="max-width:150px;" />
+
+                                    <MudSpacer />
+
+                                    <MudTooltip Text="@(_context.IsNew ? L["SpawnConditionsAfterSave"] : L["SpawnConditions"])">
+                                        <MudButton Size="Size.Small"
+                                                   Variant="@(conditionCount > 0 ? Variant.Filled : Variant.Text)"
+                                                   Color="@(conditionCount > 0 ? Color.Primary : Color.Default)"
+                                                   StartIcon="@Icons.Material.Filled.Rule"
+                                                   Disabled="@(_context.IsNew || _dirty)"
+                                                   OnClick="@(() => EditSpawnConditionsAsync(rule))">
+                                            @(conditionCount > 0 ? conditionCount.ToString() : L["SpawnConditionsShort"].Value)
+                                        </MudButton>
+                                    </MudTooltip>
+
+                                    <MudTooltip Text="@L["RemoveSpawnRule"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => Touch(() => _context.Entity.SpawnRules.Remove(rule)))"
+                                                       aria-label="@L["RemoveSpawnRule"]" />
+                                    </MudTooltip>
+                                </MudStack>
+                            </div>
+                        }
+                    }
+                </MudPaper>
+
                 @* ------------------------------------------- Persönlichkeit & Wesenszüge *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["PersonalitySection"]</MudText>
@@ -653,6 +747,8 @@ else
     private ReferencesPanel? _referencesPanel;
     private EntityHistoryPanel? _historyPanel;
     private List<EntitySummary> _items = [];
+
+    private List<EntitySummary> _maps = [];
     private List<EntitySummary> _currencies = [];
     private List<EntitySummary> _lootTables = [];
     private List<EntitySummary> _classes = [];
@@ -699,6 +795,7 @@ else
         var projectId = await Project.GetCurrentIdAsync();
         _items = await References.GetEntitiesAsync(projectId, ModuleKeys.Items);
         _currencies = await References.GetEntitiesAsync(projectId, ModuleKeys.Currencies);
+        _maps = await References.GetEntitiesAsync(projectId, ModuleKeys.Maps);
         _lootTables = await References.GetEntitiesAsync(projectId, ModuleKeys.Loot);
         _classes = await References.GetEntitiesAsync(projectId, ModuleKeys.Classes);
         _relationTypes = await Npcs.GetRelationTypesAsync(projectId);
@@ -726,6 +823,8 @@ else
     }
 
     /// <summary>Zählt die Bedingungen von Shop und Posten für die Abzeichen in der Maske.</summary>
+    private Dictionary<Guid, int> _spawnConditionCounts = [];
+
     private async Task RefreshConditionCountsAsync()
     {
         if (_context is null)
@@ -738,6 +837,43 @@ else
 
         var shop = await Conditions.CountByOwnersAsync([_context.Entity.Id], ConditionSlots.Shop);
         _shopConditionCount = shop.GetValueOrDefault(_context.Entity.Id);
+
+        var ruleIds = _context.Entity.SpawnRules.Select(rule => rule.Id).ToList();
+        _spawnConditionCounts = ruleIds.Count == 0
+            ? []
+            : await Conditions.CountByOwnersAsync(ruleIds, ConditionSlots.Spawn);
+    }
+
+    private void AddSpawnRule() =>
+        Touch(() => _context!.Entity.SpawnRules.Add(new SpawnRule
+        {
+            NpcId = _context.Entity.Id,
+            // Gibt es nur eine Karte, ist sie fast immer die gemeinte.
+            TargetMapId = _maps.Count == 1 ? _maps[0].Id : null,
+            SortOrder = _context.Entity.SpawnRules.Count
+        }));
+
+    /// <summary>
+    /// Die Bedingung „erscheint, wenn …“ — sie hängt an der GUID der Regel, genau wie die
+    /// Verfügbarkeit eines Händler-Postens.
+    /// </summary>
+    private async Task EditSpawnConditionsAsync(SpawnRule rule)
+    {
+        var parameters = new DialogParameters<ConditionDialog>
+        {
+            { dialog => dialog.OwnerId, rule.Id },
+            { dialog => dialog.OwnerModuleKey, ModuleKeys.Npcs },
+            { dialog => dialog.Slot, ConditionSlots.Spawn },
+            { dialog => dialog.Subject, L["SpawnConditionSubject", _context!.Entity.Name].Value },
+            { dialog => dialog.EmptyHint, L["SpawnConditionEmptyHint"].Value }
+        };
+
+        var reference = await Dialogs.ShowAsync<ConditionDialog>(
+            L["SpawnConditionsDialogTitle"], parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        await reference.Result;
+        await RefreshConditionCountsAsync();
     }
 
     private async Task EditOfferConditionsAsync(TraderOffer offer)
