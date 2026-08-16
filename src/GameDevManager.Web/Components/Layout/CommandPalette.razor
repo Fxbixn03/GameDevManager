@@ -1,0 +1,173 @@
+@inject SearchService Search
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject ModuleState ModuleState
+@inject NavigationManager Navigation
+@inject IUserPermissionsProvider PermissionsProvider
+@inject IStringLocalizer<CommandPalette> L
+
+@*
+    Die Kommandopalette: Strg+P, tippen, springen. Sie ergänzt die globale Suche um das, was
+    diese nicht kann — Aktionen. Module öffnen, etwas Neues anlegen, exportieren, Einstellungen.
+
+    Gesucht wird unscharf über die Anfangsbuchstaben: „ei schwert“ soll das Eisenschwert
+    finden. Für Entitäten fragt die Palette denselben SearchService wie die Appbar — zwei
+    Suchen über denselben Bestand liefen sonst auseinander.
+*@
+
+<MudDialog @bind-Visible="_open" Options="_options">
+    <DialogContent>
+        <div style="min-width:min(640px, 90vw);">
+            <MudTextField @ref="_input"
+                          Value="_query"
+                          ValueChanged="@((string text) => SearchAsync(text))"
+                          Placeholder="@L["Placeholder"]"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Bolt" />
+
+            @if (_results.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-3">@L["Hint"]</MudText>
+            }
+            else
+            {
+                <MudList T="string" Dense="true" Class="mt-2">
+                    @foreach (var entry in _results)
+                    {
+                        <MudListItem T="string" OnClick="@(() => Go(entry.Route))" Icon="@entry.Icon">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudText Typo="Typo.body2">@entry.Title</MudText>
+                                <MudSpacer />
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@entry.Subtitle</MudText>
+                            </MudStack>
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    /// <summary>Ein Eintrag der Palette — Aktion oder Entität, beides führt auf eine Adresse.</summary>
+    private sealed record PaletteEntry(string Title, string Subtitle, string Icon, string Route);
+
+    private static readonly DialogOptions _options = new()
+    {
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true,
+        CloseOnEscapeKey = true,
+        NoHeader = true
+    };
+
+    private MudTextField<string>? _input;
+    private UserPermissions _permissions = UserPermissions.Full;
+
+    private bool _open;
+    private string _query = string.Empty;
+    private List<PaletteEntry> _results = [];
+
+    protected override async Task OnInitializedAsync() =>
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+
+    /// <summary>Von der Tastatur gerufen. Öffnet leer — die Liste der Aktionen ist der Einstieg.</summary>
+    public async Task OpenAsync()
+    {
+        _open = true;
+        _query = string.Empty;
+        _results = Actions();
+
+        await InvokeAsync(StateHasChanged);
+
+        if (_input is not null)
+        {
+            await _input.FocusAsync();
+        }
+    }
+
+    private async Task SearchAsync(string? text)
+    {
+        _query = text ?? string.Empty;
+
+        var actions = Actions()
+            .Where(entry => FuzzyMatch.Matches(_query, entry.Title))
+            .ToList();
+
+        if (_query.Trim().Length < 2)
+        {
+            _results = actions;
+            return;
+        }
+
+        // Entitäten kommen aus derselben Suche wie in der Appbar — zwei Suchen über denselben
+        // Bestand liefen sonst auseinander.
+        var projectId = await Project.GetCurrentIdAsync();
+        var hits = await Search.SearchAsync(projectId, _query, 12);
+
+        _results =
+        [
+            .. actions,
+            .. hits
+                .Where(hit => ModuleState.IsEnabled(hit.ModuleKey) && _permissions.CanAccessModule(hit.ModuleKey))
+                .Select(hit => new PaletteEntry(
+                    hit.Name,
+                    Modules.NameOrKey(hit.ModuleKey),
+                    Icons.Material.Filled.ArrowForward,
+                    $"{ModuleRegistry.Get(hit.ModuleKey).Route}/{hit.Id}"))
+        ];
+    }
+
+    /// <summary>
+    /// Die Aktionen: alles, was keine Entität ist. Je Modul „öffnen“ und — wo es eine
+    /// Neu-Route gibt — „neu anlegen“; dazu die Handvoll Wege, die man sonst über die Appbar
+    /// sucht.
+    /// </summary>
+    private List<PaletteEntry> Actions()
+    {
+        var entries = new List<PaletteEntry>
+        {
+            new(L["ActionDashboard"], L["GroupNavigation"], Icons.Material.Filled.Dashboard, "/dashboard"),
+            new(L["ActionActivity"], L["GroupNavigation"], Icons.Material.Filled.Notifications, "/aktivitaet"),
+            new(L["ActionProjects"], L["GroupNavigation"], Icons.Material.Filled.Folder, "/projekte"),
+            new(L["ActionSettings"], L["GroupNavigation"], Icons.Material.Filled.Settings, "/einstellungen"),
+            new(L["ActionStatistics"], L["GroupNavigation"], Icons.Material.Filled.QueryStats, "/modules/statistics")
+        };
+
+        if (_permissions.CanExport || _permissions.CanImport)
+        {
+            entries.Add(new(L["ActionExport"], L["GroupNavigation"], Icons.Material.Filled.Archive, "/export"));
+        }
+
+        foreach (var module in ModuleRegistry.All.Where(module =>
+                     module.Implemented && ModuleState.IsEnabled(module.Id) && _permissions.CanAccessModule(module.Id)))
+        {
+            entries.Add(new(
+                L["ActionOpen", Modules.Name(module)],
+                L["GroupModules"],
+                Icons.Material.Filled.Launch,
+                module.Route));
+
+            // „Neu“ nur für die Inhaltsmodule: Ein Werkzeug-Modul legt nichts an, was eine
+            // eigene Adresse hätte.
+            if (module.Group != ModuleGroup.Tools && _permissions.CanWrite)
+            {
+                entries.Add(new(
+                    L["ActionNew", Modules.Name(module)],
+                    L["GroupCreate"],
+                    Icons.Material.Filled.AddCircleOutline,
+                    $"{module.Route}/neu"));
+            }
+        }
+
+        return entries;
+    }
+
+    private void Go(string route)
+    {
+        _open = false;
+        Navigation.NavigateTo(route);
+    }
+}

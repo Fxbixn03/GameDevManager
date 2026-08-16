@@ -46,6 +46,16 @@ window.gdmShortcuts = {
                 return;
             }
 
+            // Strg+P: die Kommandopalette. Der Browser-Druckdialog liegt auf derselben
+            // Taste — hier wird er bewusst verdrängt, weil eine Seite dieser Anwendung
+            // gedruckt selten Sinn ergibt und die Palette der häufigere Wunsch ist.
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p"
+                && window.gdmShortcuts.ref) {
+                e.preventDefault();
+                window.gdmShortcuts.ref.invokeMethodAsync("ShowPalette");
+                return;
+            }
+
             if (e.ctrlKey || e.metaKey) {
                 return;
             }

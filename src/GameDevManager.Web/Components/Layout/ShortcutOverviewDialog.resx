@@ -30,6 +30,9 @@
   <data name="KeyLetter" xml:space="preserve">
     <value>Buchstabe</value>
   </data>
+  <data name="Palette" xml:space="preserve">
+    <value>Kommandopalette öffnen</value>
+  </data>
   <data name="Search" xml:space="preserve">
     <value>In die globale Suche springen</value>
   </data>

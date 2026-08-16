@@ -476,7 +476,7 @@ Herzschlag der Maske alle 45 Sekunden, Sitzungskennung je Maske statt je Benutze
 
 ## E. Bedienung
 
-### F26 — Kommandopalette
+### F26 — Kommandopalette ✅ umgesetzt
 
 > **Als** Vielnutzer **möchte ich** mit Strg+P ein Feld öffnen, in das ich „ei schwert" tippe und
 > direkt in der Maske lande — oder „export" tippe und die Aktion auslöse, **damit** ich nicht durch
@@ -489,6 +489,10 @@ Module öffnen, neue Entität anlegen, Projekt wechseln, Sprache umstellen, Expo
 Suche über die Anfangsbuchstaben statt `Contains` — bei „ei schwert" soll das Eisenschwert kommen.
 
 *Aufwand: M · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `CommandPalette` im `MainLayout`, Strg+P über `gdm-shortcuts.js`. Aktionen
+(Module öffnen, neu anlegen, Projekte, Einstellungen, Export) plus Entitäten aus demselben
+`SearchService` wie die Appbar; unscharfer Vergleich als `FuzzyMatch` in der Datenschicht.
 
 ### F27 — Gespeicherte Suchen und Listenansichten
 

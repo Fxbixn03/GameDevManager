@@ -40,8 +40,24 @@
         }
     }
 
+    /// <summary>
+    /// Die Kommandopalette. Sie liegt im MainLayout und wird von dort durchgereicht — eine
+    /// zweite Palette je Seite wäre ein zweiter Zustand über demselben Bestand.
+    /// </summary>
+    [Parameter]
+    public CommandPalette? Palette { get; set; }
+
     [JSInvokable]
     public void NavigateTo(string route) => Navigation.NavigateTo(route);
+
+    [JSInvokable]
+    public async Task ShowPalette()
+    {
+        if (Palette is not null)
+        {
+            await Palette.OpenAsync();
+        }
+    }
 
     /// <summary>
     /// Die Übersicht der Tastenkürzel. Ein Dialog und keine eigene Seite: Wer sie braucht, ist

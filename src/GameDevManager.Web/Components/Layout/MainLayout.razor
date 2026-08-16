@@ -88,7 +88,7 @@
         }
 
         <GlobalSearch />
-        <KeyboardShortcuts />
+        <KeyboardShortcuts Palette="_palette" />
 
         @* Die Glocke: was sich seit dem letzten Besuch getan hat. Kein Mailversand — das
            Tool wird self-hosted von kleinen Teams betrieben, ein Symbol reicht. *@
@@ -146,6 +146,9 @@
         </MudMenu>
     </MudAppBar>
 
+    @* Strg+P — sie ergänzt die globale Suche um das, was diese nicht kann: Aktionen. *@
+    <CommandPalette @ref="_palette" />
+
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.False" Class="pa-6">
             @* Die Modulwache: Seiten eines nicht freigegebenen Moduls werden gar nicht erst
@@ -174,6 +177,8 @@
     private double _unit;
 
     private int _unread;
+
+    private CommandPalette? _palette;
 
     protected override async Task OnInitializedAsync()
     {
