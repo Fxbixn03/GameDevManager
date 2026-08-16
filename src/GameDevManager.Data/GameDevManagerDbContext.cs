@@ -834,13 +834,28 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         {
             entity.Property(c => c.Title).HasMaxLength(400).IsRequired();
             entity.Property(c => c.Notes).HasMaxLength(4000);
+            entity.Property(c => c.Label).HasMaxLength(100);
+            // „#RRGGBB“ oder „#RRGGBBAA“ — wie bei den Seltenheiten.
+            entity.Property(c => c.Color).HasMaxLength(9);
+            entity.Property(c => c.TargetModuleKey).HasMaxLength(ModuleKeyLength);
 
             entity.HasOne(c => c.Column)
                 .WithMany(column => column.Cards)
                 .HasForeignKey(c => c.ColumnId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // SetNull statt Cascade: Ein gelöschtes Konto nimmt seine Aufgaben nicht mit —
+            // die Karte bleibt, nur ohne Zuständigen.
+            entity.HasOne(c => c.AssignedUser)
+                .WithMany()
+                .HasForeignKey(c => c.AssignedUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             entity.HasIndex(c => c.ColumnId);
+
+            // Trägt die Frage „welche Aufgaben hängen an dieser Entität?“ — der Gegenzug,
+            // den die Bearbeitungsmasken stellen.
+            entity.HasIndex(c => c.TargetEntityId);
         });
 
         modelBuilder.Entity<Whiteboard>(entity =>

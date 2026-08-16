@@ -1,19 +1,99 @@
+@inject ReferenceService References
+@inject ModuleLabels Modules
 @inject IStringLocalizer<CardEditDialog> L
+
+@*
+    Die Karte bearbeiten. Sie trägt inzwischen mehr als Titel und Notiz: Zuständiger,
+    Fälligkeit, Marke und die Verknüpfung auf eine Entität — damit aus dem Board eine
+    Arbeitsplanung wird und nicht bloß eine Merkliste.
+
+    Der Dialog arbeitet auf einer Kopie; gespeichert wird von der aufrufenden Seite.
+*@
 
 <MudDialog>
     <DialogContent>
-        <MudStack Spacing="3">
-            <MudTextField @bind-Value="CardTitle"
+        <MudStack Spacing="3" Style="min-width:min(560px, 85vw);">
+            <MudTextField @bind-Value="Card.Title"
                           Label="@L["TitleLabel"]"
                           Variant="Variant.Outlined"
                           Immediate="true"
                           AutoFocus="true" />
-            <MudTextField @bind-Value="CardNotes"
+
+            <MudTextField @bind-Value="Card.Notes"
                           Label="@L["NotesLabel"]"
                           Variant="Variant.Outlined"
-                          Lines="5" />
+                          Lines="4" />
+
+            <MudStack Row="true" Spacing="3">
+                <MudSelect T="Guid?"
+                           @bind-Value="Card.AssignedUserId"
+                           Label="@L["AssignedLabel"]"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Clearable="true">
+                    @foreach (var user in Users)
+                    {
+                        <MudSelectItem T="Guid?" Value="@user.Id">@user.DisplayName</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudDatePicker @bind-Date="Card.DueDate"
+                               Label="@L["DueLabel"]"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Clearable="true" />
+            </MudStack>
+
+            <MudStack Row="true" Spacing="3">
+                <MudTextField @bind-Value="Card.Label"
+                              Label="@L["LabelLabel"]"
+                              HelperText="@L["LabelHelper"]"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              MaxLength="100" />
+
+                <MudColorPicker Text="@Card.Color"
+                                TextChanged="@(color => Card.Color = color)"
+                                Label="@L["ColorLabel"]"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                ColorPickerView="ColorPickerView.Spectrum"
+                                ShowAlpha="false" />
+            </MudStack>
+
+            @* Erst das Modul, dann die Entität: Die Auswahlliste wird sonst über alle
+               Module hinweg unübersichtlich, und die Frage lautet ohnehin „welcher NPC?“. *@
+            <MudStack Row="true" Spacing="3">
+                <MudSelect T="string"
+                           Value="Card.TargetModuleKey"
+                           ValueChanged="ChangeModuleAsync"
+                           Label="@L["TargetModuleLabel"]"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Clearable="true">
+                    @foreach (var module in ContentModules)
+                    {
+                        <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudAutocomplete T="EntitySummary"
+                                 Value="@_targets.FirstOrDefault(entity => entity.Id == Card.TargetEntityId)"
+                                 ValueChanged="@((EntitySummary? entity) => Card.TargetEntityId = entity?.Id)"
+                                 SearchFunc="SearchTargetsAsync"
+                                 ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
+                                 Label="@L["TargetEntityLabel"]"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Disabled="@string.IsNullOrWhiteSpace(Card.TargetModuleKey)"
+                                 Clearable="true"
+                                 ResetValueOnEmptyText="true"
+                                 CoerceValue="false"
+                                 MaxItems="50" />
+            </MudStack>
         </MudStack>
     </DialogContent>
+
     <DialogActions>
         <MudButton Color="Color.Error"
                    StartIcon="@Icons.Material.Filled.DeleteOutline"
@@ -24,7 +104,7 @@
         <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
-                   Disabled="@string.IsNullOrWhiteSpace(CardTitle)"
+                   Disabled="@string.IsNullOrWhiteSpace(Card.Title)"
                    OnClick="Confirm">
             @L["Save"]
         </MudButton>
@@ -32,21 +112,56 @@
 </MudDialog>
 
 @code {
-    /// <summary>Das Ergebnis des Dialogs — Speichern mit neuen Werten oder Löschen.</summary>
-    public sealed record Outcome(string Title, string? Notes, bool Delete);
+    /// <summary>Das Ergebnis des Dialogs — die bearbeitete Karte oder der Wunsch zu löschen.</summary>
+    public sealed record Outcome(KanbanCard Card, bool Delete);
 
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    [Parameter]
-    public string? CardTitle { get; set; }
+    /// <summary>Die Kopie, auf der gearbeitet wird — ein Abbruch lässt das Original unberührt.</summary>
+    [Parameter, EditorRequired]
+    public required KanbanCard Card { get; set; }
 
     [Parameter]
-    public string? CardNotes { get; set; }
+    public IReadOnlyList<TaskAssignee> Users { get; set; } = [];
 
-    private void Confirm() =>
-        MudDialog.Close(DialogResult.Ok(new Outcome(CardTitle!, CardNotes, Delete: false)));
+    [Parameter]
+    public Guid ProjectId { get; set; }
 
-    private void Delete() =>
-        MudDialog.Close(DialogResult.Ok(new Outcome(CardTitle ?? string.Empty, CardNotes, Delete: true)));
+    private List<EntitySummary> _targets = [];
+
+    private static List<ModuleDefinition> ContentModules =>
+    [
+        .. ModuleRegistry.All.Where(module => module.Implemented && module.Group != ModuleGroup.Tools)
+    ];
+
+    protected override Task OnInitializedAsync() => LoadTargetsAsync();
+
+    private async Task ChangeModuleAsync(string? moduleKey)
+    {
+        Card.TargetModuleKey = moduleKey;
+
+        // Ein Ziel aus dem vorherigen Modul wäre nach dem Wechsel nicht mehr auflösbar.
+        Card.TargetEntityId = null;
+
+        await LoadTargetsAsync();
+    }
+
+    private async Task LoadTargetsAsync() =>
+        _targets = string.IsNullOrWhiteSpace(Card.TargetModuleKey)
+            ? []
+            : await References.GetEntitiesAsync(ProjectId, Card.TargetModuleKey);
+
+    private Task<IEnumerable<EntitySummary>> SearchTargetsAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? _targets
+            : _targets.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private void Confirm() => MudDialog.Close(DialogResult.Ok(new Outcome(Card, Delete: false)));
+
+    private void Delete() => MudDialog.Close(DialogResult.Ok(new Outcome(Card, Delete: true)));
 }

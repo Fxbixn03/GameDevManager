@@ -185,6 +185,10 @@ else
     public Guid Id { get; set; }
 
     private KanbanBoard? _board;
+
+    private Guid _projectId;
+
+    private List<TaskAssignee> _users = [];
     private KanbanCard? _dragging;
     private Guid? _newCardColumnId;
     private string? _newCardTitle;
@@ -206,9 +210,11 @@ else
 
     private async Task LoadAsync()
     {
-        var projectId = await Project.GetCurrentIdAsync();
-        _board = await Kanban.GetBoardAsync(projectId, Id);
+        _projectId = await Project.GetCurrentIdAsync();
+        _board = await Kanban.GetBoardAsync(_projectId, Id);
         _notFound = _board is null;
+
+        _users = await Kanban.GetAssigneesAsync();
     }
 
     private async Task RenameBoardAsync()
@@ -297,14 +303,30 @@ else
 
     private async Task EditCardAsync(KanbanCard card)
     {
+        // Auf einer Kopie: Ein Abbruch soll die Karte im Board unberührt lassen.
+        var draft = new KanbanCard
+        {
+            Id = card.Id,
+            ColumnId = card.ColumnId,
+            Title = card.Title,
+            Notes = card.Notes,
+            AssignedUserId = card.AssignedUserId,
+            DueDate = card.DueDate,
+            Color = card.Color,
+            Label = card.Label,
+            TargetModuleKey = card.TargetModuleKey,
+            TargetEntityId = card.TargetEntityId
+        };
+
         var parameters = new DialogParameters<CardEditDialog>
         {
-            { dialog => dialog.CardTitle, card.Title },
-            { dialog => dialog.CardNotes, card.Notes }
+            { dialog => dialog.Card, draft },
+            { dialog => dialog.Users, _users },
+            { dialog => dialog.ProjectId, _projectId }
         };
 
         var reference = await Dialogs.ShowAsync<CardEditDialog>(
-            L["CardDialogTitle"], parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+            L["CardDialogTitle"], parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
         var result = await reference.Result;
 
         if (result is { Canceled: false, Data: CardEditDialog.Outcome outcome })
@@ -315,7 +337,7 @@ else
             }
             else
             {
-                await Run(() => Kanban.UpdateCardAsync(card.Id, outcome.Title, outcome.Notes));
+                await Run(() => Kanban.UpdateCardAsync(outcome.Card));
             }
         }
     }

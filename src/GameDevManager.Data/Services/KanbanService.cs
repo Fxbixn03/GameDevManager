@@ -5,6 +5,23 @@ using Microsoft.Extensions.Localization;
 namespace GameDevManager.Data.Services;
 
 /// <summary>Eine Zeile der Board-Übersicht.</summary>
+/// <summary>
+/// Eine Aufgabe, die an einer Entität hängt — samt Board, Spalte und Zuständigem, damit die
+/// Bearbeitungsmaske sie ohne zweite Abfrage anzeigen kann.
+/// </summary>
+/// <summary>Ein Konto, dem sich eine Aufgabe zuweisen lässt — nur Name und GUID.</summary>
+public sealed record TaskAssignee(Guid Id, string DisplayName);
+
+public sealed record KanbanCardLink(
+    Guid CardId,
+    Guid BoardId,
+    string BoardName,
+    string ColumnName,
+    string Title,
+    string? AssignedTo,
+    DateTime? DueDate,
+    bool IsDone);
+
 public sealed record KanbanBoardRow(
     Guid Id,
     string Name,
@@ -244,24 +261,114 @@ public class KanbanService(
         return card;
     }
 
-    public async Task UpdateCardAsync(Guid cardId, string title, string? notes, CancellationToken ct = default)
+    /// <summary>
+    /// Schreibt eine Karte zurück. Übergeben wird die bearbeitete Karte selbst und keine
+    /// wachsende Reihe von Einzelwerten — mit Zuständigem, Fälligkeit, Marke und Verknüpfung
+    /// wären es sonst acht Parameter, und der nächste käme bestimmt.
+    /// </summary>
+    public async Task UpdateCardAsync(KanbanCard edited, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(title))
+        if (string.IsNullOrWhiteSpace(edited.Title))
         {
             throw new ContentValidationException(messages["KanbanCardTitleRequired"]);
         }
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
-        var card = await db.KanbanCards.FirstOrDefaultAsync(c => c.Id == cardId, ct);
+        var card = await db.KanbanCards.FirstOrDefaultAsync(c => c.Id == edited.Id, ct);
 
-        if (card is not null)
+        if (card is null)
         {
-            card.Title = title.Trim();
-            card.Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
-            await db.SaveChangesAsync(ct);
+            return;
         }
+
+        card.Title = edited.Title.Trim();
+        card.Notes = Normalize(edited.Notes);
+        card.AssignedUserId = edited.AssignedUserId;
+        card.DueDate = edited.DueDate?.Date;
+        card.Color = Normalize(edited.Color);
+        card.Label = Normalize(edited.Label);
+
+        // Ein Ziel ohne Modul wäre nicht aufzulösen — beides gilt nur zusammen.
+        card.TargetEntityId = edited.TargetEntityId;
+        card.TargetModuleKey = edited.TargetEntityId is null ? null : Normalize(edited.TargetModuleKey);
+
+        await db.SaveChangesAsync(ct);
     }
+
+    /// <summary>
+    /// Die offenen Aufgaben, die an einer Entität hängen — der Gegenzug zur Verknüpfung, und
+    /// wertvoller als sie: In der Bearbeitungsmaske steht damit, was an diesem Inhalt noch
+    /// aussteht.
+    /// <para>
+    /// „Offen“ heißt: nicht in der letzten Spalte ihres Boards. Ein eigener Erledigt-Schalter
+    /// stünde neben der Spalte, in der die Karte liegt, und beide könnten auseinanderlaufen —
+    /// beim Kanban ist die Spalte der Zustand.
+    /// </para>
+    /// </summary>
+    public async Task<List<KanbanCardLink>> GetCardsForEntityAsync(
+        Guid entityId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var cards = await db.KanbanCards
+            .AsNoTracking()
+            .Where(card => card.TargetEntityId == entityId)
+            .Select(card => new
+            {
+                card.Id,
+                card.Title,
+                card.DueDate,
+                card.ColumnId,
+                BoardId = card.Column!.BoardId,
+                BoardName = card.Column!.Board!.Name,
+                ColumnName = card.Column!.Name,
+                ColumnOrder = card.Column!.SortOrder,
+                AssignedTo = card.AssignedUser != null ? card.AssignedUser.DisplayName : null,
+                LastColumnOrder = db.KanbanColumns
+                    .Where(column => column.BoardId == card.Column!.BoardId)
+                    .Max(column => column.SortOrder)
+            })
+            .ToListAsync(ct);
+
+        return
+        [
+            .. cards
+                .Select(card => new KanbanCardLink(
+                    card.Id,
+                    card.BoardId,
+                    card.BoardName,
+                    card.ColumnName,
+                    card.Title,
+                    card.AssignedTo,
+                    card.DueDate,
+                    card.ColumnOrder >= card.LastColumnOrder))
+                .OrderBy(card => card.IsDone)
+                .ThenBy(card => card.DueDate ?? DateTime.MaxValue)
+                .ThenBy(card => card.Title)
+        ];
+    }
+
+    /// <summary>
+    /// Die Konten, denen sich eine Aufgabe zuweisen lässt. Bewusst nicht über den
+    /// <c>UserService</c>: Der verlangt für seine Liste das Verwalterrecht, und wer eine
+    /// Aufgabe verteilt, muss dafür keine Benutzer verwalten dürfen — gesperrte Konten bleiben
+    /// trotzdem draußen.
+    /// </summary>
+    public async Task<List<TaskAssignee>> GetAssigneesAsync(CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        return await db.AppUsers
+            .AsNoTracking()
+            .Where(user => !user.IsDisabled)
+            .OrderBy(user => user.DisplayName)
+            .Select(user => new TaskAssignee(user.Id, user.DisplayName))
+            .ToListAsync(ct);
+    }
+
+    private static string? Normalize(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     /// <summary>
     /// Verschiebt eine Karte — in eine andere Spalte und/oder an eine andere Position.

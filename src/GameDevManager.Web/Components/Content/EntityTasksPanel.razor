@@ -1,0 +1,75 @@
+@inject KanbanService Kanban
+@inject IStringLocalizer<EntityTasksPanel> L
+
+@*
+    Die Aufgaben, die an dieser Entität hängen — der Gegenzug zur Verknüpfung auf der
+    Kanban-Karte, und wertvoller als sie: Die Karte findet man im Board, aber ob an diesem
+    NPC noch etwas aussteht, sieht man sonst nirgends.
+
+    Der Abschnitt zeigt sich nur, wenn es etwas zu zeigen gibt — ein leerer Kasten in jeder
+    Maske wäre teurer als die Auskunft wert.
+*@
+
+@if (_tasks.Count > 0)
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["Heading"]</MudText>
+
+        <MudStack Spacing="0">
+            @foreach (var task in _tasks)
+            {
+                <MudLink Href="@($"/modules/todo/{task.BoardId}")" Underline="Underline.None" Color="Color.Inherit"
+                         Class="gdm-health-row">
+                    <MudIcon Icon="@(task.IsDone ? Icons.Material.Filled.CheckCircleOutline : Icons.Material.Filled.RadioButtonUnchecked)"
+                             Size="Size.Small"
+                             Color="@(task.IsDone ? Color.Success : Color.Warning)" />
+
+                    <MudText Typo="Typo.body2"
+                             Class="gdm-ellipsis"
+                             Style="@(task.IsDone ? "text-decoration:line-through;" : null)">
+                        @task.Title
+                    </MudText>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@Subtitle(task)</MudText>
+                </MudLink>
+            }
+        </MudStack>
+    </MudPaper>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid EntityId { get; set; }
+
+    private List<KanbanCardLink> _tasks = [];
+    private Guid _loadedId;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedId == EntityId)
+        {
+            return;
+        }
+
+        _loadedId = EntityId;
+        _tasks = await Kanban.GetCardsForEntityAsync(EntityId);
+    }
+
+    /// <summary>Spalte, Zuständiger und Fälligkeit — was davon gesetzt ist.</summary>
+    private string Subtitle(KanbanCardLink task)
+    {
+        var parts = new List<string> { task.ColumnName };
+
+        if (!string.IsNullOrWhiteSpace(task.AssignedTo))
+        {
+            parts.Add(task.AssignedTo);
+        }
+
+        if (task.DueDate is { } due)
+        {
+            parts.Add(due.ToString("dd.MM.yyyy"));
+        }
+
+        return string.Join(" · ", parts);
+    }
+}

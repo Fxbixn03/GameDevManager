@@ -1710,10 +1710,24 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("AssignedUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(9)
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("ColumnId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Notes")
@@ -1723,6 +1737,13 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid?>("TargetEntityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TargetModuleKey")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(400)
@@ -1730,7 +1751,11 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssignedUserId");
+
                     b.HasIndex("ColumnId");
+
+                    b.HasIndex("TargetEntityId");
 
                     b.ToTable("KanbanCards");
                 });
@@ -3392,11 +3417,18 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.KanbanCard", b =>
                 {
+                    b.HasOne("GameDevManager.Domain.Entities.AppUser", "AssignedUser")
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("GameDevManager.Domain.Entities.KanbanColumn", "Column")
                         .WithMany("Cards")
                         .HasForeignKey("ColumnId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AssignedUser");
 
                     b.Navigation("Column");
                 });

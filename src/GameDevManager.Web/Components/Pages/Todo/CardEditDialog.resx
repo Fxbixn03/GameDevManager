@@ -15,6 +15,27 @@
   <data name="TitleLabel" xml:space="preserve">
     <value>Titel</value>
   </data>
+  <data name="AssignedLabel" xml:space="preserve">
+    <value>Zuständig</value>
+  </data>
+  <data name="DueLabel" xml:space="preserve">
+    <value>Fällig am</value>
+  </data>
+  <data name="LabelLabel" xml:space="preserve">
+    <value>Etikett</value>
+  </data>
+  <data name="LabelHelper" xml:space="preserve">
+    <value>Freitext, z. B. „Bug“ oder „Balancing“.</value>
+  </data>
+  <data name="ColorLabel" xml:space="preserve">
+    <value>Farbe</value>
+  </data>
+  <data name="TargetModuleLabel" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="TargetEntityLabel" xml:space="preserve">
+    <value>Verknüpfte Entität</value>
+  </data>
   <data name="NotesLabel" xml:space="preserve">
     <value>Notizen</value>
   </data>

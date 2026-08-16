@@ -57,6 +57,39 @@ public class KanbanCard
 
     public string? Notes { get; set; }
 
+    /// <summary>
+    /// Wer die Aufgabe übernommen hat. Ein echter Fremdschlüssel wie beim <see cref="UserPin"/>:
+    /// Benutzer gehören der Installation, und ein gelöschtes Konto soll keine Karte mit einem
+    /// Verweis ins Leere hinterlassen — die Zuweisung fällt dann weg, die Karte bleibt.
+    /// </summary>
+    public Guid? AssignedUserId { get; set; }
+
+    public AppUser? AssignedUser { get; set; }
+
+    /// <summary>
+    /// Fällig am. Ein reines Datum ohne Uhrzeit — eine Aufgabe ist an einem Tag fällig, nicht
+    /// um 14:30; gespeichert als <c>DateTime</c>, weil das über alle vier Provider gleich geht.
+    /// </summary>
+    public DateTime? DueDate { get; set; }
+
+    /// <summary>Farbliche Marke der Karte („#RRGGBB“) — reine Anzeige, wie bei den Seltenheiten.</summary>
+    public string? Color { get; set; }
+
+    /// <summary>Kurzes Etikett („Bug“, „Balancing“) — Freitext, kein Verweis auf das Tag-Modul.</summary>
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Die verknüpfte Entität — Modul plus GUID wie bei den Story-Beteiligten, ohne
+    /// Fremdschlüssel, damit jede Art von Inhalt gemeint sein kann.
+    /// <para>
+    /// Der Gegenzug ist wertvoller als die Karte selbst: In der Bearbeitungsmaske einer Entität
+    /// steht damit, welche offenen Aufgaben an ihr hängen.
+    /// </para>
+    /// </summary>
+    public string? TargetModuleKey { get; set; }
+
+    public Guid? TargetEntityId { get; set; }
+
     public int SortOrder { get; set; }
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;

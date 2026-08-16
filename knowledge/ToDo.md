@@ -376,7 +376,7 @@ im Export, überstehen den ersetzenden Import. Erwähnungen (`@benutzer`) speise
 allen vier Providern, `EntityCommentsPanel` in jeder Maske und ein Dashboard-Band mit den
 offenen. Erwähnungen (`@benutzer`) stehen noch aus — sie gehören zu F23.
 
-### F22 — ToDo-Karten mit Verknüpfung, Zuständigem und Fälligkeit
+### F22 — ToDo-Karten mit Verknüpfung, Zuständigem und Fälligkeit ✅ umgesetzt
 
 > **Als** Projektleiter **möchte ich** eine Kanban-Karte mit einer Entität, einem Zuständigen und
 > einem Datum versehen, **damit** aus dem Board eine Arbeitsplanung wird und nicht bloß eine
@@ -389,6 +389,11 @@ offenen Aufgaben an ihr hängen. Dazu ein Dashboard-Band „meine Aufgaben" und 
 diese Woche". Bleibt Werkzeug-Daten — nicht im Export.
 
 *Aufwand: M · Migration: ja · Format: unverändert*
+
+**Umgesetzt.** `AssignedUserId`, `DueDate`, `Color`, `Label`, `TargetModuleKey` und
+`TargetEntityId` an `KanbanCard`, Migration `KanbanCardDetails` in allen vier Providern. Der
+Gegenzug steht als `EntityTasksPanel` in jeder Bearbeitungsmaske. Ein Dashboard-Band „meine
+Aufgaben“ und der Filter „fällig diese Woche“ stehen noch aus.
 
 ### F23 — Aktivitäts-Feed und Benachrichtigungen
 
