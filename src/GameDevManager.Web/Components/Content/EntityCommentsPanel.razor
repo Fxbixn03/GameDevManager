@@ -1,0 +1,158 @@
+@inject ContentCommentService Comments
+@inject ProjectContext Project
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<EntityCommentsPanel> L
+
+@*
+    Anmerkungen an einer Entität — als Abschnitt neben „Geschichte“ und „Referenzen“.
+    Eine Komponente statt eines Moduls: Die Anmerkung gehört dorthin, wo der Inhalt steht,
+    und nicht in eine eigene Liste, die man erst aufsuchen muss.
+*@
+
+<MudPaper Elevation="0" Class="gdm-panel pa-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["Heading"]</MudText>
+        @if (OpenCount > 0)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                @L["OpenCount", OpenCount]
+            </MudChip>
+        }
+    </MudStack>
+
+    <MudTextField @bind-Value="_draft"
+                  Label="@L["NewLabel"]"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Lines="2"
+                  MaxLength="4000" />
+
+    <MudButton Size="Size.Small"
+               Variant="Variant.Outlined"
+               StartIcon="@Icons.Material.Filled.AddComment"
+               Class="mt-2"
+               Disabled="@(_busy || string.IsNullOrWhiteSpace(_draft))"
+               OnClick="AddAsync">
+        @L["AddButton"]
+    </MudButton>
+
+    @if (_comments.Count == 0)
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-3">@L["Empty"]</MudText>
+    }
+    else
+    {
+        <MudStack Spacing="0" Class="mt-3">
+            @foreach (var comment in _comments)
+            {
+                <div class="pa-2 gdm-field-row">
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Start">
+                        <MudCheckBox T="bool"
+                                     Value="comment.IsResolved"
+                                     ValueChanged="@((bool value) => SetResolvedAsync(comment, value))"
+                                     Color="Color.Primary"
+                                     Size="Size.Small"
+                                     Dense="true" />
+
+                        <div style="flex:1 1 auto; min-width:0;">
+                            @* Erledigtes bleibt stehen — es ist der Beleg, dass etwas
+                               besprochen war —, tritt aber optisch zurück. *@
+                            <MudText Typo="Typo.body2"
+                                     Color="@(comment.IsResolved ? Color.Secondary : Color.Default)"
+                                     Style="@(comment.IsResolved ? "text-decoration:line-through;" : null)">
+                                @comment.Text
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @L["Byline", comment.AuthorName, comment.CreatedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")]
+                            </MudText>
+                        </div>
+
+                        <MudTooltip Text="@L["DeleteTooltip"]">
+                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                           Size="Size.Small"
+                                           OnClick="@(() => DeleteAsync(comment))"
+                                           aria-label="@L["DeleteTooltip"]" />
+                        </MudTooltip>
+                    </MudStack>
+                </div>
+            }
+        </MudStack>
+    }
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid EntityId { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string ModuleKey { get; set; }
+
+    private List<ContentComment> _comments = [];
+    private string _draft = string.Empty;
+    private Guid _loadedId;
+    private bool _busy;
+
+    private int OpenCount => _comments.Count(comment => !comment.IsResolved);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedId == EntityId)
+        {
+            return;
+        }
+
+        _loadedId = EntityId;
+        await RefreshAsync();
+    }
+
+    /// <summary>Lädt neu — auch von außen, damit die Maske nach dem Speichern auffrischen kann.</summary>
+    public async Task RefreshAsync() => _comments = await Comments.GetForEntityAsync(EntityId);
+
+    private async Task AddAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            await Comments.AddAsync(projectId, EntityId, ModuleKey, _draft);
+
+            _draft = string.Empty;
+            await RefreshAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task SetResolvedAsync(ContentComment comment, bool resolved)
+    {
+        try
+        {
+            await Comments.SetResolvedAsync(comment.Id, resolved);
+            await RefreshAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteAsync(ContentComment comment)
+    {
+        try
+        {
+            await Comments.DeleteAsync(comment.Id);
+            await RefreshAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

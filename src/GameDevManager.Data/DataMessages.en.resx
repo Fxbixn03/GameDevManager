@@ -708,6 +708,9 @@ Unpack the ZIP into the root directory of your Godot project: the content lands 
   <data name="ExportProfile_NameExists" xml:space="preserve">
     <value>There is already an export profile called “{0}”.</value>
   </data>
+  <data name="Comment_TextRequired" xml:space="preserve">
+    <value>A comment needs a text.</value>
+  </data>
   <data name="Csv_Empty" xml:space="preserve">
     <value>Apart from the header the file contains no rows.</value>
   </data>

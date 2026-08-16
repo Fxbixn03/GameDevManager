@@ -172,6 +172,18 @@
   <data name="PinnedEmpty" xml:space="preserve">
     <value>Nichts angeheftet. Der Stern in einer Bearbeitungsmaske legt einen Eintrag hier ab — anders als „Weiterarbeiten“ bleibt er stehen.</value>
   </data>
+  <data name="Band_comments" xml:space="preserve">
+    <value>Anmerkungen</value>
+  </data>
+  <data name="CommentsHeading" xml:space="preserve">
+    <value>Offene Anmerkungen</value>
+  </data>
+  <data name="CommentsEmpty" xml:space="preserve">
+    <value>Nichts offen. Anmerkungen entstehen im Abschnitt „Anmerkungen“ einer Bearbeitungsmaske.</value>
+  </data>
+  <data name="CommentLine" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
   <data name="Band_status" xml:space="preserve">
     <value>Bearbeitungsstand</value>
   </data>

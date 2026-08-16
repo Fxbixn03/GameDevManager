@@ -662,6 +662,9 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="ExportProfile_NameExists" xml:space="preserve">
     <value>Es gibt bereits ein Export-Profil namens „{0}“.</value>
   </data>
+  <data name="Comment_TextRequired" xml:space="preserve">
+    <value>Eine Anmerkung braucht einen Text.</value>
+  </data>
   <data name="Csv_Empty" xml:space="preserve">
     <value>Die Datei enthält außer der Kopfzeile keine Zeilen.</value>
   </data>

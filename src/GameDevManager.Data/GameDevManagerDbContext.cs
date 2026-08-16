@@ -163,6 +163,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
     /// <summary>Angeheftete Entitäten je Benutzer und Projekt — Werkzeug-Daten, nicht im Export.</summary>
     public DbSet<UserPin> UserPins => Set<UserPin>();
 
+    /// <summary>Anmerkungen an Entitäten — Werkzeug-Daten wie das Änderungsprotokoll.</summary>
+    public DbSet<ContentComment> ContentComments => Set<ContentComment>();
+
     /// <summary>Das Änderungsprotokoll: wer hat wann was getan.</summary>
     public DbSet<ChangeLogEntry> ChangeLogEntries => Set<ChangeLogEntry>();
 
@@ -913,6 +916,27 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(profile => profile.GameProjectId);
+        });
+
+        modelBuilder.Entity<ContentComment>(entity =>
+        {
+            entity.Property(comment => comment.Text).HasMaxLength(4000).IsRequired();
+            entity.Property(comment => comment.AuthorName).HasMaxLength(200).IsRequired();
+            entity.Property(comment => comment.ResolvedBy).HasMaxLength(200);
+            entity.Property(comment => comment.OwnerModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Ignore(comment => comment.IsResolved);
+
+            entity.HasOne(comment => comment.GameProject)
+                .WithMany()
+                .HasForeignKey(comment => comment.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Trägt die Frage „welche Anmerkungen hängen an dieser Entität?“ — die einzige,
+            // die die Bearbeitungsmaske stellt.
+            entity.HasIndex(comment => comment.OwnerEntityId);
+
+            // Und die des Dashboards: „was ist im Projekt noch offen?“
+            entity.HasIndex(comment => new { comment.GameProjectId, comment.ResolvedAtUtc });
         });
 
         modelBuilder.Entity<UserPin>(entity =>

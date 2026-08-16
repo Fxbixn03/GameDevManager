@@ -5,6 +5,7 @@
 @inject ModuleLabels Modules
 @inject ContentStatusLabels Statuses
 @inject UserPinService Pins
+@inject ContentCommentService Comments
 @inject ModuleState ModuleState
 @inject ProjectContext Project
 @inject DashboardService Dashboard
@@ -198,6 +199,36 @@ else
                     </MudPaper>
                 }
 
+                @* ------------------------------------------------------- Anmerkungen *@
+                else if (band.BandKey == DashboardBands.Comments)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel">
+                        <div class="gdm-panel-head pa-3 d-flex align-center justify-space-between">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["CommentsHeading"]</MudText>
+                        </div>
+
+                        @if (_openComments is not { Count: > 0 })
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-3">@L["CommentsEmpty"]</MudText>
+                        }
+                        else
+                        {
+                            @foreach (var comment in _openComments)
+                            {
+                                <MudLink Href="@($"{ModuleRegistry.Get(comment.OwnerModuleKey).Route}/{comment.OwnerEntityId}")"
+                                         Underline="Underline.None" Color="Color.Inherit"
+                                         Class="gdm-health-row">
+                                    <MudIcon Icon="@Icons.Material.Filled.Comment" Size="Size.Small" Color="Color.Warning" />
+                                    <MudText Typo="Typo.body2" Class="gdm-ellipsis">
+                                        @L["CommentLine", comment.OwnerName, comment.Text]
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@comment.AuthorName</MudText>
+                                </MudLink>
+                            }
+                        }
+                    </MudPaper>
+                }
+
                 @* ------------------------------------------------------ Bearbeitungsstand *@
                 else if (band.BandKey == DashboardBands.Status)
                 {
@@ -326,6 +357,8 @@ else
     private Dictionary<ContentStatus, int>? _statusCounts;
 
     private List<PinnedEntry>? _pinned;
+
+    private List<OpenComment>? _openComments;
     private DateTime? _lastExportUtc;
     private string _projectName = string.Empty;
     private int? _projectCount;
@@ -368,6 +401,7 @@ else
 
             _statusCounts = await Overview.GetStatusCountsAsync(_projectId);
             _pinned = await Pins.GetPinnedAsync(_projectId);
+            _openComments = await Comments.GetOpenAsync(_projectId, 8);
 
             // Zuletzt: erst damit gilt die Seite als geladen.
             _counts = await Statistics.GetCountsAsync(_projectId);
@@ -607,6 +641,7 @@ else
         DashboardBands.Project => Icons.Material.Filled.Flag,
         DashboardBands.Recent => Icons.Material.Filled.History,
         DashboardBands.Pinned => Icons.Material.Filled.Star,
+        DashboardBands.Comments => Icons.Material.Filled.Comment,
         DashboardBands.Health => Icons.Material.Filled.HealthAndSafety,
         DashboardBands.Status => Icons.Material.Filled.Rule,
         DashboardBands.Inventory => Icons.Material.Filled.GridView,

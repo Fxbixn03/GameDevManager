@@ -27,6 +27,9 @@ public static class DashboardBands
     /// <summary>Die angehefteten Entitäten des angemeldeten Benutzers.</summary>
     public const string Pinned = "pinned";
 
+    /// <summary>Offene Anmerkungen an Entitäten des Projekts.</summary>
+    public const string Comments = "comments";
+
     /// <summary>Alle Module als Zahlen-Chips, nach Arbeitsfeld gruppiert.</summary>
     public const string Inventory = "inventory";
 
@@ -35,7 +38,7 @@ public static class DashboardBands
 
     /// <summary>Voreingestellte Reihenfolge: von dringlich nach nachschlagend.</summary>
     public static readonly IReadOnlyList<string> All =
-        [Project, Pinned, Recent, Health, Status, Inventory, Database];
+        [Project, Pinned, Comments, Recent, Health, Status, Inventory, Database];
 
     /// <summary>
     /// Bänder, die ohne eigene Zeile <b>nicht</b> erscheinen. Bisher nur die Datenbank: Provider

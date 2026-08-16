@@ -52,6 +52,12 @@ public static class EntityCleanup
             .Where(translation => entityIds.Contains(translation.OwnerEntityId))
             .ExecuteDeleteAsync(ct);
 
+        // Anmerkungen ebenso — sie sind Werkzeug-Daten, aber an einer Entität, die es nicht
+        // mehr gibt, wäre eine Anmerkung nur noch ein Rätsel.
+        await db.ContentComments
+            .Where(comment => entityIds.Contains(comment.OwnerEntityId))
+            .ExecuteDeleteAsync(ct);
+
         await ConditionService.DeleteForOwnersAsync(db, entityIds, ct);
     }
 }

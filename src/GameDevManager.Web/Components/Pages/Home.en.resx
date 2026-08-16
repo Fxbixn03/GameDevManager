@@ -202,6 +202,18 @@
   <data name="PinnedEmpty" xml:space="preserve">
     <value>Nothing pinned. The star in an edit form puts an entry here — unlike “Continue working”, it stays.</value>
   </data>
+  <data name="Band_comments" xml:space="preserve">
+    <value>Comments</value>
+  </data>
+  <data name="CommentsHeading" xml:space="preserve">
+    <value>Open comments</value>
+  </data>
+  <data name="CommentsEmpty" xml:space="preserve">
+    <value>Nothing open. Comments are written in the “Comments” section of an edit form.</value>
+  </data>
+  <data name="CommentLine" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
   <data name="Band_status" xml:space="preserve">
     <value>Editing status</value>
   </data>

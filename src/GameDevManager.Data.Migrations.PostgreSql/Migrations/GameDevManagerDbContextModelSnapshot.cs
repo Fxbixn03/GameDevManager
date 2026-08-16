@@ -493,6 +493,52 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.ToTable("ConditionSets");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AuthorName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OwnerEntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("OwnerModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("ResolvedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ResolvedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerEntityId");
+
+                    b.HasIndex("GameProjectId", "ResolvedAtUtc");
+
+                    b.ToTable("ContentComments");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentLanguage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2922,6 +2968,17 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ConditionSet", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentComment", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
                         .WithMany()

@@ -358,7 +358,7 @@ Dashboard-Band „Bearbeitungsstand“ und der Export-Filter als **Mindeststand*
 **Offen bleibt** der Filter in den einzelnen Modul-Listen und in der globalen Suche: Beide
 filtern heute je Modul selbst — das gehört zum einheitlichen Filter-Aufbau aus F27.
 
-### F21 — Kommentare an Entitäten
+### F21 — Kommentare an Entitäten ✅ umgesetzt
 
 > **Als** Teammitglied **möchte ich** an einer Entität eine Anmerkung hinterlassen („Schaden ist zu
 > hoch, siehe Playtest vom 3.") und sie als erledigt markieren, **damit** Rückmeldungen dort stehen,
@@ -371,6 +371,10 @@ filtern heute je Modul selbst — das gehört zum einheitlichen Filter-Aufbau au
 im Export, überstehen den ersetzenden Import. Erwähnungen (`@benutzer`) speisen F23.
 
 *Aufwand: M · Migration: ja · Format: unverändert (nicht im Export)*
+
+**Umgesetzt.** `ContentComment` plus `ContentCommentService`, Migration `ContentComments` in
+allen vier Providern, `EntityCommentsPanel` in jeder Maske und ein Dashboard-Band mit den
+offenen. Erwähnungen (`@benutzer`) stehen noch aus — sie gehören zu F23.
 
 ### F22 — ToDo-Karten mit Verknüpfung, Zuständigem und Fälligkeit
 
