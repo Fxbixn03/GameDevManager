@@ -1,0 +1,98 @@
+@implements IDisposable
+@inject EditingPresence Presence
+@inject AuthenticationStateProvider AuthState
+@inject IStringLocalizer<EditingPresenceBanner> L
+
+@*
+    „Wird gerade bearbeitet von …“. Die Schreibkonflikt-Erkennung meldet den Zusammenstoß erst
+    beim Speichern — diese Zeile sagt es vorher.
+
+    Sie sperrt bewusst nichts: Eine Sperre, die ein abgestürzter Browser hinterlässt, wäre
+    schlimmer als eine Auskunft, die man auch übergehen kann.
+*@
+
+@if (_others.Count > 0)
+{
+    <MudAlert Severity="Severity.Info" Dense="true" Square="true" Class="mb-4" Icon="@Icons.Material.Filled.Visibility">
+        @L["Message", string.Join(", ", _others.Select(session => session.UserName))]
+    </MudAlert>
+}
+
+@code {
+    /// <summary>
+    /// Die offene Entität. <c>null</c> heißt „noch nicht gespeichert“ — dann gibt es nichts zu
+    /// melden, denn niemand sonst kennt die GUID.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public Guid? EntityId { get; set; }
+
+    /// <summary>
+    /// Eigen je Maske und nicht je Benutzer: Derselbe Benutzer darf dieselbe Entität in zwei
+    /// Fenstern offen haben, und beide melden sich einzeln wieder ab.
+    /// </summary>
+    private readonly Guid _sessionId = Guid.NewGuid();
+
+    /// <summary>
+    /// Kürzer als <see cref="EditingPresence.Timeout"/>, damit ein Aussetzer der Verbindung
+    /// niemanden aus der Liste wirft — und lang genug, dass eine offene Maske nicht dauernd
+    /// Arbeit macht.
+    /// </summary>
+    private static readonly TimeSpan Heartbeat = TimeSpan.FromSeconds(45);
+
+    private IReadOnlyList<EditingSession> _others = [];
+    private Guid? _announced;
+    private string _userName = string.Empty;
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthState.GetAuthenticationStateAsync();
+        _userName = state.User.Identity?.Name ?? string.Empty;
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (_announced == EntityId)
+        {
+            return;
+        }
+
+        // Die Maske kann auf eine andere Entität umschalten (Speichern einer neuen) — die
+        // vorherige Meldung gehört dann zurückgenommen.
+        if (_announced is { } previous)
+        {
+            Presence.Release(previous, _sessionId);
+        }
+
+        _announced = EntityId;
+        Refresh();
+
+        _timer ??= new Timer(_ => InvokeAsync(() =>
+        {
+            Refresh();
+            StateHasChanged();
+        }), null, Heartbeat, Heartbeat);
+    }
+
+    private void Refresh()
+    {
+        if (_announced is not { } entityId || string.IsNullOrWhiteSpace(_userName))
+        {
+            _others = [];
+            return;
+        }
+
+        Presence.Announce(entityId, _sessionId, _userName);
+        _others = Presence.Others(entityId, _sessionId);
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+
+        if (_announced is { } entityId)
+        {
+            Presence.Release(entityId, _sessionId);
+        }
+    }
+}

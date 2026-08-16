@@ -411,7 +411,7 @@ wie bei den Exportständen: Höchstalter und Obergrenze als Konfiguration, aufge
 
 *Aufwand: L · Migration: ja · Format: unverändert*
 
-### F25 — „Wird gerade bearbeitet von …"
+### F25 — „Wird gerade bearbeitet von …" ✅ umgesetzt
 
 > **Als** Teammitglied **möchte ich** beim Öffnen einer Maske sehen, dass jemand anders sie schon
 > offen hat, **damit** ich den Konflikt vermeide, statt ihn beim Speichern gemeldet zu bekommen.
@@ -423,6 +423,10 @@ Zeitstempel; ein Eintrag verfällt nach wenigen Minuten ohne Lebenszeichen. Rein
 keine Tabelle — das Tool läuft in einem Prozess.
 
 *Aufwand: S · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `EditingPresence` als Singleton in der Datenschicht, `EditingPresenceBanner`
+unter dem `ModuleHeader` jeder Bearbeitungsmaske. Verfall nach drei Minuten ohne Lebenszeichen,
+Herzschlag der Maske alle 45 Sekunden, Sitzungskennung je Maske statt je Benutzer.
 
 ---
 

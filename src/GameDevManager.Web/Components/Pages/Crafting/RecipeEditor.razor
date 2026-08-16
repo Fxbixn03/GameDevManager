@@ -55,6 +55,9 @@ else
         </Actions>
     </ModuleHeader>
 
+    @* Sagt vor dem Speichern, was die Schreibkonflikt-Erkennung erst danach meldet. *@
+    <EditingPresenceBanner EntityId="@(_context.IsNew ? null : _context.Entity.Id)" />
+
     @if (_items.Count == 0)
     {
         <MudAlert Severity="Severity.Info" Class="mb-4">

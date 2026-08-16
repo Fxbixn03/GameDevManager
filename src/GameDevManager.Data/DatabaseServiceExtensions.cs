@@ -110,6 +110,9 @@ public static class DatabaseServiceExtensions
         services.AddScoped<KanbanService>();
         services.AddScoped<WhiteboardService>();
         services.AddSingleton<WhiteboardNotifier>();
+
+        // Wer welche Maske offen hat — reiner Arbeitsspeicher, siehe EditingPresence.
+        services.AddSingleton<EditingPresence>();
         services.AddScoped<WorldService>();
         services.AddScoped<LootService>();
         services.AddScoped<MapService>();
