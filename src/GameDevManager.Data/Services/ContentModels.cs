@@ -58,6 +58,13 @@ public sealed record TranslatableText(
     string SlotLabel,
     string Text);
 
+/// <summary>
+/// Ein noch nicht zugeordnetes Asset samt der Entitäten, deren Name zu seinem Dateinamen passt.
+/// Mehrere Kandidaten sind der interessante Fall — zwei gleichnamige Entitäten in verschiedenen
+/// Modulen darf niemand raten, das entscheidet der Nutzer.
+/// </summary>
+public sealed record AssetOwnerSuggestion(Asset Asset, IReadOnlyList<EntitySummary> Candidates);
+
 /// <summary>Eine Zeile der Item-Übersicht — bewusst nur die Spalten, die die Liste zeigt.</summary>
 public sealed record ItemListRow(
     Guid Id,

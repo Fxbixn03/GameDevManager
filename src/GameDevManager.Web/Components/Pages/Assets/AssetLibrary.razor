@@ -15,6 +15,12 @@
                    OnClick="ManageTagsAsync">
             @L["TagsButton"]
         </MudButton>
+        @* Der Gegenzug zum Massen-Upload: 40 Dateien auf einmal statt 40-mal dieselbe Maske. *@
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.AutoAwesomeMotion"
+                   OnClick="MatchOwnersAsync">
+            @L["MatchButton"]
+        </MudButton>
         <AssetUpload OnUploaded="LoadAsync" Text="@L["UploadText"]" />
     </Actions>
 </ModuleHeader>
@@ -303,6 +309,37 @@ else
         await Library.DeleteAsync(asset.Id);
         await LoadAsync();
         Snackbar.Add(L["DeletedMessage"], Severity.Success);
+    }
+
+    /// <summary>
+    /// Ordnet hochgeladene Dateien den Entitäten zu, deren Namen sie tragen. Nie
+    /// stillschweigend — der Dialog zeigt die Vorschläge und lässt bestätigen.
+    /// </summary>
+    private async Task MatchOwnersAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+
+        var parameters = new DialogParameters<AssetOwnerMatchDialog>
+        {
+            { dialog => dialog.ProjectId, projectId }
+        };
+
+        var reference = await Dialogs.ShowAsync<AssetOwnerMatchDialog>(
+            L["MatchDialogTitle"], parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await reference.Result;
+        if (result is null || result.Canceled)
+        {
+            return;
+        }
+
+        if (result.Data is int assigned && assigned > 0)
+        {
+            Snackbar.Add(L["MatchedMessage", assigned], Severity.Success);
+        }
+
+        await LoadAsync();
     }
 
     private async Task ManageTagsAsync()

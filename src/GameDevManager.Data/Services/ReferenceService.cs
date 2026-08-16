@@ -18,6 +18,12 @@ public class ReferenceService(
     IEnumerable<IModuleEntitySource> sources,
     IStringLocalizer<DataMessages> messages)
 {
+    /// <summary>
+    /// Die Modul-Quellen selbst — für Dienste, die alle Module durchgehen wollen, ohne die
+    /// Aufzählung ein zweites Mal in ihren Konstruktor zu nehmen.
+    /// </summary>
+    public IEnumerable<IModuleEntitySource> Sources => sources;
+
     /// <summary>Alle Stellen, an denen die übergebene GUID verwendet wird.</summary>
     public async Task<List<EntityReferenceHit>> FindReferencesAsync(Guid entityId, CancellationToken ct = default)
     {

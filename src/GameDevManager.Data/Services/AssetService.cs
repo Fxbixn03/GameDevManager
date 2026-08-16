@@ -400,6 +400,97 @@ public class AssetService(
 
     // ------------------------------------------------------------------------------ Stichwörter
 
+    // ------------------------------------------------------------------- Zuordnung nach Namen
+
+    /// <summary>
+    /// Schlägt zu jedem noch nicht zugeordneten Asset die Entitäten vor, deren Name zum
+    /// Dateinamen passt — `eisenschwert.png` zum Item „Eisenschwert“.
+    /// <para>
+    /// Gesucht wird über die <see cref="IModuleEntitySource"/> in <b>allen</b> Modulen; ein
+    /// neues Modul ist damit von selbst dabei. Zugeordnet wird nie stillschweigend: Bei zwei
+    /// gleichnamigen Entitäten in verschiedenen Modulen wäre die Wahl geraten, und die trifft
+    /// der Nutzer.
+    /// </para>
+    /// </summary>
+    public async Task<List<AssetOwnerSuggestion>> SuggestOwnersAsync(
+        Guid projectId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var unassigned = await db.Assets
+            .AsNoTracking()
+            .Where(asset => asset.GameProjectId == projectId && asset.OwnerEntityId == null)
+            .OrderBy(asset => asset.FileName)
+            .ToListAsync(ct);
+
+        if (unassigned.Count == 0)
+        {
+            return [];
+        }
+
+        // Ein Verzeichnis über den normalisierten Namen; gleichnamige Entitäten stehen
+        // nebeneinander und werden dem Nutzer beide angeboten.
+        var byName = new Dictionary<string, List<EntitySummary>>(StringComparer.Ordinal);
+
+        foreach (var source in references.Sources)
+        {
+            foreach (var entity in await source.GetEntitiesAsync(db, projectId, ct))
+            {
+                var key = NormalizeForMatch(entity.Name);
+                if (key.Length == 0)
+                {
+                    continue;
+                }
+
+                if (!byName.TryGetValue(key, out var list))
+                {
+                    byName[key] = list = [];
+                }
+
+                list.Add(entity);
+            }
+        }
+
+        var suggestions = new List<AssetOwnerSuggestion>();
+
+        foreach (var asset in unassigned)
+        {
+            var key = NormalizeForMatch(Path.GetFileNameWithoutExtension(asset.FileName));
+            var candidates = byName.GetValueOrDefault(key) ?? [];
+
+            suggestions.Add(new AssetOwnerSuggestion(asset, candidates));
+        }
+
+        return suggestions;
+    }
+
+    /// <summary>
+    /// Hängt mehrere Assets in einem Rutsch an ihre Entitäten. Je Entität wird das erste
+    /// zugeordnete Asset ihr Icon — das übernimmt <see cref="SaveMetadataAsync"/> ohnehin.
+    /// </summary>
+    public async Task<int> AssignOwnersAsync(
+        IReadOnlyDictionary<Guid, (string ModuleKey, Guid EntityId)> assignments,
+        CancellationToken ct = default)
+    {
+        var assigned = 0;
+
+        foreach (var (assetId, target) in assignments)
+        {
+            await SaveMetadataAsync(assetId, null, target.ModuleKey, target.EntityId, [], ct);
+            assigned++;
+        }
+
+        return assigned;
+    }
+
+    /// <summary>
+    /// Vergleichsform eines Namens: kleingeschrieben und ohne alles, was kein Buchstabe und
+    /// keine Ziffer ist. Damit trifft „eisen-schwert.png“ auch „Eisenschwert“ — Dateinamen
+    /// tragen Trennzeichen, wo ein Anzeigename ein Leerzeichen hat.
+    /// </summary>
+    private static string NormalizeForMatch(string value) =>
+        new([.. value.ToLowerInvariant().Where(char.IsLetterOrDigit)]);
+
     // ------------------------------------------------------------------------ Verwaiste Dateien
 
     /// <summary>

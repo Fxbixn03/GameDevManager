@@ -1,0 +1,166 @@
+@inject AssetService Assets
+@inject ModuleLabels Modules
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<AssetOwnerMatchDialog> L
+
+@*
+    Ordnet hochgeladene Dateien den Entitäten zu, deren Namen sie tragen — „eisenschwert.png“
+    dem Item „Eisenschwert“.
+
+    Vorgeschlagen, nie stillschweigend zugeordnet: Bei zwei gleichnamigen Entitäten in
+    verschiedenen Modulen wäre die Wahl geraten. Deshalb steht je Datei eine Auswahl, und wo
+    es nur einen Kandidaten gibt, ist er vorgewählt.
+*@
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.AutoAwesomeMotion" />
+            <MudText Typo="Typo.h6">@L["Title"]</MudText>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <div style="min-width:min(720px, 90vw);">
+            @if (_suggestions is null)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+            }
+            else if (_suggestions.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NothingUnassigned"]</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                    @L["Hint", _suggestions.Count, MatchedCount]
+                </MudText>
+
+                <MudSimpleTable Dense="true" Elevation="0">
+                    <thead>
+                        <tr>
+                            <th style="width:40%;">@L["ColumnFile"]</th>
+                            <th>@L["ColumnTarget"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var suggestion in _suggestions)
+                        {
+                            var assetId = suggestion.Asset.Id;
+
+                            <tr>
+                                <td class="gdm-ellipsis">@suggestion.Asset.FileName</td>
+                                <td>
+                                    @if (suggestion.Candidates.Count == 0)
+                                    {
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoMatch"]</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="Guid?"
+                                                   Value="@_chosen.GetValueOrDefault(assetId)"
+                                                   ValueChanged="@((Guid? id) => Choose(assetId, id))"
+                                                   Variant="Variant.Outlined"
+                                                   Margin="Margin.Dense"
+                                                   Clearable="true"
+                                                   Dense="true">
+                                            @foreach (var candidate in suggestion.Candidates)
+                                            {
+                                                <MudSelectItem T="Guid?" Value="@candidate.Id">
+                                                    @L["CandidateLabel", candidate.Name, Modules.NameOrKey(candidate.ModuleKey)]
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(_assigning || SelectedCount == 0)"
+                   OnClick="AssignAsync">
+            @L["Assign", SelectedCount]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Guid ProjectId { get; set; }
+
+    private List<AssetOwnerSuggestion>? _suggestions;
+
+    /// <summary>Die getroffene Wahl je Asset — die GUID der Entität, die es bekommen soll.</summary>
+    private readonly Dictionary<Guid, Guid?> _chosen = [];
+
+    private bool _assigning;
+
+    private int MatchedCount => _suggestions?.Count(s => s.Candidates.Count > 0) ?? 0;
+
+    private int SelectedCount => _chosen.Count(entry => entry.Value is not null);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _suggestions = await Assets.SuggestOwnersAsync(ProjectId);
+
+        // Ein eindeutiger Treffer ist vorgewählt; bei mehreren bleibt die Auswahl leer, damit
+        // niemand versehentlich das Falsche bestätigt.
+        foreach (var suggestion in _suggestions.Where(s => s.Candidates.Count == 1))
+        {
+            _chosen[suggestion.Asset.Id] = suggestion.Candidates[0].Id;
+        }
+    }
+
+    private void Choose(Guid assetId, Guid? entityId) => _chosen[assetId] = entityId;
+
+    private async Task AssignAsync()
+    {
+        if (_suggestions is null)
+        {
+            return;
+        }
+
+        _assigning = true;
+
+        try
+        {
+            var assignments = new Dictionary<Guid, (string ModuleKey, Guid EntityId)>();
+
+            foreach (var suggestion in _suggestions)
+            {
+                if (_chosen.GetValueOrDefault(suggestion.Asset.Id) is not { } entityId)
+                {
+                    continue;
+                }
+
+                var target = suggestion.Candidates.FirstOrDefault(candidate => candidate.Id == entityId);
+                if (target is not null)
+                {
+                    assignments[suggestion.Asset.Id] = (target.ModuleKey, target.Id);
+                }
+            }
+
+            var assigned = await Assets.AssignOwnersAsync(assignments);
+            MudDialog.Close(DialogResult.Ok(assigned));
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _assigning = false;
+        }
+    }
+}

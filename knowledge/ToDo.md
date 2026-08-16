@@ -546,7 +546,7 @@ Aufbewahrungsregel.
 
 *Aufwand: M · Migration: ja (Fassungen) · Format: +1*
 
-### F34 — Massen-Upload mit Namenszuordnung
+### F34 — Massen-Upload mit Namenszuordnung ✅ umgesetzt
 
 > **Als** Grafiker **möchte ich** 40 Dateien auf einmal hochladen und sie automatisch den Entitäten
 > zuordnen lassen, deren Namen sie tragen (`eisenschwert.png` → Item „Eisenschwert"), **damit** ich
@@ -559,6 +559,10 @@ zeigen (nie stillschweigend zuordnen — bei zwei gleichnamigen Entitäten in ve
 wäre die Wahl geraten), dann in einem Rutsch zuordnen und das erste je Entität als primär setzen.
 
 *Aufwand: S · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `AssetService.SuggestOwnersAsync`/`AssignOwnersAsync` plus
+`AssetOwnerMatchDialog` in der Bibliothek. Verglichen wird über eine Normalform ohne
+Trennzeichen; ein eindeutiger Treffer ist vorgewählt, mehrere bleiben zur Wahl.
 
 ### F35 — Verwaiste Dateien im Speicher finden ✅ umgesetzt
 

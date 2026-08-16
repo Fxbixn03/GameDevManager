@@ -18,6 +18,15 @@
   <data name="TagsButton" xml:space="preserve">
     <value>Stichwörter</value>
   </data>
+  <data name="MatchButton" xml:space="preserve">
+    <value>Nach Namen zuordnen</value>
+  </data>
+  <data name="MatchDialogTitle" xml:space="preserve">
+    <value>Dateien nach Namen zuordnen</value>
+  </data>
+  <data name="MatchedMessage" xml:space="preserve">
+    <value>{0} Datei(en) zugeordnet.</value>
+  </data>
   <data name="UploadText" xml:space="preserve">
     <value>Dateien hochladen</value>
   </data>
