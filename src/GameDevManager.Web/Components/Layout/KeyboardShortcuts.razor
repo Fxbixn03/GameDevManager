@@ -1,25 +1,56 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject IDialogService Dialogs
+@inject IStringLocalizer<ShortcutOverviewDialog> L
 
 @* Unsichtbare Komponente im MainLayout: verdrahtet die globalen Tastatur-Shortcuts.
-   Strg+K (Suche) und Strg+S (Speichern-Knopf mit data-gdm-save) laufen rein im Browser;
-   die Alt-Navigation ruft hierher zurück, weil nur Blazor ohne Neuladen navigieren kann. *@
+   Strg+K (Suche), Strg+S (Knopf mit data-gdm-save), „n“ (Knopf mit data-gdm-new) und „e“
+   (Eintrag mit data-gdm-entity) laufen rein im Browser; Alt-Navigation und „?“ rufen hierher
+   zurück, weil nur Blazor navigieren und nur C# einen Dialog öffnen kann. *@
 
 @code {
     private DotNetObjectReference<KeyboardShortcuts>? _reference;
+
+    /// <summary>
+    /// Welche Taste welches Modul öffnet. Steht hier und nicht im JavaScript, weil die Routen
+    /// aus der <see cref="ModuleRegistry"/> kommen — im Skript stünden sie ein zweites Mal und
+    /// liefen beim ersten neuen Modul auseinander.
+    /// </summary>
+    private static readonly Dictionary<string, string> Routes = new()
+    {
+        ["h"] = "/dashboard",
+        ["i"] = "/modules/items",
+        ["n"] = "/modules/npcs",
+        ["q"] = "/modules/quests",
+        ["t"] = "/modules/todo",
+        ["w"] = "/modules/whiteboard",
+        ["k"] = "/modules/maps",
+        ["d"] = "/modules/dialogs",
+        ["s"] = "/modules/story",
+        ["a"] = "/modules/assets"
+    };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             _reference = DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("gdmShortcuts.init", _reference);
+            await JS.InvokeVoidAsync("gdmShortcuts.init", _reference, Routes);
         }
     }
 
     [JSInvokable]
     public void NavigateTo(string route) => Navigation.NavigateTo(route);
+
+    /// <summary>
+    /// Die Übersicht der Tastenkürzel. Ein Dialog und keine eigene Seite: Wer sie braucht, ist
+    /// mitten in etwas anderem und will danach dorthin zurück.
+    /// </summary>
+    [JSInvokable]
+    public async Task ShowOverview() =>
+        await Dialogs.ShowAsync<ShortcutOverviewDialog>(
+            L["Title"], new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
 
     public ValueTask DisposeAsync()
     {

@@ -510,7 +510,7 @@ Testbestand für die Entwicklung da.
 
 *Aufwand: M · Migration: nein · Format: unverändert*
 
-### F31 — Tastatur-Übersicht und mehr Shortcuts
+### F31 — Tastatur-Übersicht und mehr Shortcuts ✅ umgesetzt
 
 > **Als** Vielnutzer **möchte ich** mit `?` eine Übersicht der Tastenkürzel sehen und in jeder Liste
 > mit den Pfeiltasten navigieren, **damit** ich die Hand nicht ständig zur Maus nehme.
@@ -522,6 +522,11 @@ Liste, `e` für „bearbeiten" auf dem markierten Eintrag, `Entf` mit Rückfrage
 nur in drei.
 
 *Aufwand: S · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `?` zeigt den `ShortcutOverviewDialog`, `n` legt neu an, `e` öffnet einen
+Eintrag; der Speichern-Knopf trägt `data-gdm-save` jetzt in allen Masken, die „Neu“-Knöpfe der
+Listen `data-gdm-new`. Die Alt-Routen stehen in C# statt im Skript. `Esc` blieb draußen —
+MudBlazor schließt seine Dialoge bereits selbst damit.
 
 ---
 

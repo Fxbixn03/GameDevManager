@@ -248,7 +248,11 @@ public partial class ExportSnapshotService(
         {
             ct.ThrowIfCancellationRequested();
 
-            var latest = FindLatestExportedAtUtc(projectId);
+            // Der Zeitpunkt kommt aus dem Manifest und nicht aus dem Dateinamen: Der trägt nur
+            // ganze Sekunden, und eine Änderung in derselben Sekunde fiele damit unter den
+            // Tisch. Ein Archiv je Projekt und Nacht zu öffnen ist dafür der geringe Preis —
+            // die Projektleiste des Dashboards liest weiter den Dateinamen.
+            var latest = List(projectId).FirstOrDefault()?.ExportedAtUtc;
 
             if (latest is { } since && !await HasChangedSinceAsync(db, projectId, since, ct))
             {
@@ -277,17 +281,11 @@ public partial class ExportSnapshotService(
     private async Task<bool> HasChangedSinceAsync(
         GameDevManagerDbContext db, Guid projectId, DateTime since, CancellationToken ct)
     {
-        // Der Zeitstempel eines Standes kommt aus seinem Dateinamen und trägt nur ganze
-        // Sekunden. Eine Entität, die in derselben Sekunde gespeichert wurde, steckt damit
-        // bereits im Stand — ohne diese Sekunde Luft hielte der Lauf jeden Stand für veraltet
-        // und legte Nacht für Nacht einen neuen an.
-        var threshold = since.AddSeconds(1);
-
         foreach (var source in sources)
         {
             var recent = await source.RecentAsync(db, projectId, 1, ct);
 
-            if (recent.Count > 0 && recent[0].UpdatedAtUtc >= threshold)
+            if (recent.Count > 0 && recent[0].UpdatedAtUtc > since)
             {
                 return true;
             }

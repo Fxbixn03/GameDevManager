@@ -1,0 +1,62 @@
+@inject IStringLocalizer<ShortcutOverviewDialog> L
+
+@*
+    Die Tastatur-Übersicht — dieselbe Liste, die gdm-shortcuts.js abarbeitet. Sie steht hier
+    und nicht im JavaScript, weil sie Text ist und Text im Haus aus einer .resx kommt.
+*@
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Keyboard" />
+            <MudText Typo="Typo.h6">@L["Title"]</MudText>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <div style="min-width:min(520px, 85vw);">
+            <MudSimpleTable Dense="true" Elevation="0">
+                <tbody>
+                    @foreach (var (keys, description) in Entries)
+                    {
+                        <tr>
+                            <td style="width:35%;white-space:nowrap;">
+                                @foreach (var key in keys)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="gdm-mono">
+                                        @key
+                                    </MudChip>
+                                }
+                            </td>
+                            <td>@description</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-3">@L["Hint"]</MudText>
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => MudDialog.Close())">
+            @L["Close"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>Die Tastenkürzel in der Reihenfolge, in der man sie lernt.</summary>
+    private IEnumerable<(string[] Keys, string Description)> Entries =>
+    [
+        ([L["KeyCtrl"], "K"], L["Search"]),
+        ([L["KeyCtrl"], "S"], L["Save"]),
+        (["N"], L["New"]),
+        (["E"], L["Edit"]),
+        (["?"], L["Overview"]),
+        ([L["KeyAlt"], L["KeyLetter"]], L["Navigate"])
+    ];
+}
