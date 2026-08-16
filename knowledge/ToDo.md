@@ -776,7 +776,7 @@ Passwortrichtlinie, also über die Konfiguration.
 
 *Aufwand: M · Migration: ja · Format: unverändert*
 
-### F48 — Betriebs-Kennzahlen
+### F48 — Betriebs-Kennzahlen ✅ umgesetzt
 
 > **Als** Betreiber **möchte ich** einen Endpunkt für Verfügbarkeit und ein paar Kennzahlen
 > (Datenbankverbindung, Größe des Asset-Verzeichnisses, Alter des jüngsten Exportstands), **damit**

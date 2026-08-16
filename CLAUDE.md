@@ -381,6 +381,10 @@ Eingesammelt wird **nur die Eigenschaft `id`**: Was mitkopiert wird, bekommt ein
 - **Godot bekommt je Eintrag eine `.tres`** — sein eigenes Textformat, stabil genug, um es zu schreiben.
 - **Zielnamen werden zu Bezeichnern gemacht** (`Identifier`): Der Nutzer schreibt „Max. Leben“, die Engine braucht `MaxLeben`. Zwei Zuordnungen auf dieselbe Eigenschaft lehnt der Dienst ab — welche gewönne, hinge an der Sortierung.
 
+### Betriebs-Kennzahlen
+
+`/health` beantwortet ohne Anmeldung genau eine Frage — läuft die Anwendung und antwortet ihre Datenbank (`healthy`/`unhealthy`, 503 im Fehlerfall). Alles Weitere steht unter `/api/v1/metrics` **hinter dem API-Schlüssel**, weil schon die Zahl der Projekte die Größe des Bestands verrät; der Endpoint-Filter der Gruppe erledigt die Prüfung ohnehin. Vier Dinge: Ausgeliefert wird **Prometheus oder JSON**, je nach `?format=prometheus` bzw. `Accept` — der Blick per Browser ist der häufigere Fall. Das Prometheus-Format ist von Hand geschrieben (`OperationsMetricsService.ToPrometheus`), es sind acht Zeilen — dieselbe Abwägung wie beim `Csv` und beim `ImageDimensionReader`; Zahlen darin in fester Kultur. Gibt es **keinen Exportstand**, fehlt die Alterszahl ganz, statt Null zu sein: Sonst läse eine Überwachung „nie gesichert“ als „gerade eben gesichert“. Und die Größe des Asset-Verzeichnisses wird über die **Dateien** gezählt und nicht über die Tabelle — gefragt ist, was auf der Platte liegt, verwaiste Dateien eingeschlossen; unlesbare Einträge überspringt der Lauf, eine Kennzahl darf daran nicht scheitern.
+
 ### Lokalisierung der Spielinhalte
 
 `ContentLanguage` (Sprachen je Projekt) und `ContentTranslation` (die Texte), bedient von `LocalizationService`, Oberfläche im Werkzeug-Modul `ModuleKeys.Localization`. Migration in allen vier Providern: `ContentLocalization`. Neun Dinge:

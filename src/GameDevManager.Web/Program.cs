@@ -189,6 +189,20 @@ app.MapGet("/export/{projectId:guid}", async (
 //
 // Die Anmeldung läuft über den Header „X-API-Key“ (alternativ „Authorization: Bearer …“) und
 // nicht über das Cookie: Ein Plugin hat keinen Browser, in dem eines läge.
+// ------------------------------------------------------------------- Betriebs-Kennzahlen
+//
+// „/health“ beantwortet die eine Frage, die eine Überwachung ohne Zugang stellen darf: Läuft
+// die Anwendung und antwortet ihre Datenbank? Mehr steht dort nicht — schon die Zahl der
+// Projekte verriete die Größe des Bestands.
+app.MapGet("/health", async (OperationsMetricsService metrics, CancellationToken ct) =>
+{
+    var (reachable, _) = await metrics.CheckDatabaseAsync(ct);
+
+    return reachable
+        ? Results.Text("healthy", "text/plain")
+        : Results.Text("unhealthy", "text/plain", statusCode: StatusCodes.Status503ServiceUnavailable);
+}).AllowAnonymous();
+
 var api = app.MapGroup("/api/v1");
 
 api.AddEndpointFilter(async (context, next) =>
@@ -226,6 +240,21 @@ api.MapGet("/projects", async (ContentApiService content, HttpContext http, Canc
 {
     var key = (ApiKey)http.Items["ApiKey"]!;
     return Results.Json(await content.GetProjectsAsync(key.GameProjectId, ct), ContentApiService.JsonOptions);
+});
+
+// Die Zahlen dagegen hinter dem Schlüssel — der Filter der Gruppe steht ohnehin schon da.
+api.MapGet("/metrics", async (OperationsMetricsService metrics, HttpContext http, CancellationToken ct) =>
+{
+    var collected = await metrics.CollectAsync(ct);
+
+    // Prometheus, wenn es danach fragt; sonst dasselbe als JSON, weil ein Blick per Browser
+    // der häufigere Fall ist.
+    var wantsText = http.Request.Query["format"] == "prometheus"
+        || http.Request.Headers.Accept.Any(value => value?.Contains("text/plain") == true);
+
+    return wantsText
+        ? Results.Text(OperationsMetricsService.ToPrometheus(collected), "text/plain; version=0.0.4")
+        : Results.Json(collected, ContentApiService.JsonOptions);
 });
 
 api.MapGet("/modules", (ContentApiService content) =>

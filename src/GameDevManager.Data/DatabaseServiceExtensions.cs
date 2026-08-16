@@ -116,6 +116,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<WorldService>();
         services.AddScoped<LootService>();
         services.AddScoped<UserPinService>();
+        services.AddScoped<OperationsMetricsService>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
         services.AddScoped<DialogueService>();
