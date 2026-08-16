@@ -120,6 +120,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ExportProfileService>();
         services.AddScoped<ContentCommentService>();
         services.AddScoped<ActivityFeedService>();
+        services.AddScoped<EconomyService>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
         services.AddScoped<DialogueService>();

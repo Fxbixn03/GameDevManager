@@ -756,6 +756,11 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("TEXT");
 
+                    b.Property<double>("ExchangeRate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("REAL")
+                        .HasDefaultValue(1.0);
+
                     b.Property<Guid>("GameProjectId")
                         .HasColumnType("TEXT");
 

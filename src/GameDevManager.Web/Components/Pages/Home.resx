@@ -202,6 +202,9 @@
   <data name="Band_database" xml:space="preserve">
     <value>Datenbank</value>
   </data>
+  <data name="Check_moneyPrinters" xml:space="preserve">
+    <value>Gelddruckmaschinen</value>
+  </data>
   <data name="Check_unlockCycles" xml:space="preserve">
     <value>Ringe im Freischaltungs-Baum</value>
   </data>

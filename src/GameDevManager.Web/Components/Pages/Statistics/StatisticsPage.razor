@@ -5,6 +5,7 @@
 @inject DialogueService Dialogues
 @inject ConditionService Conditions
 @inject TechTreeService TechTree
+@inject EconomyService Economy
 @inject QuestService Quests
 @inject ProjectContext Project
 @inject IStringLocalizer<StatisticsPage> L
@@ -211,6 +212,43 @@ else
                 <MudText Typo="Typo.body2" Class="py-1">@TechTree.DescribeCycle(cycle)</MudText>
             }
         </MudPaper>
+
+        @* Die Wirtschafts-Prüfung: Zutaten billiger als das Ergebnis. Gemeldet, nicht
+           verboten — dieselbe Linie wie beim Loot-Check. *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_moneyPrinters.Count)" Color="@StatusColor(_moneyPrinters.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>@L["MoneyPrintersTitle"]</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_moneyPrinters.Count)</MudText>
+                <MudSpacer />
+                <MudButton Size="Size.Small" Variant="Variant.Text" Href="/modules/crafting">
+                    @L["ToCrafting"]
+                </MudButton>
+            </MudStack>
+
+            @if (_moneyPrinters.Count > 0)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
+                    @L["MoneyPrintersHint"]
+                </MudText>
+            }
+
+            @foreach (var printer in _moneyPrinters)
+            {
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="py-1">
+                    <MudLink Href="@($"/modules/crafting/{printer.RecipeId}")">@printer.RecipeName</MudLink>
+                    <MudText Typo="Typo.body2" Class="gdm-mono" Color="Color.Warning">
+                        @L["MoneyPrinterProfit", printer.Profit.ToString("0.##"), printer.IngredientCost.ToString("0.##"), printer.OutputValue.ToString("0.##")]
+                    </MudText>
+                    @if (!printer.IsCertain)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Secondary">
+                            @L["MoneyPrinterUncertain", printer.MissingPrices]
+                        </MudChip>
+                    }
+                </MudStack>
+            }
+        </MudPaper>
     </MudStack>
 }
 
@@ -227,6 +265,7 @@ else
     private List<OrphanedAsset> _orphanedAssets = [];
     private List<ConditionProblem> _conditionProblems = [];
     private List<UnlockCycle> _unlockCycles = [];
+    private List<MoneyPrinter> _moneyPrinters = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -241,6 +280,7 @@ else
         _orphanedAssets = await Statistics.FindOrphanedAssetsAsync(projectId);
         _conditionProblems = await Conditions.FindProblemsAsync(projectId);
         _unlockCycles = await TechTree.FindCyclesAsync(projectId);
+        _moneyPrinters = await Economy.FindMoneyPrintersAsync(projectId);
 
         // Zuletzt, weil die Anzeige darauf wartet — so erscheinen die Checks gemeinsam.
         _counts = await Statistics.GetCountsAsync(projectId);

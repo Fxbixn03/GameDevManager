@@ -761,6 +761,11 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
 
+                    b.Property<double>("ExchangeRate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(1.0);
+
                     b.Property<Guid>("GameProjectId")
                         .HasColumnType("uniqueidentifier");
 

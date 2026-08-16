@@ -15,6 +15,7 @@ public static class HealthCheckKeys
     public const string OrphanedAssets = "orphanedAssets";
     public const string ImpossibleConditions = "impossibleConditions";
     public const string UnlockCycles = "unlockCycles";
+    public const string MoneyPrinters = "moneyPrinters";
 }
 
 /// <summary>
@@ -46,7 +47,8 @@ public class DashboardOverviewService(
     DialogueService dialogues,
     LootService loot,
     ConditionService conditions,
-    TechTreeService techTree)
+    TechTreeService techTree,
+    EconomyService economy)
 {
     /// <summary>
     /// Die zuletzt bearbeiteten Entitäten quer durch alle Module, jüngste zuerst.
@@ -142,7 +144,12 @@ public class DashboardOverviewService(
             // Ringe im Freischaltungs-Graphen — derselbe Fall wie zyklische Rezepte, nur eine
             // Ebene höher: Alles im Ring wartet auf sich selbst und ist nie erreichbar.
             new(HealthCheckKeys.UnlockCycles, ModuleKeys.TechTree,
-                (await techTree.FindCyclesAsync(projectId, ct)).Count)
+                (await techTree.FindCyclesAsync(projectId, ct)).Count),
+
+            // Die Wirtschafts-Prüfung: Zutaten billiger als das Ergebnis. Der Weg dorthin
+            // führt ins Crafting — dort steht das Rezept, das man ändern muss.
+            new(HealthCheckKeys.MoneyPrinters, ModuleKeys.Crafting,
+                (await economy.FindMoneyPrintersAsync(projectId, ct)).Count)
         ];
 
         return new HealthSummary(

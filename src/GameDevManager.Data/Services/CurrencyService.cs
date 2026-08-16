@@ -121,6 +121,8 @@ public class CurrencyService(
         stored.Name = name;
         stored.Symbol = Normalize(currency.Symbol);
         stored.Description = Normalize(currency.Description);
+        // Ein Kurs von 0 oder darunter machte jede Umrechnung sinnlos.
+        stored.ExchangeRate = currency.ExchangeRate > 0 ? currency.ExchangeRate : 1;
         stored.UpdatedAtUtc = now;
 
         // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier

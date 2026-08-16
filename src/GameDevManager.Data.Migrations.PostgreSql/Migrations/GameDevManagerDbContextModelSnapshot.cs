@@ -761,6 +761,11 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)");
 
+                    b.Property<double>("ExchangeRate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("double precision")
+                        .HasDefaultValue(1.0);
+
                     b.Property<Guid>("GameProjectId")
                         .HasColumnType("uuid");
 

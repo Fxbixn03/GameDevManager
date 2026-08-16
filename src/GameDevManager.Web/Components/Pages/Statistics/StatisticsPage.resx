@@ -84,6 +84,21 @@
   <data name="FindingsCount" xml:space="preserve">
     <value>{0} Fund(e)</value>
   </data>
+  <data name="MoneyPrintersTitle" xml:space="preserve">
+    <value>Gelddruckmaschinen</value>
+  </data>
+  <data name="MoneyPrintersHint" xml:space="preserve">
+    <value>Bei diesen Rezepten kosten die Zutaten beim Händler weniger, als das Ergebnis dort einbringt. Gerechnet wird mit dem günstigsten Einkauf und dem besten Verkauf — den sucht sich ein Spieler.</value>
+  </data>
+  <data name="MoneyPrinterProfit" xml:space="preserve">
+    <value>+{0} (Einkauf {1} → Verkauf {2})</value>
+  </data>
+  <data name="MoneyPrinterUncertain" xml:space="preserve">
+    <value>{0} Preis(e) unbekannt</value>
+  </data>
+  <data name="ToCrafting" xml:space="preserve">
+    <value>Zum Crafting</value>
+  </data>
   <data name="UnlockCyclesTitle" xml:space="preserve">
     <value>Ringe im Freischaltungs-Baum</value>
   </data>

@@ -45,6 +45,12 @@
   <data name="SymbolLabel" xml:space="preserve">
     <value>Zeichen</value>
   </data>
+  <data name="ExchangeRateLabel" xml:space="preserve">
+    <value>Wechselkurs</value>
+  </data>
+  <data name="ExchangeRateHelperText" xml:space="preserve">
+    <value>Wert einer Einheit in einer gedachten Grundeinheit. 1 heißt: ist selbst die Grundeinheit.</value>
+  </data>
   <data name="SymbolHelperText" xml:space="preserve">
     <value>Für Preisangaben</value>
   </data>

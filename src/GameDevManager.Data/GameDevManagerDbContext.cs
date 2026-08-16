@@ -343,7 +343,15 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         ConfigureContentEntity<Recipe>(modelBuilder);
         ConfigureContentEntity<Currency>(modelBuilder);
 
-        modelBuilder.Entity<Currency>(entity => entity.Property(c => c.Symbol).HasMaxLength(10));
+        modelBuilder.Entity<Currency>(entity =>
+        {
+            entity.Property(c => c.Symbol).HasMaxLength(10);
+
+            // Der Datenbank-Standard steht ausdrücklich auf 1, damit Währungen aus der Zeit
+            // vor dieser Spalte nicht mit dem Kurs 0 dastehen — ein C#-Initialisierer allein
+            // erreicht Bestandszeilen nicht.
+            entity.Property(c => c.ExchangeRate).HasDefaultValue(1d);
+        });
 
         ConfigureContentEntity<Rarity>(modelBuilder);
 

@@ -278,7 +278,7 @@ Datenbestand, reine Auswertung — dasselbe Muster wie der Freischaltungs-Graph.
 Seite `/modules/loot/{id}/simulation` mit Balkendiagramm als SVG. Startwert aus der Oberfläche,
 Wartezeit als Median, gezählt je Eintrag statt je Item.
 
-### F16 — Wirtschafts-Prüfung
+### F16 — Wirtschafts-Prüfung ✅ umgesetzt
 
 > **Als** Designer **möchte ich** sehen, wo ein Spieler Geld aus dem Nichts erzeugt — Zutaten beim
 > Händler billiger als das Ergebnis, das er verkaufen kann —, **damit** die Wirtschaft nicht beim
@@ -292,6 +292,12 @@ verbieten. Voraussetzung ist ein Wechselkurs je Währung — heute definiert der
 der Währungs-Art, für den Vergleich müsste er eine Spalte werden.
 
 *Aufwand: M · Migration: ja (Wechselkurs) · Format: +1*
+
+**Umgesetzt.** `Currency.ExchangeRate` (Migration `CurrencyExchangeRate` in allen vier
+Providern, `FormatVersion` auf **16**) plus `EconomyService` als neunter Health Check. Statt über
+`CraftingGraph.SummarizeBaseCost` wird direkt über die Zutaten eines Rezepts gerechnet: Der
+Grundstoff-Baum beantwortet „was kostet es von ganz unten“, die Frage hier ist „was kostet es
+beim Händler“ — und die stellt sich je Rezeptstufe.
 
 ### F17 — Fortschritts-Sicht: „Was hat der Spieler auf Stufe N?"
 

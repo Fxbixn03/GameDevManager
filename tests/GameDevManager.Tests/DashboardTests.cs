@@ -166,6 +166,7 @@ public class DashboardTests
                 HealthCheckKeys.DeadItems,
                 HealthCheckKeys.DialogueDeadEnds,
                 HealthCheckKeys.ImpossibleConditions,
+                HealthCheckKeys.MoneyPrinters,
                 HealthCheckKeys.OrphanedAssets,
                 HealthCheckKeys.OverfullLoot,
                 HealthCheckKeys.QuestsWithoutCompletion,
