@@ -40,18 +40,7 @@ public class AssetService(
         // gleich wieder gelöscht.
         await guard.EnsureCanWriteAsync(ct);
 
-        // Manche Browser melden für Sprites nur "application/octet-stream" oder gar nichts.
-        // In dem Fall entscheidet die Dateiendung, bevor abgelehnt wird.
-        if (!options.AllowedMimeTypes.Contains(mimeType, StringComparer.OrdinalIgnoreCase))
-        {
-            mimeType = AssetMimeTypes.FromFileName(fileName) ?? mimeType;
-        }
-
-        if (!options.AllowedMimeTypes.Contains(mimeType, StringComparer.OrdinalIgnoreCase))
-        {
-            throw new ContentValidationException(
-                messages["AssetMimeNotAllowed", fileName, mimeType, string.Join(", ", options.AllowedMimeTypes)]);
-        }
+        mimeType = ResolveMimeType(fileName, mimeType);
 
         var asset = new Asset
         {
@@ -91,6 +80,120 @@ public class AssetService(
             storage.Delete(asset.StorageKey);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Tauscht die Datei hinter einem Asset aus. Die Zeile bleibt stehen — <b>und damit die
+    /// GUID</b>: Alle Verweise darauf halten, und der Diff zweier Exportstände zeigt dieselbe
+    /// Grafik in neu statt einer gelöschten und einer neuen.
+    /// <para>
+    /// Der <see cref="Asset.StorageKey"/> bekommt einen neuen Wert und nicht denselben: Der
+    /// Auslieferungs-Endpunkt setzt auf die Datei ein unbefristetes Caching (der Inhalt eines
+    /// Assets ändert sich nie), und unter demselben Schlüssel bekäme ein Browser die alte
+    /// Datei noch tagelang. Die bisherige wandert als <see cref="AssetVersion"/> daneben.
+    /// </para>
+    /// </summary>
+    public async Task<Asset> ReplaceAsync(
+        Guid assetId, string fileName, string mimeType, Stream content, CancellationToken ct = default)
+    {
+        await guard.EnsureCanWriteAsync(ct);
+
+        mimeType = ResolveMimeType(fileName, mimeType);
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var asset = await db.Assets
+            .Include(a => a.Versions)
+            .FirstOrDefaultAsync(a => a.Id == assetId, ct)
+            ?? throw new ContentValidationException(messages["AssetGone"]);
+
+        var previous = new AssetVersion
+        {
+            AssetId = asset.Id,
+            StorageKey = asset.StorageKey,
+            FileName = asset.FileName,
+            MimeType = asset.MimeType,
+            SizeBytes = asset.SizeBytes,
+            Width = asset.Width,
+            Height = asset.Height
+        };
+
+        // Erst die neue Datei ablegen: Scheitert das, ist noch nichts verloren.
+        var newKey = await storage.SaveAsync(
+            asset.GameProjectId, Guid.NewGuid(), DetermineExtension(fileName, mimeType), content, ct);
+
+        try
+        {
+            asset.StorageKey = newKey;
+            asset.FileName = Path.GetFileName(fileName);
+            asset.MimeType = mimeType;
+
+            // Maße neu lesen — eine höher aufgelöste Fassung derselben Grafik ist der
+            // Normalfall des Ersetzens.
+            await MeasureAsync(asset, ct);
+
+            db.AssetVersions.Add(previous);
+            await db.SaveChangesAsync(ct);
+        }
+        catch
+        {
+            storage.Delete(newKey);
+            throw;
+        }
+
+        await PruneVersionsAsync(db, asset, ct);
+
+        return asset;
+    }
+
+    /// <summary>
+    /// Kürzt die Fassungs-Historie auf die eingestellte Zahl. Läuft nach jedem Ersetzen von
+    /// selbst — dieselbe Linie wie beim Aufräumen der Exportstände: Was von allein wächst,
+    /// muss von allein wieder abnehmen.
+    /// </summary>
+    private async Task PruneVersionsAsync(
+        GameDevManagerDbContext db, Asset asset, CancellationToken ct)
+    {
+        var keep = Math.Max(0, options.MaxVersionsPerAsset);
+
+        var obsolete = await db.AssetVersions
+            .Where(version => version.AssetId == asset.Id)
+            .OrderByDescending(version => version.ReplacedAtUtc)
+            .Skip(keep)
+            .ToListAsync(ct);
+
+        if (obsolete.Count == 0)
+        {
+            return;
+        }
+
+        // Erst die Zeilen, dann die Dateien: Ein Fehler beim Löschen einer Datei hinterlässt
+        // dann höchstens eine Waise, die der Speicher-Wartungslauf findet — andersherum
+        // zeigte eine Zeile auf eine Datei, die es nicht mehr gibt.
+        db.AssetVersions.RemoveRange(obsolete);
+        await db.SaveChangesAsync(ct);
+
+        foreach (var version in obsolete)
+        {
+            storage.Delete(version.StorageKey);
+        }
+    }
+
+    /// <summary>
+    /// Manche Browser melden für Sprites nur „application/octet-stream“ oder gar nichts. In dem
+    /// Fall entscheidet die Dateiendung, bevor abgelehnt wird.
+    /// </summary>
+    private string ResolveMimeType(string fileName, string mimeType)
+    {
+        if (!options.AllowedMimeTypes.Contains(mimeType, StringComparer.OrdinalIgnoreCase))
+        {
+            mimeType = AssetMimeTypes.FromFileName(fileName) ?? mimeType;
+        }
+
+        return options.AllowedMimeTypes.Contains(mimeType, StringComparer.OrdinalIgnoreCase)
+            ? mimeType
+            : throw new ContentValidationException(
+                messages["AssetMimeNotAllowed", fileName, mimeType, string.Join(", ", options.AllowedMimeTypes)]);
     }
 
     /// <summary>Ermittelt Größe und Bildmaße aus der abgelegten Datei.</summary>
@@ -328,7 +431,10 @@ public class AssetService(
     {
         await using var db = await factory.CreateDbContextAsync(ct);
 
-        var asset = await db.Assets.FirstOrDefaultAsync(a => a.Id == assetId, ct);
+        var asset = await db.Assets
+            .Include(a => a.Versions)
+            .FirstOrDefaultAsync(a => a.Id == assetId, ct);
+
         if (asset is null)
         {
             return;
@@ -337,10 +443,19 @@ public class AssetService(
         var ownerId = asset.OwnerEntityId;
         var wasPrimary = asset.IsPrimary;
 
+        // Die Dateien der früheren Fassungen merken, bevor die Zeilen über den Fremdschlüssel
+        // mitfallen — danach wüsste niemand mehr, welche Dateien dazugehörten.
+        var versionKeys = asset.Versions.Select(version => version.StorageKey).ToList();
+
         db.Assets.Remove(asset);
         await db.SaveChangesAsync(ct);
 
         storage.Delete(asset.StorageKey);
+
+        foreach (var key in versionKeys)
+        {
+            storage.Delete(key);
+        }
 
         if (wasPrimary && ownerId is { } formerOwnerId)
         {

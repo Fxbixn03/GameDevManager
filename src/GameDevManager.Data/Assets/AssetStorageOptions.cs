@@ -34,4 +34,15 @@ public class AssetStorageOptions
 
     /// <summary>Der aufgelöste absolute Pfad. Wird beim Registrieren gesetzt.</summary>
     public string RootPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Wie viele frühere Fassungen je Asset aufbewahrt werden; ältere fallen weg. <c>0</c>
+    /// (oder weniger) wirft jede Fassung sofort weg — dann verhält sich „Ersetzen“ wie früher.
+    /// <para>
+    /// Konfiguration und keine Tabelle, wie die Aufbewahrung der Exportstände und aus
+    /// demselben Grund: eine Angabe der Installation, für die vier Migrationen unangemessen
+    /// wären.
+    /// </para>
+    /// </summary>
+    public int MaxVersionsPerAsset { get; set; } = 5;
+
 }

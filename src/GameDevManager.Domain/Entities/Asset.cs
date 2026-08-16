@@ -65,4 +65,11 @@ public class Asset
 
     /// <summary>Ein Asset ohne Entität — Marker, Platzhalter oder noch nicht zugeordnet.</summary>
     public bool IsToolAsset => OwnerEntityId is null;
+    /// <summary>
+    /// Frühere Fassungen dieser Datei. Sie stehen bewusst am Asset und nicht als eigene
+    /// Zeilen daneben: Ohne ihr Asset bedeuten sie nichts, und sie fallen über den
+    /// Fremdschlüssel mit — dieselbe Überlegung wie bei den Rezept-Zutaten.
+    /// </summary>
+    public List<AssetVersion> Versions { get; set; } = [];
+
 }

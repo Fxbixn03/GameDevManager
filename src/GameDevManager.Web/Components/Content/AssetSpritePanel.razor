@@ -86,6 +86,22 @@
                                            OnClick="@(() => MoveAsync(asset, 1))"
                                            aria-label="@L["MoveBackwardTooltip"]" />
                         </MudTooltip>
+                        @* Ersetzen statt neu hochladen: Die GUID bleibt, alle Verweise halten,
+                           und der Diff zeigt dieselbe Grafik in neu. *@
+                        <MudFileUpload T="IBrowserFile"
+                                       FilesChanged="@((IBrowserFile? file) => ReplaceAsync(asset, file))"
+                                       Accept="@AcceptedTypes">
+                            <CustomContent Context="upload">
+                                <MudTooltip Text="@L["ReplaceTooltip"]">
+                                    <MudIconButton Icon="@Icons.Material.Filled.SwapHoriz"
+                                                   Size="Size.Small"
+                                                   Disabled="_busy"
+                                                   OnClick="@(() => upload.OpenFilePickerAsync())"
+                                                   aria-label="@L["ReplaceTooltip"]" />
+                                </MudTooltip>
+                            </CustomContent>
+                        </MudFileUpload>
+
                         <MudTooltip Text="@L["EditTooltip"]">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Size="Size.Small"
@@ -140,6 +156,42 @@
         _assets = await Library.GetForOwnerAsync(EntityId);
         await OnChanged.InvokeAsync();
         StateHasChanged();
+    }
+
+    private bool _busy;
+
+    /// <summary>Dieselben Typen, die auch der Upload annimmt — die Liste steht in den Optionen.</summary>
+    private string AcceptedTypes => string.Join(',', Library.Options.AllowedMimeTypes);
+
+    /// <summary>
+    /// Tauscht die Datei hinter einem Sprite aus. Die vorherige bleibt als Fassung erhalten,
+    /// solange die Aufbewahrung es zulässt.
+    /// </summary>
+    private async Task ReplaceAsync(Asset asset, IBrowserFile? file)
+    {
+        if (file is null)
+        {
+            return;
+        }
+
+        _busy = true;
+
+        try
+        {
+            await using var content = file.OpenReadStream(Library.Options.MaxFileSizeBytes);
+            await Library.ReplaceAsync(asset.Id, file.Name, file.ContentType, content);
+
+            Snackbar.Add(L["ReplacedMessage", file.Name], Severity.Success);
+            await ReloadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task SetPrimaryAsync(Asset asset)

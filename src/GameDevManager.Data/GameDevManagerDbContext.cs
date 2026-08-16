@@ -136,6 +136,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
     /// <summary>Hochgeladene Dateien aller Module; die Datei selbst liegt im Dateispeicher.</summary>
     public DbSet<Asset> Assets => Set<Asset>();
 
+    /// <summary>Frühere Fassungen ersetzter Dateien — die Zeile des Assets bleibt bestehen.</summary>
+    public DbSet<AssetVersion> AssetVersions => Set<AssetVersion>();
+
     public DbSet<AssetTag> AssetTags => Set<AssetTag>();
 
     public DbSet<AssetTagAssignment> AssetTagAssignments => Set<AssetTagAssignment>();
@@ -310,6 +313,20 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt sowohl die Sprite-Liste einer Entität als auch die Suche nach dem primären Sprite.
             entity.HasIndex(a => new { a.OwnerEntityId, a.IsPrimary });
+        });
+
+        modelBuilder.Entity<AssetVersion>(entity =>
+        {
+            entity.Property(version => version.StorageKey).HasMaxLength(300).IsRequired();
+            entity.Property(version => version.FileName).HasMaxLength(300).IsRequired();
+            entity.Property(version => version.MimeType).HasMaxLength(100).IsRequired();
+
+            entity.HasOne(version => version.Asset)
+                .WithMany(asset => asset.Versions)
+                .HasForeignKey(version => version.AssetId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(version => version.AssetId);
         });
 
         modelBuilder.Entity<AssetTag>(entity =>

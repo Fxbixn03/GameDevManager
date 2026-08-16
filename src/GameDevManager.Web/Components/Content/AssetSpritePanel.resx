@@ -42,6 +42,12 @@
   <data name="MoveBackwardTooltip" xml:space="preserve">
     <value>Nach hinten</value>
   </data>
+  <data name="ReplaceTooltip" xml:space="preserve">
+    <value>Datei ersetzen — die GUID bleibt, alle Verweise halten</value>
+  </data>
+  <data name="ReplacedMessage" xml:space="preserve">
+    <value>Datei durch „{0}“ ersetzt.</value>
+  </data>
   <data name="EditTooltip" xml:space="preserve">
     <value>Angaben bearbeiten</value>
   </data>

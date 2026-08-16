@@ -279,6 +279,49 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.ToTable("AssetTagAssignments");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.AssetVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AssetId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime>("ReplacedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetId");
+
+                    b.ToTable("AssetVersions");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ChangeLogEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2977,6 +3020,17 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.AssetVersion", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Asset", "Asset")
+                        .WithMany("Versions")
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Asset");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ChangeLogEntry", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -3882,6 +3936,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.Asset", b =>
                 {
                     b.Navigation("Tags");
+
+                    b.Navigation("Versions");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.AssetTag", b =>

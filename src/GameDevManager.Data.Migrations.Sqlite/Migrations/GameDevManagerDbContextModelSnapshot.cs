@@ -277,6 +277,49 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("AssetTagAssignments");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.AssetVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AssetId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ReplacedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetId");
+
+                    b.ToTable("AssetVersions");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ChangeLogEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2975,6 +3018,17 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.AssetVersion", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Asset", "Asset")
+                        .WithMany("Versions")
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Asset");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ChangeLogEntry", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -3880,6 +3934,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
             modelBuilder.Entity("GameDevManager.Domain.Entities.Asset", b =>
                 {
                     b.Navigation("Tags");
+
+                    b.Navigation("Versions");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.AssetTag", b =>

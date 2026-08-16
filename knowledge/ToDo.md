@@ -590,7 +590,7 @@ gebräuchlichere Weg.
 
 *Aufwand: M · Migration: ja · Format: +1*
 
-### F33 — Asset ersetzen statt neu hochladen
+### F33 — Asset ersetzen statt neu hochladen ✅ umgesetzt
 
 > **Als** Grafiker **möchte ich** die Datei hinter einem Asset austauschen, ohne dass sich die GUID
 > ändert, **damit** alle Verweise darauf bestehen bleiben und der Diff zeigt, dass es dieselbe
@@ -603,6 +603,11 @@ Fassungs-Historie: die vorherige Datei behalten wie einen Exportstand, mit derse
 Aufbewahrungsregel.
 
 *Aufwand: M · Migration: ja (Fassungen) · Format: +1*
+
+**Umgesetzt.** `AssetService.ReplaceAsync` plus `AssetVersion` (Migration `AssetVersions` in
+allen vier Providern), Knopf an jedem Sprite. Der `StorageKey` wird bewusst **neu** vergeben —
+der Endpunkt cached unbefristet. `FormatVersion` blieb unverändert: Die Fassungen sind
+Werkzeug-Daten wie das Änderungsprotokoll und stehen in keinem Export.
 
 ### F34 — Massen-Upload mit Namenszuordnung ✅ umgesetzt
 
