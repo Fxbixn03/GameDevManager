@@ -154,6 +154,9 @@ public class ImportService(
         var tags = await ReadAsync<TagsFile>("tags.json");
         var localization = await ReadAsync<LocalizationFile>("localization.json");
         var enginePresets = await ReadAsync<EnginePresetsFile>("engine-presets.json");
+
+        // Erst ab Formatversion 15 im Archiv — ein älterer Stand bringt schlicht keine mit.
+        var exportProfiles = await ReadAsync<ExportProfilesFile>("export-profiles.json");
         var typesAndFields = await ReadAsync<TypesAndFieldsFile>("types-and-fields.json");
         var fieldValues = await ReadAsync<FieldValuesFile>("field-values.json");
         var conditions = await ReadAsync<ConditionsFile>("conditions.json");
@@ -262,6 +265,7 @@ public class ImportService(
         localization.Languages.ForEach(l => l.GameProjectId = projectId);
         localization.Translations.ForEach(t => t.GameProjectId = projectId);
         enginePresets.Presets.ForEach(p => p.GameProjectId = projectId);
+        exportProfiles.Profiles.ForEach(p => p.GameProjectId = projectId);
         npcs.RelationTypes.ForEach(t => t.GameProjectId = projectId);
         assetsFile.AssetTags.ForEach(t => t.GameProjectId = projectId);
         assetsFile.Assets.ForEach(a => a.GameProjectId = projectId);
@@ -294,6 +298,7 @@ public class ImportService(
         db.ContentLanguages.AddRange(localization.Languages);
         db.ContentTranslations.AddRange(localization.Translations);
         db.EnginePresets.AddRange(enginePresets.Presets);
+        db.ExportProfiles.AddRange(exportProfiles.Profiles);
         db.ContentTypes.AddRange(typesAndFields.ContentTypes);
         db.FieldDefinitions.AddRange(typesAndFields.IndividualFields);
         db.FieldValues.AddRange(fieldValues.Values);
@@ -464,6 +469,7 @@ public class ImportService(
 
         // Presets samt Zuordnungen (Kaskade) — sie hängen am Projekt, nicht am Inhalt.
         await db.EnginePresets.Where(p => p.GameProjectId == projectId).ExecuteDeleteAsync(ct);
+        await db.ExportProfiles.Where(p => p.GameProjectId == projectId).ExecuteDeleteAsync(ct);
 
         var assetKeys = await db.Assets
             .Where(a => a.GameProjectId == projectId)
@@ -566,6 +572,8 @@ public class ImportService(
     private sealed class TagsFile { public List<ContentTag> Tags { get; set; } = []; }
 
     private sealed class EnginePresetsFile { public List<EnginePreset> Presets { get; set; } = []; }
+
+    private sealed class ExportProfilesFile { public List<ExportProfile> Profiles { get; set; } = []; }
 
     private sealed class LocalizationFile
     {

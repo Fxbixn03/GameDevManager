@@ -89,6 +89,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
     public DbSet<EnginePreset> EnginePresets => Set<EnginePreset>();
 
+    /// <summary>Benannte Exporte je Projekt — Ziel, Modulauswahl, Statusfilter.</summary>
+    public DbSet<ExportProfile> ExportProfiles => Set<ExportProfile>();
+
     public DbSet<EnginePresetMapping> EnginePresetMappings => Set<EnginePresetMapping>();
 
     public DbSet<ContentTranslation> ContentTranslations => Set<ContentTranslation>();
@@ -895,6 +898,21 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             // Der UserService prüft das vorher und meldet es verständlich; dieser Index ist
             // die Absicherung dahinter.
             entity.HasIndex(u => u.UserName).IsUnique();
+        });
+
+        modelBuilder.Entity<ExportProfile>(entity =>
+        {
+            entity.Property(profile => profile.Name).HasMaxLength(200).IsRequired();
+            entity.Property(profile => profile.Target).HasMaxLength(20).IsRequired();
+            // 26 Modul-Schlüssel à ~12 Zeichen plus Kommas — wie bei den Modul-Freigaben.
+            entity.Property(profile => profile.ModuleKeys).HasMaxLength(1000);
+
+            entity.HasOne(profile => profile.GameProject)
+                .WithMany()
+                .HasForeignKey(profile => profile.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(profile => profile.GameProjectId);
         });
 
         modelBuilder.Entity<UserPin>(entity =>

@@ -58,6 +58,7 @@ internal static class ExportFormat
             ["tags.json"] = ModuleKeys.Tags,
             ["localization.json"] = ModuleKeys.Localization,
             ["engine-presets.json"] = ModuleKeys.EnginePresets,
+            ["export-profiles.json"] = null,
             ["assets.json"] = ModuleKeys.Assets,
             ["types-and-fields.json"] = null,
             ["field-values.json"] = null,

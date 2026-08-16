@@ -702,6 +702,12 @@ Unpack the ZIP into the root directory of your Godot project: the content lands 
   <data name="Locale_StateDone" xml:space="preserve">
     <value>translated</value>
   </data>
+  <data name="ExportProfile_NameRequired" xml:space="preserve">
+    <value>The export profile needs a name.</value>
+  </data>
+  <data name="ExportProfile_NameExists" xml:space="preserve">
+    <value>There is already an export profile called “{0}”.</value>
+  </data>
   <data name="Csv_Empty" xml:space="preserve">
     <value>Apart from the header the file contains no rows.</value>
   </data>

@@ -631,7 +631,7 @@ damit von einer Insel zu einem Glied in der Kette.
 
 *Aufwand: M · Migration: ja · Format: unverändert*
 
-### F38 — Export-Profile
+### F38 — Export-Profile ✅ umgesetzt
 
 > **Als** Nutzer **möchte ich** einen Export benennen und speichern („Unity, nur Fertiges, ohne
 > Werkzeug-Module, englisch"), **damit** ich ihn mit einem Klick wiederhole statt jedes Mal
@@ -643,6 +643,12 @@ Asset-Dateien. Das ist zugleich die Voraussetzung für F39 — ein Zeitplan brau
 ausführen kann.
 
 *Aufwand: S · Migration: ja · Format: +1*
+
+**Umgesetzt.** `ExportProfile` plus `ExportProfileService`, Migration `ExportProfiles` in allen
+vier Providern, `FormatVersion` auf **15**. Der Export nimmt jetzt zusätzlich eine Modulauswahl
+entgegen; abgewählte Module stehen als leere Liste im Archiv. Die Sprachauswahl bleibt draußen —
+der Export schreibt ohnehin je Zielsprache eine eigene Zeichenketten-Tabelle, und die Sprachwahl
+fällt laut Konzept im Spiel.
 
 ### F39 — Exportstände nach Zeitplan ✅ umgesetzt
 

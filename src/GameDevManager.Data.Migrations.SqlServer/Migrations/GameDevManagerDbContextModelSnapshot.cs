@@ -1176,6 +1176,45 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("EventSpawns");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ExportProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IncludeAssets")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MinimumStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModuleKeys")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.ToTable("ExportProfiles");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3142,6 +3181,17 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .IsRequired();
 
                     b.Navigation("GameEvent");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ExportProfile", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Faction", b =>

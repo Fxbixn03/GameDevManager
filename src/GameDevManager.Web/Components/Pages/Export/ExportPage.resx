@@ -51,6 +51,33 @@
   <data name="IncludeAssets" xml:space="preserve">
     <value>Asset-Dateien einschließen</value>
   </data>
+  <data name="ModulesLabel" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="ModulesHint" xml:space="preserve">
+    <value>Ohne Auswahl gehen alle Module hinaus. Abgewählte stehen als leere Liste im Archiv — der Aufbau bleibt derselbe, damit Import und Diff sich zurechtfinden.</value>
+  </data>
+  <data name="ModulesAll" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="ModulesCount" xml:space="preserve">
+    <value>{0} Module</value>
+  </data>
+  <data name="ProfileLabel" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="ProfileNameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ProfileSave" xml:space="preserve">
+    <value>Profil speichern</value>
+  </data>
+  <data name="ProfileDelete" xml:space="preserve">
+    <value>Profil löschen</value>
+  </data>
+  <data name="ProfileSavedMessage" xml:space="preserve">
+    <value>Profil „{0}“ gespeichert.</value>
+  </data>
   <data name="MinimumStatusLabel" xml:space="preserve">
     <value>Mindest-Bearbeitungsstand</value>
   </data>

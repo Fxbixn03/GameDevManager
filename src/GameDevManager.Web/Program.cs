@@ -144,7 +144,8 @@ app.MapGet("/assets/{id:guid}", async (Guid id, AssetService assets, HttpContext
 // SignalR-Verbindung von Blazor Server lässt sich keine Datei ausliefern, der Browser
 // lädt hier direkt herunter. Die Export-Seite baut nur die URL auf diesen Endpunkt.
 app.MapGet("/export/{projectId:guid}", async (
-    Guid projectId, string? target, bool? assets, string? minimumStatus, ExportService export,
+    Guid projectId, string? target, bool? assets, string? minimumStatus, string? moduleKeys,
+    ExportService export,
     IDbContextFactory<GameDevManagerDbContext> dbFactory, HttpContext http, CancellationToken ct) =>
 {
     // Der Export ist ein eigenes Recht — ohne läuft auch der direkte Aufruf der URL ins Leere.
@@ -169,12 +170,15 @@ app.MapGet("/export/{projectId:guid}", async (
         ? status
         : null;
 
+    // Ohne Angabe gehen alle Module hinaus — dieselbe Regel wie beim Statusfilter.
+    var modules = UserPermissions.ParseModuleKeys(moduleKeys);
+
     // Der Projektname wird Teil des Dateinamens — unzulässige Zeichen fliegen raus.
     var safeName = string.Join("-", project.Name.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
     var fileName = $"{safeName}-{exportTarget.ToString().ToLowerInvariant()}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.zip";
 
     return Results.Stream(
-        stream => export.WriteExportAsync(projectId, exportTarget, assets ?? true, stream, floor, ct),
+        stream => export.WriteExportAsync(projectId, exportTarget, assets ?? true, stream, floor, modules, ct),
         "application/zip",
         fileDownloadName: fileName);
 }).RequireAuthorization();

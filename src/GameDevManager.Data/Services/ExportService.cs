@@ -70,11 +70,12 @@ public class ExportService(
     /// deren Wert semikolongetrennt in <c>content/field-values.json</c> steht. Version 13:
     /// Inhalte tragen einen <c>status</c> (Entwurf, in Arbeit, im Review, fertig); das Manifest
     /// nennt unter <c>minimumStatus</c> den Mindeststand, auf den ein Export eingeschränkt war.
-    /// Version 14: Cutscene-Einstellungen tragen <c>durationSeconds</c> und <c>cameraNote</c>;
+    /// Version 15: <c>content/export-profiles.json</c> kommt dazu — die benannten Exporte eines
+    /// Projekts. Version 14: Cutscene-Einstellungen tragen <c>durationSeconds</c> und <c>cameraNote</c>;
     /// ihr Skizzenbild hängt als Asset an ihrer GUID und steht damit ohne neue Spalte im
     /// Archiv.
     /// </remarks>
-    public const int FormatVersion = 14;
+    public const int FormatVersion = 15;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -87,14 +88,15 @@ public class ExportService(
     /// </summary>
     public async Task WriteExportAsync(
         Guid projectId, ExportTarget target, bool includeAssets, Stream output,
-        ContentStatus? minimumStatus = null, CancellationToken ct = default)
+        ContentStatus? minimumStatus = null, IReadOnlySet<string>? moduleKeys = null,
+        CancellationToken ct = default)
     {
         var tempPath = Path.Combine(Path.GetTempPath(), $"gdm-export-{Guid.NewGuid():N}.zip");
         await using var temp = new FileStream(
             tempPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920,
             FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 
-        await BuildArchiveAsync(projectId, target, includeAssets, temp, minimumStatus, ct);
+        await BuildArchiveAsync(projectId, target, includeAssets, temp, minimumStatus, moduleKeys, ct);
 
         temp.Position = 0;
         await temp.CopyToAsync(output, ct);
@@ -102,7 +104,7 @@ public class ExportService(
 
     private async Task BuildArchiveAsync(
         Guid projectId, ExportTarget target, bool includeAssets, Stream zipStream,
-        ContentStatus? minimumStatus, CancellationToken ct)
+        ContentStatus? minimumStatus, IReadOnlySet<string>? moduleKeys, CancellationToken ct)
     {
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -191,6 +193,11 @@ public class ExportService(
             .ThenBy(t => t.OwnerEntityId).ThenBy(t => t.Slot)
             .ToListAsync(ct);
 
+        var exportProfiles = await db.ExportProfiles.AsNoTracking()
+            .Where(profile => profile.GameProjectId == projectId)
+            .OrderBy(profile => profile.SortOrder).ThenBy(profile => profile.Name).ThenBy(profile => profile.Id)
+            .ToListAsync(ct);
+
         var enginePresets = await db.EnginePresets.AsNoTracking()
             .Include(preset => preset.Mappings)
             .Where(preset => preset.GameProjectId == projectId)
@@ -241,6 +248,57 @@ public class ExportService(
                 .ToListAsync(ct))
             .Where(v => entityIds.Contains(v.OwnerEntityId))
             .ToList();
+
+        // --------------------------------------------------------------- Modulauswahl
+        // Ein abgewähltes Modul bekommt eine leere Liste und nicht gar keine Datei: Der Aufbau
+        // des Archivs bleibt damit derselbe, der Import findet jede Datei, wo er sie erwartet,
+        // und der Diff liest die Auslassung als „entfernt“ statt als „kaputtes Archiv“.
+        if (moduleKeys is not null)
+        {
+            void Keep<T>(string moduleKey, List<T> list)
+            {
+                if (!moduleKeys.Contains(moduleKey))
+                {
+                    list.Clear();
+                }
+            }
+
+            Keep(ModuleKeys.Items, items);
+            Keep(ModuleKeys.Crafting, recipes);
+            Keep(ModuleKeys.Currencies, currencies);
+            Keep(ModuleKeys.Rarities, rarities);
+            Keep(ModuleKeys.Npcs, npcs);
+            Keep(ModuleKeys.Npcs, npcRelationTypes);
+            Keep(ModuleKeys.Factions, factions);
+            Keep(ModuleKeys.Diplomacy, relations);
+            Keep(ModuleKeys.Maps, maps);
+            Keep(ModuleKeys.Dialogs, dialogues);
+            Keep(ModuleKeys.Story, storyEntries);
+            Keep(ModuleKeys.Quests, quests);
+            Keep(ModuleKeys.Events, events);
+            Keep(ModuleKeys.Player, players);
+            Keep(ModuleKeys.Player, skillTrees);
+            Keep(ModuleKeys.Player, skills);
+            Keep(ModuleKeys.Classes, classes);
+            Keep(ModuleKeys.Loot, lootTables);
+            Keep(ModuleKeys.World, worldStates);
+            Keep(ModuleKeys.Effects, effects);
+            Keep(ModuleKeys.Achievements, achievements);
+            Keep(ModuleKeys.Collectibles, collectibles);
+            Keep(ModuleKeys.Audio, soundEffects);
+            Keep(ModuleKeys.Cutscenes, cutscenes);
+
+            // Die GUID-Menge wird danach neu gebildet — sonst gingen Feldwerte, Bedingungen
+            // und Assets abgewählter Module weiter mit hinaus.
+            entityIds = contentLists.SelectMany(list => list).Select(e => e.Id)
+                .Concat(players.Select(p => p.Id))
+                .Concat(skillTrees.Select(t => t.Id))
+                .ToHashSet();
+
+            individualFields = [.. individualFields.Where(f => entityIds.Contains(f.OwnerEntityId!.Value))];
+            fieldValues = [.. fieldValues.Where(v => entityIds.Contains(v.OwnerEntityId))];
+            conditionSets = [.. conditionSets.Where(set => entityIds.Contains(set.OwnerId))];
+        }
 
         // ------------------------------------------------- Kind-Sammlungen stabil sortieren
         recipes.ForEach(r =>
@@ -332,6 +390,7 @@ public class ExportService(
         await WriteJsonAsync("content/tags.json", new { tags = contentTags });
         await WriteJsonAsync("content/localization.json", new { languages, translations });
         await WriteJsonAsync("content/engine-presets.json", new { presets = enginePresets });
+        await WriteJsonAsync("content/export-profiles.json", new { profiles = exportProfiles });
         await WriteJsonAsync("content/types-and-fields.json", new { contentTypes, individualFields });
         await WriteJsonAsync("content/field-values.json", new { values = fieldValues });
         await WriteJsonAsync("content/conditions.json", new { conditionSets });
