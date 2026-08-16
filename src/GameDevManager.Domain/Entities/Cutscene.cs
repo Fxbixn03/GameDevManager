@@ -20,7 +20,15 @@ public class Cutscene : ContentEntity
     public List<CutsceneShot> Shots { get; set; } = [];
 }
 
-/// <summary>Eine Einstellung des Storyboards: was in dieser Szene passiert.</summary>
+/// <summary>
+/// Eine Einstellung des Storyboards: was in dieser Szene passiert.
+/// <para>
+/// Das <b>Skizzenbild</b> hängt wie überall über die GUID an der Einstellung — ein
+/// <see cref="Asset"/> mit <see cref="Asset.OwnerEntityId"/> = <see cref="Id"/>. Es braucht
+/// dafür keine Spalte; die Einstellung hat eine eigene GUID, und genau darauf ist die
+/// Asset-Anbindung ausgelegt. Beim Löschen räumt der <c>CutsceneService</c> mit ab.
+/// </para>
+/// </summary>
 public class CutsceneShot
 {
     public Guid Id { get; set; } = Guid.NewGuid();
@@ -30,6 +38,15 @@ public class CutsceneShot
     public Cutscene? Cutscene { get; set; }
 
     public required string Text { get; set; }
+
+    /// <summary>
+    /// Dauer der Einstellung in Sekunden. <c>double</c> wie überall im Haus, weil SQLite
+    /// keinen Dezimaltyp kennt — und halbe Sekunden sind im Schnitt der Normalfall.
+    /// </summary>
+    public double? DurationSeconds { get; set; }
+
+    /// <summary>Kameranotiz — „Totale, langsamer Zoom“. Freitext, wie die Stimmung der Story.</summary>
+    public string? CameraNote { get; set; }
 
     public int SortOrder { get; set; }
 }

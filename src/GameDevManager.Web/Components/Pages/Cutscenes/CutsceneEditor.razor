@@ -2,6 +2,7 @@
 @page "/modules/cutscenes/{Id:guid}"
 @inject CutsceneService Cutscenes
 @inject ReferenceService References
+@inject AssetService Assets
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -140,30 +141,26 @@ else
                     }
                     else
                     {
-                        <MudStack Spacing="0">
+                        @* Ein Streifen aus Karten statt einer Aufzählung — ein Storyboard sieht
+                           so aus. Die Reihenfolge zieht man; die Pfeile bleiben daneben, weil
+                           Drag & Drop mit der Tastatur nicht erreichbar ist. *@
+                        <div class="gdm-storyboard">
                             @for (var index = 0; index < _context.Entity.Shots.Count; index++)
                             {
                                 var shot = _context.Entity.Shots[index];
                                 var position = index;
 
-                                <div class="pa-2 gdm-field-row">
-                                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Start">
-                                        <MudText Typo="Typo.subtitle2" Class="gdm-mono mt-3" Style="min-width:32px;">
-                                            @(position + 1).
-                                        </MudText>
+                                <div class="mud-paper gdm-panel pa-3 gdm-storyboard-card"
+                                     style="@(ReferenceEquals(_draggingShot, shot) ? "opacity:0.4;" : null)"
+                                     draggable="true"
+                                     @ondragstart="@(() => _draggingShot = shot)"
+                                     @ondragend="@(() => _draggingShot = null)"
+                                     @ondragover:preventDefault="true"
+                                     @ondrop="@(() => DropOnShot(shot))">
 
-                                        <div style="flex:1 1 auto; min-width:0;">
-                                            <MudTextField T="string"
-                                                          Value="shot.Text"
-                                                          ValueChanged="@((string text) => Touch(() => shot.Text = text))"
-                                                          Label="@L["ShotTextLabel"]"
-                                                          Variant="Variant.Outlined"
-                                                          Margin="Margin.Dense"
-                                                          Lines="2"
-                                                          MaxLength="2000" />
-                                        </div>
-
-                                        <MudStack Spacing="0">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
+                                        <MudText Typo="Typo.subtitle2" Class="gdm-mono">@(position + 1).</MudText>
+                                        <MudStack Row="true" Spacing="0">
                                             <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
                                                            Size="Size.Small"
                                                            Disabled="@(position == 0)"
@@ -174,18 +171,79 @@ else
                                                            Disabled="@(position == _context.Entity.Shots.Count - 1)"
                                                            OnClick="@(() => MoveShot(position, 1))"
                                                            aria-label="@L["MoveShotDown"]" />
+                                            <MudTooltip Text="@L["RemoveShot"]">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => RemoveShot(shot))"
+                                                               aria-label="@L["RemoveShot"]" />
+                                            </MudTooltip>
                                         </MudStack>
+                                    </MudStack>
 
-                                        <MudTooltip Text="@L["RemoveShot"]">
-                                            <MudIconButton Icon="@Icons.Material.Filled.Close"
-                                                           Size="Size.Small"
-                                                           OnClick="@(() => RemoveShot(shot))"
-                                                           aria-label="@L["RemoveShot"]" />
-                                        </MudTooltip>
+                                    @* Das Skizzenbild hängt an der GUID der Einstellung — es
+                                       lässt sich deshalb erst nach dem ersten Speichern
+                                       hochladen, wie jedes Sprite. *@
+                                    @if (_context.IsNew || _shotsUnsaved.Contains(shot.Id))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
+                                            @L["ShotImageAfterSave"]
+                                        </MudText>
+                                    }
+                                    else
+                                    {
+                                        <AssetThumbnail AssetId="@_shotImages.GetValueOrDefault(shot.Id)"
+                                                        Size="Size.Large"
+                                                        Alt="@shot.Text"
+                                                        FallbackIcon="@Icons.Material.Filled.Camera"
+                                                        Class="gdm-storyboard-image" />
+
+                                        <AssetUpload OwnerModuleKey="@ModuleKeys.Cutscenes"
+                                                     OwnerEntityId="shot.Id"
+                                                     OnUploaded="LoadShotImagesAsync"
+                                                     Text="@L["ShotImageUpload"]"
+                                                     Variant="Variant.Text"
+                                                     Color="Color.Default"
+                                                     Size="Size.Small" />
+                                    }
+
+                                    <MudTextField T="string"
+                                                  Value="shot.Text"
+                                                  ValueChanged="@((string text) => Touch(() => shot.Text = text))"
+                                                  Label="@L["ShotTextLabel"]"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Lines="3"
+                                                  MaxLength="2000"
+                                                  Class="mt-2" />
+
+                                    <MudStack Row="true" Spacing="2" Class="mt-2">
+                                        <MudNumericField T="double?"
+                                                         Value="shot.DurationSeconds"
+                                                         ValueChanged="@((double? seconds) => Touch(() => shot.DurationSeconds = seconds))"
+                                                         Label="@L["ShotDurationLabel"]"
+                                                         Variant="Variant.Outlined"
+                                                         Margin="Margin.Dense"
+                                                         Min="0"
+                                                         Clearable="true"
+                                                         Adornment="Adornment.End"
+                                                         AdornmentText="s"
+                                                         Style="max-width:110px;" />
+
+                                        <MudTextField T="string"
+                                                      Value="shot.CameraNote"
+                                                      ValueChanged="@((string note) => Touch(() => shot.CameraNote = note))"
+                                                      Label="@L["ShotCameraLabel"]"
+                                                      Variant="Variant.Outlined"
+                                                      Margin="Margin.Dense"
+                                                      MaxLength="500" />
                                     </MudStack>
                                 </div>
                             }
-                        </MudStack>
+                        </div>
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">
+                            @L["StoryboardHint", TotalDuration.ToString("0.##")]
+                        </MudText>
                     }
                 </MudPaper>
 
@@ -296,7 +354,11 @@ else
         if (_context is null)
         {
             _notFound = true;
+            return;
         }
+
+        _shotsUnsaved.Clear();
+        await LoadShotImagesAsync();
     }
 
     private static EntitySummary? EntityFor(List<EntitySummary> pool, Guid? id) =>
@@ -312,13 +374,80 @@ else
         return Task.FromResult(matches);
     }
 
-    private void AddShot() =>
-        Touch(() => _context!.Entity.Shots.Add(new CutsceneShot
+    private CutsceneShot? _draggingShot;
+
+    /// <summary>
+    /// Lädt die Skizzenbilder aller Einstellungen. Eine Abfrage je Einstellung wäre bei einem
+    /// Storyboard aus zwanzig Karten zwanzigmal derselbe Weg — deshalb einmal alle.
+    /// </summary>
+    private async Task LoadShotImagesAsync()
+    {
+        if (_context is null || _context.IsNew)
         {
-            CutsceneId = _context.Entity.Id,
-            Text = string.Empty,
-            SortOrder = _context.Entity.Shots.Count
-        }));
+            _shotImages = [];
+            return;
+        }
+
+        var images = new Dictionary<Guid, Guid?>();
+
+        foreach (var shot in _context.Entity.Shots.Where(shot => !_shotsUnsaved.Contains(shot.Id)))
+        {
+            images[shot.Id] = await Assets.GetPrimaryAssetIdAsync(shot.Id);
+        }
+
+        _shotImages = images;
+    }
+
+    /// <summary>
+    /// Einstellungen, die es in der Datenbank noch nicht gibt. Ihr Skizzenbild hängt an einer
+    /// GUID, die erst mit dem Speichern entsteht — dieselbe Regel wie bei den Bedingungen der
+    /// Quest-Ziele.
+    /// </summary>
+    private readonly HashSet<Guid> _shotsUnsaved = [];
+
+    /// <summary>Das Skizzenbild je Einstellung — ihr primäres Sprite, nachgeschlagen über die GUID.</summary>
+    private Dictionary<Guid, Guid?> _shotImages = [];
+
+    /// <summary>Die Gesamtdauer des Storyboards — die Frage, die ein Regisseur zuerst stellt.</summary>
+    private double TotalDuration =>
+        _context?.Entity.Shots.Sum(shot => shot.DurationSeconds ?? 0) ?? 0;
+
+    private void AddShot() =>
+        Touch(() =>
+        {
+            var shot = new CutsceneShot
+            {
+                CutsceneId = _context!.Entity.Id,
+                Text = string.Empty,
+                SortOrder = _context.Entity.Shots.Count
+            };
+
+            _context.Entity.Shots.Add(shot);
+            _shotsUnsaved.Add(shot.Id);
+        });
+
+    /// <summary>
+    /// Zieht die gehaltene Einstellung an die Stelle der abgelegten. Natives HTML5-DnD auf
+    /// einfachen <c>div</c>s, wie im Kanban-Board — die Direktiven <c>@@ondragover:preventDefault</c>
+    /// sind auf MudBlazor-Komponenten nicht erlaubt.
+    /// </summary>
+    private void DropOnShot(CutsceneShot target)
+    {
+        if (_draggingShot is null || ReferenceEquals(_draggingShot, target) || _context is null)
+        {
+            return;
+        }
+
+        Touch(() =>
+        {
+            var shots = _context.Entity.Shots;
+
+            shots.Remove(_draggingShot);
+            shots.Insert(shots.IndexOf(target), _draggingShot);
+        });
+
+        _draggingShot = null;
+    }
 
     private void RemoveShot(CutsceneShot shot) =>
         Touch(() => _context!.Entity.Shots.Remove(shot));
@@ -366,6 +495,11 @@ else
                 Navigation.NavigateTo($"/modules/cutscenes/{_context.Entity.Id}");
                 return;
             }
+
+            // Frisch angelegte Einstellungen haben ihre GUID erst jetzt in der Datenbank —
+            // vorher liefe der Bild-Upload ins Leere.
+            _shotsUnsaved.Clear();
+            await LoadShotImagesAsync();
 
             if (_referencesPanel is not null)
             {

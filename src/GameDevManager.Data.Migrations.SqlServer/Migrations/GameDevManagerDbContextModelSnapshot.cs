@@ -802,8 +802,15 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("CameraNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<Guid>("CutsceneId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<double?>("DurationSeconds")
+                        .HasColumnType("float");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");

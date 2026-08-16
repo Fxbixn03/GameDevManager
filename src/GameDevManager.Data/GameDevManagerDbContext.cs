@@ -661,6 +661,7 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
         modelBuilder.Entity<CutsceneShot>(entity =>
         {
             entity.Property(s => s.Text).HasMaxLength(2000).IsRequired();
+            entity.Property(s => s.CameraNote).HasMaxLength(500);
 
             entity.HasOne(s => s.Cutscene)
                 .WithMany(c => c.Shots)

@@ -802,8 +802,15 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("CameraNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<Guid>("CutsceneId")
                         .HasColumnType("uuid");
+
+                    b.Property<double?>("DurationSeconds")
+                        .HasColumnType("double precision");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");

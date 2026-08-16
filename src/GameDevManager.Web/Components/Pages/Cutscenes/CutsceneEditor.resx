@@ -72,6 +72,21 @@
   <data name="NoShots" xml:space="preserve">
     <value>Noch keine Einstellung. Je Einstellung wird beschrieben, was in der Szene passiert — die Reihenfolge ist das Storyboard.</value>
   </data>
+  <data name="ShotDurationLabel" xml:space="preserve">
+    <value>Dauer</value>
+  </data>
+  <data name="ShotCameraLabel" xml:space="preserve">
+    <value>Kamera</value>
+  </data>
+  <data name="ShotImageUpload" xml:space="preserve">
+    <value>Skizze</value>
+  </data>
+  <data name="ShotImageAfterSave" xml:space="preserve">
+    <value>Skizze nach dem Speichern.</value>
+  </data>
+  <data name="StoryboardHint" xml:space="preserve">
+    <value>Gesamtdauer {0} s. Die Reihenfolge lässt sich ziehen.</value>
+  </data>
   <data name="ShotTextLabel" xml:space="preserve">
     <value>Was passiert?</value>
   </data>

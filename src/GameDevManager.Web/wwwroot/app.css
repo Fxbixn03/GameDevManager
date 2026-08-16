@@ -1344,3 +1344,23 @@ html {
     font-size: .78rem;
     color: var(--mud-palette-error);
 }
+
+/* --------------------------------------------------------------- Storyboard (Cutscenes)
+   Ein Streifen aus Karten statt einer Aufzählung: Ein Storyboard soll aussehen wie eines.
+   Umgebrochen statt waagerecht gescrollt — sonst verschwinden die hinteren Einstellungen aus
+   dem Blick, und genau die Übersicht ist der Zweck. */
+.gdm-storyboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.gdm-storyboard-card {
+    cursor: grab;
+}
+
+.gdm-storyboard-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+}

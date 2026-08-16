@@ -225,7 +225,7 @@ Textsuche nach der GUID, dasselbe wie bei den GUID-Spalten. Gilt genauso für `K
 
 *Aufwand: M · Migration: nein · Format: unverändert*
 
-### F13 — Cutscene-Storyboard mit Bild je Einstellung
+### F13 — Cutscene-Storyboard mit Bild je Einstellung ✅ umgesetzt
 
 > **Als** Regisseur **möchte ich** jeder Einstellung ein Skizzenbild und eine Dauer geben, **damit**
 > das Storyboard wie ein Storyboard aussieht und nicht wie eine Aufzählung.
@@ -235,6 +235,11 @@ F10, dazu Dauer und Kameranotiz als Spalten. Die Seite wird ein Streifen aus Kar
 Liste — die Drag&Drop-Mechanik gibt es im Story-Zeitstreifen und im Kanban-Board schon zweimal.
 
 *Aufwand: S · Migration: ja · Format: +1*
+
+**Umgesetzt.** `DurationSeconds` und `CameraNote` an `CutsceneShot`, Migration
+`CutsceneStoryboard` in allen vier Providern, `FormatVersion` auf **14**. Das Skizzenbild
+brauchte keine Spalte — es hängt als Asset an der GUID der Einstellung. Die Seite ist ein
+Kartenstreifen mit Drag & Drop.
 
 ---
 

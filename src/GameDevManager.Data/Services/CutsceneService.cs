@@ -129,6 +129,12 @@ public class CutsceneService(
 
         await EntityCleanup.DeleteForEntitiesAsync(db, removedShotIds, ct);
 
+        // Das Skizzenbild hängt an der GUID der Einstellung — mit ihr muss es verschwinden.
+        foreach (var removed in removedShotIds)
+        {
+            await assets.DeleteForOwnerAsync(removed, ct);
+        }
+
         // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier
         // gesetzt und nicht in jedem Zweig der Fallunterscheidung darüber.
         stored.Status = context.Entity.Status;
@@ -141,6 +147,9 @@ public class CutsceneService(
         cutscene.Name = stored.Name;
         cutscene.Description = stored.Description;
     }
+
+    private static string? Normalize(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void SyncShots(
         GameDevManagerDbContext db, Cutscene stored, Cutscene incoming, List<Guid> removedIds)
@@ -169,12 +178,16 @@ public class CutsceneService(
                     Id = shot.Id,
                     CutsceneId = stored.Id,
                     Text = shot.Text.Trim(),
+                    DurationSeconds = shot.DurationSeconds,
+                    CameraNote = Normalize(shot.CameraNote),
                     SortOrder = index
                 });
             }
             else
             {
                 target.Text = shot.Text.Trim();
+                target.DurationSeconds = shot.DurationSeconds;
+                target.CameraNote = Normalize(shot.CameraNote);
                 target.SortOrder = index;
             }
         }
@@ -192,6 +205,12 @@ public class CutsceneService(
             .Where(shot => shot.CutsceneId == cutsceneId)
             .Select(shot => shot.Id)
             .ToListAsync(ct);
+
+        // Auch die Skizzenbilder der Einstellungen — sie hängen an deren eigenen GUIDs.
+        foreach (var shotId in shotIds)
+        {
+            await assets.DeleteForOwnerAsync(shotId, ct);
+        }
 
         await ChangeLog.RecordDeletionAsync(db, db.Cutscenes, cutsceneId, ct);
         await EntityCleanup.DeleteForEntitiesAsync(db, [cutsceneId, .. shotIds], ct);
