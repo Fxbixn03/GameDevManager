@@ -1,0 +1,114 @@
+@page "/aktivitaet"
+@inject ActivityFeedService Feed
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject IStringLocalizer<ActivityFeedPage> L
+
+@*
+    Was sich seit dem letzten Besuch getan hat.
+
+    Der Ordner heißt „ActivityFeed“ und nicht „Activity“: Letzteres wäre als Namensraum
+    mehrdeutig mit System.Diagnostics.Activity, das die Fehlerseite benutzt — derselbe
+    Fallstrick wie bei „Whiteboards“ neben der Entität „Whiteboard“. Kein eigener Datenbestand — das
+    Änderungsprotokoll hat die Daten längst, hinzu kommt nur ein „gelesen bis“ am Konto.
+
+    Gruppiert nach Entität und nicht nach Einzeländerung: Wer eine Maske dreimal speichert,
+    erzeugt drei Protokollzeilen, aber nur eine Nachricht.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+    <div>
+        <MudText Typo="Typo.h4">@L["Heading"]</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary">@L["Subtitle"]</MudText>
+    </div>
+
+    @if (_entries is { Count: > 0 })
+    {
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.DoneAll"
+                   OnClick="MarkReadAsync">
+            @L["MarkRead"]
+        </MudButton>
+    }
+</MudStack>
+
+@if (_entries is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_entries.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.NotificationsNone" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["EmptyHint"]</MudText>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel">
+        @foreach (var entry in _entries)
+        {
+            <MudLink Href="@RouteFor(entry)" Underline="Underline.None" Color="Color.Inherit" Class="gdm-health-row">
+                <MudIcon Icon="@IconFor(entry.Kind)" Size="Size.Small" Color="@ColorFor(entry.Kind)" />
+
+                <MudText Typo="Typo.body2" Class="gdm-ellipsis">
+                    <b>@entry.EntityName</b>
+                    <span class="ml-1">@Describe(entry)</span>
+                </MudText>
+
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    @entry.AtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                </MudText>
+            </MudLink>
+        }
+    </MudPaper>
+}
+
+@code {
+    private List<ActivityEntry>? _entries;
+    private Guid _projectId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _projectId = await Project.GetCurrentIdAsync();
+        _entries = await Feed.GetFeedAsync(_projectId);
+    }
+
+    /// <summary>
+    /// Gelesen heißt: ab jetzt ist alles Bisherige weg. Der Feed lädt danach neu und steht
+    /// leer da — das ist die Bestätigung, dass die Marke gesetzt wurde.
+    /// </summary>
+    private async Task MarkReadAsync()
+    {
+        await Feed.MarkReadAsync();
+        _entries = await Feed.GetFeedAsync(_projectId);
+    }
+
+    private static string RouteFor(ActivityEntry entry) =>
+        $"{ModuleRegistry.Get(entry.ModuleKey).Route}/{entry.EntityId}";
+
+    private static string IconFor(ActivityKind kind) => kind switch
+    {
+        ActivityKind.Mention => Icons.Material.Filled.AlternateEmail,
+        ActivityKind.Assignment => Icons.Material.Filled.AssignmentInd,
+        _ => Icons.Material.Filled.EditNote
+    };
+
+    private static Color ColorFor(ActivityKind kind) => kind switch
+    {
+        ActivityKind.Mention => Color.Warning,
+        ActivityKind.Assignment => Color.Info,
+        _ => Color.Default
+    };
+
+    private string Describe(ActivityEntry entry) => entry.Kind switch
+    {
+        ActivityKind.Mention => L["MentionText", entry.Actors.FirstOrDefault() ?? string.Empty, entry.Text ?? string.Empty],
+        ActivityKind.Assignment => L["AssignmentText"],
+        _ => L["ChangeText", entry.Count, string.Join(", ", entry.Actors), Modules.NameOrKey(entry.ModuleKey)]
+    };
+}

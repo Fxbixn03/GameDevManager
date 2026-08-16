@@ -64,4 +64,15 @@ public class AppUser
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public DateTime? LastLoginAtUtc { get; set; }
+
+    /// <summary>
+    /// Bis wohin der Benutzer den Aktivitäts-Feed gelesen hat. <c>null</c> heißt „noch nie“ —
+    /// dann gilt alles seit seiner ersten Anmeldung als neu, nicht der gesamte Bestand.
+    /// <para>
+    /// Eine Spalte am Konto und keine eigene Tabelle: Es ist genau ein Zeitpunkt je Benutzer,
+    /// und der Feed selbst hat keine Daten — er liest das Änderungsprotokoll, das es ohnehin
+    /// gibt.
+    /// </para>
+    /// </summary>
+    public DateTime? FeedReadAtUtc { get; set; }
 }

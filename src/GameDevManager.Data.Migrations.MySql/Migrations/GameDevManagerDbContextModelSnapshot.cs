@@ -143,6 +143,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<DateTime?>("FeedReadAtUtc")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<bool>("IsAdministrator")
                         .HasColumnType("tinyint(1)");
 

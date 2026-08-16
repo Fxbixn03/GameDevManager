@@ -67,6 +67,9 @@
   <data name="DarkTheme" xml:space="preserve">
     <value>Dark theme</value>
   </data>
+  <data name="Activity" xml:space="preserve">
+    <value>Activity</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Settings</value>
   </data>

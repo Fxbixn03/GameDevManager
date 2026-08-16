@@ -8,6 +8,8 @@
 @inject AppearanceSelection Appearance
 @inject IUserPermissionsProvider PermissionsProvider
 @inject IJSRuntime JS
+@inject ActivityFeedService Feed
+@inject ProjectContext Project
 
 <MudThemeProvider Theme="GameDevManagerTheme.Instance" IsDarkMode="Appearance.IsDarkMode" DefaultScrollbar="true" />
 <MudPopoverProvider />
@@ -88,6 +90,17 @@
         <GlobalSearch />
         <KeyboardShortcuts />
 
+        @* Die Glocke: was sich seit dem letzten Besuch getan hat. Kein Mailversand — das
+           Tool wird self-hosted von kleinen Teams betrieben, ein Symbol reicht. *@
+        <MudTooltip Text="@L["Activity"]">
+            <MudBadge Content="_unread" Color="Color.Primary" Overlap="true" Visible="@(_unread > 0)">
+                <MudIconButton Icon="@Icons.Material.Filled.Notifications"
+                               Color="Color.Inherit"
+                               Href="/aktivitaet"
+                               aria-label="@L["Activity"]" />
+            </MudBadge>
+        </MudTooltip>
+
         <MudTooltip Text="@(Appearance.IsDarkMode ? L["LightTheme"] : L["DarkTheme"])">
             <MudIconButton Icon="@(Appearance.IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
                            Color="Color.Inherit"
@@ -160,6 +173,8 @@
     private double _available;
     private double _unit;
 
+    private int _unread;
+
     protected override async Task OnInitializedAsync()
     {
         Navigation.LocationChanged += OnLocationChanged;
@@ -182,6 +197,19 @@
 
         _jsReference = DotNetObjectReference.Create(this);
         await JS.InvokeVoidAsync("gdmTopbar.observe", _barElement, _jsReference);
+
+        // Die Zahl an der Glocke liest das Änderungsprotokoll — erst nach dem ersten Rendern,
+        // damit der Rahmen nicht auf sie wartet. Ein Fehler bleibt eine Null: Die Glocke ist
+        // Beiwerk und darf die Anwendung nicht aufhalten.
+        try
+        {
+            _unread = await Feed.CountUnreadAsync(await Project.GetCurrentIdAsync());
+            StateHasChanged();
+        }
+        catch (Exception ex) when (ex is ContentValidationException or InvalidOperationException)
+        {
+            _unread = 0;
+        }
     }
 
     /// <summary>

@@ -146,6 +146,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<DateTime?>("FeedReadAtUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsAdministrator")
                         .HasColumnType("bit");
 

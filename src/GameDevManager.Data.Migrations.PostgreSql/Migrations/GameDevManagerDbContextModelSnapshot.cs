@@ -146,6 +146,9 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<DateTime?>("FeedReadAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("IsAdministrator")
                         .HasColumnType("boolean");
 

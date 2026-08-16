@@ -21,6 +21,9 @@
   <data name="DarkTheme" xml:space="preserve">
     <value>Dunkles Design</value>
   </data>
+  <data name="Activity" xml:space="preserve">
+    <value>Aktivität</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Einstellungen</value>
   </data>

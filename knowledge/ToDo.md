@@ -395,7 +395,7 @@ diese Woche". Bleibt Werkzeug-Daten — nicht im Export.
 Gegenzug steht als `EntityTasksPanel` in jeder Bearbeitungsmaske. Ein Dashboard-Band „meine
 Aufgaben“ und der Filter „fällig diese Woche“ stehen noch aus.
 
-### F23 — Aktivitäts-Feed und Benachrichtigungen
+### F23 — Aktivitäts-Feed und Benachrichtigungen ✅ umgesetzt
 
 > **Als** Teammitglied **möchte ich** beim Anmelden sehen, was sich seit meinem letzten Besuch
 > geändert hat und wo ich erwähnt wurde, **damit** ich in einem Projekt mit zwei oder drei Leuten
@@ -408,6 +408,11 @@ Zuweisungen aus F22 kommen als eigene Sorte dazu. Kein Mailversand — das Tool 
 kleinen Teams betrieben, ein Glockensymbol in der Appbar reicht.
 
 *Aufwand: M · Migration: ja (eine Spalte) · Format: unverändert*
+
+**Umgesetzt.** `ActivityFeedService` ohne eigenen Datenbestand, `AppUser.FeedReadAtUtc` als
+einzige neue Spalte (Migration `ActivityFeedMarker`), Seite `/aktivitaet` und die Glocke in der
+Appbar. Erwähnungen kommen über „@Name“ aus den Anmerkungen (F21), Zuweisungen aus den
+Kanban-Karten (F22).
 
 ### F24 — Papierkorb
 
