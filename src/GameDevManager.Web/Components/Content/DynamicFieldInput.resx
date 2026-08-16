@@ -15,6 +15,9 @@
   <data name="RequiredLabel" xml:space="preserve">
     <value>{0} *</value>
   </data>
+  <data name="FormulaHelper" xml:space="preserve">
+    <value>Ausdruck über andere Zahlenfelder dieser Entität, z. B. „schaden * angriffsgeschwindigkeit“. Groß-/Kleinschreibung und Leerzeichen sind egal.</value>
+  </data>
   <data name="KeywordHelper" xml:space="preserve">
     <value>Mit Komma oder Enter bestätigen.</value>
   </data>

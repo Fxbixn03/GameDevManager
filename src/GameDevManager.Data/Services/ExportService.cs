@@ -70,7 +70,9 @@ public class ExportService(
     /// deren Wert semikolongetrennt in <c>content/field-values.json</c> steht. Version 13:
     /// Inhalte tragen einen <c>status</c> (Entwurf, in Arbeit, im Review, fertig); das Manifest
     /// nennt unter <c>minimumStatus</c> den Mindeststand, auf den ein Export eingeschränkt war.
-    /// Version 17: NPCs tragen <c>spawnRules</c> — wo, wie viele und wie oft sie erscheinen;
+    /// Version 18: Werte berechneter Felder (Typ <c>formula</c>) tragen im Export zusätzlich
+    /// zur Formel den gerechneten Wert in <c>numberValue</c> — die Engine soll keinen
+    /// Ausdrucksrechner brauchen. Version 17: NPCs tragen <c>spawnRules</c> — wo, wie viele und wie oft sie erscheinen;
     /// die Bedingung „erscheint, wenn …“ hängt als Bedingungssatz an der GUID der Regel.
     /// Version 16: Währungen tragen einen <c>exchangeRate</c> — die Grundlage der
     /// Wirtschafts-Prüfung. Version 15: <c>content/export-profiles.json</c> kommt dazu — die
@@ -78,7 +80,7 @@ public class ExportService(
     /// ihr Skizzenbild hängt als Asset an ihrer GUID und steht damit ohne neue Spalte im
     /// Archiv.
     /// </remarks>
-    public const int FormatVersion = 17;
+    public const int FormatVersion = 18;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -302,6 +304,36 @@ public class ExportService(
             individualFields = [.. individualFields.Where(f => entityIds.Contains(f.OwnerEntityId!.Value))];
             fieldValues = [.. fieldValues.Where(v => entityIds.Contains(v.OwnerEntityId))];
             conditionSets = [.. conditionSets.Where(set => entityIds.Contains(set.OwnerId))];
+        }
+
+        // ------------------------------------------------------------ Berechnete Felder
+        // Der Export schreibt den **gerechneten** Wert und nicht die Formel: Die Engine soll
+        // keinen Ausdrucksrechner brauchen. Die Formel bleibt daneben im Text stehen, damit
+        // ein Reimport dasselbe Feld wieder als Formel kennt.
+        var formulaFields = individualFields
+            .Concat(contentTypes.SelectMany(type => type.Fields))
+            .Where(field => field.Type == ContentFieldType.Formula)
+            .ToList();
+
+        if (formulaFields.Count > 0)
+        {
+            var byOwner = fieldValues.GroupBy(value => value.OwnerEntityId);
+            var allFields = individualFields
+                .Concat(contentTypes.SelectMany(type => type.Fields))
+                .ToList();
+
+            foreach (var owner in byOwner)
+            {
+                var values = owner.ToDictionary(value => value.FieldDefinitionId);
+
+                foreach (var computed in FormulaEvaluator.Compute(allFields, values))
+                {
+                    if (values.TryGetValue(computed.FieldDefinitionId, out var value))
+                    {
+                        value.NumberValue = computed.Value;
+                    }
+                }
+            }
         }
 
         // ------------------------------------------------- Kind-Sammlungen stabil sortieren

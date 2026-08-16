@@ -185,6 +185,20 @@
         <CurveFieldEditor Definition="Definition" Value="Value" OnValueChanged="OnValueChanged" />
         break;
 
+    @* Berechnetes Feld: erfasst wird die Formel, angezeigt das Ergebnis. Gespeichert wird nur
+       die Formel — das Ergebnis veraltete beim ersten Umbau der Zahlen darunter. *@
+    case ContentFieldType.Formula:
+        <MudTextField T="string"
+                      Value="Value.TextValue"
+                      ValueChanged="SetText"
+                      Label="@Label"
+                      HelperText="@FormulaHelperText"
+                      Variant="Variant.Outlined"
+                      Class="gdm-mono"
+                      Adornment="Adornment.End"
+                      AdornmentText="@ComputedText" />
+        break;
+
     case ContentFieldType.Color:
         <MudColorPicker Text="@Value.TextValue"
                         TextChanged="SetText"
@@ -263,6 +277,21 @@
     /// in den Meldungen der Datenschicht, die feste Kultur brauchen.
     /// </summary>
     private static string Number(double value) => value.ToString("0.####");
+
+    /// <summary>
+    /// Alle geltenden Felder samt Werten — nur eine Formel braucht sie, um ihre Verweise
+    /// aufzulösen. Die Maske reicht sie durch; ohne sie zeigt das Feld schlicht kein Ergebnis.
+    /// </summary>
+    [Parameter]
+    public ContentFormulaContext? Formulas { get; set; }
+
+    /// <summary>Das gerechnete Ergebnis als Suffix — die Formel selbst steht im Feld.</summary>
+    private string? ComputedText => Formulas?.ValueOf(Definition.Id) is { } number
+        ? "= " + number.ToString("0.####")
+        : null;
+
+    private string? FormulaHelperText =>
+        string.IsNullOrWhiteSpace(Definition.Description) ? L["FormulaHelper"] : Definition.Description;
 
     private int? IntegerMinimum =>
         Definition.MinValue is { } minimum ? (int)Math.Ceiling(minimum) : null;

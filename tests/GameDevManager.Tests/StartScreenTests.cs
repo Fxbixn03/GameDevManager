@@ -98,7 +98,9 @@ public class StartScreenTests
 
         var seen = new HashSet<string>();
 
-        for (var run = 0; run < 60; run++)
+        // Genügend Läufe, dass jedes Fenster wirklich einmal drankommt: Die Zusicherung ist
+        // „jede Entität kann drankommen“, und die darf nicht an einer Pechsträhne scheitern.
+        for (var run = 0; run < 400; run++)
         {
             foreach (var entity in await test.GetService<StartScreenService>()
                 .SampleEntitiesAsync(test.ProjectId, 16))

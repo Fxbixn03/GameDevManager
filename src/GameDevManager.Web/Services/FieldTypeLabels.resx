@@ -54,6 +54,9 @@
   <data name="WithUnit" xml:space="preserve">
     <value>{0} {1}</value>
   </data>
+  <data name="Type_Formula" xml:space="preserve">
+    <value>Formel (berechnet)</value>
+  </data>
   <data name="Type_Curve" xml:space="preserve">
     <value>Formel/Kurve</value>
   </data>

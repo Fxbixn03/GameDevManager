@@ -128,7 +128,7 @@ gibt es nur einmal … andere spawnen nur in bestimmten Bereichen") sauber ab.
 Providern, `FormatVersion` auf **17**, Bedingungen im neuen Slot `Spawn`. Der Abschnitt steht in
 der NPC-Maske; im Karten-Editor als Aufklappliste an der Markierung steht er noch aus.
 
-### F7 — Formeln über Feldnamen statt nur über `x`
+### F7 — Formeln über Feldnamen statt nur über `x` ✅ umgesetzt
 
 > **Als** Balancing-Verantwortlicher **möchte ich** in einer Formel auf andere Felder derselben
 > Entität verweisen (`Schaden * Angriffsgeschwindigkeit`), **damit** abgeleitete Werte nicht von
@@ -142,6 +142,11 @@ gerechnet — sonst veralten sie beim ersten Umbau. Zwei Fallen: Ringe zwischen 
 sollte, nicht die Formel — die Engine soll nicht parsen müssen.
 
 *Aufwand: M · Migration: nein (neuer Enum-Wert) · Format: +1*
+
+**Umgesetzt.** `ContentFieldType.Formula` als eigener Typ (kein Schalter an `Curve` — eine
+Kurve hat Spanne und Diagramm, ein berechnetes Feld genau eine Zahl), `CurveExpression` kennt
+benannte Variablen, `FormulaEvaluator` löst sie samt Ringprüfung auf. `FormatVersion` auf **18**:
+Der Export schreibt den gerechneten Wert neben der Formel.
 
 ---
 

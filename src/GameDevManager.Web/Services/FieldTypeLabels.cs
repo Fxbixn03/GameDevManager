@@ -24,6 +24,7 @@ public sealed class FieldTypeLabels(IStringLocalizer<FieldTypeLabels> localizer)
         ContentFieldType.Color => localizer["Type_Color"],
         ContentFieldType.Rarity => localizer["Type_Rarity"],
         ContentFieldType.Curve => localizer["Type_Curve"],
+        ContentFieldType.Formula => localizer["Type_Formula"],
         _ => type.ToString()
     };
 
@@ -41,6 +42,7 @@ public sealed class FieldTypeLabels(IStringLocalizer<FieldTypeLabels> localizer)
         ContentFieldType.Color => Icons.Material.Filled.Palette,
         ContentFieldType.Rarity => Icons.Material.Filled.Diamond,
         ContentFieldType.Curve => Icons.Material.Filled.ShowChart,
+        ContentFieldType.Formula => Icons.Material.Filled.Functions,
         _ => Icons.Material.Filled.HelpOutline
     };
 

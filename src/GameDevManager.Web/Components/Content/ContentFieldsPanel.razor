@@ -43,7 +43,8 @@
                         <DynamicFieldInput Definition="field"
                                            Value="Context.ValueFor(field)"
                                            ReferenceOptions="OptionsFor(field)"
-                                           OnValueChanged="OnValueChanged" />
+                                           Formulas="_formulas"
+                                           OnValueChanged="RecomputeAsync" />
                     }
                 </MudStack>
             }
@@ -62,7 +63,8 @@
                                     <DynamicFieldInput Definition="field"
                                                        Value="Context.ValueFor(field)"
                                                        ReferenceOptions="OptionsFor(field)"
-                                                       OnValueChanged="OnValueChanged" />
+                                                       Formulas="_formulas"
+                                                       OnValueChanged="RecomputeAsync" />
                                 }
                             </MudStack>
                         </MudExpansionPanel>
@@ -104,7 +106,8 @@
                         <DynamicFieldInput Definition="field"
                                            Value="Context.ValueFor(field)"
                                            ReferenceOptions="OptionsFor(field)"
-                                           OnValueChanged="OnValueChanged" />
+                                           Formulas="_formulas"
+                                           OnValueChanged="RecomputeAsync" />
                     </div>
                     <MudTooltip Text="@L["EditFieldTooltip"]">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
@@ -179,6 +182,9 @@
 
     private readonly Dictionary<string, IReadOnlyList<EntitySummary>> _referenceOptions = [];
 
+    protected override void OnParametersSet() =>
+        _formulas.Recompute(Context.ApplicableFields, Context.Values);
+
     protected override async Task OnParametersSetAsync() => await LoadReferenceOptionsAsync();
 
     /// <summary>
@@ -204,6 +210,18 @@
 
             _referenceOptions[targetModule] = await References.GetEntitiesAsync(projectId, targetModule);
         }
+    }
+
+    /// <summary>
+    /// Die gerechneten Formeln dieser Maske. Neu gerechnet wird bei jeder Wertänderung —
+    /// gespeichert wird nur die Formel, nie ihr Ergebnis.
+    /// </summary>
+    private readonly ContentFormulaContext _formulas = new();
+
+    private async Task RecomputeAsync()
+    {
+        _formulas.Recompute(Context.ApplicableFields, Context.Values);
+        await OnValueChanged.InvokeAsync();
     }
 
     private List<string> KnownGroups =>

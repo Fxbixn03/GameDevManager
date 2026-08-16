@@ -65,6 +65,25 @@ public sealed record TranslatableText(
 /// </summary>
 public sealed record AssetOwnerSuggestion(Asset Asset, IReadOnlyList<EntitySummary> Candidates);
 
+/// <summary>
+/// Die gerechneten Werte der berechneten Felder einer Entität. Die Maske hält ihn und reicht
+/// ihn an die Eingabefelder durch — gerechnet wird bei jeder Anzeige, gespeichert nie.
+/// </summary>
+public sealed class ContentFormulaContext
+{
+    private Dictionary<Guid, double?> _values = [];
+
+    /// <summary>Rechnet neu. Aufgerufen, sooft sich ein Wert der Maske geändert hat.</summary>
+    public void Recompute(
+        IEnumerable<FieldDefinition> fields, IReadOnlyDictionary<Guid, FieldValue> values) =>
+        _values = FormulaEvaluator
+            .Compute(fields, values)
+            .ToDictionary(computed => computed.FieldDefinitionId, computed => computed.Value);
+
+    /// <summary>Das Ergebnis eines Feldes; <c>null</c>, wenn die Formel nicht aufgeht.</summary>
+    public double? ValueOf(Guid fieldDefinitionId) => _values.GetValueOrDefault(fieldDefinitionId);
+}
+
 /// <summary>Eine Zeile der Item-Übersicht — bewusst nur die Spalten, die die Liste zeigt.</summary>
 public sealed record ItemListRow(
     Guid Id,

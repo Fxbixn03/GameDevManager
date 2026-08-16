@@ -48,5 +48,18 @@ public enum ContentFieldType
     /// Vorschau-Diagramm. Der Wert steht als JSON in <see cref="FieldValue.TextValue"/> —
     /// siehe <see cref="Curves.CurveDefinition"/>.
     /// </summary>
-    Curve = 10
+    Curve = 10,
+
+    /// <summary>
+    /// Berechnetes Feld: ein Ausdruck über die <b>anderen Felder derselben Entität</b>
+    /// (<c>Schaden * Angriffsgeschwindigkeit</c>). Die Formel steht als Text in
+    /// <see cref="FieldValue.TextValue"/>; gespeichert wird nur sie, nie ihr Ergebnis — das
+    /// veraltete beim ersten Umbau der Zahlen darunter.
+    /// <para>
+    /// Ein eigener Typ und kein Schalter an <see cref="Curve"/>: Eine Kurve hat eine Spanne,
+    /// eine Wertetabelle und ein Diagramm; ein berechnetes Feld hat genau eine Zahl. Die
+    /// beiden teilen sich nur den Parser.
+    /// </para>
+    /// </summary>
+    Formula = 11
 }

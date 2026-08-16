@@ -41,6 +41,18 @@ public sealed class CurveExpression
     /// <summary>Der ursprüngliche Text, so wie ihn der Nutzer geschrieben hat.</summary>
     public string Text { get; }
 
+    /// <summary>
+    /// Die benannten Variablen des Ausdrucks, ohne <see cref="Variable"/> selbst — die Felder,
+    /// von denen eine Formel abhängt. Grundlage der Ringprüfung zwischen berechneten Feldern.
+    /// </summary>
+    public IReadOnlyList<string> References =>
+    [
+        .. _rpn
+            .Where(token => token.Kind == TokenKind.Variable && token.Text != Variable)
+            .Select(token => token.Text)
+            .Distinct(StringComparer.Ordinal)
+    ];
+
     /// <summary>Liest einen Ausdruck. Wirft <see cref="CurveExpressionException"/>, wenn er nicht aufgeht.</summary>
     public static CurveExpression Parse(string expression)
     {
@@ -75,7 +87,19 @@ public sealed class CurveExpression
     /// durch null ergeben <see cref="double.NaN"/> oder Unendlich statt einer Ausnahme — die
     /// Vorschau lässt solche Punkte einfach aus, statt die ganze Kurve zu verweigern.
     /// </summary>
-    public double Evaluate(double x)
+    public double Evaluate(double x) => Evaluate(x, null);
+
+    /// <summary>
+    /// Wertet den Ausdruck aus und löst benannte Variablen über <paramref name="values"/> auf —
+    /// die Feldwerte der Entität, an der die Formel hängt. Kleingeschrieben nachgeschlagen, wie
+    /// der Tokenizer die Namen ablegt.
+    /// <para>
+    /// Ein Name, den niemand kennt, ergibt <see cref="double.NaN"/> statt einer Ausnahme: Die
+    /// Anzeige lässt solche Werte aus, statt die ganze Formel zu verweigern — dieselbe Regel
+    /// wie bei der Wurzel aus einer negativen Zahl.
+    /// </para>
+    /// </summary>
+    public double Evaluate(double x, IReadOnlyDictionary<string, double>? values)
     {
         var stack = new Stack<double>();
 
@@ -88,7 +112,11 @@ public sealed class CurveExpression
                     break;
 
                 case TokenKind.Variable:
-                    stack.Push(x);
+                    stack.Push(token.Text == Variable
+                        ? x
+                        : values is not null && values.TryGetValue(token.Text, out var named)
+                            ? named
+                            : double.NaN);
                     break;
 
                 case TokenKind.Operator:
@@ -244,8 +272,12 @@ public sealed class CurveExpression
                 }
                 else
                 {
-                    throw new CurveExpressionException(
-                        string.Format(CultureInfo.InvariantCulture, ErrorMessages.UnknownName, name), start);
+                    // Alles Übrige ist eine benannte Variable — ein Feldname. Sie beim Lesen
+                    // abzuweisen ginge nicht: Welche Namen es gibt, weiß erst die Entität, an
+                    // der die Formel hängt. Unbekannt bleibende Namen ergeben beim Auswerten
+                    // NaN, und das lässt die Anzeige aus — dieselbe Zurückhaltung wie bei der
+                    // Wurzel aus einer negativen Zahl.
+                    tokens.Add(Token.Value(TokenKind.Variable, name, start, 0));
                 }
 
                 continue;
