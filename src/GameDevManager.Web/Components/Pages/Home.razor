@@ -4,6 +4,7 @@
 @inject IStringLocalizer<Home> L
 @inject ModuleLabels Modules
 @inject ContentStatusLabels Statuses
+@inject UserPinService Pins
 @inject ModuleState ModuleState
 @inject ProjectContext Project
 @inject DashboardService Dashboard
@@ -168,6 +169,35 @@ else
                     </MudPaper>
                 }
 
+                @* ---------------------------------------------------------- Favoriten *@
+                else if (band.BandKey == DashboardBands.Pinned)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel">
+                        <div class="gdm-panel-head pa-3 d-flex align-center justify-space-between">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["PinnedHeading"]</MudText>
+                        </div>
+
+                        @if (_pinned is not { Count: > 0 })
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-3">@L["PinnedEmpty"]</MudText>
+                        }
+                        else
+                        {
+                            <div class="gdm-chips pa-3">
+                                @foreach (var entry in _pinned)
+                                {
+                                    <MudLink Href="@RouteForEntity(entry)" Underline="Underline.None" Color="Color.Inherit"
+                                             Class="gdm-count-chip">
+                                        <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Primary" />
+                                        <span>@entry.Name</span>
+                                        <span class="gdm-mono">@Modules.NameOrKey(entry.ModuleKey)</span>
+                                    </MudLink>
+                                }
+                            </div>
+                        }
+                    </MudPaper>
+                }
+
                 @* ------------------------------------------------------ Bearbeitungsstand *@
                 else if (band.BandKey == DashboardBands.Status)
                 {
@@ -294,6 +324,8 @@ else
     private HealthSummary? _health;
 
     private Dictionary<ContentStatus, int>? _statusCounts;
+
+    private List<PinnedEntry>? _pinned;
     private DateTime? _lastExportUtc;
     private string _projectName = string.Empty;
     private int? _projectCount;
@@ -335,6 +367,7 @@ else
             ];
 
             _statusCounts = await Overview.GetStatusCountsAsync(_projectId);
+            _pinned = await Pins.GetPinnedAsync(_projectId);
 
             // Zuletzt: erst damit gilt die Seite als geladen.
             _counts = await Statistics.GetCountsAsync(_projectId);
@@ -386,6 +419,13 @@ else
     /// beanstanden“ und 22 Striche nebeneinander sind drei Arten, dasselbe Nichts zu zeigen.
     /// Es bleiben die Projektleiste und die Einstiege darunter.
     /// </summary>
+    /// <summary>
+    /// Der Weg zu einer angehefteten Entität — die Bearbeitungsroute des Moduls plus GUID.
+    /// Sie steht in der Registry, damit sie nicht ein zweites Mal aufgezählt werden muss.
+    /// </summary>
+    private static string RouteForEntity(PinnedEntry entry) =>
+        $"{ModuleRegistry.Get(entry.ModuleKey).Route}/{entry.EntityId}";
+
     private bool Shows(DashboardBandState band) =>
         band.IsVisible
         && (!IsEmptyProject || band.BandKey is DashboardBands.Project or DashboardBands.Database);
@@ -566,6 +606,7 @@ else
     {
         DashboardBands.Project => Icons.Material.Filled.Flag,
         DashboardBands.Recent => Icons.Material.Filled.History,
+        DashboardBands.Pinned => Icons.Material.Filled.Star,
         DashboardBands.Health => Icons.Material.Filled.HealthAndSafety,
         DashboardBands.Status => Icons.Material.Filled.Rule,
         DashboardBands.Inventory => Icons.Material.Filled.GridView,

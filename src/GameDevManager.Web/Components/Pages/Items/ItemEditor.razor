@@ -128,7 +128,13 @@ else
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
 
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidCaption"]</MudText>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["GuidCaption"]</MudText>
+                        @if (!_context.IsNew)
+                        {
+                            <EntityPinButton ModuleKey="@Module.Id" EntityId="_context.Entity.Id" />
+                        }
+                    </MudStack>
                     <EntityIdChip Id="_context.Entity.Id" />
 
                     <MudDivider Class="my-3" />

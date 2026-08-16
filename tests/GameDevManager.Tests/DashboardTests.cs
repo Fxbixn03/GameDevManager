@@ -234,6 +234,7 @@ public class DashboardTests
                 DashboardBands.Recent,
                 DashboardBands.Inventory,
                 DashboardBands.Database,
+                DashboardBands.Pinned,
                 DashboardBands.Status
             ],
             bands.Select(band => band.BandKey).ToArray());

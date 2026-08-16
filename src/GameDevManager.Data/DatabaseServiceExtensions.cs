@@ -115,6 +115,7 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<EditingPresence>();
         services.AddScoped<WorldService>();
         services.AddScoped<LootService>();
+        services.AddScoped<UserPinService>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
         services.AddScoped<DialogueService>();

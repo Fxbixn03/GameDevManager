@@ -460,7 +460,7 @@ Filterarten brauchen keine Migration. Voraussetzung ist ein einheitlicher Filter
 
 *Aufwand: L · Migration: ja · Format: unverändert*
 
-### F28 — Favoriten und „zuletzt besucht"
+### F28 — Favoriten und „zuletzt besucht" ✅ umgesetzt
 
 > **Als** Nutzer **möchte ich** die fünf Entitäten anheften, an denen ich diese Woche arbeite,
 > **damit** sie nicht in der Liste mit 300 Items untergehen.
@@ -470,6 +470,11 @@ zuletzt Angesehene und schon gar nicht das absichtlich Angeheftete. `UserPin` (B
 GUID) als kleine Tabelle, ein Sternsymbol in jeder Maske und Liste, ein Dashboard-Band daneben.
 
 *Aufwand: S · Migration: ja · Format: unverändert*
+
+**Umgesetzt** als Favoriten: `UserPin` plus `UserPinService`, Migration `UserPins` in allen vier
+Providern, Sternsymbol im Referenz-Panel jeder Maske und ein Dashboard-Band daneben. „Zuletzt
+besucht“ bleibt bewusst draußen — das zuletzt Geänderte zeigt „Weiterarbeiten“ bereits, und ein
+drittes, nur beiläufig gefülltes Band sagte weniger als der Stern.
 
 ### F29 — Deutsche und englische Modulseiten fertigstellen
 

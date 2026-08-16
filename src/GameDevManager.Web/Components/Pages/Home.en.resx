@@ -193,6 +193,15 @@
   <data name="Band_health" xml:space="preserve">
     <value>State</value>
   </data>
+  <data name="Band_pinned" xml:space="preserve">
+    <value>Favourites</value>
+  </data>
+  <data name="PinnedHeading" xml:space="preserve">
+    <value>Favourites</value>
+  </data>
+  <data name="PinnedEmpty" xml:space="preserve">
+    <value>Nothing pinned. The star in an edit form puts an entry here — unlike “Continue working”, it stays.</value>
+  </data>
   <data name="Band_status" xml:space="preserve">
     <value>Editing status</value>
   </data>

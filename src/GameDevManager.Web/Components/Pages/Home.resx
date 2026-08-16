@@ -163,6 +163,15 @@
   <data name="Band_health" xml:space="preserve">
     <value>Zustand</value>
   </data>
+  <data name="Band_pinned" xml:space="preserve">
+    <value>Favoriten</value>
+  </data>
+  <data name="PinnedHeading" xml:space="preserve">
+    <value>Favoriten</value>
+  </data>
+  <data name="PinnedEmpty" xml:space="preserve">
+    <value>Nichts angeheftet. Der Stern in einer Bearbeitungsmaske legt einen Eintrag hier ab — anders als „Weiterarbeiten“ bleibt er stehen.</value>
+  </data>
   <data name="Band_status" xml:space="preserve">
     <value>Bearbeitungsstand</value>
   </data>

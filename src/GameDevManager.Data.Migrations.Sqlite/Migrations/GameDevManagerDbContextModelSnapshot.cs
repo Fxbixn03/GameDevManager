@@ -2569,6 +2569,41 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("TraderOffers");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.UserPin", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AppUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.HasIndex("AppUserId", "EntityId")
+                        .IsUnique();
+
+                    b.HasIndex("AppUserId", "GameProjectId");
+
+                    b.ToTable("UserPins");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Whiteboard", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3567,6 +3602,25 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .IsRequired();
 
                     b.Navigation("Npc");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.UserPin", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Whiteboard", b =>

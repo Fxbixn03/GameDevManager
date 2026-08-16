@@ -1,0 +1,72 @@
+@inject UserPinService Pins
+@inject ProjectContext Project
+@inject IStringLocalizer<EntityPinButton> L
+
+@*
+    Das Sternsymbol: eine Entität anheften oder wieder lösen. Genau zwei Zustände — deshalb ein
+    Umschalter und kein Menü.
+
+    Es steht in jeder Bearbeitungsmaske im Referenz-Panel, neben Bearbeitungsstand und GUID:
+    Alle drei sagen etwas über die Arbeit an der Entität, nicht über den Spielinhalt.
+*@
+
+<MudTooltip Text="@(_pinned ? L["Unpin"] : L["Pin"])">
+    <MudIconButton Icon="@(_pinned ? Icons.Material.Filled.Star : Icons.Material.Filled.StarBorder)"
+                   Color="@(_pinned ? Color.Primary : Color.Default)"
+                   Size="@Size"
+                   Disabled="_busy"
+                   OnClick="ToggleAsync"
+                   aria-label="@(_pinned ? L["Unpin"] : L["Pin"])" />
+</MudTooltip>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string ModuleKey { get; set; }
+
+    [Parameter, EditorRequired]
+    public Guid EntityId { get; set; }
+
+    [Parameter]
+    public Size Size { get; set; } = Size.Small;
+
+    /// <summary>Meldet dem Aufrufer die Änderung — das Dashboard-Band lädt danach neu.</summary>
+    [Parameter]
+    public EventCallback<bool> OnChanged { get; set; }
+
+    private bool _pinned;
+    private bool _busy;
+    private Guid _loadedId;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedId == EntityId)
+        {
+            return;
+        }
+
+        _loadedId = EntityId;
+        _pinned = await Pins.IsPinnedAsync(EntityId);
+    }
+
+    private async Task ToggleAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            var projectId = await Project.GetCurrentIdAsync();
+            _pinned = await Pins.ToggleAsync(projectId, ModuleKey, EntityId);
+
+            await OnChanged.InvokeAsync(_pinned);
+        }
+        catch (ContentValidationException)
+        {
+            // Ein Nur-Lese-Konto darf nichts anheften; die Meldung des Interceptors sagt es
+            // beim Speichern ohnehin — hier bliebe der Stern schlicht, wie er war.
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

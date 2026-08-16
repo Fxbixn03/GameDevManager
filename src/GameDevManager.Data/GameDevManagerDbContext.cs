@@ -157,6 +157,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
     /// <summary>Schlüssel für die lesende HTTP-API. Gehören wie die Benutzer der Installation.</summary>
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
 
+    /// <summary>Angeheftete Entitäten je Benutzer und Projekt — Werkzeug-Daten, nicht im Export.</summary>
+    public DbSet<UserPin> UserPins => Set<UserPin>();
+
     /// <summary>Das Änderungsprotokoll: wer hat wann was getan.</summary>
     public DbSet<ChangeLogEntry> ChangeLogEntries => Set<ChangeLogEntry>();
 
@@ -891,6 +894,29 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             // Der UserService prüft das vorher und meldet es verständlich; dieser Index ist
             // die Absicherung dahinter.
             entity.HasIndex(u => u.UserName).IsUnique();
+        });
+
+        modelBuilder.Entity<UserPin>(entity =>
+        {
+            entity.Property(pin => pin.ModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+
+            // Ein gelöschtes Konto nimmt seine Merkliste mit, ein gelöschtes Projekt ebenso.
+            entity.HasOne(pin => pin.User)
+                .WithMany()
+                .HasForeignKey(pin => pin.AppUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(pin => pin.GameProject)
+                .WithMany()
+                .HasForeignKey(pin => pin.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Dieselbe Entität lässt sich nicht zweimal anheften; der Dienst prüft das vorher,
+            // dieser Index ist die Absicherung dahinter.
+            entity.HasIndex(pin => new { pin.AppUserId, pin.EntityId }).IsUnique();
+
+            // Trägt die Frage „was habe ich in diesem Projekt angeheftet?“.
+            entity.HasIndex(pin => new { pin.AppUserId, pin.GameProjectId });
         });
 
         modelBuilder.Entity<ChangeLogEntry>(entity =>
