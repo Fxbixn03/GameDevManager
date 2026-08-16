@@ -220,7 +220,7 @@ davon leben (siehe F19).
 
 *Aufwand: L · Migration: nein · Format: unverändert*
 
-### F12 — Story-Text als Markdown mit Entitäts-Erwähnungen
+### F12 — Story-Text als Markdown mit Entitäts-Erwähnungen ✅ umgesetzt
 
 > **Als** Autor **möchte ich** im Story-Text `@Eisenschwert` schreiben und beim Speichern eine
 > echte Verknüpfung bekommen, **damit** die Referenzansicht des Items auch die Story-Abschnitte
@@ -233,6 +233,12 @@ Textsuche nach der GUID, dasselbe wie bei den GUID-Spalten. Gilt genauso für `K
 `ContentEntity.Description`.
 
 *Aufwand: M · Migration: nein · Format: unverändert*
+
+**Umgesetzt** für den Story-Text: `ContentMentions` und `SimpleMarkdown` in der Domäne,
+`MentionResolver` in der Datenschicht, `MarkdownView` als Anzeige, Vorschau-Umschalter im
+Story-Editor. Die Referenzansicht findet Erwähnungen über die GUID im Text. Für
+`KanbanCard.Notes` und `ContentEntity.Description` steht die Anbindung noch aus — die Bausteine
+liegen bereit, es fehlt nur der Aufruf im jeweiligen Dienst.
 
 ### F13 — Cutscene-Storyboard mit Bild je Einstellung ✅ umgesetzt
 

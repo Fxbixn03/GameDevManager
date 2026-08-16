@@ -13,6 +13,7 @@ public class StoryService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
     AssetService assets,
+    MentionResolver mentions,
     IStringLocalizer<DataMessages> messages)
 {
     /// <summary>Der Zeitstreifen: alle Abschnitte eines Projekts in ihrer Reihenfolge.</summary>
@@ -197,7 +198,11 @@ public class StoryService(
         stored.ContentTypeId = entry.ContentTypeId;
         stored.Name = entry.Name.Trim();
         stored.Description = string.IsNullOrWhiteSpace(entry.Description) ? null : entry.Description.Trim();
-        stored.Body = string.IsNullOrWhiteSpace(entry.Body) ? null : entry.Body;
+        // Erwähnungen werden hier aufgelöst und nicht in der Maske: Der Dienst ist der eine
+        // Weg, über den jeder Story-Text geht — der CSV-Import eingeschlossen.
+        stored.Body = string.IsNullOrWhiteSpace(entry.Body)
+            ? null
+            : await mentions.ResolveAsync(entry.GameProjectId, entry.Body, ct);
         stored.Mood = Normalize(entry.Mood);
         stored.GameDate = Normalize(entry.GameDate);
         stored.Duration = Normalize(entry.Duration);

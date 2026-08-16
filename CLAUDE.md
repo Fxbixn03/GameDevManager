@@ -330,6 +330,15 @@ Stellen, an denen die Formel nicht rechnet (Wurzel aus einer negativen Zahl), fa
 - **Alle Linien teilen sich eine Skala**, sonst verglichen sie nichts. Stützpunkte zeichnet das Diagramm nur noch bei einer einzelnen Kurve — übereinandergelegt verdichten sie sich zum Teppich.
 - **Farbe *und* Strichmuster je Linie**: Zwei Kurven, die sich nur in der Farbe unterscheiden, sind auf einem Ausdruck oder mit einer Farbsehschwäche dieselbe Linie. Die Farben sind eine feste Liste in der Komponente — die dokumentierte Ausnahme für Datenfarben, wie bei den Fraktionsringen und den Wesenszügen.
 
+### Fließtexte: Markdown und Erwähnungen
+
+Der Story-Text (`StoryEntry.Body`) kennt eine kleine Markdown-Auszeichnung und die Erwähnungs-Syntax `@Name`. Zwei Kleinteile tragen das, beide selbst geschrieben statt als Fremdbibliothek gezogen — dieselbe Abwägung wie beim `Csv` und beim `ImageDimensionReader`:
+
+- **[ContentMentions.cs](src/GameDevManager.Domain/Entities/ContentMentions.cs)** — geschrieben wird `@Eisenschwert`, gespeichert `[[items:GUID|Eisenschwert]]`. Die **GUID** macht den Verweis stabil gegen Umbenennungen, der **Anzeigename** bleibt lesbar, wenn die Entität verschwindet (dieselbe Überlegung wie beim Namen im Änderungsprotokoll). Aufgelöst wird im **Dienst** (`MentionResolver`, gerufen von `StoryService`) und nicht in der Maske — der Dienst ist der eine Weg, über den jeder Story-Text geht. Der **längste passende Name gewinnt**, sonst schnappte sich „Eisen“ den Anfang von „Eisenschwert“; was sich nicht auflösen lässt, **bleibt unverändert stehen** — ein Tippfehler darf den Text nicht verstümmeln. Die Maske zeigt über `ToEditable` wieder die `@Name`-Fassung, sonst sähe der Autor beim zweiten Öffnen seinen eigenen Text nicht wieder.
+- **[SimpleMarkdown.cs](src/GameDevManager.Domain/Entities/SimpleMarkdown.cs)** — Überschriften, fett, kursiv, Code, Aufzählungen, Links, mehr nicht. **Maskiert wird zuerst, ausgezeichnet danach**, sonst verwandelte die Maskierung die eben gesetzten Tags wieder in Text; Links nur auf `http(s)`, weil ein `javascript:` genau den Weg öffnete, den die Maskierung versperrt. Erwähnungen kommen als **eigene Stücke** zurück (`MarkdownSegment.Mention`) und werden von `MarkdownView` als echte Blazor-Links gesetzt statt als rohes HTML.
+
+Die Referenzansicht findet Erwähnungen über eine **Textsuche nach der GUID** — dieselbe Technik wie bei den Referenzlisten in den Feldwerten, über `LIKE` auf allen vier Providern gleich. Es braucht dafür keine Tabelle.
+
 ### Berechnete Felder
 
 `ContentFieldType.Formula` ist ein Ausdruck über die **anderen Felder derselben Entität** (`Schaden * Angriffsgeschwindigkeit`). Er teilt sich den Parser mit der Levelkurve: `CurveExpression` kennt neben `x` jetzt benannte Variablen, und `Evaluate(x, values)` löst sie über ein Wörterbuch auf. Fünf Dinge:

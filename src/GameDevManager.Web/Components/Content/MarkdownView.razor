@@ -1,0 +1,97 @@
+@inject ModuleLabels Modules
+
+@*
+    Zeigt einen Fließtext mit der kleinen Markdown-Auszeichnung des Hauses und macht aus den
+    Erwähnungen echte Verknüpfungen.
+
+    Die Erwähnungen werden als eigene Stücke gerendert und nicht als HTML eingesetzt: So bleibt
+    der Link eine Blazor-Navigation, und der Text selbst geht vollständig maskiert durch —
+    dieselbe Vorsicht wie beim Ausliefern hochgeladener Dateien.
+*@
+
+@foreach (var line in Lines)
+{
+    var level = SimpleMarkdown.HeadingLevel(line.Raw);
+
+    @if (level > 0)
+    {
+        <MudText Typo="@HeadingTypo(level)" Class="mt-3">@Render(line.Segments)</MudText>
+    }
+    else if (SimpleMarkdown.IsListItem(line.Raw))
+    {
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Start">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">•</MudText>
+            <MudText Typo="Typo.body2">@Render(line.Segments)</MudText>
+        </MudStack>
+    }
+    else
+    {
+        <MudText Typo="Typo.body2" Class="mb-2">@Render(line.Segments)</MudText>
+    }
+}
+
+@code {
+    [Parameter]
+    public string? Text { get; set; }
+
+    private sealed record Line(string Raw, List<MarkdownSegment> Segments);
+
+    /// <summary>
+    /// Die Rohzeile bleibt neben den gerenderten Stücken stehen: Ob eine Zeile Überschrift
+    /// oder Aufzählungspunkt ist, entscheidet ihr Anfang, und den hat das Rendern entfernt.
+    /// </summary>
+    private List<Line> Lines
+    {
+        get
+        {
+            var raw = (Text ?? string.Empty)
+                .Replace("\r\n", "\n")
+                .Split('\n')
+                .Select(line => line.TrimEnd())
+                .Where(line => line.Length > 0)
+                .ToList();
+
+            var rendered = SimpleMarkdown.Render(Text);
+
+            return [.. raw.Zip(rendered, (line, segments) => new Line(line, segments))];
+        }
+    }
+
+    private static Typo HeadingTypo(int level) => level switch
+    {
+        1 => Typo.h5,
+        2 => Typo.h6,
+        _ => Typo.subtitle1
+    };
+
+    private RenderFragment Render(List<MarkdownSegment> segments) => builder =>
+    {
+        var sequence = 0;
+
+        foreach (var segment in segments)
+        {
+            if (segment.Mention is { } mention)
+            {
+                builder.OpenComponent<MudLink>(sequence++);
+                builder.AddAttribute(sequence++, "Href", RouteFor(mention));
+                builder.AddAttribute(sequence++, "Typo", Typo.inherit);
+                builder.AddAttribute(sequence++, "ChildContent", (RenderFragment)(inner =>
+                    inner.AddContent(0, mention.DisplayName)));
+                builder.CloseComponent();
+            }
+            else
+            {
+                builder.AddMarkupContent(sequence++, segment.Html);
+            }
+        }
+    };
+
+    /// <summary>
+    /// Der Weg zur erwähnten Entität. Ein unbekanntes Modul — etwa aus einem fremden Export —
+    /// führt auf das Dashboard statt auf eine kaputte Adresse.
+    /// </summary>
+    private static string RouteFor(ContentMention mention) =>
+        ModuleRegistry.All.Any(module => module.Id == mention.ModuleKey)
+            ? $"{ModuleRegistry.Get(mention.ModuleKey).Route}/{mention.EntityId}"
+            : "/dashboard";
+}

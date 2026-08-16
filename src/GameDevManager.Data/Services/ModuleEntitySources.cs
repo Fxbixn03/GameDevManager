@@ -501,6 +501,17 @@ public sealed class StoryEntrySource(IStringLocalizer<DataMessages> messages)
             .Select(entry => new EntityReferenceHit(entry.Id, ModuleKeys.Story, entry.Name, storyLocation))
             .ToListAsync(ct));
 
+        // Erwähnungen im Story-Text. Gesucht wird über die GUID im Text — dieselbe Technik wie
+        // bei den Referenzlisten in den Feldwerten, und über LIKE auf allen vier Providern gleich.
+        var storyMention = Messages["Reference_StoryMention"].Value;
+        var needle = entityId.ToString();
+
+        hits.AddRange(await db.StoryEntries
+            .AsNoTracking()
+            .Where(entry => entry.Body != null && entry.Body.Contains(needle))
+            .Select(entry => new EntityReferenceHit(entry.Id, ModuleKeys.Story, entry.Name, storyMention))
+            .ToListAsync(ct));
+
         return hits;
     }
 

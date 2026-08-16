@@ -57,6 +57,15 @@
   <data name="BodySection" xml:space="preserve">
     <value>Story-Text</value>
   </data>
+  <data name="BodyPreview" xml:space="preserve">
+    <value>Vorschau</value>
+  </data>
+  <data name="BodyEdit" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="BodyHelper" xml:space="preserve">
+    <value>Markdown: # Überschrift, **fett**, *kursiv*, `Code`, - Aufzählung. Mit @@Name wird eine Entität erwähnt — beim Speichern wird daraus eine Verknüpfung.</value>
+  </data>
   <data name="BodyLabel" xml:space="preserve">
     <value>Text</value>
   </data>

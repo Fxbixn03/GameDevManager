@@ -840,6 +840,9 @@ Unpack the ZIP into the root directory of your Godot project: the content lands 
   <data name="MapLayerNameRequired" xml:space="preserve">
     <value>Every layer needs a name.</value>
   </data>
+  <data name="Reference_StoryMention" xml:space="preserve">
+    <value>Mentioned in text</value>
+  </data>
   <data name="Reference_StoryLink" xml:space="preserve">
     <value>Scene link</value>
   </data>

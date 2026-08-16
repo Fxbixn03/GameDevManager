@@ -263,15 +263,34 @@ else
 
                 @* ------------------------------------------------------------- Story-Text *@
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["BodySection"]</MudText>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">@L["BodySection"]</MudText>
+                        <MudButton Size="Size.Small"
+                                   Variant="Variant.Text"
+                                   StartIcon="@(_previewBody ? Icons.Material.Filled.Edit : Icons.Material.Filled.Visibility)"
+                                   OnClick="@(() => _previewBody = !_previewBody)">
+                            @(_previewBody ? L["BodyEdit"] : L["BodyPreview"])
+                        </MudButton>
+                    </MudStack>
 
-                    <MudTextField Value="_context.Entity.Body"
-                                  ValueChanged="@((string text) => Touch(() => _context.Entity.Body = text))"
-                                  T="string"
-                                  Label="@L["BodyLabel"]"
-                                  Placeholder="@L["BodyPlaceholder"]"
-                                  Variant="Variant.Outlined"
-                                  Lines="14" />
+                    @if (_previewBody)
+                    {
+                        <MarkdownView Text="_context.Entity.Body" />
+                    }
+                    else
+                    {
+                        @* Bearbeitet wird die lesbare Fassung mit „@Name“; die stabile Form
+                           mit GUID entsteht erst beim Speichern. Ohne diese Rückübersetzung
+                           sähe der Autor beim zweiten Öffnen seinen eigenen Text nicht wieder. *@
+                        <MudTextField Value="@ContentMentions.ToEditable(_context.Entity.Body)"
+                                      ValueChanged="@((string text) => Touch(() => _context.Entity.Body = text))"
+                                      T="string"
+                                      Label="@L["BodyLabel"]"
+                                      Placeholder="@L["BodyPlaceholder"]"
+                                      HelperText="@L["BodyHelper"]"
+                                      Variant="Variant.Outlined"
+                                      Lines="14" />
+                    }
                 </MudPaper>
 
                 @* ------------------------------------------------------------- Beteiligte *@
@@ -431,6 +450,9 @@ else
     private bool _notFound;
     private bool _saving;
     private bool _dirty;
+
+    /// <summary>Umschalter zwischen Schreiben und Lesen — dieselbe Fläche, zwei Zustände.</summary>
+    private bool _previewBody;
 
     private string PageHeading => _context switch
     {

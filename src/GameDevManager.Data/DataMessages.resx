@@ -794,6 +794,9 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="MapLayerNameRequired" xml:space="preserve">
     <value>Jede Ebene braucht einen Namen.</value>
   </data>
+  <data name="Reference_StoryMention" xml:space="preserve">
+    <value>Erwähnt im Text</value>
+  </data>
   <data name="Reference_StoryLink" xml:space="preserve">
     <value>Szenen-Verknüpfung</value>
   </data>

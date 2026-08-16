@@ -122,6 +122,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ActivityFeedService>();
         services.AddScoped<EconomyService>();
         services.AddScoped<ProgressionService>();
+        services.AddScoped<MentionResolver>();
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
         services.AddScoped<DialogueService>();
