@@ -684,6 +684,24 @@ Unpack the ZIP into the root directory of your Godot project: the content lands 
   <data name="Locale_LanguageUnknown" xml:space="preserve">
     <value>The language “{0}” does not exist in this project.</value>
   </data>
+  <data name="Locale_CsvColumnsMissing" xml:space="preserve">
+    <value>The table is missing the columns “id”, “slot” or “übersetzung”.</value>
+  </data>
+  <data name="Locale_CsvRowUnreadable" xml:space="preserve">
+    <value>Row {0}: GUID or slot missing — skipped.</value>
+  </data>
+  <data name="Locale_CsvRowUnknown" xml:space="preserve">
+    <value>Row {0}: this text no longer belongs to any entity — skipped.</value>
+  </data>
+  <data name="Locale_StateMissing" xml:space="preserve">
+    <value>missing</value>
+  </data>
+  <data name="Locale_StateStale" xml:space="preserve">
+    <value>outdated</value>
+  </data>
+  <data name="Locale_StateDone" xml:space="preserve">
+    <value>translated</value>
+  </data>
   <data name="Csv_Empty" xml:space="preserve">
     <value>Apart from the header the file contains no rows.</value>
   </data>

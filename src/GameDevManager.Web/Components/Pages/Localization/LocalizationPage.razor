@@ -3,6 +3,7 @@
 @inject ProjectContext Project
 @inject ModuleLabels Modules
 @inject IUserPermissionsProvider PermissionsProvider
+@inject NavigationManager Nav
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogs
 @inject IStringLocalizer<LocalizationPage> L
@@ -183,6 +184,69 @@ else
                     <MudText Typo="Typo.body2" Color="Color.Secondary">@L["RowCount", VisibleRows.Count]</MudText>
                 </MudStack>
 
+                @* ---------------------------------------------------------------- Tabelle *@
+                @* Der Weg zu einem externen Übersetzer: XLIFF wäre der Standard, aber CSV ist
+                   das, was jeder ohne Werkzeug öffnet. *@
+                @if (_languageCode is not null && (_permissions.CanExport || _permissions.CanImport))
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-3 mb-3">
+                        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["CsvHint"]</MudText>
+                            <MudSpacer />
+
+                            @if (_permissions.CanExport)
+                            {
+                                <MudButton Variant="Variant.Outlined"
+                                           StartIcon="@Icons.Material.Filled.Download"
+                                           OnClick="DownloadCsv">
+                                    @(_openOnly ? L["CsvDownloadOpen"] : L["CsvDownloadAll"])
+                                </MudButton>
+                            }
+
+                            @if (_permissions.CanImport && _permissions.CanWrite)
+                            {
+                                <MudFileUpload T="IBrowserFile" FilesChanged="CsvFileSelected" Accept=".csv,.txt" Disabled="@_csvImporting">
+                                    <CustomContent Context="upload">
+                                        <MudButton Variant="Variant.Outlined"
+                                                   StartIcon="@Icons.Material.Filled.UploadFile"
+                                                   Disabled="@_csvImporting"
+                                                   OnClick="@(() => upload.OpenFilePickerAsync())">
+                                            @L["CsvSelectButton"]
+                                        </MudButton>
+                                    </CustomContent>
+                                </MudFileUpload>
+
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.FileUpload"
+                                           Disabled="@(_csvFile is null || _csvImporting)"
+                                           OnClick="ImportCsvAsync">
+                                    @L["CsvImportButton"]
+                                </MudButton>
+                            }
+                        </MudStack>
+
+                        @if (_csvFile is not null)
+                        {
+                            <MudText Typo="Typo.body2" Class="mt-2">@_csvFile.Name</MudText>
+                        }
+
+                        @if (_csvResult is not null)
+                        {
+                            <MudAlert Severity="Severity.Success" Dense="true" Square="true" Class="mt-2">
+                                @L["CsvImportedMessage", _csvResult.Created, _csvResult.Updated, _csvResult.Unchanged]
+                            </MudAlert>
+
+                            @foreach (var warning in _csvResult.Warnings)
+                            {
+                                <MudAlert Severity="Severity.Warning" Dense="true" Square="true" Class="mt-1">
+                                    @warning
+                                </MudAlert>
+                            }
+                        }
+                    </MudPaper>
+                }
+
                 @if (_rowsLoading)
                 {
                     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
@@ -257,11 +321,19 @@ else
     private List<TranslationProgress>? _progress;
     private ContentLanguage? _editing;
 
+    private Guid _projectId;
     private string? _languageCode;
     private string? _moduleKey;
     private bool _openOnly = true;
     private bool _rowsLoading;
     private List<TranslationRow> _rows = [];
+
+    /// <summary>Eine Tabelle ist Text und klein — anders als ein ZIP wird sie ganz gelesen.</summary>
+    private const long MaxCsvSizeBytes = 32L * 1024 * 1024;
+
+    private IBrowserFile? _csvFile;
+    private CsvImportResult? _csvResult;
+    private bool _csvImporting;
 
     private List<ModuleDefinition> ContentModules =>
     [
@@ -287,7 +359,8 @@ else
 
     private async Task LoadLanguagesAsync()
     {
-        var projectId = await Project.GetCurrentIdAsync();
+        _projectId = await Project.GetCurrentIdAsync();
+        var projectId = _projectId;
 
         _languages = await Localization.GetLanguagesAsync(projectId);
         _languageCode ??= _languages.FirstOrDefault(language => !language.IsSource)?.Code;
@@ -432,6 +505,57 @@ else
         catch (ContentValidationException ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    // ---------------------------------------------------------------------------- Tabelle
+
+    /// <summary>
+    /// Der Download läuft über einen Endpunkt und nicht über den Blazor-Kreis: Über SignalR
+    /// lässt sich keine Datei ausliefern — dieselbe Regel wie beim Export.
+    /// </summary>
+    private void DownloadCsv() =>
+        Nav.NavigateTo(
+            $"/export/translations/{_projectId}/{_languageCode}?openOnly={(_openOnly ? "true" : "false")}",
+            forceLoad: true);
+
+    private void CsvFileSelected(IBrowserFile? file)
+    {
+        _csvFile = file;
+        _csvResult = null;
+    }
+
+    private async Task ImportCsvAsync()
+    {
+        if (_csvFile is null || _languageCode is null)
+        {
+            return;
+        }
+
+        _csvImporting = true;
+
+        try
+        {
+            await using var content = _csvFile.OpenReadStream(MaxCsvSizeBytes);
+            using var reader = new StreamReader(content);
+
+            _csvResult = await Localization.ImportCsvAsync(
+                _projectId, _languageCode, await reader.ReadToEndAsync());
+
+            _csvFile = null;
+
+            // Die Arbeitsliste zeigt danach den neuen Stand — sonst stünde dort noch das,
+            // was die Tabelle gerade ersetzt hat.
+            await LoadRowsAsync();
+            _progress = await Localization.GetProgressAsync(_projectId);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _csvImporting = false;
         }
     }
 

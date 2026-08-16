@@ -638,6 +638,24 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="Locale_LanguageUnknown" xml:space="preserve">
     <value>Die Sprache „{0}“ gibt es in diesem Projekt nicht.</value>
   </data>
+  <data name="Locale_CsvColumnsMissing" xml:space="preserve">
+    <value>Der Tabelle fehlen die Spalten „id“, „slot“ oder „übersetzung“.</value>
+  </data>
+  <data name="Locale_CsvRowUnreadable" xml:space="preserve">
+    <value>Zeile {0}: GUID oder Slot fehlen — übergangen.</value>
+  </data>
+  <data name="Locale_CsvRowUnknown" xml:space="preserve">
+    <value>Zeile {0}: Dieser Text gehört zu keiner Entität mehr — übergangen.</value>
+  </data>
+  <data name="Locale_StateMissing" xml:space="preserve">
+    <value>fehlt</value>
+  </data>
+  <data name="Locale_StateStale" xml:space="preserve">
+    <value>veraltet</value>
+  </data>
+  <data name="Locale_StateDone" xml:space="preserve">
+    <value>übersetzt</value>
+  </data>
   <data name="Csv_Empty" xml:space="preserve">
     <value>Die Datei enthält außer der Kopfzeile keine Zeilen.</value>
   </data>

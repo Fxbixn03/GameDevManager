@@ -250,6 +250,28 @@ api.MapGet("/projects/{projectId:guid}/modules/{moduleKey}/{entityId:guid}", asy
 // Der CSV-Export eines einzelnen Moduls — der Weg Tabelle ↔ Tool fürs Balancing. Wie beim
 // ZIP über einen Endpunkt und nicht über den Blazor-Kreis: Über SignalR lässt sich kein
 // Download anstoßen.
+// Die offenen Übersetzungen einer Sprache als Tabelle — der Weg zu einem externen
+// Übersetzer, der keinen Zugang zum Tool braucht. Wie beim Modul-CSV ein Endpunkt.
+app.MapGet("/export/translations/{projectId:guid}/{languageCode}", async (
+    Guid projectId, string languageCode, bool? openOnly, LocalizationService localization,
+    HttpContext http, CancellationToken ct) =>
+{
+    if (!http.User.Permissions().CanExport)
+    {
+        return Results.Forbid();
+    }
+
+    var content = await localization.ExportCsvAsync(projectId, languageCode, openOnly ?? true, ct);
+
+    // Mit BOM, aus demselben Grund wie beim Modul-CSV.
+    byte[] bytes = [0xEF, 0xBB, 0xBF, .. System.Text.Encoding.UTF8.GetBytes(content)];
+
+    return Results.File(
+        bytes,
+        "text/csv; charset=utf-8",
+        fileDownloadName: $"uebersetzungen-{languageCode}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
+}).RequireAuthorization();
+
 app.MapGet("/export/csv/{projectId:guid}/{moduleKey}", async (
     Guid projectId, string moduleKey, CsvContentService csv, HttpContext http, CancellationToken ct) =>
 {

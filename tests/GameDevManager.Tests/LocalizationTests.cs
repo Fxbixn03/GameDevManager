@@ -375,6 +375,76 @@ public class LocalizationTests
     }
 
     [Fact]
+    public async Task Die_Tabelle_traegt_die_offenen_Texte_und_kommt_ausgefuellt_zurueck()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+
+        var swordId = await SeedItemAsync(database, "Schwert");
+        await SeedItemAsync(database, "Axt");
+
+        var service = database.GetService<LocalizationService>();
+        await service.SaveAsync(
+            database.ProjectId, swordId, ModuleKeys.Items, TranslationSlots.Name, "en", "Sword", "Schwert");
+
+        // „Nur Offenes“ lässt das bereits Übersetzte weg — sonst wäre die Datei unbrauchbar.
+        var open = await service.ExportCsvAsync(database.ProjectId, "en", openOnly: true);
+        Assert.DoesNotContain("Schwert", open, StringComparison.Ordinal);
+        Assert.Contains("Axt", open, StringComparison.Ordinal);
+
+        Assert.Contains(
+            "Schwert",
+            await service.ExportCsvAsync(database.ProjectId, "en", openOnly: false),
+            StringComparison.Ordinal);
+
+        // Ausgefüllt zurück: Die Zeile findet ihr Ziel über id + slot.
+        var axeId = (await service.GetRowsAsync(database.ProjectId, ModuleKeys.Items, "en"))
+            .Single(row => row.SourceText == "Axt").OwnerEntityId;
+
+        var filled = string.Join(
+            "\n",
+            "id;slot;modul;entität;ausgangstext;übersetzung;stand",
+            $"{axeId};{TranslationSlots.Name};{ModuleKeys.Items};Axt;Axt;Axe;fehlt");
+
+        var result = await service.ImportCsvAsync(database.ProjectId, "en", filled);
+
+        Assert.Equal(1, result.Created);
+        Assert.Empty(result.Warnings);
+        Assert.Equal(
+            "Axe",
+            (await service.GetRowsAsync(database.ProjectId, ModuleKeys.Items, "en"))
+                .Single(row => row.OwnerEntityId == axeId).Text);
+    }
+
+    [Fact]
+    public async Task Eine_leere_Zelle_loescht_und_eine_kaputte_Zeile_ist_nur_eine_Warnung()
+    {
+        using var database = new TestDatabase();
+        await SeedLanguagesAsync(database);
+        var itemId = await SeedItemAsync(database, "Schwert");
+
+        var service = database.GetService<LocalizationService>();
+        await service.SaveAsync(
+            database.ProjectId, itemId, ModuleKeys.Items, TranslationSlots.Name, "en", "Sword", "Schwert");
+
+        var content = string.Join(
+            "\n",
+            "id;slot;modul;entität;ausgangstext;übersetzung;stand",
+            $"{itemId};{TranslationSlots.Name};{ModuleKeys.Items};Schwert;Schwert;;übersetzt",
+            $"{Guid.NewGuid()};{TranslationSlots.Name};{ModuleKeys.Items};Weg;Weg;Gone;fehlt",
+            "kaputt;;;;;;");
+
+        var result = await service.ImportCsvAsync(database.ProjectId, "en", content);
+
+        // Der leere Text löscht die Übersetzung — „nicht übersetzt“ soll nichts hinterlassen.
+        await using var db = database.CreateContext();
+        Assert.Empty(await db.ContentTranslations.ToListAsync());
+
+        // Eine unbekannte und eine unlesbare Zeile werfen nicht, sie melden sich.
+        Assert.Equal(2, result.Warnings.Count);
+    }
+
+    [Fact]
     public async Task Sprachen_und_Uebersetzungen_ueberstehen_Export_und_Import()
     {
         using var database = new TestDatabase();

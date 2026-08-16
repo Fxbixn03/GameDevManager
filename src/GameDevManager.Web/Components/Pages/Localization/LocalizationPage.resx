@@ -145,6 +145,24 @@
   <data name="OpenOnly" xml:space="preserve">
     <value>Nur Offenes</value>
   </data>
+  <data name="CsvHint" xml:space="preserve">
+    <value>Als Tabelle herausgeben und ausgefüllt wieder einlesen — für einen Übersetzer ohne Zugang zum Tool.</value>
+  </data>
+  <data name="CsvDownloadOpen" xml:space="preserve">
+    <value>Offenes als CSV</value>
+  </data>
+  <data name="CsvDownloadAll" xml:space="preserve">
+    <value>Alles als CSV</value>
+  </data>
+  <data name="CsvSelectButton" xml:space="preserve">
+    <value>Datei wählen</value>
+  </data>
+  <data name="CsvImportButton" xml:space="preserve">
+    <value>Einlesen</value>
+  </data>
+  <data name="CsvImportedMessage" xml:space="preserve">
+    <value>{0} neu, {1} geändert, {2} unverändert.</value>
+  </data>
   <data name="RowCount" xml:space="preserve">
     <value>{0} Zeilen</value>
   </data>

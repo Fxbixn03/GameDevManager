@@ -164,7 +164,7 @@ Die Zeichenketten-Tabelle unter `localization/<code>.json` bekommt die Zeilen oh
 überschrieben von Dialog (Zeilen und Antworten, Slot `text` an ihrer eigenen GUID), Cutscene
 (Einstellungen) und Story (`Body`, Slot `body` an der Entität). `FormatVersion` steht auf **8**.
 
-### F9 — Übersetzungen als CSV heraus und wieder herein
+### F9 — Übersetzungen als CSV heraus und wieder herein ✅ umgesetzt
 
 > **Als** Projektleiter **möchte ich** die offenen Übersetzungen einer Sprache als Tabelle
 > herausgeben und die ausgefüllte Datei wieder einlesen, **damit** ein externer Übersetzer arbeiten
@@ -179,6 +179,10 @@ die Spalte, an der der Übersetzer sieht, was sich geändert hat. XLIFF wäre de
 ist der Weg, den jeder Übersetzer ohne Werkzeug öffnet.
 
 *Aufwand: S · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `LocalizationService.ExportCsvAsync`/`ImportCsvAsync` über denselben `Csv`-Leser,
+Download über `/export/translations/{projectId}/{code}`, Knöpfe auf der Lokalisierungs-Seite.
+Der Ausgangstext kommt beim Zurücklesen aus dem Bestand, nicht aus der Datei.
 
 ### F10 — Vertonung: Audiodatei und Sprecher je Dialogzeile
 

@@ -1,3 +1,4 @@
+using System.Text;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -330,6 +331,177 @@ public class LocalizationService(
 
         await db.SaveChangesAsync(ct);
     }
+
+    // -------------------------------------------------------------------------------- CSV
+
+    /// <summary>Die Spalten der Übersetzungstabelle — kleingeschrieben wie beim Modul-CSV.</summary>
+    public const string IdColumn = "id";
+    public const string SlotColumn = "slot";
+    public const string ModuleColumn = "modul";
+    public const string EntityColumn = "entität";
+    public const string SourceColumn = "ausgangstext";
+    public const string TranslationColumn = "übersetzung";
+    public const string StateColumn = "stand";
+
+    /// <summary>
+    /// Alle übersetzbaren Texte einer Sprache als Tabelle — der Weg zu einem externen
+    /// Übersetzer, der keinen Zugang zum Tool braucht.
+    /// <para>
+    /// <paramref name="openOnly"/> beschränkt auf das, was fehlt oder veraltet ist; erst das
+    /// macht die Datei brauchbar, denn ein gewachsenes Projekt hat mehr Übersetztes als Offenes.
+    /// </para>
+    /// </summary>
+    public async Task<string> ExportCsvAsync(
+        Guid projectId, string languageCode, bool openOnly, CancellationToken ct = default)
+    {
+        await guard.EnsureCanExportAsync(ct);
+
+        var builder = new StringBuilder();
+
+        builder.AppendLine(Csv.FormatRow(
+        [
+            IdColumn, SlotColumn, ModuleColumn, EntityColumn, SourceColumn, TranslationColumn, StateColumn
+        ]));
+
+        foreach (var row in await AllRowsAsync(projectId, languageCode, ct))
+        {
+            if (openOnly && !row.IsMissing && !row.IsStale)
+            {
+                continue;
+            }
+
+            builder.AppendLine(Csv.FormatRow(
+            [
+                row.OwnerEntityId.ToString(),
+                row.Slot,
+                row.OwnerModuleKey,
+                row.OwnerName,
+                row.SourceText,
+                row.Text,
+                StateOf(row)
+            ]));
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Liest eine ausgefüllte Übersetzungstabelle zurück. Dieselben Regeln wie beim Modul-CSV:
+    /// Eine Zeile findet ihr Ziel über <c>id</c> + <c>slot</c>, eine leere Zelle löscht die
+    /// Übersetzung, und eine kaputte Zeile ist eine Warnung und kein Abbruch.
+    /// <para>
+    /// Der <b>Ausgangstext kommt aus dem Bestand</b> und nicht aus der Datei: Sonst erklärte
+    /// eine alte Tabelle eine Übersetzung für aktuell, obwohl sich das Original seitdem
+    /// geändert hat — genau die Frage, für die <see cref="ContentTranslation.SourceText"/> da ist.
+    /// </para>
+    /// </summary>
+    public async Task<CsvImportResult> ImportCsvAsync(
+        Guid projectId, string languageCode, string content, CancellationToken ct = default)
+    {
+        await guard.EnsureCanImportAsync(ct);
+
+        var rows = Csv.Parse(content, Csv.DetectSeparator(content));
+        if (rows.Count == 0)
+        {
+            return new CsvImportResult(0, 0, 0, [messages["Csv_Empty"].Value]);
+        }
+
+        var header = rows[0].Select(cell => cell.Trim().ToLowerInvariant()).ToList();
+        var idColumn = header.IndexOf(IdColumn);
+        var slotColumn = header.IndexOf(SlotColumn);
+        var textColumn = header.IndexOf(TranslationColumn);
+
+        if (idColumn < 0 || slotColumn < 0 || textColumn < 0)
+        {
+            throw new ContentValidationException(messages["Locale_CsvColumnsMissing"].Value);
+        }
+
+        // Der aktuelle Bestand als Nachschlagewerk: Er liefert den Ausgangstext und sagt,
+        // ob es die Zeile überhaupt (noch) gibt.
+        var known = (await AllRowsAsync(projectId, languageCode, ct))
+            .ToDictionary(row => (row.OwnerEntityId, row.Slot));
+
+        var warnings = new List<string>();
+        var created = 0;
+        var updated = 0;
+        var unchanged = 0;
+
+        for (var index = 1; index < rows.Count; index++)
+        {
+            var row = rows[index];
+
+            if (row.Count == 0 || row.All(string.IsNullOrWhiteSpace))
+            {
+                continue;
+            }
+
+            var rawId = idColumn < row.Count ? row[idColumn].Trim() : string.Empty;
+            var slot = slotColumn < row.Count ? row[slotColumn].Trim() : string.Empty;
+
+            if (!Guid.TryParse(rawId, out var ownerId) || string.IsNullOrWhiteSpace(slot))
+            {
+                warnings.Add(messages["Locale_CsvRowUnreadable", index + 1].Value);
+                continue;
+            }
+
+            if (!known.TryGetValue((ownerId, slot), out var target))
+            {
+                warnings.Add(messages["Locale_CsvRowUnknown", index + 1].Value);
+                continue;
+            }
+
+            var text = textColumn < row.Count ? row[textColumn].Trim() : string.Empty;
+            var wanted = string.IsNullOrWhiteSpace(text) ? null : text;
+
+            // Unverändert heißt: derselbe Text und derselbe Ausgangsstand. Ohne diesen
+            // Vergleich bekäme das Änderungsprotokoll bei jedem Import den ganzen Bestand.
+            if (wanted == target.Text && !target.IsStale)
+            {
+                unchanged++;
+                continue;
+            }
+
+            await SaveAsync(
+                projectId, target.OwnerEntityId, target.OwnerModuleKey, target.Slot,
+                languageCode, wanted, target.SourceText, ct);
+
+            if (target.IsMissing && wanted is not null)
+            {
+                created++;
+            }
+            else
+            {
+                updated++;
+            }
+        }
+
+        return new CsvImportResult(created, updated, unchanged, warnings);
+    }
+
+    /// <summary>Die Arbeitsliste über <b>alle</b> Module — die Grundlage beider CSV-Wege.</summary>
+    private async Task<List<TranslationRow>> AllRowsAsync(
+        Guid projectId, string languageCode, CancellationToken ct)
+    {
+        var rows = new List<TranslationRow>();
+
+        foreach (var source in sources)
+        {
+            rows.AddRange(await GetRowsAsync(projectId, source.ModuleKey, languageCode, ct));
+        }
+
+        return rows;
+    }
+
+    /// <summary>
+    /// Die Spalte, an der ein Übersetzer sieht, was zu tun ist. Reine Auskunft — beim
+    /// Zurücklesen zählt allein, was in der Übersetzungsspalte steht.
+    /// </summary>
+    private string StateOf(TranslationRow row) => row switch
+    {
+        { IsMissing: true } => messages["Locale_StateMissing"].Value,
+        { IsStale: true } => messages["Locale_StateStale"].Value,
+        _ => messages["Locale_StateDone"].Value
+    };
 
     // ------------------------------------------------------------------------ Fortschritt
 
