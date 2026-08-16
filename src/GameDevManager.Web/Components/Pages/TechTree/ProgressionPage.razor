@@ -1,0 +1,103 @@
+@page "/modules/techtree/fortschritt"
+@inject ProgressionService Progression
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject IStringLocalizer<ProgressionPage> L
+
+@*
+    „Was hat der Spieler auf Stufe N?“ — der Freischaltungs-Graph zeigt, woran etwas hängt,
+    diese Ansicht zeigt, wann es kommt.
+
+    Kein eigener Datenbestand: dieselben Bedingungen, nur anders gelesen. Die Stufe erbt sich
+    über den Graphen, weil ein Skill, der einen Skill von Stufe 10 voraussetzt, selbst
+    frühestens auf Stufe 10 zu haben ist.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Title="@L["Heading"]" Subtitle="@Subtitle" Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/techtree">@L["ToGraph"]</MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_entries is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_entries.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Timeline" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["EmptyHint"]</MudText>
+    </div>
+}
+else
+{
+    <MudStack Spacing="4">
+        @* Ein Band je Stufe, aufsteigend. Lücken und Ballungen sieht man daran, dass ein
+           Band leer bleibt oder überquillt — genau die Frage der Ansicht. *@
+        @foreach (var band in Bands)
+        {
+            <MudPaper Elevation="0" Class="gdm-panel">
+                <div class="gdm-panel-head pa-3 d-flex align-center justify-space-between">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">
+                        @(band.Key is { } level ? L["LevelHeading", level] : L["AnytimeHeading"])
+                    </MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Count", band.Count()]</MudText>
+                </div>
+
+                <div class="gdm-chips pa-3">
+                    @foreach (var entry in band)
+                    {
+                        <MudLink Href="@($"{ModuleRegistry.Get(entry.ModuleKey).Route}/{entry.EntityId}")"
+                                 Underline="Underline.None" Color="Color.Inherit"
+                                 Class="gdm-count-chip">
+                            <span>@entry.Name</span>
+                            <span class="gdm-mono">@Modules.NameOrKey(entry.ModuleKey)</span>
+                            @* Geerbt heißt: Die Stufe steht an einer Voraussetzung, nicht an
+                               diesem Inhalt selbst. *@
+                            @if (entry.IsInherited)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.SubdirectoryArrowRight"
+                                         Size="Size.Small"
+                                         Color="Color.Secondary"
+                                         Title="@L["InheritedHint"]" />
+                            }
+                        </MudLink>
+                    }
+                </div>
+            </MudPaper>
+        }
+    </MudStack>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.TechTree);
+
+    private List<ProgressionEntry>? _entries;
+
+    private string Subtitle => _entries is null
+        ? L["Loading"]
+        : L["SubtitleCount", _entries.Count(entry => entry.Level is not null), _entries.Count];
+
+    private List<BreadcrumbItem> Breadcrumbs =>
+    [
+        new(Modules.Name(Module), "/modules/techtree"),
+        new(L["Heading"], null, disabled: true)
+    ];
+
+    /// <summary>
+    /// Die Bänder: erst die Stufen aufsteigend, „jederzeit“ zuletzt. Es steht am Ende und
+    /// nicht am Anfang, weil die Frage der Seite die nach dem Verlauf ist — was ohne Stufe
+    /// kommt, ist die Ausnahme.
+    /// </summary>
+    private IEnumerable<IGrouping<int?, ProgressionEntry>> Bands =>
+        (_entries ?? [])
+            .GroupBy(entry => entry.Level)
+            .OrderBy(band => band.Key ?? int.MaxValue);
+
+    protected override async Task OnInitializedAsync() =>
+        _entries = await Progression.GetProgressionAsync(await Project.GetCurrentIdAsync());
+}

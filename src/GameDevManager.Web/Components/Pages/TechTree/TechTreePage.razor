@@ -17,6 +17,13 @@
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
+        @* Derselbe Bestand, andere Frage: Der Graph zeigt, woran etwas hängt, die
+           Fortschritts-Sicht, wann es kommt. *@
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Timeline"
+                   Href="/modules/techtree/fortschritt">
+            @L["ToProgression"]
+        </MudButton>
         <MudButton Variant="Variant.Outlined" Href="/modules/statistics">@L["ToStatistics"]</MudButton>
     </Actions>
 </ModuleHeader>

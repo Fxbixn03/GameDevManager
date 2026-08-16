@@ -302,6 +302,8 @@ Eine eigene Tabelle hätte dieselbe Aussage ein zweites Mal gespeichert und wär
 - **Die Tiefe ist der längste Weg**, berechnet über eine topologische Sortierung nach Kahn — nicht der kürzeste: Was zwei Voraussetzungen hat, gehört hinter beide.
 - **Ringe** sind der Health Check dazu, derselbe Fall wie zyklische Rezepte eine Ebene höher: Alles im Ring wartet auf sich selbst. Sie erscheinen auf dem Dashboard und der Statistik-Seite; im Bild sind ihre Knoten gestrichelt.
 
+**Die Fortschritts-Sicht** (`ProgressionService`, Seite `/modules/techtree/fortschritt`) liest denselben Graphen mit einer anderen Frage: nicht *woran* hängt etwas, sondern *wann* kommt es. Grundlage ist `ConditionKind.PlayerLevel` in denselben Slots. Drei Dinge: **Die Stufe erbt sich über den Graphen** — was einen Skill von Stufe 10 voraussetzt, ist selbst frühestens auf Stufe 10 zu haben; ohne das stünde die halbe Kette in der Spalte „jederzeit“. Genommen wird die **höchste** Stufe auf dem Weg: Wer zwei Voraussetzungen hat, wartet auf die spätere. Und die Bedingungssätze werden über `Include` geladen und im Speicher gefiltert — ein `Where` innerhalb eines `SelectMany` über eine Navigationsliste verlangt SQL `APPLY`, das SQLite nicht kennt.
+
 Bedingungen ohne Zielentität („Spieler hat Stufe 20“) sind Voraussetzungen, aber keine Knoten — sie bleiben draußen. Ein Ziel, das es nicht mehr gibt, fällt samt seiner Kante heraus; dass es fehlt, meldet der Health Check „unerfüllbare Bedingungen“.
 
 ### Formeln und Levelkurven

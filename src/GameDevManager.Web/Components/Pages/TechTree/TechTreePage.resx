@@ -67,6 +67,9 @@
   <data name="SubtitleCount" xml:space="preserve">
     <value>{0} Knoten, {1} Voraussetzungen</value>
   </data>
+  <data name="ToProgression" xml:space="preserve">
+    <value>Fortschritt nach Stufe</value>
+  </data>
   <data name="ToStatistics" xml:space="preserve">
     <value>Zur Statistik</value>
   </data>

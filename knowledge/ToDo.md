@@ -299,7 +299,7 @@ Providern, `FormatVersion` auf **16**) plus `EconomyService` als neunter Health 
 Grundstoff-Baum beantwortet „was kostet es von ganz unten“, die Frage hier ist „was kostet es
 beim Händler“ — und die stellt sich je Rezeptstufe.
 
-### F17 — Fortschritts-Sicht: „Was hat der Spieler auf Stufe N?"
+### F17 — Fortschritts-Sicht: „Was hat der Spieler auf Stufe N?" ✅ umgesetzt
 
 > **Als** Designer **möchte ich** eine Zeitleiste über die Spielerstufen sehen, in der steht, welche
 > Items, Skills, Quests und Gebiete auf welcher Stufe dazukommen, **damit** ich Lücken und
@@ -311,6 +311,10 @@ sortiert alles Freischaltbare nach der niedrigsten Stufenbedingung auf seinem We
 und stellt es als Bänder je Stufe dar. Inhalte ohne Stufenbezug landen in einer Spalte „jederzeit".
 
 *Aufwand: M · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `ProgressionService` über denselben Graphen wie der Freischaltungs-Baum, Seite
+`/modules/techtree/fortschritt` mit einem Band je Stufe. Die Stufe erbt sich über die
+Voraussetzungen; Inhalte ohne Stufenbezug stehen unter „jederzeit“.
 
 ### F18 — Eigene Health-Check-Regeln
 
