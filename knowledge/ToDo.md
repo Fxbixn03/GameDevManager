@@ -634,7 +634,7 @@ ausführen kann.
 
 *Aufwand: S · Migration: ja · Format: +1*
 
-### F39 — Exportstände nach Zeitplan
+### F39 — Exportstände nach Zeitplan ✅ umgesetzt
 
 > **Als** Betreiber **möchte ich** jeden Abend automatisch einen Exportstand anlegen lassen,
 > **damit** eine Sicherung existiert, auch wenn niemand daran gedacht hat.
@@ -647,6 +647,11 @@ sich seit dem letzten Stand etwas geändert hat, sonst füllt sich das Verzeichn
 Archiven und verdrängt die interessanten.
 
 *Aufwand: S · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `ExportSnapshotService.CreateScheduledAsync` plus `ScheduledExportSnapshots` als
+Hintergrunddienst. Statt `Exports:ScheduleCron` eine schlichte Uhrzeit `Exports:ScheduleTime`
+(`HH:mm`) — ein Cron-Parser wäre eine Fremdbibliothek für eine Angabe aus Stunde und Minute.
+Angelegt wird nur bei Änderungen seit dem letzten Stand.
 
 ### F40 — Design-Dokument erzeugen
 

@@ -94,6 +94,10 @@ builder.Services.Replace(ServiceDescriptor.Singleton<IPasswordPolicyProvider>(
 // Hintergrunddienste beginnen erst mit app.Run(), also nach den Migrationen weiter unten.
 builder.Services.AddHostedService<ChangeLogMaintenance>();
 
+// Legt zur eingestellten Uhrzeit je Projekt einen Exportstand an — nur, wenn sich seit dem
+// letzten Stand etwas geändert hat. Ohne „Exports:ScheduleTime“ tut er nichts.
+builder.Services.AddHostedService<ScheduledExportSnapshots>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

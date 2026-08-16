@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
@@ -62,6 +63,8 @@ public sealed record SnapshotDiff(IReadOnlyList<SnapshotFileDiff> Files)
 public partial class ExportSnapshotService(
     ExportService export,
     ExportStorageOptions options,
+    IDbContextFactory<GameDevManagerDbContext> factory,
+    IEnumerable<IModuleEntitySource> sources,
     PermissionGuard guard,
     IStringLocalizer<DataMessages> messages)
 {
@@ -212,6 +215,85 @@ public partial class ExportSnapshotService(
         {
             throw new ContentValidationException(messages["Export_SafetyNetFailed", ex.Message].Value);
         }
+    }
+
+    /// <summary>
+    /// Legt für jedes Projekt einen Stand an, an dem sich seit dem letzten etwas geändert hat —
+    /// der geplante Lauf. Gibt zurück, wie viele Stände entstanden sind.
+    /// <para>
+    /// <b>Nur bei Änderungen</b>: Sonst füllte sich das Verzeichnis Nacht für Nacht mit
+    /// identischen Archiven und verdrängte über die Aufbewahrungsgrenze genau die
+    /// interessanten. Gefragt wird nach dem jüngsten <c>UpdatedAtUtc</c> des Projekts — dieselbe
+    /// Spalte, aus der das „Weiterarbeiten“ des Dashboards lebt.
+    /// </para>
+    /// <para>
+    /// Ohne Rechteprüfung, wie der Wartungslauf des Änderungsprotokolls: Der Aufrufer ist ein
+    /// Hintergrunddienst, und außerhalb von Anfrage und Blazor-Kreis gilt ohnehin „alles
+    /// erlaubt“. Ein Fehler an einem Projekt beendet den Lauf nicht — die übrigen sollen ihren
+    /// Stand trotzdem bekommen.
+    /// </para>
+    /// </summary>
+    public async Task<int> CreateScheduledAsync(bool includeAssets, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var projectIds = await db.GameProjects
+            .AsNoTracking()
+            .Select(project => project.Id)
+            .ToListAsync(ct);
+
+        var created = 0;
+
+        foreach (var projectId in projectIds)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var latest = FindLatestExportedAtUtc(projectId);
+
+            if (latest is { } since && !await HasChangedSinceAsync(db, projectId, since, ct))
+            {
+                continue;
+            }
+
+            try
+            {
+                await CreateCoreAsync(projectId, includeAssets, ct);
+                created++;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Ein Projekt, dessen Archiv gerade nicht zu schreiben ist, bekommt seinen
+                // Stand beim nächsten Lauf — die übrigen sollen deshalb nicht ausfallen.
+            }
+        }
+
+        return created;
+    }
+
+    /// <summary>
+    /// Ob seit einem Zeitpunkt an einem Projekt etwas geändert wurde. Gefragt wird über die
+    /// <see cref="IModuleEntitySource"/>, damit ein neues Modul von selbst mitzählt.
+    /// </summary>
+    private async Task<bool> HasChangedSinceAsync(
+        GameDevManagerDbContext db, Guid projectId, DateTime since, CancellationToken ct)
+    {
+        // Der Zeitstempel eines Standes kommt aus seinem Dateinamen und trägt nur ganze
+        // Sekunden. Eine Entität, die in derselben Sekunde gespeichert wurde, steckt damit
+        // bereits im Stand — ohne diese Sekunde Luft hielte der Lauf jeden Stand für veraltet
+        // und legte Nacht für Nacht einen neuen an.
+        var threshold = since.AddSeconds(1);
+
+        foreach (var source in sources)
+        {
+            var recent = await source.RecentAsync(db, projectId, 1, ct);
+
+            if (recent.Count > 0 && recent[0].UpdatedAtUtc >= threshold)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>Alle aufbewahrten Stände des Projekts, neueste zuerst.</summary>
