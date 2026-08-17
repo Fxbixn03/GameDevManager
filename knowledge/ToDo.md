@@ -308,7 +308,7 @@ Kartenstreifen mit Drag & Drop.
 
 ## C. Balance und Auswertung
 
-### F14 — Balancing-Tabelle
+### F14 — Balancing-Tabelle ✅ umgesetzt
 
 > **Als** Balancing-Verantwortlicher **möchte ich** alle Waffen mit ihren Feldern in einer
 > sortierbaren Tabelle nebeneinander sehen und Werte direkt in der Zelle ändern, **damit** ich
@@ -322,6 +322,18 @@ Tabelle ein Werkzeug. Speichern je Zelle wie im Übersetzungsraster — eine Bal
 über hunderte Änderungen, ein vergessener Klick verlöre sie alle.
 
 *Aufwand: L · Migration: nein · Format: unverändert*
+
+**Umgesetzt** als **Modus derselben Seite wie F27** und nicht als zweite: Der Schalter „Werte
+bearbeiten“ auf `/modules/views` macht die Zahlenspalten editierbar und blendet Mittelwert,
+Min/Max und die Abweichung je Zelle ein. Eine eigene Seite wäre dieselbe Tabelle ein zweites
+Mal — der Unterschied ist ein Modus, kein Werkzeug. Vier Dinge: **Gespeichert wird je Zelle**
+über `BulkEditService.SetFieldValueAsync` mit einer einzigen GUID — verfolgt statt
+`ExecuteUpdate`, damit Schreibschutz, Änderungsprotokoll und die Grenzen des Feldes genauso
+greifen wie in der Maske. **Nur Zahlen** sind in der Zelle bearbeitbar; für Texte, Referenzen
+und Stichwortlisten führt der Weg weiter über die Maske, wo die passende Eingabe steht.
+**Gerechnet wird über die gefundenen Zeilen**, nicht über den ganzen Bestand: Wer nach „Waffen“
+filtert, will den Durchschnitt der Waffen. Und die **Abweichung ist ein Schwellwert** (ab 50 %
+orange) und keine Farbskala — die Frage lautet „ist das ein Ausreißer?“.
 
 ### F15 — Loot-Simulator ✅ umgesetzt
 

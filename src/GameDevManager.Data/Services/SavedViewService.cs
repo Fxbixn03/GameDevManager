@@ -6,6 +6,24 @@ using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
+/// <summary>
+/// Die Kennzahlen einer Zahlenspalte — die Grundlage der Balancing-Tabelle (F14).
+/// <para>
+/// Der <b>Mittelwert</b> ist die Zahl, gegen die man Ausreißer erkennt; Minimum und Maximum
+/// spannen den Bereich auf, in dem sich die Werte bewegen sollten. Gezählt wird nur, was
+/// gefüllt ist: Ein leeres Feld ist kein Wert von null, sondern eine offene Stelle.
+/// </para>
+/// </summary>
+public sealed record ColumnStatistics(Guid FieldDefinitionId, int Count, double Average, double Min, double Max)
+{
+    /// <summary>
+    /// Die Abweichung eines Wertes vom Mittelwert in Prozent. <c>null</c>, wenn der Mittelwert
+    /// null ist — dann wäre jede Abweichung unendlich groß und die Auskunft wertlos.
+    /// </summary>
+    public double? DeviationOf(double value) =>
+        Math.Abs(Average) < double.Epsilon ? null : (value - Average) / Math.Abs(Average) * 100d;
+}
+
 /// <summary>Eine gespeicherte Ansicht, wie die Oberfläche sie braucht.</summary>
 public sealed record SavedViewRow(
     Guid Id, string ModuleKey, string Name, ContentFilter Filter, IReadOnlyList<Guid> ColumnFieldIds);
@@ -131,6 +149,40 @@ public class SavedViewService(
         }
 
         return rows;
+    }
+
+    /// <summary>
+    /// Die Kennzahlen der Zahlenspalten über die gefundenen Zeilen — je Spalte Mittelwert,
+    /// Minimum und Maximum.
+    /// <para>
+    /// Gerechnet wird über <b>genau die Zeilen, die dastehen</b>, und nicht über den ganzen
+    /// Bestand: Wer nach „Waffen“ filtert, will den Durchschnitt der Waffen sehen und nicht
+    /// den aller Items. Nur Zahlenfelder — bei einem Text gäbe es keinen Mittelwert.
+    /// </para>
+    /// </summary>
+    public static List<ColumnStatistics> Summarize(
+        IReadOnlyList<ContentRow> rows, IReadOnlyList<FieldDefinition> columns)
+    {
+        var statistics = new List<ColumnStatistics>();
+
+        foreach (var column in columns.Where(column =>
+            column.Type is ContentFieldType.Integer or ContentFieldType.Decimal or ContentFieldType.Formula))
+        {
+            var numbers = rows
+                .Select(row => row.Values.TryGetValue(column.Id, out var value) ? value.NumberValue : null)
+                .OfType<double>()
+                .ToList();
+
+            if (numbers.Count == 0)
+            {
+                continue;
+            }
+
+            statistics.Add(new ColumnStatistics(
+                column.Id, numbers.Count, numbers.Average(), numbers.Min(), numbers.Max()));
+        }
+
+        return statistics;
     }
 
     /// <summary>

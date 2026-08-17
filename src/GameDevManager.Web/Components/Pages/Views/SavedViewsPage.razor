@@ -1,5 +1,6 @@
 @page "/modules/views"
 @inject SavedViewService Views
+@inject BulkEditService Bulk
 @inject ContentTypeService ContentTypes
 @inject TagService Tags
 @inject ProjectContext Project
@@ -18,12 +19,25 @@
     Die sind je Modul eigen gebaut (Kachelraster, Tabelle, Zeitstreifen), und dieselbe Leiste
     zwanzigmal nachzubauen hieße, sie zwanzigmal zu pflegen — dieselbe Überlegung wie bei der
     Massenbearbeitung. Über die IModuleEntitySource deckt eine Seite alle ab, auch die künftigen.
+
+    Dieselbe Seite trägt die Balancing-Tabelle (F14): Der Schalter „Werte bearbeiten“ macht die
+    Zahlenspalten editierbar und blendet Mittelwert und Abweichung ein. Eine zweite Seite dafür
+    wäre dieselbe Tabelle ein zweites Mal — der Unterschied ist ein Modus, kein Werkzeug.
 *@
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
+        @if (_moduleKey is not null && _rows.Count > 0)
+        {
+            <MudSwitch T="bool"
+                       Value="_editing"
+                       ValueChanged="ToggleEditingAsync"
+                       Color="Color.Primary"
+                       Disabled="@(!_permissions.CanWrite)"
+                       Label="@L["EditValues"]" />
+        }
         @if (_moduleKey is not null)
         {
             @* Der Name steht neben dem Knopf statt in einem Dialog: Wer eine Ansicht speichert,
@@ -268,18 +282,30 @@ else
         <MudSimpleTable Dense="true" Hover="true" Elevation="0" Style="overflow-x:auto;">
             <thead>
                 <tr>
-                    <th>@L["ColumnName"]</th>
+                    <th>
+                        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="@(() => SortBy(null))">
+                            @L["ColumnName"] @SortMark(null)
+                        </MudButton>
+                    </th>
                     <th>@L["ColumnType"]</th>
                     <th>@L["ColumnStatus"]</th>
                     @foreach (var definition in VisibleColumns)
                     {
-                        <th>@definition.Name</th>
+                        <th>
+                            @* Sortiert wird in der Oberfläche und nicht in der Abfrage: Der
+                               Wert steht je nach Feldtyp in einer anderen Spalte, und die
+                               Trefferliste einer Ansicht ist ohnehin schon geladen. *@
+                            <MudButton Size="Size.Small" Variant="Variant.Text"
+                                       OnClick="@(() => SortBy(definition.Id))">
+                                @definition.Name @SortMark(definition.Id)
+                            </MudButton>
+                        </th>
                     }
                     <th>@L["ColumnUpdated"]</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var row in _rows)
+                @foreach (var row in SortedRows)
                 {
                     <tr>
                         <td>
@@ -299,7 +325,30 @@ else
                         @foreach (var definition in VisibleColumns)
                         {
                             <td>
-                                <MudText Typo="Typo.body2" Class="gdm-mono">@Cell(row, definition)</MudText>
+                                @if (_editing && IsNumeric(definition))
+                                {
+                                    @* Je Zelle gespeichert wie im Übersetzungsraster: Eine
+                                       Balancing-Sitzung geht über hunderte Änderungen, ein
+                                       vergessener Klick auf „Speichern“ verlöre sie alle. *@
+                                    <MudNumericField T="double?"
+                                                     Value="NumberOf(row, definition)"
+                                                     ValueChanged="@(value => SaveCellAsync(row, definition, value))"
+                                                     Variant="Variant.Text"
+                                                     Margin="Margin.Dense"
+                                                     HideSpinButtons="true"
+                                                     Style="max-width:110px;" />
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Class="gdm-mono">@Cell(row, definition)</MudText>
+                                }
+
+                                @if (_editing && Deviation(row, definition) is { } deviation)
+                                {
+                                    <MudText Typo="Typo.caption" Color="@DeviationColor(deviation)">
+                                        @L["DeviationValue", deviation.ToString("+0;-0;0")]
+                                    </MudText>
+                                }
                             </td>
                         }
                         <td>
@@ -310,6 +359,31 @@ else
                     </tr>
                 }
             </tbody>
+            @if (_editing && _statistics.Count > 0)
+            {
+                <tfoot>
+                    <tr>
+                        <td colspan="3">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["AverageRow"]</MudText>
+                        </td>
+                        @foreach (var definition in VisibleColumns)
+                        {
+                            <td>
+                                @if (_statistics.FirstOrDefault(entry => entry.FieldDefinitionId == definition.Id) is { } stats)
+                                {
+                                    <MudText Typo="Typo.caption" Class="gdm-mono">
+                                        @stats.Average.ToString("0.##")
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @L["MinMax", stats.Min.ToString("0.##"), stats.Max.ToString("0.##")]
+                                    </MudText>
+                                }
+                            </td>
+                        }
+                        <td></td>
+                    </tr>
+                </tfoot>
+            }
         </MudSimpleTable>
     </MudPaper>
 }
@@ -337,6 +411,12 @@ else
     private List<FieldDefinition> _fields = [];
     private List<SavedViewRow> _views = [];
     private bool _loading;
+    private bool _editing;
+    private List<ColumnStatistics> _statistics = [];
+
+    /// <summary>Nach welcher Spalte sortiert wird — <c>null</c> heißt „nach Name“.</summary>
+    private Guid? _sortField;
+    private bool _sortDescending;
 
     private List<ModuleDefinition> AvailableModules =>
     [
@@ -425,6 +505,8 @@ else
         {
             _rows = await Views.QueryAsync(
                 await Project.GetCurrentIdAsync(), _moduleKey, _filter, [.. _columns]);
+
+            _statistics = SavedViewService.Summarize(_rows, VisibleColumns);
         }
         catch (ContentValidationException ex)
         {
@@ -434,6 +516,121 @@ else
         finally
         {
             _loading = false;
+        }
+    }
+
+    /// <summary>
+    /// Nur Zahlen lassen sich in der Zelle sinnvoll bearbeiten und mitteln. Für Texte,
+    /// Referenzen und Stichwortlisten führt der Weg weiter über die Maske — dort steht die
+    /// passende Eingabe, und eine zweite Fassung davon liefe beim ersten neuen Feldtyp
+    /// auseinander.
+    /// </summary>
+    /// <summary>
+    /// Die Zeilen in der gewählten Sortierung. Zahlen numerisch, alles andere als Text —
+    /// „Schaden 100“ vor „Schaden 9“ wäre in einer Balancing-Tabelle die falsche Auskunft.
+    /// Leere Zellen stehen immer hinten, egal in welcher Richtung: Sie sind kein kleiner Wert,
+    /// sondern eine offene Stelle.
+    /// </summary>
+    private List<ContentRow> SortedRows
+    {
+        get
+        {
+            if (_sortField is not { } fieldId)
+            {
+                return _sortDescending
+                    ? [.. _rows.OrderByDescending(row => row.Name)]
+                    : [.. _rows.OrderBy(row => row.Name)];
+            }
+
+            var numeric = VisibleColumns.FirstOrDefault(definition => definition.Id == fieldId) is { } column
+                && IsNumeric(column);
+
+            var ordered = numeric
+                ? _rows.OrderBy(row => NumberOf(row, fieldId) is null)
+                    .ThenBy(row => _sortDescending ? -(NumberOf(row, fieldId) ?? 0) : NumberOf(row, fieldId) ?? 0)
+                : _rows.OrderBy(row => TextOf(row, fieldId).Length == 0)
+                    .ThenBy(row => TextOf(row, fieldId), StringComparer.CurrentCultureIgnoreCase);
+
+            return _sortDescending && !numeric ? [.. ordered.Reverse()] : [.. ordered];
+        }
+    }
+
+    private static double? NumberOf(ContentRow row, Guid fieldId) =>
+        row.Values.TryGetValue(fieldId, out var value) ? value.NumberValue : null;
+
+    private static string TextOf(ContentRow row, Guid fieldId) =>
+        row.Values.TryGetValue(fieldId, out var value) ? value.TextValue ?? string.Empty : string.Empty;
+
+    private void SortBy(Guid? fieldId)
+    {
+        // Derselbe Kopf noch einmal dreht die Richtung um — das ist überall so.
+        _sortDescending = _sortField == fieldId && !_sortDescending;
+        _sortField = fieldId;
+    }
+
+    private string SortMark(Guid? fieldId) =>
+        _sortField == fieldId ? (_sortDescending ? "↓" : "↑") : string.Empty;
+
+    private static bool IsNumeric(FieldDefinition definition) =>
+        definition.Type is ContentFieldType.Integer or ContentFieldType.Decimal;
+
+    private static double? NumberOf(ContentRow row, FieldDefinition definition) =>
+        row.Values.TryGetValue(definition.Id, out var value) ? value.NumberValue : null;
+
+    private double? Deviation(ContentRow row, FieldDefinition definition)
+    {
+        if (NumberOf(row, definition) is not { } number)
+        {
+            return null;
+        }
+
+        return _statistics
+            .FirstOrDefault(entry => entry.FieldDefinitionId == definition.Id)
+            ?.DeviationOf(number);
+    }
+
+    /// <summary>
+    /// Ab 50 Prozent Abweichung wird die Zahl orange. Eine Schwelle und keine Farbskala: Die
+    /// Frage lautet „ist das ein Ausreißer?“, und die beantwortet ein Schwellwert.
+    /// </summary>
+    private static Color DeviationColor(double deviation) =>
+        Math.Abs(deviation) >= 50 ? Color.Warning : Color.Secondary;
+
+    private async Task ToggleEditingAsync(bool on)
+    {
+        _editing = on;
+        await RunAsync();
+    }
+
+    private async Task SaveCellAsync(ContentRow row, FieldDefinition definition, double? value)
+    {
+        if (_moduleKey is null)
+        {
+            return;
+        }
+
+        var template = new FieldValue
+        {
+            FieldDefinitionId = definition.Id,
+            OwnerEntityId = row.Id,
+            OwnerModuleKey = _moduleKey,
+            NumberValue = value
+        };
+
+        try
+        {
+            // Derselbe Weg wie in der Massenbearbeitung, nur mit einer GUID: verfolgt statt
+            // ExecuteUpdate, damit Schreibschutz und Änderungsprotokoll greifen — und die
+            // Grenzen des Feldes werden dabei genauso geprüft wie in der Maske.
+            await Bulk.SetFieldValueAsync(
+                await Project.GetCurrentIdAsync(), _moduleKey, [row.Id], definition.Id, template);
+
+            await RunAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            await RunAsync();
         }
     }
 

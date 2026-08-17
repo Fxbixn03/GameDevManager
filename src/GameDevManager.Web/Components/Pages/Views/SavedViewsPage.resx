@@ -123,6 +123,18 @@
   <data name="SavedMessage" xml:space="preserve">
     <value>Ansicht „{0}“ gespeichert.</value>
   </data>
+  <data name="EditValues" xml:space="preserve">
+    <value>Werte bearbeiten</value>
+  </data>
+  <data name="DeviationValue" xml:space="preserve">
+    <value>{0} % zum Mittel</value>
+  </data>
+  <data name="AverageRow" xml:space="preserve">
+    <value>Mittelwert (Min/Max)</value>
+  </data>
+  <data name="MinMax" xml:space="preserve">
+    <value>{0} … {1}</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>ja</value>
   </data>

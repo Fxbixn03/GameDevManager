@@ -297,6 +297,69 @@ public class SavedViewTests
         Assert.Equal(fixture.Weapon.Id, stored.Filter.ContentTypeId);
     }
 
+    // -------------------------------------------------------------- Balancing (F14)
+
+    [Fact]
+    public async Task Die_Spaltenstatistik_rechnet_ueber_die_gefundenen_Zeilen()
+    {
+        using var test = new TestDatabase();
+        var fixture = await SeedAsync(test);
+
+        await SaveItemAsync(test, "Dolch", fixture.Weapon.Id, value: (fixture.Damage, 10));
+        await SaveItemAsync(test, "Schwert", fixture.Weapon.Id, value: (fixture.Damage, 20));
+        await SaveItemAsync(test, "Zweihaender", fixture.Weapon.Id, value: (fixture.Damage, 60));
+
+        // Ein Item ohne Wert zaehlt nicht mit: Ein leeres Feld ist keine Null, sondern eine
+        // offene Stelle.
+        await SaveItemAsync(test, "Ohne Wert", fixture.Weapon.Id);
+
+        var rows = await test.GetService<SavedViewService>().QueryAsync(
+            test.ProjectId, ModuleKeys.Items, new ContentFilter(), [fixture.Damage.Id]);
+
+        var stats = Assert.Single(SavedViewService.Summarize(rows, [fixture.Damage]));
+
+        Assert.Equal(3, stats.Count);
+        Assert.Equal(30, stats.Average);
+        Assert.Equal(10, stats.Min);
+        Assert.Equal(60, stats.Max);
+
+        // Der Ausreisser weicht um 100 % nach oben ab - genau die Zahl, die die Tabelle zeigt.
+        Assert.Equal(100, stats.DeviationOf(60)!.Value, 3);
+    }
+
+    [Fact]
+    public void Ohne_Mittelwert_gibt_es_keine_Abweichung()
+    {
+        var stats = new ColumnStatistics(Guid.NewGuid(), 2, Average: 0, Min: -5, Max: 5);
+
+        // Jede Abweichung von null waere unendlich gross - die Auskunft waere wertlos.
+        Assert.Null(stats.DeviationOf(5));
+    }
+
+    [Fact]
+    public async Task Eine_Zelle_laesst_sich_einzeln_speichern()
+    {
+        using var test = new TestDatabase();
+        var fixture = await SeedAsync(test);
+        var item = await SaveItemAsync(test, "Dolch", fixture.Weapon.Id, value: (fixture.Damage, 10));
+
+        // Derselbe Weg wie in der Massenbearbeitung, nur mit einer GUID.
+        await test.GetService<BulkEditService>().SetFieldValueAsync(
+            test.ProjectId, ModuleKeys.Items, [item.Id], fixture.Damage.Id,
+            new FieldValue
+            {
+                FieldDefinitionId = fixture.Damage.Id,
+                OwnerEntityId = item.Id,
+                OwnerModuleKey = ModuleKeys.Items,
+                NumberValue = 42
+            });
+
+        var rows = await test.GetService<SavedViewService>().QueryAsync(
+            test.ProjectId, ModuleKeys.Items, new ContentFilter(), [fixture.Damage.Id]);
+
+        Assert.Equal(42, Assert.Single(rows).Values[fixture.Damage.Id].NumberValue);
+    }
+
     [Fact]
     public async Task Ansichten_lassen_sich_loeschen()
     {
