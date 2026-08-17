@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -13,16 +13,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Fortschritt – GameDevManager</value>
+    <value>Fortschritt â€“ GameDevManager</value>
   </data>
   <data name="Heading" xml:space="preserve">
     <value>Fortschritt nach Stufe</value>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>lädt …</value>
+    <value>lÃ¤dt â€¦</value>
   </data>
   <data name="SubtitleCount" xml:space="preserve">
-    <value>{0} von {1} Inhalten hängen an einer Spielerstufe.</value>
+    <value>{0} von {1} Inhalten hÃ¤ngen an einer Spielerstufe.</value>
   </data>
   <data name="ToGraph" xml:space="preserve">
     <value>Zum Graphen</value>
@@ -31,7 +31,7 @@
     <value>Nichts freizuschalten</value>
   </data>
   <data name="EmptyHint" xml:space="preserve">
-    <value>Diese Ansicht liest dieselben Bedingungen wie der Freischaltungs-Graph. Ohne Bedingungen, die auf andere Entitäten zeigen, gibt es keinen Verlauf.</value>
+    <value>Diese Ansicht liest dieselben Bedingungen wie der Freischaltungs-Graph. Ohne Bedingungen, die auf andere EntitÃ¤ten zeigen, gibt es keinen Verlauf.</value>
   </data>
   <data name="LevelHeading" xml:space="preserve">
     <value>Ab Stufe {0}</value>
@@ -45,4 +45,8 @@
   <data name="InheritedHint" xml:space="preserve">
     <value>Die Stufe steht an einer Voraussetzung, nicht an diesem Inhalt selbst.</value>
   </data>
+  <data name="ToState" xml:space="preserve">
+    <value>Zustands-Sicht</value>
+  </data>
 </root>
+

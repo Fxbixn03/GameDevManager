@@ -1,7 +1,5 @@
 @page "/modules/dialogs/{Id:guid}/play"
 @inject DialogueService Dialogues
-@inject ReferenceService References
-@inject ConditionLabels Labels
 @inject ProjectContext Project
 @inject IStringLocalizer<DialoguePlay> L
 
@@ -10,9 +8,8 @@
     die Struktur — hier steht das Erlebnis: Wo eine Bedingung den Dialog stumm abbricht, sieht
     man es, bevor es die Engine tut.
 
-    Die Zustandsleiste bietet genau die Stellschrauben an, die in den Bedingungen dieses
-    Dialogs vorkommen — ein Panel mit allen Items des Projekts wäre Rauschen. Gerechnet wird im
-    ConditionEvaluator der Datenschicht; von demselben Kern lebt später die Zustands-Sicht (F19).
+    Die Zustandsleiste ist das GameStateAssumptionPanel — dieselbe Komponente wie in der
+    Zustands-Sicht (F19); gerechnet wird im ConditionEvaluator der Datenschicht.
 *@
 
 <PageTitle>@L["PageTitle", _data?.Dialogue.Name ?? string.Empty]</PageTitle>
@@ -50,99 +47,9 @@ else
 
         @* ------------------------------------------------------------ Spielzustand *@
         <MudItem xs="12" md="4">
-            <MudPaper Elevation="0" Class="gdm-panel pa-4">
-                <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["StateHeading"]</MudText>
-
-                <MudStack Spacing="3">
-                    <MudNumericField T="int"
-                                     @bind-Value="_playerLevel"
-                                     Label="@L["PlayerLevelLabel"]"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Min="1" />
-
-                    @foreach (var item in _itemKnobs)
-                    {
-                        <MudNumericField T="double"
-                                         Value="@_itemCounts.GetValueOrDefault(item.Id)"
-                                         ValueChanged="@((double v) => _itemCounts[item.Id] = v)"
-                                         Label="@L["ItemCountLabel", item.Name]"
-                                         Variant="Variant.Outlined"
-                                         Margin="Margin.Dense"
-                                         Min="0" />
-                    }
-
-                    @foreach (var currency in _currencyKnobs)
-                    {
-                        <MudNumericField T="double"
-                                         Value="@_currencyAmounts.GetValueOrDefault(currency.Id)"
-                                         ValueChanged="@((double v) => _currencyAmounts[currency.Id] = v)"
-                                         Label="@L["CurrencyLabel", currency.Name]"
-                                         Variant="Variant.Outlined"
-                                         Margin="Margin.Dense"
-                                         Min="0" />
-                    }
-
-                    @foreach (var flag in _flagKnobs)
-                    {
-                        <MudSwitch T="bool"
-                                   Value="@_activeFlags.Contains(flag)"
-                                   ValueChanged="@((bool v) => Toggle(_activeFlags, flag, v))"
-                                   Color="Color.Primary"
-                                   Label="@L["FlagLabel", flag]" />
-                    }
-
-                    @foreach (var state in _worldKnobs)
-                    {
-                        <MudSwitch T="bool"
-                                   Value="@_activeWorld.Contains(state.Id)"
-                                   ValueChanged="@((bool v) => Toggle(_activeWorld, state.Id, v))"
-                                   Color="Color.Primary"
-                                   Label="@($"{state.Name} ({Labels.Describe(state.Kind)})")" />
-                    }
-
-                    @foreach (var npc in _npcKnobs)
-                    {
-                        <MudSwitch T="bool"
-                                   Value="@_defeated.Contains(npc.Id)"
-                                   ValueChanged="@((bool v) => Toggle(_defeated, npc.Id, v))"
-                                   Color="Color.Primary"
-                                   Label="@L["DefeatedLabel", npc.Name]" />
-                    }
-
-                    @foreach (var entry in _unlockKnobs)
-                    {
-                        <MudSwitch T="bool"
-                                   Value="@_unlocked.Contains(entry.Id)"
-                                   ValueChanged="@((bool v) => Toggle(_unlocked, entry.Id, v))"
-                                   Color="Color.Primary"
-                                   Label="@L["UnlockedLabel", entry.Name]" />
-                    }
-
-                    @foreach (var quest in _questKnobs)
-                    {
-                        <MudTextField T="string"
-                                      Value="@_questStates.GetValueOrDefault(quest.Id)"
-                                      ValueChanged="@((string v) => _questStates[quest.Id] = v)"
-                                      Label="@L["QuestStateLabel", quest.Name]"
-                                      Variant="Variant.Outlined"
-                                      Margin="Margin.Dense"
-                                      Immediate="true" />
-                    }
-
-                    @if (_hasCustom)
-                    {
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CustomHint"]</MudText>
-                    }
-
-                    @if (_itemKnobs.Count == 0 && _currencyKnobs.Count == 0 && _flagKnobs.Count == 0
-                        && _worldKnobs.Count == 0 && _npcKnobs.Count == 0 && _unlockKnobs.Count == 0
-                        && _questKnobs.Count == 0)
-                    {
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoKnobsHint"]</MudText>
-                    }
-                </MudStack>
-            </MudPaper>
+            <GameStateAssumptionPanel @ref="_statePanel"
+                                      Conditions="_allConditions"
+                                      OnChanged="@(() => InvokeAsync(StateHasChanged))" />
         </MudItem>
 
         @* --------------------------------------------------------------- Gespräch *@
@@ -242,29 +149,10 @@ else
     public Guid Id { get; set; }
 
     private DialoguePlayData? _data;
+    private List<Condition> _allConditions = [];
+    private GameStateAssumptionPanel? _statePanel;
     private bool _notFound;
 
-    // ------------------------------------------------------------- Stellschrauben
-    private int _playerLevel = 1;
-    private readonly Dictionary<Guid, double> _itemCounts = [];
-    private readonly Dictionary<Guid, double> _currencyAmounts = [];
-    private readonly HashSet<string> _activeFlags = new(StringComparer.OrdinalIgnoreCase);
-    private readonly HashSet<Guid> _activeWorld = [];
-    private readonly HashSet<Guid> _defeated = [];
-    private readonly HashSet<Guid> _unlocked = [];
-    private readonly Dictionary<Guid, string> _questStates = [];
-
-    private List<(Guid Id, string Name)> _itemKnobs = [];
-    private List<(Guid Id, string Name)> _currencyKnobs = [];
-    private List<string> _flagKnobs = [];
-    private List<(Guid Id, string Name, ConditionKind Kind)> _worldKnobs = [];
-    private List<(Guid Id, string Name)> _npcKnobs = [];
-    private List<(Guid Id, string Name)> _unlockKnobs = [];
-    private List<(Guid Id, string Name)> _questKnobs = [];
-    private readonly Dictionary<Guid, string> _targetNames = [];
-    private bool _hasCustom;
-
-    // ------------------------------------------------------------------ Simulation
     private readonly List<TranscriptEntry> _transcript = [];
     private Guid? _currentLineId;
     private DialogueLine? _silentLine;
@@ -279,17 +167,7 @@ else
     private ConditionSetResult? DialogueResult =>
         _data is null ? null : ResultFor(_data.Dialogue.Id);
 
-    private GameStateAssumption State => new()
-    {
-        PlayerLevel = _playerLevel,
-        Items = _itemCounts,
-        Currencies = _currencyAmounts,
-        Flags = _activeFlags,
-        ActiveWorldStates = _activeWorld,
-        DefeatedNpcs = _defeated,
-        Unlocked = _unlocked,
-        QuestStates = _questStates
-    };
+    private GameStateAssumption State => _statePanel?.State ?? new GameStateAssumption();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -302,107 +180,14 @@ else
             return;
         }
 
-        await BuildKnobsAsync(projectId);
+        _allConditions = [.. _data.AvailabilityByOwner.Values.SelectMany(set => set.Conditions)];
         Restart();
-    }
-
-    /// <summary>
-    /// Baut die Zustandsleiste aus den Bedingungen dieses Dialogs — genau die Stellschrauben,
-    /// die hier etwas bewirken, keine anderen.
-    /// </summary>
-    private async Task BuildKnobsAsync(Guid projectId)
-    {
-        var conditions = _data!.AvailabilityByOwner.Values
-            .SelectMany(set => set.Conditions)
-            .ToList();
-
-        _hasCustom = conditions.Any(condition => condition.Kind == ConditionKind.Custom);
-
-        _flagKnobs =
-        [
-            .. conditions
-                .Where(condition => condition.Kind == ConditionKind.Flag
-                    && !string.IsNullOrWhiteSpace(condition.TextValue))
-                .Select(condition => condition.TextValue!.Trim())
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(flag => flag, StringComparer.OrdinalIgnoreCase)
-        ];
-
-        _itemKnobs = await ResolveAsync(conditions, ConditionKind.HasItem);
-        _currencyKnobs = await ResolveAsync(conditions, ConditionKind.HasCurrency);
-        _npcKnobs = await ResolveAsync(conditions, ConditionKind.NpcDefeated);
-        _questKnobs = await ResolveAsync(conditions, ConditionKind.QuestState);
-
-        var world = new List<(Guid, string, ConditionKind)>();
-        foreach (var kind in new[] { ConditionKind.TimeOfDay, ConditionKind.Weather, ConditionKind.Biome })
-        {
-            world.AddRange((await ResolveAsync(conditions, kind)).Select(entry => (entry.Id, entry.Name, kind)));
-        }
-        _worldKnobs = world;
-
-        // Freischaltbar ist alles — das Modul steht an der Bedingung selbst.
-        var unlockables = new List<(Guid Id, string Name)>();
-        foreach (var perModule in conditions
-            .Where(condition => condition.Kind == ConditionKind.Unlocked
-                && condition.TargetEntityId is not null
-                && condition.TargetModuleKey is not null)
-            .GroupBy(condition => condition.TargetModuleKey!))
-        {
-            var ids = perModule.Select(condition => condition.TargetEntityId!.Value).Distinct().ToList();
-            var names = await References.ResolveNamesAsync(perModule.Key, ids);
-            foreach (var entry in names)
-            {
-                _targetNames[entry.Key] = entry.Value;
-            }
-            unlockables.AddRange(ids.Select(id => (id, names.GetValueOrDefault(id, L["UnknownTarget"].Value))));
-        }
-        _unlockKnobs = [.. unlockables.OrderBy(entry => entry.Name)];
-    }
-
-    /// <summary>Die Ziele einer Bedingungsart samt Namen — über das Modul, das die Art festlegt.</summary>
-    private async Task<List<(Guid Id, string Name)>> ResolveAsync(
-        List<Condition> conditions, ConditionKind kind)
-    {
-        var sample = conditions.FirstOrDefault(condition => condition.Kind == kind);
-        var ids = conditions
-            .Where(condition => condition.Kind == kind && condition.TargetEntityId is not null)
-            .Select(condition => condition.TargetEntityId!.Value)
-            .Distinct()
-            .ToList();
-
-        if (ids.Count == 0 || sample?.ExpectedTargetModule is not { } moduleKey)
-        {
-            return [];
-        }
-
-        var names = await References.ResolveNamesAsync(moduleKey, ids);
-        foreach (var entry in names)
-        {
-            _targetNames[entry.Key] = entry.Value;
-        }
-
-        return
-        [
-            .. ids
-                .Select(id => (id, names.GetValueOrDefault(id, L["UnknownTarget"].Value)))
-                .OrderBy(entry => entry.Item2)
-        ];
     }
 
     private ConditionSetResult ResultFor(Guid ownerId) =>
         ConditionEvaluator.Evaluate(_data!.AvailabilityByOwner.GetValueOrDefault(ownerId), State);
 
-    private static void Toggle<T>(HashSet<T> set, T value, bool active)
-    {
-        if (active)
-        {
-            set.Add(value);
-        }
-        else
-        {
-            set.Remove(value);
-        }
-    }
+    private string Describe(ConditionResult result) => _statePanel?.Describe(result) ?? string.Empty;
 
     // ------------------------------------------------------------------ Durchlauf
 
@@ -468,35 +253,6 @@ else
         line.SpeakerNpcId is { } id
             ? _data!.NpcNames.GetValueOrDefault(id, L["UnknownTarget"].Value)
             : L["SpeakerPlayer"];
-
-    /// <summary>Eine Bedingung als lesbarer Satzteil — Art, Ziel, Vergleich, was davon trägt.</summary>
-    private string Describe(ConditionResult result)
-    {
-        var condition = result.Condition;
-        var parts = new List<string> { Labels.Describe(condition.Kind) };
-
-        if (condition.TargetEntityId is { } target)
-        {
-            parts.Add(_targetNames.GetValueOrDefault(target, L["UnknownTarget"].Value));
-        }
-
-        if (condition.Kind == ConditionKind.Flag || condition.Kind == ConditionKind.QuestState)
-        {
-            parts.Add(condition.TextValue ?? string.Empty);
-        }
-
-        if (condition.UsesNumber)
-        {
-            parts.Add($"{Labels.Describe(condition.Operator)} {condition.NumberValue ?? 1}");
-        }
-
-        if (condition.UsesBoolean && condition.BooleanValue == false)
-        {
-            parts.Add(L["Negated"]);
-        }
-
-        return string.Join(" · ", parts.Where(part => !string.IsNullOrWhiteSpace(part)));
-    }
 
     private static string Shorten(string text) =>
         text.Length <= 60 ? text : string.Concat(text.AsSpan(0, 60), "…");

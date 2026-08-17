@@ -362,7 +362,7 @@ Regelarten deckt neunzig Prozent ab und lässt sich in einer Maske erfassen.
 
 *Aufwand: L · Migration: ja · Format: +1*
 
-### F19 — Bedingungen auswerten statt nur verwalten
+### F19 — Bedingungen auswerten statt nur verwalten ✅ umgesetzt
 
 > **Als** Designer **möchte ich** einen Spielzustand annehmen (Stufe 12, Nacht, Regen, hat den
 > Schlüssel) und sehen, welche Quests, Dialoge, Shop-Posten und Freischaltungen in diesem Zustand
@@ -375,6 +375,15 @@ angenommenen Zustand lässt sich viel mehr sagen, ohne die bewusste Zurückhaltu
 aufzugeben.
 
 *Aufwand: M (nach F11) · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** Seite `/modules/techtree/zustand` beim Freischaltungs-Modul, verlinkt von Graph
+und Fortschritt. Die Zustandsleiste ist als `GameStateAssumptionPanel` aus der Durchspiel-Seite
+herausgelöst — zwei Ansichten, ein Kern. `ConditionStateService` sammelt alle Bedingungssätze
+des Projekts und löst die Besitzer auf: ganze Entitäten über die `IModuleEntitySource`,
+Teilobjekte (Händler-Posten, Dialogzeilen und -antworten, Quest-Ziele, Spawn-Regeln) über
+ausdrückliche Nachschlagewege mit dem Elternteil als Sprungziel; Waisen stehen als „unbekannter
+Besitzer“ da statt zu fehlen. Gruppiert wird nach Slot, Geschlossenes zuerst samt der
+Bedingungen, an denen es liegt; ein Schalter blendet Offenes aus.
 
 ---
 

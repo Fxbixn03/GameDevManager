@@ -154,6 +154,8 @@ Das Konzept verlangt „ein einheitliches System, welches über alle Module hinw
 
 In der Oberfläche ist `<ConditionEditor OwnerId="…" OwnerModuleKey="…" Slot="…" />` überall einbindbar; `ConditionDialog` ist der Rahmen dafür, wo kein Platz für einen eigenen Abschnitt ist.
 
+**Ausgewertet** (nicht nur verwaltet) wird das System an zwei Stellen, beide über den `ConditionEvaluator` (siehe „Dialoge“): die Durchspiel-Seite eines Dialogs und die **Zustands-Sicht** `/modules/techtree/zustand` — links ein angenommener Spielzustand, rechts alle Bedingungsbesitzer des Projekts nach Slot gruppiert, Geschlossenes zuerst samt Ursachen. Die Zustandsleiste beider Seiten ist **eine** Komponente (`GameStateAssumptionPanel`): Sie baut ihre Stellschrauben aus genau den übergebenen Bedingungen und hält die aufgelösten Zielnamen, weshalb auch `Describe` dort wohnt. Der `ConditionStateService` löst die Besitzer auf — ganze Entitäten über die `IModuleEntitySource`, **Teilobjekte über ausdrückliche Nachschlagewege** (Händler-Posten, Dialogzeilen/-antworten, Quest-Ziele, Spawn-Regeln; es sind genau die Kind-Sammlungen, deren Dienste beim Löschen `EntityCleanup.DeleteForEntitiesAsync` rufen — eine neue gehört auch dort hinein), mit dem Elternteil als Sprungziel; verwaiste Sätze stehen als „unbekannter Besitzer“ da statt zu fehlen.
+
 **Beim Löschen einer Entität** räumt `EntityCleanup.DeleteForEntityAsync` Feldwerte, individuelle Felder **und** Bedingungssätze zusammen ab — an einer Stelle gebündelt, damit kein Modul eine Art davon vergisst. Hat eine Entität Teilobjekte mit eigenen GUIDs (Händler-Posten, später Dialogknoten), muss ihr Service `DeleteForEntitiesAsync` mit **allen** GUIDs aufrufen; sonst bleiben deren Bedingungen als Waisen zurück.
 
 ### Assets

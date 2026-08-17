@@ -1,0 +1,147 @@
+@page "/modules/techtree/zustand"
+@inject ConditionStateService ConditionState
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject IStringLocalizer<ConditionStatePage> L
+
+@*
+    Die Zustands-Sicht (F19): links ein angenommener Spielzustand, rechts alles, was er öffnet
+    und schließt — Quests, Dialoge, Shop-Posten, Freischaltungen, Spawns. Der Health Check
+    „unerfüllbare Bedingungen“ meldet nur, was sich ohne Spielzustand sicher sagen lässt; mit
+    einem angenommenen Zustand lässt sich viel mehr sagen, ohne seine Zurückhaltung aufzugeben.
+
+    Gerechnet wird im ConditionEvaluator, die Zustandsleiste ist dieselbe Komponente wie beim
+    Dialog-Durchspielen — zwei Ansichten, ein Kern.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module"
+              Title="@L["Heading"]"
+              Subtitle="@L["Subtitle"]"
+              Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/techtree">@L["ToGraph"]</MudButton>
+        <MudButton Variant="Variant.Outlined" Href="/modules/techtree/fortschritt">@L["ToProgression"]</MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_owners is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_owners.Count == 0)
+{
+    <MudAlert Severity="Severity.Info">@L["NoConditionsHint"]</MudAlert>
+}
+else
+{
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="4">
+            <GameStateAssumptionPanel @ref="_statePanel"
+                                      Conditions="_allConditions"
+                                      OnChanged="@(() => InvokeAsync(StateHasChanged))" />
+        </MudItem>
+
+        <MudItem xs="12" md="8">
+            <MudStack Spacing="4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <MudSwitch T="bool"
+                               @bind-Value="_closedOnly"
+                               Color="Color.Primary"
+                               Label="@L["ClosedOnlyLabel"]" />
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @L["Summary", Evaluated.Count(entry => entry.Result.Satisfied), Evaluated.Count]
+                    </MudText>
+                </MudStack>
+
+                @foreach (var group in Evaluated
+                    .Where(entry => !_closedOnly || !entry.Result.Satisfied)
+                    .GroupBy(entry => entry.Owner.Slot))
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel">
+                        <div class="gdm-panel-head pa-3">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">
+                                @SlotLabel(group.Key) (@group.Count())
+                            </MudText>
+                        </div>
+
+                        @foreach (var entry in group
+                            .OrderBy(e => e.Result.Satisfied)
+                            .ThenBy(e => e.Owner.Label)
+                            .ThenBy(e => e.Owner.Detail))
+                        {
+                            <MudLink Href="@RouteFor(entry.Owner)"
+                                     Underline="Underline.None" Color="Color.Inherit"
+                                     Class="@(entry.Result.Satisfied ? "gdm-health-row gdm-health-clean" : "gdm-health-row")">
+                                <MudIcon Icon="@(entry.Result.Satisfied ? Icons.Material.Filled.LockOpen : Icons.Material.Filled.Lock)"
+                                         Size="Size.Small"
+                                         Color="@(entry.Result.Satisfied ? Color.Success : Color.Warning)" />
+                                <span style="flex:1 1 auto;min-width:0;">
+                                    <MudText Typo="Typo.body2" Class="gdm-ellipsis">
+                                        @entry.Owner.Label@(entry.Owner.Detail is { } detail ? $" — {Shorten(detail)}" : null)
+                                    </MudText>
+                                    @if (!entry.Result.Satisfied)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Warning" Class="gdm-ellipsis">
+                                            @string.Join(" · ", entry.Result.Failed.Select(Describe))
+                                        </MudText>
+                                    }
+                                </span>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @Modules.NameOrKey(entry.Owner.OwnerModuleKey)
+                                </MudText>
+                            </MudLink>
+                        }
+                    </MudPaper>
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.TechTree);
+
+    private List<ConditionedOwner>? _owners;
+    private List<Condition> _allConditions = [];
+    private GameStateAssumptionPanel? _statePanel;
+    private bool _closedOnly;
+
+    private List<BreadcrumbItem> Breadcrumbs => [new(L["Heading"], null, disabled: true)];
+
+    private GameStateAssumption State => _statePanel?.State ?? new GameStateAssumption();
+
+    private List<(ConditionedOwner Owner, ConditionSetResult Result)> Evaluated =>
+        _owners is null
+            ? []
+            : [.. _owners.Select(owner => (owner, ConditionEvaluator.Evaluate(owner.Set, State)))];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _owners = await ConditionState.GetOwnersAsync(projectId);
+        _allConditions = [.. _owners.SelectMany(owner => owner.Set.Conditions)];
+    }
+
+    private string Describe(ConditionResult result) => _statePanel?.Describe(result) ?? string.Empty;
+
+    private static string RouteFor(ConditionedOwner owner) =>
+        ModuleRegistry.Find(owner.NavigateModuleKey) is { Implemented: true } module
+            ? $"{module.Route}/{owner.NavigateEntityId}"
+            : "/modules/techtree/zustand";
+
+    /// <summary>Die Überschrift je Slot — unbekannte Slots zeigen ihren rohen Schlüssel.</summary>
+    private string SlotLabel(string slot) => slot switch
+    {
+        ConditionSlots.Availability => L["Slot_availability"],
+        ConditionSlots.Shop => L["Slot_shop"],
+        ConditionSlots.Completion => L["Slot_completion"],
+        ConditionSlots.Unlock => L["Slot_unlock"],
+        ConditionSlots.Spawn => L["Slot_spawn"],
+        _ => slot
+    };
+
+    private static string Shorten(string text) =>
+        text.Length <= 60 ? text : string.Concat(text.AsSpan(0, 60), "…");
+}
