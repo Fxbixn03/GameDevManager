@@ -1,0 +1,288 @@
+@page "/export/teil-import"
+@inject PartialImportService PartialImport
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<PartialImportPage> L
+
+@*
+    Teil-Import aus einem fremden Export (F42): einzelne Entitäten übernehmen, statt den ganzen
+    Bestand zu ersetzen — der Weg, auf dem ein Team eine gemeinsame Item-Basis pflegt.
+
+    Erst die Vorschau (was wäre neu, was überschriebe etwas, was ist identisch), dann die
+    Auswahl je Eintrag: übernehmen, als Kopie oder überspringen.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">@L["Heading"]</MudText>
+<MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">@L["Subtitle"]</MudText>
+
+<MudButton Variant="Variant.Outlined" Href="/export" Class="mb-6">@L["ToExport"]</MudButton>
+
+@if (!_permissions.CanImport)
+{
+    <MudAlert Severity="Severity.Info">@L["NotAllowed"]</MudAlert>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudFileUpload T="IBrowserFile" FilesChanged="PreviewAsync" Accept=".zip">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.UploadFile"
+                               Disabled="_working">
+                        @(_fileName ?? L["ChooseFile"])
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+
+            @if (_preview is { } preview)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @L["Summary", preview.NewCount, preview.ChangedCount, preview.IdenticalCount]
+                </MudText>
+            }
+        </MudStack>
+
+        @if (_working)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-3" />
+        }
+    </MudPaper>
+
+    @if (_preview is { Candidates.Count: > 0 })
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
+            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["BulkLabel"]</MudText>
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="@(() => SetAll(PartialImportChoice.Take))">
+                    @L["TakeAll"]
+                </MudButton>
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="SelectNewOnly">
+                    @L["TakeNewOnly"]
+                </MudButton>
+                <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="@(() => SetAll(PartialImportChoice.Skip))">
+                    @L["SkipAll"]
+                </MudButton>
+
+                <MudSpacer />
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Download"
+                           Disabled="@(_working || _choices.Values.All(choice => choice == PartialImportChoice.Skip))"
+                           OnClick="ImportAsync">
+                    @L["Import"]
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+
+        <MudPaper Elevation="0" Class="gdm-panel">
+            <MudSimpleTable Dense="true" Hover="true" Elevation="0" Style="overflow-x:auto;">
+                <thead>
+                    <tr>
+                        <th>@L["ColumnName"]</th>
+                        <th>@L["ColumnModule"]</th>
+                        <th>@L["ColumnState"]</th>
+                        <th style="width:260px;">@L["ColumnChoice"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var candidate in _preview.Candidates)
+                    {
+                        <tr>
+                            <td>
+                                <MudText Typo="Typo.body2"><b>@candidate.Name</b></MudText>
+                                @if (candidate.ChangedProperties.Count > 0)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @string.Join(", ", candidate.ChangedProperties.Take(6))
+                                    </MudText>
+                                }
+                            </td>
+                            <td>
+                                <MudText Typo="Typo.body2">@Modules.NameOrKey(candidate.ModuleKey)</MudText>
+                            </td>
+                            <td>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@StateColor(candidate)">
+                                    @StateLabel(candidate)
+                                </MudChip>
+                            </td>
+                            <td>
+                                @* Identisches bekommt keine Auswahl — es zu übernehmen änderte
+                                   nichts, und eine Kopie davon wäre ein Duplikat auf Knopfdruck. *@
+                                @if (candidate.IsIdentical)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NothingToDo"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudSelect T="PartialImportChoice"
+                                               Value="@_choices.GetValueOrDefault(candidate.Id, PartialImportChoice.Skip)"
+                                               ValueChanged="@(choice => _choices[candidate.Id] = choice)"
+                                               Variant="Variant.Text"
+                                               Margin="Margin.Dense"
+                                               Dense="true">
+                                        <MudSelectItem T="PartialImportChoice" Value="@(PartialImportChoice.Skip)">
+                                            @L["ChoiceSkip"]
+                                        </MudSelectItem>
+                                        <MudSelectItem T="PartialImportChoice" Value="@(PartialImportChoice.Take)">
+                                            @L["ChoiceTake"]
+                                        </MudSelectItem>
+                                        @if (candidate.ExistsHere)
+                                        {
+                                            <MudSelectItem T="PartialImportChoice" Value="@(PartialImportChoice.Copy)">
+                                                @L["ChoiceCopy"]
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+    }
+
+    @if (_result is { } result)
+    {
+        <MudAlert Severity="Severity.Success" Class="mt-4">
+            @L["Done", result.Taken, result.Copied]
+        </MudAlert>
+
+        @foreach (var warning in result.Warnings.Take(10))
+        {
+            <MudText Typo="Typo.caption" Color="Color.Warning" Class="d-block">@warning</MudText>
+        }
+    }
+}
+
+@code {
+    /// <summary>
+    /// Obergrenze der hochgeladenen Datei — dieselbe Größenordnung wie beim vollen Import; sie
+    /// steht nur da, weil <c>OpenReadStream</c> ohne Angabe bei 512 KB abbricht.
+    /// </summary>
+    private const long MaxArchiveBytes = 1024L * 1024 * 1024;
+
+    private UserPermissions _permissions = UserPermissions.Full;
+
+    /// <summary>
+    /// Das hochgeladene Archiv im Arbeitsspeicher. Es wird zweimal gelesen — für die Vorschau
+    /// und für den Import —, und ein Upload-Strom lässt sich nicht zurückspulen.
+    /// </summary>
+    private byte[]? _archive;
+    private string? _fileName;
+
+    private PartialImportPreview? _preview;
+    private PartialImportResult? _result;
+    private readonly Dictionary<Guid, PartialImportChoice> _choices = [];
+    private bool _working;
+
+    protected override async Task OnInitializedAsync() =>
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+
+    private async Task PreviewAsync(IBrowserFile file)
+    {
+        _working = true;
+        _result = null;
+        _choices.Clear();
+
+        try
+        {
+            using var buffer = new MemoryStream();
+
+            await using (var source = file.OpenReadStream(MaxArchiveBytes))
+            {
+                await source.CopyToAsync(buffer);
+            }
+
+            _archive = buffer.ToArray();
+            _fileName = file.Name;
+
+            using var stream = new MemoryStream(_archive);
+            _preview = await PartialImport.PreviewAsync(await Project.GetCurrentIdAsync(), stream);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            _preview = null;
+            _archive = null;
+            _fileName = null;
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+
+    private void SetAll(PartialImportChoice choice)
+    {
+        foreach (var candidate in _preview?.Candidates ?? [])
+        {
+            if (!candidate.IsIdentical)
+            {
+                _choices[candidate.Id] = choice;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Nur das Neue — der häufigste Fall: Inhalte aus einem fremden Projekt ergänzen, ohne den
+    /// eigenen Stand anzufassen.
+    /// </summary>
+    private void SelectNewOnly()
+    {
+        foreach (var candidate in _preview?.Candidates ?? [])
+        {
+            _choices[candidate.Id] = candidate is { ExistsHere: false }
+                ? PartialImportChoice.Take
+                : PartialImportChoice.Skip;
+        }
+    }
+
+    private async Task ImportAsync()
+    {
+        if (_archive is null)
+        {
+            return;
+        }
+
+        _working = true;
+
+        try
+        {
+            using var stream = new MemoryStream(_archive);
+            _result = await PartialImport.ImportAsync(await Project.GetCurrentIdAsync(), stream, _choices);
+
+            // Die Vorschau ist nach dem Import überholt — sie zeigte den Stand von vorher.
+            using var again = new MemoryStream(_archive);
+            _preview = await PartialImport.PreviewAsync(await Project.GetCurrentIdAsync(), again);
+            _choices.Clear();
+
+            Snackbar.Add(L["Done", _result.Taken, _result.Copied], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+
+    private string StateLabel(PartialImportCandidate candidate) =>
+        candidate.IsIdentical ? L["StateIdentical"]
+            : candidate.ExistsHere ? L["StateChanged"]
+            : L["StateNew"];
+
+    private static Color StateColor(PartialImportCandidate candidate) =>
+        candidate.IsIdentical ? Color.Default
+            : candidate.ExistsHere ? Color.Warning
+            : Color.Success;
+}

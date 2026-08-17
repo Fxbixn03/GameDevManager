@@ -158,6 +158,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ExportService>();
         services.AddScoped<ImportService>();
         services.AddScoped<InstallationBackupService>();
+        services.AddScoped<PartialImportService>();
         services.AddScoped<SampleProjectService>();
         services.AddScoped<ConditionStateService>();
         services.AddScoped<DesignDocumentService>();

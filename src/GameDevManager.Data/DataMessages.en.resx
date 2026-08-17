@@ -241,6 +241,15 @@
   <data name="ExternalIdTaken" xml:space="preserve">
     <value>The external identifier “{0}” already belongs to another account.</value>
   </data>
+  <data name="Import_ManifestMissing" xml:space="preserve">
+    <value>The archive contains no project manifest (project.json).</value>
+  </data>
+  <data name="PartialImport_EntityFailed" xml:space="preserve">
+    <value>“{0}” could not be imported: {1}</value>
+  </data>
+  <data name="PartialImport_LogDetails" xml:space="preserve">
+    <value>Partial import: {0} taken, {1} added as copies.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

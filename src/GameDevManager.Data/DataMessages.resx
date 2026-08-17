@@ -180,6 +180,15 @@
   <data name="ExternalIdTaken" xml:space="preserve">
     <value>Der externe Bezeichner „{0}“ gehört bereits zu einem anderen Konto.</value>
   </data>
+  <data name="Import_ManifestMissing" xml:space="preserve">
+    <value>Das Archiv enthält kein Projekt-Manifest (project.json).</value>
+  </data>
+  <data name="PartialImport_EntityFailed" xml:space="preserve">
+    <value>„{0}“ konnte nicht übernommen werden: {1}</value>
+  </data>
+  <data name="PartialImport_LogDetails" xml:space="preserve">
+    <value>Teil-Import: {0} übernommen, {1} als Kopie angelegt.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>

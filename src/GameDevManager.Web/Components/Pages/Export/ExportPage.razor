@@ -23,12 +23,20 @@
 
 @* Webhooks holen den Export nicht selbst ab — sie sagen einem anderen System, dass es
    etwas abzuholen gibt. Deshalb hier und nicht in den Einstellungen. *@
-<MudButton Variant="Variant.Outlined"
-           StartIcon="@Icons.Material.Filled.Webhook"
-           Href="/export/webhooks"
-           Class="mb-6">
-    @L["ToWebhooks"]
-</MudButton>
+<MudStack Row="true" Spacing="2" Class="mb-6" Wrap="Wrap.Wrap">
+    <MudButton Variant="Variant.Outlined"
+               StartIcon="@Icons.Material.Filled.Webhook"
+               Href="/export/webhooks">
+        @L["ToWebhooks"]
+    </MudButton>
+    @* Der volle Import ersetzt den ganzen Bestand; der Teil-Import nimmt einzelne Einträge
+       — zwei verschiedene Vorgänge, deshalb zwei Seiten. *@
+    <MudButton Variant="Variant.Outlined"
+               StartIcon="@Icons.Material.Filled.PlaylistAdd"
+               Href="/export/teil-import">
+        @L["ToPartialImport"]
+    </MudButton>
+</MudStack>
 
 <MudGrid Spacing="3">
     @* ------------------------------------------------------------------------ Export *@

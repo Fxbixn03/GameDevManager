@@ -931,7 +931,7 @@ Stelle, an der eine neu hinzugekommene Liste stillschweigend fehlte). Und der **
 die GUID**: Ein Umbenennen soll keine Datei verschieben, sonst zeigte der Diff eine gelöschte
 und eine neue statt einer geänderten.
 
-### F42 — Teil-Import mit Konfliktanzeige
+### F42 — Teil-Import mit Konfliktanzeige ✅ umgesetzt
 
 > **Als** Nutzer **möchte ich** aus einem fremden Export einzelne Module oder Entitäten übernehmen
 > und vorher sehen, was sich dadurch ändert, **damit** ich Inhalte zwischen Projekten austauschen
@@ -945,6 +945,18 @@ je Konflikt „behalten / überschreiben / als Kopie" wählen. Das ist der Weg, 
 gemeinsame Item-Basis pflegt.
 
 *Aufwand: L · Migration: nein · Format: unverändert*
+
+**Umgesetzt** genau so: `PartialImportService.PreviewAsync` stellt das fremde Archiv dem eigenen
+Bestand gegenüber (neu / weicht ab / identisch, samt der abweichenden Eigenschaften),
+`ImportAsync` nimmt je GUID „überspringen / übernehmen / als Kopie“ entgegen; Seite unter
+`/export/teil-import`. Vier Dinge: Der eigene Stand wird als **flüchtiger Export** gegenübergestellt
+— dieselbe Strecke wie beim Diff zweier Stände, und damit derselbe Vergleich auf denselben
+Regeln. **Was nicht gewählt ist, bleibt unangetastet**, und gelöscht wird nichts: Ein Ausschnitt
+darf nichts löschen, dieselbe Regel wie beim Modul-CSV. **Identisches bekommt keine Auswahl** —
+es zu übernehmen änderte nichts, eine Kopie davon wäre ein Duplikat auf Knopfdruck. Und die
+Entität geht als **JSON-Knoten** durch das Paket, nicht als eingebetteter Text: Als String wäre
+sie beim Serialisieren escaped, und die Wortgrenze im GUID-Muster von `GuidRemap` fände die
+GUID dahinter nicht mehr — der Tausch für die Kopie liefe still ins Leere.
 
 ### F43 — Engine-Pakete: Unity-Package und Godot-Addon
 

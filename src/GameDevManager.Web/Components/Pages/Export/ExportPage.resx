@@ -24,6 +24,9 @@
   <data name="ToWebhooks" xml:space="preserve">
     <value>Webhooks</value>
   </data>
+  <data name="ToPartialImport" xml:space="preserve">
+    <value>Teil-Import</value>
+  </data>
   <data name="TargetHeading" xml:space="preserve">
     <value>Ziel</value>
   </data>
