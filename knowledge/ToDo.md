@@ -950,7 +950,7 @@ Fenster fragt `/api/v1/…` und braucht keinen Export.
 
 ## H. Betrieb und Sicherheit
 
-### F44 — Sicherung und Wiederherstellung aus der Oberfläche
+### F44 — Sicherung und Wiederherstellung aus der Oberfläche ✅ umgesetzt
 
 > **Als** Betreiber **möchte ich** die gesamte Installation sichern und zurückspielen — alle
 > Projekte, Benutzer, Boards, das Protokoll —, **damit** ich beim Umzug auf einen neuen Server nicht
@@ -963,6 +963,18 @@ Geheimnisse) schließt die Lücke. Beim Zurückspielen dieselbe Vorsicht wie bei
 vorher ein Sicherheitsnetz, und es reißt nicht.
 
 *Aufwand: M · Migration: nein · Format: eigenes Format*
+
+**Umgesetzt.** `InstallationBackupService` mit eigener `BackupVersion` (**1**), Endpunkt
+`/export/installation`, Seite unter „Einstellungen → Sicherung“. Vier Entscheidungen: Je Projekt
+liegt im Archiv das **normale Export-ZIP** unter `projects/<guid>.zip` — es ist erprobt,
+versioniert und diffbar, und es hier nachzubauen hieße, zwei Formate für dieselbe Sache zu
+pflegen; daneben steht unter `installation/data.json` genau das, was ihm fehlt. Die
+**Verbindungszeichenfolge geht nicht mit**: Sie beschreibt den Server, von dem man wegzieht, und
+ist das einzige Geheimnis in der Konfiguration. **Passwort-Hashes dagegen schon** — ohne sie
+käme nach dem Umzug niemand mehr herein, und das ist der Zweck. Und das Wiederherstellen läuft
+je Projekt durch den normalen `ImportService` mit `replaceExisting`, damit das
+**Sicherheitsnetz von selbst greift**; verlangt werden Export-/Importrecht **und** das
+Verwalterrecht, weil das Archiv den gesamten Bestand samt Konten enthält.
 
 ### F45 — Rollen statt Rechte je Benutzer ✅ umgesetzt
 

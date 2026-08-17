@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Sicherung der Installation</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Sicherung der Installation</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Alles auf einmal — für den Umzug auf einen neuen Server. Der Exportstand sichert ein Projekt, dieses Archiv die ganze Installation.</value>
+  </data>
+  <data name="AdminOnly" xml:space="preserve">
+    <value>Eine Installations-Sicherung enthält den gesamten Bestand samt Konten. Sie ist Verwaltern vorbehalten.</value>
+  </data>
+  <data name="BackupHeading" xml:space="preserve">
+    <value>Sichern</value>
+  </data>
+  <data name="BackupHint" xml:space="preserve">
+    <value>Das Archiv enthält je Projekt das normale Export-ZIP samt Asset-Dateien und daneben alles, was in keinem Projekt-Export steht.</value>
+  </data>
+  <data name="ContainsProjects" xml:space="preserve">
+    <value>Alle Projekte samt Assets</value>
+  </data>
+  <data name="ContainsUsers" xml:space="preserve">
+    <value>Benutzer, Rollen und API-Schlüssel (samt Passwort-Hashes)</value>
+  </data>
+  <data name="ContainsTools" xml:space="preserve">
+    <value>Boards, Whiteboards, Protokoll, Papierkorb, Ansichten, Regeln, Webhooks</value>
+  </data>
+  <data name="ContainsNoConnection" xml:space="preserve">
+    <value>Keine Verbindungszeichenfolge — sie beschreibt den Server, von dem man wegzieht.</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>Sicherung herunterladen</value>
+  </data>
+  <data name="RestoreHeading" xml:space="preserve">
+    <value>Wiederherstellen</value>
+  </data>
+  <data name="RestoreWarning" xml:space="preserve">
+    <value>Der gesamte Bestand dieser Installation wird ersetzt. Jedes bestehende Projekt bekommt vorher automatisch einen Exportstand als Sicherheitsnetz.</value>
+  </data>
+  <data name="ImportNotAllowed" xml:space="preserve">
+    <value>Zum Wiederherstellen braucht es das Importrecht.</value>
+  </data>
+  <data name="ChooseFile" xml:space="preserve">
+    <value>Archiv wählen</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>Wiederherstellen</value>
+  </data>
+  <data name="ConfirmTitle" xml:space="preserve">
+    <value>Installation wiederherstellen?</value>
+  </data>
+  <data name="ConfirmMessage" xml:space="preserve">
+    <value>Alle Projekte, Konten und Werkzeug-Daten dieser Installation werden durch den Inhalt des Archivs ersetzt. Auch Ihr eigenes Konto — melden Sie sich danach mit den Zugangsdaten aus dem Archiv an.</value>
+  </data>
+  <data name="ConfirmYes" xml:space="preserve">
+    <value>Wiederherstellen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="RestoredMessage" xml:space="preserve">
+    <value>Die Installation wurde wiederhergestellt.</value>
+  </data>
+  <data name="RestoreDone" xml:space="preserve">
+    <value>{0} Projekte, {1} Benutzer, {2} Rollen und {3} API-Schlüssel eingespielt.</value>
+  </data>
+</root>

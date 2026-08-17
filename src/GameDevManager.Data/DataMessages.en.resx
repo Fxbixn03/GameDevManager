@@ -214,6 +214,15 @@
   <data name="WebhookUrlInvalid" xml:space="preserve">
     <value>The address has to be a complete http or https URL.</value>
   </data>
+  <data name="Backup_ManifestMissing" xml:space="preserve">
+    <value>The archive contains no installation manifest (installation.json).</value>
+  </data>
+  <data name="Backup_VersionMismatch" xml:space="preserve">
+    <value>The archive has backup version {0}, this installation expects {1}.</value>
+  </data>
+  <data name="Backup_UnknownProjectFile" xml:space="preserve">
+    <value>The file “{0}” carries no recognizable project GUID and was skipped.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

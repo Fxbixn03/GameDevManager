@@ -198,6 +198,25 @@ app.MapGet("/export/{projectId:guid}", async (
         fileDownloadName: fileName);
 }).RequireAuthorization();
 
+// Die Sicherung der ganzen Installation: alle Projekte plus das, was in keinem
+// Projekt-Export steht — Benutzer, Rollen, API-Schlüssel, Boards, Protokoll. Wie der
+// Projekt-Export ein Endpunkt, weil sich über SignalR keine Datei ausliefern lässt.
+app.MapGet("/export/installation", (
+    InstallationBackupService backup, HttpContext http, CancellationToken ct) =>
+{
+    // Eine Installations-Sicherung enthält den gesamten Bestand samt Konten — sie verlangt
+    // beides: das Exportrecht und den Verwalter.
+    if (!http.User.Permissions().CanExport || !http.User.Permissions().IsAdministrator)
+    {
+        return Results.Forbid();
+    }
+
+    var fileName = $"gamedevmanager-installation-{DateTime.UtcNow:yyyyMMdd-HHmmss}.zip";
+
+    return Results.Stream(
+        stream => backup.WriteBackupAsync(stream, ct), "application/zip", fileDownloadName: fileName);
+}).RequireAuthorization();
+
 // ---------------------------------------------------------------- Lesende HTTP-API (v1)
 //
 // Die Vorstufe zu einem Editor-Plugin: Inhalte je Projekt als JSON, mit denselben

@@ -52,6 +52,11 @@
         <MudNavLink Href="/einstellungen/speicher" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CleaningServices">
             @L["TabStorage"]
         </MudNavLink>
+        @* Eigene Seite und kein Abschnitt hier: Das Wiederherstellen ersetzt den gesamten
+           Bestand — das gehört nicht zwischen die Schalter, die man beiläufig umlegt. *@
+        <MudNavLink Href="/einstellungen/sicherung" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Backup">
+            @L["TabBackup"]
+        </MudNavLink>
     </MudNavMenu>
 
     <div class="pl-8" style="flex: 1 1 auto; min-width: 0;">

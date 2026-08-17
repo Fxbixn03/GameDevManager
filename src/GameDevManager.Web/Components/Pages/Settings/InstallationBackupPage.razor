@@ -1,0 +1,180 @@
+@page "/einstellungen/sicherung"
+@inject InstallationBackupService Backup
+@inject NavigationManager Nav
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject IStringLocalizer<InstallationBackupPage> L
+
+@*
+    Sicherung und Wiederherstellung der ganzen Installation (F44).
+
+    Der Exportstand sichert ein Projekt; hier geht es um alles: jedes Projekt plus Benutzer,
+    Rollen, API-Schlüssel, Boards, Whiteboards, Protokoll, Papierkorb und Moduleinstellungen.
+    Je Projekt liegt im Archiv das normale Export-ZIP — es ist erprobt, versioniert und diffbar,
+    und ein zweites Format für dieselbe Sache wäre eines zu viel.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">@L["Heading"]</MudText>
+<MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">@L["Subtitle"]</MudText>
+
+@if (!_permissions.IsAdministrator)
+{
+    <MudAlert Severity="Severity.Info">@L["AdminOnly"]</MudAlert>
+}
+else
+{
+    <MudGrid Spacing="3">
+        @* ------------------------------------------------------------------- Sichern *@
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["BackupHeading"]</MudText>
+                <MudText Typo="Typo.body2" Class="mb-4 mt-2">@L["BackupHint"]</MudText>
+
+                <MudList T="string" Dense="true" Class="mb-4">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">@L["ContainsProjects"]</MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">@L["ContainsUsers"]</MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">@L["ContainsTools"]</MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Close">@L["ContainsNoConnection"]</MudListItem>
+                </MudList>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Download"
+                           Disabled="@(!_permissions.CanExport)"
+                           OnClick="Download">
+                    @L["Download"]
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        @* ----------------------------------------------------------- Wiederherstellen *@
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["RestoreHeading"]</MudText>
+
+                <MudAlert Severity="Severity.Warning" Dense="true" Class="my-3">
+                    @L["RestoreWarning"]
+                </MudAlert>
+
+                @if (!_permissions.CanImport)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true">@L["ImportNotAllowed"]</MudAlert>
+                }
+                else
+                {
+                    <MudFileUpload T="IBrowserFile" FilesChanged="ChooseFile" Accept=".zip">
+                        <ActivatorContent>
+                            <MudButton Variant="Variant.Outlined"
+                                       StartIcon="@Icons.Material.Filled.UploadFile"
+                                       Disabled="_working">
+                                @(_file?.Name ?? L["ChooseFile"])
+                            </MudButton>
+                        </ActivatorContent>
+                    </MudFileUpload>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.RestoreFromTrash"
+                               Class="mt-3"
+                               Disabled="@(_file is null || _working)"
+                               OnClick="RestoreAsync">
+                        @L["Restore"]
+                    </MudButton>
+                }
+
+                @if (_working)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-3" />
+                }
+
+                @if (_result is { } result)
+                {
+                    <MudAlert Severity="Severity.Success" Dense="true" Class="mt-3">
+                        @L["RestoreDone", result.Projects, result.Users, result.Roles, result.ApiKeys]
+                    </MudAlert>
+
+                    @foreach (var warning in result.Warnings.Take(10))
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Warning" Class="d-block">@warning</MudText>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    /// <summary>
+    /// Obergrenze der hochgeladenen Datei. Ein Installations-Archiv trägt alle Assets aller
+    /// Projekte — hier ist eine großzügige Grenze richtig; sie steht überhaupt nur da, weil
+    /// <c>OpenReadStream</c> ohne Angabe bei 512 KB abbricht.
+    /// </summary>
+    private const long MaxBackupBytes = 4L * 1024 * 1024 * 1024;
+
+    private UserPermissions _permissions = UserPermissions.Full;
+    private IBrowserFile? _file;
+    private bool _working;
+    private InstallationRestoreResult? _result;
+
+    protected override async Task OnInitializedAsync() =>
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+
+    // forceLoad, damit der Browser den Endpunkt direkt aufruft — dieselbe Strecke wie beim
+    // Projekt-Export.
+    private void Download() => Nav.NavigateTo("/export/installation", forceLoad: true);
+
+    private void ChooseFile(IBrowserFile file)
+    {
+        _file = file;
+        _result = null;
+    }
+
+    private async Task RestoreAsync()
+    {
+        if (_file is null)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["ConfirmTitle"],
+            L["ConfirmMessage"],
+            yesText: L["ConfirmYes"],
+            cancelText: L["Cancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        _working = true;
+
+        try
+        {
+            // In den Arbeitsspeicher: Der Strom eines Uploads ist nicht suchbar, und das
+            // Archiv muss als ZIP gelesen werden.
+            using var buffer = new MemoryStream();
+
+            await using (var source = _file.OpenReadStream(MaxBackupBytes))
+            {
+                await source.CopyToAsync(buffer);
+            }
+
+            buffer.Position = 0;
+            _result = await Backup.RestoreAsync(buffer);
+
+            Snackbar.Add(L["RestoredMessage"], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+}
