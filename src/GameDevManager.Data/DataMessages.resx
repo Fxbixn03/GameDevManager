@@ -854,6 +854,30 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="ConditionOwnerUnknown" xml:space="preserve">
     <value>Unbekannter Besitzer</value>
   </data>
+  <data name="Design_GeneratedAt" xml:space="preserve">
+    <value>Erzeugt mit GameDevManager am {0}</value>
+  </data>
+  <data name="Design_ChapterStory" xml:space="preserve">
+    <value>Story</value>
+  </data>
+  <data name="Design_ChapterFactions" xml:space="preserve">
+    <value>Fraktionen</value>
+  </data>
+  <data name="Design_ChapterNpcs" xml:space="preserve">
+    <value>Figuren</value>
+  </data>
+  <data name="Design_ChapterQuests" xml:space="preserve">
+    <value>Quests</value>
+  </data>
+  <data name="Design_ChapterItems" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="Design_NpcMob" xml:space="preserve">
+    <value>Gegner</value>
+  </data>
+  <data name="Design_Optional" xml:space="preserve">
+    <value>(optional)</value>
+  </data>
   <data name="UserRoleNameRequired" xml:space="preserve">
     <value>Eine Rolle braucht einen Namen.</value>
   </data>

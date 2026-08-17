@@ -329,6 +329,37 @@ app.MapGet("/export/csv/{projectId:guid}/{moduleKey}", async (
         fileDownloadName: $"{moduleKey}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
 }).RequireAuthorization();
 
+// Das Design-Dokument: der Bestand als eigenständige, druckbare HTML-Datei (F40).
+// ?chapters=story,npcs schränkt die Kapitel ein; ohne Angabe kommt alles.
+app.MapGet("/export/design/{projectId:guid}", async (
+    Guid projectId, string? chapters, DesignDocumentService design, HttpContext http, CancellationToken ct) =>
+{
+    if (!http.User.Permissions().CanExport)
+    {
+        return Results.Forbid();
+    }
+
+    var wanted = chapters?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(entry => entry.ToLowerInvariant())
+        .ToHashSet();
+
+    var selection = wanted is null
+        ? DesignChapters.All
+        : new DesignChapters(
+            wanted.Contains("story"),
+            wanted.Contains("factions"),
+            wanted.Contains("npcs"),
+            wanted.Contains("quests"),
+            wanted.Contains("items"));
+
+    var html = await design.BuildHtmlAsync(projectId, selection, ct);
+
+    return Results.File(
+        System.Text.Encoding.UTF8.GetBytes(html),
+        "text/html; charset=utf-8",
+        fileDownloadName: $"design-{DateTime.UtcNow:yyyyMMdd-HHmmss}.html");
+}).RequireAuthorization();
+
 // Lädt einen aufbewahrten Exportstand herunter. Der Dienst prüft den Dateinamen streng
 // (Zeitstempel plus Projekt-GUID) — alles andere ist ein 404, kein Pfad ins Dateisystem.
 app.MapGet("/export/snapshots/{fileName}", (string fileName, ExportSnapshotService snapshots, HttpContext http) =>

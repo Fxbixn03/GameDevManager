@@ -143,6 +143,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ImportService>();
         services.AddScoped<SampleProjectService>();
         services.AddScoped<ConditionStateService>();
+        services.AddScoped<DesignDocumentService>();
 
         // Je Modul eine Quelle. Referenzansicht, Auswahlfelder, Arten-Zählung und globale
         // Suche fragen sie alle ab — ein neues Modul wird hier eingetragen und ist überall da.

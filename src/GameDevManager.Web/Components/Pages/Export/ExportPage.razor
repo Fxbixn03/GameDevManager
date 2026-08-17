@@ -419,6 +419,37 @@
         </MudPaper>
     </MudItem>
 
+    @* ----------------------------------------------------------------- Design-Dokument *@
+    @if (_permissions.CanExport)
+    {
+    <MudItem xs="12">
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["DesignHeading"]</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-3">@L["DesignIntro"]</MudText>
+
+            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudCheckBox T="bool" @bind-Value="_designStory" Dense="true" Label="@L["DesignChapterStory"]" />
+                <MudCheckBox T="bool" @bind-Value="_designFactions" Dense="true" Label="@L["DesignChapterFactions"]" />
+                <MudCheckBox T="bool" @bind-Value="_designNpcs" Dense="true" Label="@L["DesignChapterNpcs"]" />
+                <MudCheckBox T="bool" @bind-Value="_designQuests" Dense="true" Label="@L["DesignChapterQuests"]" />
+                <MudCheckBox T="bool" @bind-Value="_designItems" Dense="true" Label="@L["DesignChapterItems"]" />
+
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Description"
+                           Disabled="@(_projectId == Guid.Empty || DesignChapterKeys.Count == 0)"
+                           OnClick="DownloadDesignDocument">
+                    @L["DesignDownloadButton"]
+                </MudButton>
+            </MudStack>
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">
+                @L["DesignPrintHint"]
+            </MudText>
+        </MudPaper>
+    </MudItem>
+    }
+
     @* ---------------------------------------------------------------------- Vergleich *@
     @if (_permissions.CanExport)
     {
@@ -890,6 +921,42 @@
     }
 
     // ------------------------------------------------------------------- CSV je Modul
+
+    private bool _designStory = true;
+    private bool _designFactions = true;
+    private bool _designNpcs = true;
+    private bool _designQuests = true;
+    private bool _designItems = true;
+
+    private List<string> DesignChapterKeys
+    {
+        get
+        {
+            var keys = new List<string>();
+
+            void Add(bool wanted, string key)
+            {
+                if (wanted)
+                {
+                    keys.Add(key);
+                }
+            }
+
+            Add(_designStory, "story");
+            Add(_designFactions, "factions");
+            Add(_designNpcs, "npcs");
+            Add(_designQuests, "quests");
+            Add(_designItems, "items");
+
+            return keys;
+        }
+    }
+
+    /// <summary>Wie ZIP und CSV über einen Endpunkt — über SignalR lässt sich kein Download anstoßen.</summary>
+    private void DownloadDesignDocument() =>
+        Nav.NavigateTo(
+            $"/export/design/{_projectId}?chapters={string.Join(",", DesignChapterKeys)}",
+            forceLoad: true);
 
     private void DownloadCsv() =>
         Nav.NavigateTo($"/export/csv/{_projectId}/{_csvModule}", forceLoad: true);

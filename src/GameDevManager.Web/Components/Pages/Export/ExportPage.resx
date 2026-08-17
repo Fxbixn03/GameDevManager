@@ -291,6 +291,33 @@
   <data name="ImportNotAllowed" xml:space="preserve">
     <value>Der Import ist für dieses Konto nicht freigegeben.</value>
   </data>
+  <data name="DesignHeading" xml:space="preserve">
+    <value>Design-Dokument</value>
+  </data>
+  <data name="DesignIntro" xml:space="preserve">
+    <value>Der Bestand als lesbares Dokument zum Weitergeben — eine eigenständige HTML-Datei mit eingebetteten Bildern, für Publisher oder neue Teammitglieder.</value>
+  </data>
+  <data name="DesignChapterStory" xml:space="preserve">
+    <value>Story</value>
+  </data>
+  <data name="DesignChapterFactions" xml:space="preserve">
+    <value>Fraktionen</value>
+  </data>
+  <data name="DesignChapterNpcs" xml:space="preserve">
+    <value>Figuren</value>
+  </data>
+  <data name="DesignChapterQuests" xml:space="preserve">
+    <value>Quests</value>
+  </data>
+  <data name="DesignChapterItems" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="DesignDownloadButton" xml:space="preserve">
+    <value>Dokument erzeugen</value>
+  </data>
+  <data name="DesignPrintHint" xml:space="preserve">
+    <value>Für ein PDF die Datei im Browser öffnen und drucken — die Vorlage ist druckfreundlich.</value>
+  </data>
   <data name="CsvHeading" xml:space="preserve">
     <value>CSV je Modul</value>
   </data>

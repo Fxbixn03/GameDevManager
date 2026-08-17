@@ -900,6 +900,30 @@ Unpack the ZIP into the root directory of your Godot project: the content lands 
   <data name="ConditionOwnerUnknown" xml:space="preserve">
     <value>Unknown owner</value>
   </data>
+  <data name="Design_GeneratedAt" xml:space="preserve">
+    <value>Generated with GameDevManager on {0}</value>
+  </data>
+  <data name="Design_ChapterStory" xml:space="preserve">
+    <value>Story</value>
+  </data>
+  <data name="Design_ChapterFactions" xml:space="preserve">
+    <value>Factions</value>
+  </data>
+  <data name="Design_ChapterNpcs" xml:space="preserve">
+    <value>Characters</value>
+  </data>
+  <data name="Design_ChapterQuests" xml:space="preserve">
+    <value>Quests</value>
+  </data>
+  <data name="Design_ChapterItems" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="Design_NpcMob" xml:space="preserve">
+    <value>Enemy</value>
+  </data>
+  <data name="Design_Optional" xml:space="preserve">
+    <value>(optional)</value>
+  </data>
   <data name="UserRoleNameRequired" xml:space="preserve">
     <value>A role needs a name.</value>
   </data>

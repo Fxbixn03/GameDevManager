@@ -755,7 +755,7 @@ Hintergrunddienst. Statt `Exports:ScheduleCron` eine schlichte Uhrzeit `Exports:
 (`HH:mm`) — ein Cron-Parser wäre eine Fremdbibliothek für eine Angabe aus Stunde und Minute.
 Angelegt wird nur bei Änderungen seit dem letzten Stand.
 
-### F40 — Design-Dokument erzeugen
+### F40 — Design-Dokument erzeugen ✅ umgesetzt
 
 > **Als** Projektleiter **möchte ich** aus dem Bestand ein lesbares Dokument erzeugen — Story,
 > Figuren, Fraktionen, Quests mit Bildern, als HTML zum Ausdrucken —, **damit** ich einem Publisher
@@ -768,6 +768,14 @@ Vorlage je Modul, und die Ausgabe als eigenständige HTML-Datei mit eingebettete
 liefert das PDF, ohne eine PDF-Bibliothek einzuziehen.
 
 *Aufwand: M · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `DesignDocumentService` baut die eigenständige HTML-Datei (Kapitel Story,
+Fraktionen, Figuren, Quests, Items in fester Reihenfolge; primäre Sprites als `data:`-URI bis
+1,5 MB, Story-Text über `SimpleMarkdown` mit Erwähnungen als Anzeigename). Download über
+`/export/design/{projectId}?chapters=…` (Exportrecht), Kapitelauswahl als Abschnitt auf der
+Export-Seite. Druckfreundliche feste Vorlage — das PDF liefert der Browser-Druck. Bewusst kein
+eigenes Format: vollständig abgeleitet, kein Import, keine `FormatVersion`. Benutzerdefinierte
+Felder stehen (noch) nicht im Dokument — die Kapitel zeigen Name, Art, Beschreibung und Bild.
 
 ### F41 — Git-freundlicher Export
 
