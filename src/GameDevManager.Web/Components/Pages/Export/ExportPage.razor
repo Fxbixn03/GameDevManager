@@ -59,6 +59,15 @@
             <MudSwitch T="bool" @bind-Value="_includeAssets" Color="Color.Primary" Label="@L["IncludeAssets"]" />
             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-4">@L["IncludeAssetsHint"]</MudText>
 
+            @* Das Ablage-Muster ist ausschließlich eine Frage für Git: Beide tragen denselben
+               Inhalt, und der Import liest beide. *@
+            <MudSwitch T="bool"
+                       Value="@(_layout == ExportLayout.PerEntity)"
+                       ValueChanged="@((bool on) => _layout = on ? ExportLayout.PerEntity : ExportLayout.SingleFile)"
+                       Color="Color.Primary"
+                       Label="@L["PerEntityLayout"]" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-4">@L["PerEntityLayoutHint"]</MudText>
+
             @* „Nur Fertiges“ als Mindeststand: Wer im Review Stehendes mitgeben will, meint
                damit auch das Abgenommene. Ohne Wahl geht alles hinaus — der Filter ist eine
                Einschränkung, keine Vorgabe. *@
@@ -554,6 +563,7 @@
 
     private ExportTarget _target = ExportTarget.Json;
     private bool _includeAssets = true;
+    private ExportLayout _layout = ExportLayout.SingleFile;
 
     private ContentStatus? _minimumStatus;
 
@@ -650,6 +660,9 @@
             ? target
             : ExportTarget.Json;
         _includeAssets = profile.IncludeAssets;
+        _layout = Enum.TryParse<ExportLayout>(profile.Layout, ignoreCase: true, out var chosenLayout)
+            ? chosenLayout
+            : ExportLayout.SingleFile;
         _minimumStatus = profile.MinimumStatus;
         var keys = UserPermissions.ParseModuleKeys(profile.ModuleKeys);
         _selectedModules = keys is null ? [] : [.. keys];
@@ -669,6 +682,7 @@
                 Name = _profileName,
                 Target = _target.ToString(),
                 IncludeAssets = _includeAssets,
+                Layout = _layout.ToString(),
                 MinimumStatus = _minimumStatus,
                 ModuleKeys = _selectedModules.Count == 0 ? null : string.Join(',', _selectedModules),
                 SortOrder = existing?.SortOrder ?? _profiles.Count
@@ -747,7 +761,8 @@
     private void Download() => Nav.NavigateTo(
         $"/export/{_projectId}?target={_target.ToString().ToLowerInvariant()}&assets={(_includeAssets ? "true" : "false")}"
             + (_minimumStatus is { } floor ? $"&minimumStatus={floor}" : string.Empty)
-            + (_selectedModules.Count > 0 ? $"&moduleKeys={string.Join(',', _selectedModules)}" : string.Empty),
+            + (_selectedModules.Count > 0 ? $"&moduleKeys={string.Join(',', _selectedModules)}" : string.Empty)
+            + (_layout == ExportLayout.PerEntity ? "&layout=perentity" : string.Empty),
         forceLoad: true);
 
     private void DownloadSnapshot(ExportSnapshot snapshot) =>

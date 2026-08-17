@@ -1117,6 +1117,7 @@ public class GameDevManagerDbContext(
         {
             entity.Property(profile => profile.Name).HasMaxLength(200).IsRequired();
             entity.Property(profile => profile.Target).HasMaxLength(20).IsRequired();
+            entity.Property(profile => profile.Layout).HasMaxLength(20).IsRequired();
             // 26 Modul-Schlüssel à ~12 Zeichen plus Kommas — wie bei den Modul-Freigaben.
             entity.Property(profile => profile.ModuleKeys).HasMaxLength(1000);
 

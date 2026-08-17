@@ -60,6 +60,7 @@ public class ExportProfileService(
 
         stored.Name = name;
         stored.Target = profile.Target;
+        stored.Layout = profile.Layout;
         stored.IncludeAssets = profile.IncludeAssets;
         stored.MinimumStatus = profile.MinimumStatus;
         stored.ModuleKeys = Normalize(profile.ModuleKeys);

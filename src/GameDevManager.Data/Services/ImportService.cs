@@ -119,13 +119,31 @@ public class ImportService(
         async Task<T> ReadAsync<T>(string fileName) where T : new()
         {
             var entry = archive.GetEntry(prefix + ExportFormat.ContentFolder + fileName);
-            if (entry is null)
+
+            // Fehlende Dateien sind leere Module — so bleibt der Import auch für ZIPs nutzbar,
+            // aus denen jemand einzelne Dateien entfernt hat.
+            var file = entry is null ? new T() : await ParseAsync<T>(entry);
+
+            // Das Git-freundliche Layout legt zusätzlich einen Ordner mit einer Datei je
+            // Entität an; die Sammeldatei steht dann mit leeren Listen daneben. Gelesen werden
+            // beide, damit ein Archiv aus beiden Welten importierbar bleibt — und damit ein
+            // von Hand ergänzter Ordner ebenso ankommt.
+            var folder = prefix + ExportFormat.ContentFolder
+                + Path.GetFileNameWithoutExtension(fileName) + "/";
+
+            foreach (var part in archive.Entries
+                .Where(candidate => candidate.FullName.StartsWith(folder, StringComparison.Ordinal)
+                    && candidate.FullName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(candidate => candidate.FullName, StringComparer.Ordinal))
             {
-                // Fehlende Dateien sind leere Module — so bleibt der Import auch für ZIPs
-                // nutzbar, aus denen jemand einzelne Dateien entfernt hat.
-                return new T();
+                ExportFormat.MergeLists(file, await ParseAsync<T>(part));
             }
 
+            return file;
+        }
+
+        async Task<T> ParseAsync<T>(ZipArchiveEntry entry) where T : new()
+        {
             await using var stream = entry.Open();
             return await JsonSerializer.DeserializeAsync<T>(stream, ExportFormat.JsonOptions, ct) ?? new T();
         }

@@ -1423,6 +1423,11 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<bool>("IncludeAssets")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Layout")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int?>("MinimumStatus")
                         .HasColumnType("int");
 

@@ -1420,6 +1420,11 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Property<bool>("IncludeAssets")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("Layout")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
                     b.Property<int?>("MinimumStatus")
                         .HasColumnType("int");
 

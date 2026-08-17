@@ -23,6 +23,28 @@ public enum ExportTarget
 }
 
 /// <summary>
+/// Wie die Inhaltsdateien im Archiv liegen.
+/// <para>
+/// Der Unterschied ist ausschließlich einer für <b>Git</b>: Beide Layouts tragen denselben
+/// Inhalt, und der Import liest beide. Wer den Export versioniert, will sehen, welche Entität
+/// sich geändert hat — bei einer Datei je Modul macht eine geänderte Zeile die ganze Datei
+/// geändert.
+/// </para>
+/// </summary>
+public enum ExportLayout
+{
+    /// <summary>Eine Datei je Modul — <c>content/items.json</c>. Der Normalfall.</summary>
+    SingleFile = 0,
+
+    /// <summary>
+    /// Eine Datei je Entität — <c>content/items/&lt;guid&gt;.json</c>. Der Dateiname trägt die
+    /// GUID und nicht den Namen: Ein Umbenennen soll keine Datei verschieben, sonst zeigte der
+    /// Diff eine gelöschte und eine neue statt einer geänderten.
+    /// </summary>
+    PerEntity = 1
+}
+
+/// <summary>
 /// Der Export des Konzepts: der komplette Stand eines Projekts als einfaches JSON zusammen
 /// mit den Assets als ZIP — oder in der Ordnerstruktur einer Engine (Unity, Unreal, Godot).
 /// <para>
@@ -70,6 +92,10 @@ public class ExportService(
     /// deren Wert semikolongetrennt in <c>content/field-values.json</c> steht. Version 13:
     /// Inhalte tragen einen <c>status</c> (Entwurf, in Arbeit, im Review, fertig); das Manifest
     /// nennt unter <c>minimumStatus</c> den Mindeststand, auf den ein Export eingeschränkt war.
+    /// Version 22: Der Export kennt ein zweites Ablage-Muster — <c>content/&lt;modul&gt;/&lt;guid&gt;.json</c>
+    /// statt einer Datei je Modul, für Git; die Sammeldatei bleibt daneben mit leeren Listen
+    /// stehen, damit der Import jede Datei findet, wo er sie erwartet. Export-Profile tragen
+    /// dafür ein <c>layout</c>.
     /// Version 21: Inhalte tragen <c>basedOnId</c> — das Vorbild einer Variante; ihre Werte in
     /// <c>content/field-values.json</c> stehen <b>aufgelöst</b> darin, damit die Engine die
     /// Kette nicht selbst verfolgen muss, und ein geerbter Wert nennt in
@@ -90,7 +116,7 @@ public class ExportService(
     /// ihr Skizzenbild hängt als Asset an ihrer GUID und steht damit ohne neue Spalte im
     /// Archiv.
     /// </remarks>
-    public const int FormatVersion = 21;
+    public const int FormatVersion = 22;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -104,6 +130,7 @@ public class ExportService(
     public async Task WriteExportAsync(
         Guid projectId, ExportTarget target, bool includeAssets, Stream output,
         ContentStatus? minimumStatus = null, IReadOnlySet<string>? moduleKeys = null,
+        ExportLayout layout = ExportLayout.SingleFile,
         CancellationToken ct = default)
     {
         var tempPath = Path.Combine(Path.GetTempPath(), $"gdm-export-{Guid.NewGuid():N}.zip");
@@ -111,7 +138,7 @@ public class ExportService(
             tempPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920,
             FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 
-        await BuildArchiveAsync(projectId, target, includeAssets, temp, minimumStatus, moduleKeys, ct);
+        await BuildArchiveAsync(projectId, target, includeAssets, temp, minimumStatus, moduleKeys, layout, ct);
 
         temp.Position = 0;
         await temp.CopyToAsync(output, ct);
@@ -119,7 +146,8 @@ public class ExportService(
 
     private async Task BuildArchiveAsync(
         Guid projectId, ExportTarget target, bool includeAssets, Stream zipStream,
-        ContentStatus? minimumStatus, IReadOnlySet<string>? moduleKeys, CancellationToken ct)
+        ContentStatus? minimumStatus, IReadOnlySet<string>? moduleKeys, ExportLayout layout,
+        CancellationToken ct)
     {
         await using var db = await factory.CreateDbContextAsync(ct);
 
@@ -454,27 +482,68 @@ public class ExportService(
             await JsonSerializer.SerializeAsync(entryStream, payload, ExportFormat.JsonOptions, ct);
         }
 
-        await WriteJsonAsync("content/items.json", new { items });
-        await WriteJsonAsync("content/crafting.json", new { recipes });
-        await WriteJsonAsync("content/currencies.json", new { currencies });
-        await WriteJsonAsync("content/rarities.json", new { rarities });
-        await WriteJsonAsync("content/npcs.json", new { npcs, relationTypes = npcRelationTypes });
-        await WriteJsonAsync("content/factions.json", new { factions });
-        await WriteJsonAsync("content/diplomacy.json", new { relations });
-        await WriteJsonAsync("content/maps.json", new { maps });
-        await WriteJsonAsync("content/dialogs.json", new { dialogues });
-        await WriteJsonAsync("content/story.json", new { entries = storyEntries });
-        await WriteJsonAsync("content/quests.json", new { quests });
-        await WriteJsonAsync("content/events.json", new { events });
+        /// <summary>
+        /// Schreibt eine Inhaltsdatei — je nach Layout als eine Datei oder als Ordner mit einer
+        /// Datei je Entität. Im Ordner-Layout steht <b>zusätzlich</b> die Sammeldatei mit der
+        /// leeren Liste: Der Import findet jede Datei, wo er sie erwartet, und ein Modul ohne
+        /// Inhalt sieht auch dann nach „leer“ aus und nicht nach „Datei vergessen“.
+        /// </summary>
+        async Task WriteContentAsync<T>(string file, string property, List<T> entries, object? extra = null)
+            where T : ContentEntity
+        {
+            if (layout == ExportLayout.SingleFile)
+            {
+                await WriteJsonAsync($"content/{file}.json", Wrap(property, entries, extra));
+                return;
+            }
+
+            await WriteJsonAsync($"content/{file}.json", Wrap(property, new List<T>(), extra));
+
+            foreach (var entity in entries)
+            {
+                // Der Dateiname trägt die GUID und nicht den Namen: Ein Umbenennen soll keine
+                // Datei verschieben.
+                await WriteJsonAsync($"content/{file}/{entity.Id:D}.json", Wrap(property, new List<T> { entity }));
+            }
+        }
+
+        static object Wrap<T>(string property, List<T> entries, object? extra = null)
+        {
+            var payload = new Dictionary<string, object?> { [property] = entries };
+
+            // Was neben der Liste in derselben Datei steht (die Beziehungsarten der NPCs).
+            if (extra is not null)
+            {
+                foreach (var pair in extra.GetType().GetProperties())
+                {
+                    payload[pair.Name] = pair.GetValue(extra);
+                }
+            }
+
+            return payload;
+        }
+
+        await WriteContentAsync("items", "items", items);
+        await WriteContentAsync("crafting", "recipes", recipes);
+        await WriteContentAsync("currencies", "currencies", currencies);
+        await WriteContentAsync("rarities", "rarities", rarities);
+        await WriteContentAsync("npcs", "npcs", npcs, new { relationTypes = npcRelationTypes });
+        await WriteContentAsync("factions", "factions", factions);
+        await WriteContentAsync("diplomacy", "relations", relations);
+        await WriteContentAsync("maps", "maps", maps);
+        await WriteContentAsync("dialogs", "dialogues", dialogues);
+        await WriteContentAsync("story", "entries", storyEntries);
+        await WriteContentAsync("quests", "quests", quests);
+        await WriteContentAsync("events", "events", events);
         await WriteJsonAsync("content/player.json", new { playerCharacters = players, skillTrees, skills });
-        await WriteJsonAsync("content/classes.json", new { classes });
-        await WriteJsonAsync("content/loot.json", new { lootTables });
-        await WriteJsonAsync("content/world.json", new { worldStates });
-        await WriteJsonAsync("content/effects.json", new { effects });
-        await WriteJsonAsync("content/achievements.json", new { achievements });
-        await WriteJsonAsync("content/collectibles.json", new { collectibles });
-        await WriteJsonAsync("content/audio.json", new { soundEffects });
-        await WriteJsonAsync("content/cutscenes.json", new { cutscenes });
+        await WriteContentAsync("classes", "classes", classes);
+        await WriteContentAsync("loot", "lootTables", lootTables);
+        await WriteContentAsync("world", "worldStates", worldStates);
+        await WriteContentAsync("effects", "effects", effects);
+        await WriteContentAsync("achievements", "achievements", achievements);
+        await WriteContentAsync("collectibles", "collectibles", collectibles);
+        await WriteContentAsync("audio", "soundEffects", soundEffects);
+        await WriteContentAsync("cutscenes", "cutscenes", cutscenes);
         await WriteJsonAsync("content/tags.json", new { tags = contentTags });
         await WriteJsonAsync("content/localization.json", new { languages, translations });
         await WriteJsonAsync("content/engine-presets.json", new { presets = enginePresets });

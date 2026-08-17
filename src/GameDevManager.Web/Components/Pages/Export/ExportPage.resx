@@ -81,6 +81,12 @@
   <data name="ProfileSavedMessage" xml:space="preserve">
     <value>Profil „{0}“ gespeichert.</value>
   </data>
+  <data name="PerEntityLayout" xml:space="preserve">
+    <value>Eine Datei je Eintrag</value>
+  </data>
+  <data name="PerEntityLayoutHint" xml:space="preserve">
+    <value>Für Git: Die Inhalte liegen als „content/items/&lt;guid&gt;.json“ statt als eine Datei je Modul — der Diff zeigt dann, welcher Eintrag sich geändert hat. Der Import liest beide Ablagen.</value>
+  </data>
   <data name="MinimumStatusLabel" xml:space="preserve">
     <value>Mindest-Bearbeitungsstand</value>
   </data>

@@ -892,7 +892,7 @@ Export-Seite. Druckfreundliche feste Vorlage — das PDF liefert der Browser-Dru
 eigenes Format: vollständig abgeleitet, kein Import, keine `FormatVersion`. Benutzerdefinierte
 Felder stehen (noch) nicht im Dokument — die Kapitel zeigen Name, Art, Beschreibung und Bild.
 
-### F41 — Git-freundlicher Export
+### F41 — Git-freundlicher Export ✅ umgesetzt
 
 > **Als** Entwickler **möchte ich** den Export als eine Datei je Entität statt einer je Modul,
 > **damit** ich ihn in Git legen kann und der Diff zeigt, welche Entität sich geändert hat, statt
@@ -905,6 +905,18 @@ steht ohnehin schon zentral in `ExportFormat`. Der Dateiname sollte die GUID tra
 Namen — ein Umbenennen soll keine Datei verschieben.
 
 *Aufwand: M · Migration: nein · Format: +1*
+
+**Umgesetzt** genau so: `ExportLayout.PerEntity` legt `content/&lt;modul&gt;/&lt;guid&gt;.json` an,
+`FormatVersion` auf **22**. **Doch eine Migration**, anders als hier vermutet: Das Export-Profil
+trägt das Layout mit (`ExportProfile.Layout`, als Text wie das Ziel und aus demselben Grund).
+Drei Dinge: Die **Sammeldatei bleibt daneben stehen** — mit leeren Listen; so findet der Import
+jede Datei, wo er sie erwartet, ein Modul ohne Inhalt sieht nach „leer“ und nicht nach „Datei
+vergessen“ aus, und was neben der Liste in derselben Datei steht (die Beziehungsarten der NPCs)
+hat weiterhin seinen Platz. Der **Import liest beide Ablagen** und führt sie zusammen
+(`ExportFormat.MergeLists` über Reflection statt einer Aufzählung je Wrapper — die wäre die
+Stelle, an der eine neu hinzugekommene Liste stillschweigend fehlte). Und der **Dateiname trägt
+die GUID**: Ein Umbenennen soll keine Datei verschieben, sonst zeigte der Diff eine gelöschte
+und eine neue statt einer geänderten.
 
 ### F42 — Teil-Import mit Konfliktanzeige
 

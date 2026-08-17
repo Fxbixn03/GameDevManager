@@ -125,4 +125,30 @@ internal static class ExportFormat
 
     private static bool Is(string propertyName, string name) =>
         propertyName.Equals(name, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Hängt die Listen einer eingelesenen Teildatei an die des Sammel-Wrappers an — der Weg,
+    /// auf dem das Git-freundliche Ordner-Layout wieder zu einem Modulbestand wird.
+    /// <para>
+    /// Über Reflection und nicht über eine Aufzählung je Wrapper: Es sind gut zwanzig, jeder
+    /// mit ein bis drei Listen, und eine Aufzählung wäre die Stelle, an der eine neu
+    /// hinzugekommene Liste stillschweigend fehlte.
+    /// </para>
+    /// </summary>
+    internal static void MergeLists<T>(T target, T part)
+    {
+        foreach (var property in typeof(T).GetProperties())
+        {
+            if (property.GetValue(target) is not System.Collections.IList list
+                || property.GetValue(part) is not System.Collections.IEnumerable added)
+            {
+                continue;
+            }
+
+            foreach (var entry in added)
+            {
+                list.Add(entry);
+            }
+        }
+    }
 }

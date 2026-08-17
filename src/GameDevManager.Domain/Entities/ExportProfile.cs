@@ -30,6 +30,13 @@ public class ExportProfile
     public bool IncludeAssets { get; set; } = true;
 
     /// <summary>
+    /// Wie die Inhaltsdateien im Archiv liegen — <c>SingleFile</c> (eine Datei je Modul) oder
+    /// <c>PerEntity</c> (eine Datei je Entität, für Git). Als Text und aus demselben Grund wie
+    /// beim <see cref="Target"/>: Das Enum liegt in der Datenschicht.
+    /// </summary>
+    public string Layout { get; set; } = "SingleFile";
+
+    /// <summary>
     /// Mindest-Bearbeitungsstand; <c>null</c> heißt „alles“. Ein Mindeststand und kein
     /// einzelner — siehe <see cref="ContentStatus"/>.
     /// </summary>

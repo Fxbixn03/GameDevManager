@@ -1418,6 +1418,11 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<bool>("IncludeAssets")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Layout")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("MinimumStatus")
                         .HasColumnType("INTEGER");
 

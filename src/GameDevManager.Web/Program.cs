@@ -153,6 +153,7 @@ app.MapGet("/assets/{id:guid}", async (Guid id, AssetService assets, HttpContext
 // lädt hier direkt herunter. Die Export-Seite baut nur die URL auf diesen Endpunkt.
 app.MapGet("/export/{projectId:guid}", async (
     Guid projectId, string? target, bool? assets, string? minimumStatus, string? moduleKeys,
+    string? layout,
     ExportService export,
     IDbContextFactory<GameDevManagerDbContext> dbFactory, HttpContext http, CancellationToken ct) =>
 {
@@ -181,12 +182,18 @@ app.MapGet("/export/{projectId:guid}", async (
     // Ohne Angabe gehen alle Module hinaus — dieselbe Regel wie beim Statusfilter.
     var modules = UserPermissions.ParseModuleKeys(moduleKeys);
 
+    // Ohne Angabe eine Datei je Modul — das Ordner-Layout ist für Git und die Ausnahme.
+    var exportLayout = Enum.TryParse<ExportLayout>(layout, ignoreCase: true, out var chosenLayout)
+        ? chosenLayout
+        : ExportLayout.SingleFile;
+
     // Der Projektname wird Teil des Dateinamens — unzulässige Zeichen fliegen raus.
     var safeName = string.Join("-", project.Name.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
     var fileName = $"{safeName}-{exportTarget.ToString().ToLowerInvariant()}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.zip";
 
     return Results.Stream(
-        stream => export.WriteExportAsync(projectId, exportTarget, assets ?? true, stream, floor, modules, ct),
+        stream => export.WriteExportAsync(
+            projectId, exportTarget, assets ?? true, stream, floor, modules, exportLayout, ct),
         "application/zip",
         fileDownloadName: fileName);
 }).RequireAuthorization();
