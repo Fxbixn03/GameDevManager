@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Dialogues – GameDevManager</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>Dialogue types</value>
+  </data>
+  <data name="NewDialogue" xml:space="preserve">
+    <value>New dialogue</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No dialogues yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Barks appear at random in the open world, conversations have a flow with choices. Participants can be NPCs among themselves, with the player, or both.</value>
+  </data>
+  <data name="FirstDialogue" xml:space="preserve">
+    <value>Create the first dialogue</value>
+  </data>
+  <data name="ProblemsTitle" xml:space="preserve">
+    <value>Dialogue dead ends</value>
+  </data>
+  <data name="ProblemsHint" xml:space="preserve">
+    <value>These lines cannot be reached from any choice — the player will never see them:</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search by name or description</value>
+  </data>
+  <data name="KindFilterLabel" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="FilterConversations" xml:space="preserve">
+    <value>Conversations</value>
+  </data>
+  <data name="FilterBarks" xml:space="preserve">
+    <value>Barks</value>
+  </data>
+  <data name="TypeFilterLabel" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Changed {0}</value>
+  </data>
+  <data name="LineCountChip" xml:space="preserve">
+    <value>{0} line(s)</value>
+  </data>
+  <data name="KindConversation" xml:space="preserve">
+    <value>Conversation</value>
+  </data>
+  <data name="KindBark" xml:space="preserve">
+    <value>Barks</value>
+  </data>
+  <data name="ParticipantsNpcOnly" xml:space="preserve">
+    <value>{0} NPC(s)</value>
+  </data>
+  <data name="ParticipantsWithPlayer" xml:space="preserve">
+    <value>{0} NPC(s) + player</value>
+  </data>
+  <data name="NoType" xml:space="preserve">
+    <value>no type</value>
+  </data>
+  <data name="VoiceOverTooltip" xml:space="preserve">
+    <value>Voice-over</value>
+  </data>
+  <data name="VoiceOverAria" xml:space="preserve">
+    <value>Voice-over of “{0}”</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete {0}</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>No dialogue matches the filters.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} conversation(s), {1} bark set(s)</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete dialogue</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with its {1} line(s) and all choices.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>“{0}” has been deleted.</value>
+  </data>
+  <data name="GraphTooltip" xml:space="preserve">
+    <value>Show as a graph</value>
+  </data>
+  <data name="GraphAria" xml:space="preserve">
+    <value>Show the flow of “{0}” as a graph</value>
+  </data>
+</root>

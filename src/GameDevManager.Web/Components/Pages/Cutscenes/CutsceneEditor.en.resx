@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>There is no cutscene with this GUID. Perhaps it was deleted.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to the overview</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Cutscene type</value>
+  </data>
+  <data name="TypeHelper" xml:space="preserve">
+    <value>The type adds custom fields, such as duration or camera work.</value>
+  </data>
+  <data name="StoryEntryLabel" xml:space="preserve">
+    <value>Story section</value>
+  </data>
+  <data name="StoryEntryHelper" xml:space="preserve">
+    <value>Which part of the story the cutscene belongs to.</value>
+  </data>
+  <data name="DialogueLabel" xml:space="preserve">
+    <value>Dialogue</value>
+  </data>
+  <data name="DialogueHelper" xml:space="preserve">
+    <value>What is spoken in the cutscene.</value>
+  </data>
+  <data name="SectionStoryboard" xml:space="preserve">
+    <value>Storyboard</value>
+  </data>
+  <data name="AddShot" xml:space="preserve">
+    <value>Shot</value>
+  </data>
+  <data name="NoShots" xml:space="preserve">
+    <value>No shot yet. Each shot describes what happens in the scene — their order is the storyboard.</value>
+  </data>
+  <data name="ShotDurationLabel" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="ShotCameraLabel" xml:space="preserve">
+    <value>Camera</value>
+  </data>
+  <data name="ShotImageUpload" xml:space="preserve">
+    <value>Sketch</value>
+  </data>
+  <data name="ShotImageAfterSave" xml:space="preserve">
+    <value>Sketch after saving.</value>
+  </data>
+  <data name="StoryboardHint" xml:space="preserve">
+    <value>Total duration {0} s. The order can be dragged.</value>
+  </data>
+  <data name="ShotTextLabel" xml:space="preserve">
+    <value>What happens?</value>
+  </data>
+  <data name="MoveShotUp" xml:space="preserve">
+    <value>Move shot up</value>
+  </data>
+  <data name="MoveShotDown" xml:space="preserve">
+    <value>Move shot down</value>
+  </data>
+  <data name="RemoveShot" xml:space="preserve">
+    <value>Remove shot</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>For details only this one cutscene needs.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="HeadingDefault" xml:space="preserve">
+    <value>Cutscene</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>New cutscene</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Cutscene without a name</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete cutscene</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with its storyboard, field values, individual fields and sprites.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Cutscene deleted.</value>
+  </data>
+</root>

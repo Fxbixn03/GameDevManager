@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Currencies – GameDevManager</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>Currency types</value>
+  </data>
+  <data name="NewCurrency" xml:space="preserve">
+    <value>New currency</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No currencies yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Any number of them can exist side by side — gold for trading and reputation for faction rewards, for example. Traders later accept one of them.</value>
+  </data>
+  <data name="FirstCurrency" xml:space="preserve">
+    <value>First currency</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search by name, symbol or description</value>
+  </data>
+  <data name="TypeFilterLabel" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Changed {0}</value>
+  </data>
+  <data name="NoType" xml:space="preserve">
+    <value>no type</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete {0}</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>No currency matches the search.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} currency/currencies</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete currency</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with all field values and sprites.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>“{0}” has been deleted.</value>
+  </data>
+</root>

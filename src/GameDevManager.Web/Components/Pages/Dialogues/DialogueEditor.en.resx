@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>There is no dialogue with this GUID. Perhaps it was deleted.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to the overview</value>
+  </data>
+  <data name="SubtitleNew" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="VoiceOver" xml:space="preserve">
+    <value>Voice-over</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="KindConversation" xml:space="preserve">
+    <value>Conversation</value>
+  </data>
+  <data name="KindBark" xml:space="preserve">
+    <value>Barks</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Dialogue type</value>
+  </data>
+  <data name="IncludesPlayerLabel" xml:space="preserve">
+    <value>Player involved</value>
+  </data>
+  <data name="SectionParticipants" xml:space="preserve">
+    <value>Participating NPCs</value>
+  </data>
+  <data name="AddNpc" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="NoNpcsPrefix" xml:space="preserve">
+    <value>There are no NPCs yet —</value>
+  </data>
+  <data name="NoNpcsLink" xml:space="preserve">
+    <value>create some now</value>
+  </data>
+  <data name="NoParticipants" xml:space="preserve">
+    <value>Nobody yet. A dialogue can run between one NPC and the player, between several NPCs, or between several NPCs and the player.</value>
+  </data>
+  <data name="NpcLabel" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="RemoveTooltip" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="RemoveParticipantAria" xml:space="preserve">
+    <value>Remove participant</value>
+  </data>
+  <data name="SectionBarks" xml:space="preserve">
+    <value>Barks</value>
+  </data>
+  <data name="SectionFlow" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="AddLine" xml:space="preserve">
+    <value>Line</value>
+  </data>
+  <data name="NeedSpeaker" xml:space="preserve">
+    <value>There has to be at least one participant or the player so that somebody can speak.</value>
+  </data>
+  <data name="NoLinesBark" xml:space="preserve">
+    <value>No bark yet. The lines stand independently side by side and appear at random.</value>
+  </data>
+  <data name="NoLinesConversation" xml:space="preserve">
+    <value>No line yet. The first one is the entry into the conversation; from there choices lead on.</value>
+  </data>
+  <data name="EntryChip" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="SpeakerLabel" xml:space="preserve">
+    <value>Speaker</value>
+  </data>
+  <data name="SpeakerPlayer" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="UnknownNpc" xml:space="preserve">
+    <value>(unknown)</value>
+  </data>
+  <data name="MoveUpTooltip" xml:space="preserve">
+    <value>Move up</value>
+  </data>
+  <data name="MoveUpAria" xml:space="preserve">
+    <value>Move line up</value>
+  </data>
+  <data name="MoveDownTooltip" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+  <data name="MoveDownAria" xml:space="preserve">
+    <value>Move line down</value>
+  </data>
+  <data name="RemoveLine" xml:space="preserve">
+    <value>Remove line</value>
+  </data>
+  <data name="TextLabel" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="ChoiceLabel" xml:space="preserve">
+    <value>Choice</value>
+  </data>
+  <data name="NextLineLabel" xml:space="preserve">
+    <value>Continue to</value>
+  </data>
+  <data name="ConversationEnds" xml:space="preserve">
+    <value>Conversation ends</value>
+  </data>
+  <data name="RemoveChoice" xml:space="preserve">
+    <value>Remove choice</value>
+  </data>
+  <data name="AddChoice" xml:space="preserve">
+    <value>Choice</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>For details only this one dialogue needs.</value>
+  </data>
+  <data name="SectionAvailability" xml:space="preserve">
+    <value>Availability</value>
+  </data>
+  <data name="AvailabilityEmptyHint" xml:space="preserve">
+    <value>Without a condition the dialogue is always available.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="GuidLabel" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="LastModified" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="KindHintBark" xml:space="preserve">
+    <value>Lines stand independently side by side and appear at random.</value>
+  </data>
+  <data name="KindHintConversation" xml:space="preserve">
+    <value>Lines form a flow; choices lead on.</value>
+  </data>
+  <data name="HeadingDefault" xml:space="preserve">
+    <value>Dialogue</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>New dialogue</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Dialogue without a name</value>
+  </data>
+  <data name="NoText" xml:space="preserve">
+    <value>(no text)</value>
+  </data>
+  <data name="LineLabelFormat" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete dialogue</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with all lines, choices and conditions.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Dialogue deleted.</value>
+  </data>
+  <data name="Play" xml:space="preserve">
+    <value>Play through</value>
+  </data>
+  <data name="LineConditionsTooltip" xml:space="preserve">
+    <value>Availability of this line</value>
+  </data>
+  <data name="ChoiceConditionsTooltip" xml:space="preserve">
+    <value>Availability of this choice</value>
+  </data>
+  <data name="ConditionsLockedTooltip" xml:space="preserve">
+    <value>Save first — conditions hang on the saved line.</value>
+  </data>
+  <data name="ConditionsDialogTitle" xml:space="preserve">
+    <value>Availability</value>
+  </data>
+  <data name="ConditionsEmptyHint" xml:space="preserve">
+    <value>Without a condition the line or choice is always available.</value>
+  </data>
+</root>

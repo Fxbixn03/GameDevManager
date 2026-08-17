@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Bulk edit</value>
+  </data>
+  <data name="SubtitleEmpty" xml:space="preserve">
+    <value>First choose a module, then select the entries.</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} entries in {1}</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search entries …</value>
+  </data>
+  <data name="SelectedCount" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
+  <data name="ReadOnly" xml:space="preserve">
+    <value>This account may only read — changes are not possible here.</value>
+  </data>
+  <data name="PickModuleTitle" xml:space="preserve">
+    <value>Choose a module</value>
+  </data>
+  <data name="PickModuleHint" xml:space="preserve">
+    <value>Bulk edit changes many entries at once — type, tags or a field value. It reaches every module that carries its own content.</value>
+  </data>
+  <data name="EntriesHeading" xml:space="preserve">
+    <value>Entries</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>All visible</value>
+  </data>
+  <data name="SelectNone" xml:space="preserve">
+    <value>Clear selection</value>
+  </data>
+  <data name="NoEntries" xml:space="preserve">
+    <value>There are no entries for this filter.</value>
+  </data>
+  <data name="ActionHeading" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="ActionHint" xml:space="preserve">
+    <value>Applies to all selected entries at once. Each change afterwards appears individually in the change log.</value>
+  </data>
+  <data name="TabType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Assign type</value>
+  </data>
+  <data name="TypeHint" xml:space="preserve">
+    <value>Without a selection the type is removed. Field values that no longer belong to the new type fall away.</value>
+  </data>
+  <data name="ConfirmStatusMessage" xml:space="preserve">
+    <value>Set {0} entries to “{1}”?</value>
+  </data>
+  <data name="TabStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>Editing status</value>
+  </data>
+  <data name="StatusHint" xml:space="preserve">
+    <value>The status applies across all content modules and decides what goes out on export.</value>
+  </data>
+  <data name="TabTags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="TagLabel" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="TagAssign" xml:space="preserve">
+    <value>assign</value>
+  </data>
+  <data name="TagUnassign" xml:space="preserve">
+    <value>remove</value>
+  </data>
+  <data name="NoTags" xml:space="preserve">
+    <value>There are no tags in the project yet.</value>
+  </data>
+  <data name="TabField" xml:space="preserve">
+    <value>Field value</value>
+  </data>
+  <data name="FieldLabel" xml:space="preserve">
+    <value>Field</value>
+  </data>
+  <data name="FieldOption" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="FieldHint" xml:space="preserve">
+    <value>An empty value clears the field on all selected entries. Entries whose type does not carry this field stay untouched.</value>
+  </data>
+  <data name="NoFields" xml:space="preserve">
+    <value>The types of this module have no fields yet.</value>
+  </data>
+  <data name="ApplyButton" xml:space="preserve">
+    <value>Apply to selection</value>
+  </data>
+  <data name="ConfirmTitle" xml:space="preserve">
+    <value>Apply bulk change?</value>
+  </data>
+  <data name="ConfirmYes" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ConfirmCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ConfirmTypeMessage" xml:space="preserve">
+    <value>The type of {0} selected entries will be set. Field values that no longer apply are removed.</value>
+  </data>
+  <data name="ConfirmTagAssignMessage" xml:space="preserve">
+    <value>The tag will be assigned to {0} selected entries.</value>
+  </data>
+  <data name="ConfirmTagUnassignMessage" xml:space="preserve">
+    <value>The tag will be removed from {0} selected entries.</value>
+  </data>
+  <data name="ConfirmFieldMessage" xml:space="preserve">
+    <value>The field “{1}” will be set on {0} selected entries.</value>
+  </data>
+  <data name="ChangedMessage" xml:space="preserve">
+    <value>{0} entries changed.</value>
+  </data>
+  <data name="NothingChanged" xml:space="preserve">
+    <value>Nothing changed — the entries already carried that value.</value>
+  </data>
+  <data name="SkippedMessage" xml:space="preserve">
+    <value>{0} entries stayed untouched.</value>
+  </data>
+</root>

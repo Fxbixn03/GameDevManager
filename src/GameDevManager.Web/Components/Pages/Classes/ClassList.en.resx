@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Classes – GameDevManager</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>Class types</value>
+  </data>
+  <data name="NewClass" xml:space="preserve">
+    <value>New class</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No classes yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Classes are mapped onto the player character and NPCs. Abilities, passive bonuses and starting values are defined by the fields of the class type.</value>
+  </data>
+  <data name="FirstClass" xml:space="preserve">
+    <value>First class</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search by name or description</value>
+  </data>
+  <data name="TypeFilterLabel" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Changed {0}</value>
+  </data>
+  <data name="CarriedByCount" xml:space="preserve">
+    <value>{0} NPC(s), {1} player character(s)</value>
+  </data>
+  <data name="NoType" xml:space="preserve">
+    <value>no type</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete {0}</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>No class matches the search.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} class(es)</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete class</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with field values and sprites. NPCs and player characters with this class become classless.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>“{0}” has been deleted.</value>
+  </data>
+</root>

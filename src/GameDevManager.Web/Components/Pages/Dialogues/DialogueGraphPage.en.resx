@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Graph: {0}</value>
+  </data>
+  <data name="TitleFormat" xml:space="preserve">
+    <value>{0} as a graph</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Lines as nodes, choices as edges.</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} lines, {1} choices with a target — columns are the depth in the flow.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>loading …</value>
+  </data>
+  <data name="BreadcrumbDialogues" xml:space="preserve">
+    <value>Dialogues</value>
+  </data>
+  <data name="BreadcrumbGraph" xml:space="preserve">
+    <value>Graph</value>
+  </data>
+  <data name="ToList" xml:space="preserve">
+    <value>To the overview</value>
+  </data>
+  <data name="ToEditor" xml:space="preserve">
+    <value>Edit dialogue</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>This dialogue does not exist (any more).</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No lines yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>A graph is built from the lines of the conversation — the first one is created in the form.</value>
+  </data>
+  <data name="GraphAria" xml:space="preserve">
+    <value>Flow of the dialogue “{0}” as a graph</value>
+  </data>
+  <data name="LegendEntry" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="LegendLine" xml:space="preserve">
+    <value>Line</value>
+  </data>
+  <data name="LegendUnreachable" xml:space="preserve">
+    <value>unreachable</value>
+  </data>
+  <data name="EndMarker" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="BarkHint" xml:space="preserve">
+    <value>Barks have no flow — their lines stand independently side by side.</value>
+  </data>
+  <data name="UnreachableHint" xml:space="preserve">
+    <value>{0} lines cannot be reached from the first one through any choice.</value>
+  </data>
+</root>

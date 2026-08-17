@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>There is no effect with this GUID. Perhaps it was deleted.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to the overview</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Effect</value>
+  </data>
+  <data name="DescriptionHelper" xml:space="preserve">
+    <value>For example: the target takes X burn damage for X seconds.</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Effect type</value>
+  </data>
+  <data name="TypeHelper" xml:space="preserve">
+    <value>The type adds the magnitudes, such as damage per second and duration.</value>
+  </data>
+  <data name="SectionAssignments" xml:space="preserve">
+    <value>Assigned items</value>
+  </data>
+  <data name="AddItem" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="NoItemsHint" xml:space="preserve">
+    <value>There are no items yet —</value>
+  </data>
+  <data name="NoItemsLink" xml:space="preserve">
+    <value>create some now</value>
+  </data>
+  <data name="NoAssignments" xml:space="preserve">
+    <value>Not assigned to any item yet — burning to its flaming sword, for example.</value>
+  </data>
+  <data name="ItemLabel" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="RemoveAssignment" xml:space="preserve">
+    <value>Remove assignment</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>For details only this one effect needs.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="PageHeadingDefault" xml:space="preserve">
+    <value>Effect</value>
+  </data>
+  <data name="PageHeadingNew" xml:space="preserve">
+    <value>New effect</value>
+  </data>
+  <data name="PageHeadingUnnamed" xml:space="preserve">
+    <value>Effect without a name</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete effect</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with assignments, field values, individual fields and sprites. The items remain.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Effect deleted.</value>
+  </data>
+</root>
