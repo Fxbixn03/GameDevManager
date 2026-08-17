@@ -66,6 +66,12 @@
   <data name="EditTooltip" xml:space="preserve">
     <value>Angaben bearbeiten</value>
   </data>
+  <data name="RegionsTooltip" xml:space="preserve">
+    <value>Ausschnitte verwalten</value>
+  </data>
+  <data name="RegionsDialogTitle" xml:space="preserve">
+    <value>Ausschnitte in „{0}“</value>
+  </data>
   <data name="DeleteTooltip" xml:space="preserve">
     <value>Löschen</value>
   </data>

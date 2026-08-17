@@ -1,0 +1,209 @@
+@inject AssetService Library
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<AssetRegionsDialog> L
+
+@*
+    Verwaltet die benannten Ausschnitte eines Sprite-Sheets. Geschnitten wird nichts — die
+    Ausschnitte gehen als Metadaten in den Export, die Engine wendet sie an. Für Unity ist der
+    Atlas mit Sprite-Rects ohnehin der gebräuchlichere Weg als 24 Einzeldateien.
+*@
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+            <MudIcon Icon="@Icons.Material.Filled.GridOn" />
+            <div>
+                <MudText Typo="Typo.h6">@L["Title"]</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@Asset.FileName</MudText>
+            </div>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudStack Spacing="4" Style="min-width:min(880px, 90vw);">
+
+            @if (!HasDimensions)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true">@L["NoDimensionsHint"]</MudAlert>
+            }
+            else
+            {
+                <div class="gdm-region-preview">
+                    <img src="@($"/assets/{Asset.Id}")" alt="@Asset.FileName" />
+                    <svg viewBox="@($"0 0 {Asset.Width} {Asset.Height}")" preserveAspectRatio="none">
+                        @foreach (var (region, index) in _regions.Select((r, i) => (r, i)))
+                        {
+                            <rect x="@region.X" y="@region.Y"
+                                  width="@region.Width" height="@region.Height"
+                                  class="@(index == _selected ? "gdm-region gdm-region-active" : "gdm-region")"
+                                  vector-effect="non-scaling-stroke" />
+                        }
+                    </svg>
+                </div>
+            }
+
+            <MudExpansionPanels Elevation="0" Dense="true">
+                <MudExpansionPanel Text="@L["GridSection"]">
+                    <MudStack Spacing="3">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["GridHint"]</MudText>
+                        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                            <MudNumericField @bind-Value="_cellWidth" Label="@L["CellWidth"]" Min="1"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width:130px;" />
+                            <MudNumericField @bind-Value="_cellHeight" Label="@L["CellHeight"]" Min="1"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width:130px;" />
+                            <MudNumericField @bind-Value="_offsetX" Label="@L["OffsetX"]" Min="0"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width:130px;" />
+                            <MudNumericField @bind-Value="_offsetY" Label="@L["OffsetY"]" Min="0"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width:130px;" />
+                            <MudNumericField @bind-Value="_spacingX" Label="@L["SpacingX"]" Min="0"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width:130px;" />
+                            <MudNumericField @bind-Value="_spacingY" Label="@L["SpacingY"]" Min="0"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width:130px;" />
+                            <MudButton StartIcon="@Icons.Material.Filled.GridView"
+                                       Variant="Variant.Outlined"
+                                       Disabled="@(!HasDimensions)"
+                                       OnClick="BuildGridAsync">
+                                @L["BuildGrid"]
+                            </MudButton>
+                        </MudStack>
+                    </MudStack>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+
+            @if (_regions.Count == 0)
+            {
+                <MudAlert Severity="Severity.Normal" Dense="true">@L["EmptyHint"]</MudAlert>
+            }
+            else
+            {
+                <MudSimpleTable Dense="true" Hover="true" Elevation="0" Style="overflow-x:auto;">
+                    <thead>
+                        <tr>
+                            <th>@L["ColumnName"]</th>
+                            <th style="width:90px;">X</th>
+                            <th style="width:90px;">Y</th>
+                            <th style="width:90px;">@L["ColumnWidth"]</th>
+                            <th style="width:90px;">@L["ColumnHeight"]</th>
+                            <th style="width:48px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (region, index) in _regions.Select((r, i) => (r, i)))
+                        {
+                            <tr @onfocusin="@(() => _selected = index)" @onmouseover="@(() => _selected = index)">
+                                <td>
+                                    <MudTextField T="string"
+                                                  Value="region.Name"
+                                                  ValueChanged="value => region.Name = value ?? string.Empty"
+                                                  Margin="Margin.Dense"
+                                                  Variant="Variant.Text"
+                                                  Immediate="true" />
+                                </td>
+                                <td>
+                                    <MudNumericField T="int" Value="region.X" ValueChanged="value => region.X = value"
+                                                     Margin="Margin.Dense" Variant="Variant.Text" HideSpinButtons="true" />
+                                </td>
+                                <td>
+                                    <MudNumericField T="int" Value="region.Y" ValueChanged="value => region.Y = value"
+                                                     Margin="Margin.Dense" Variant="Variant.Text" HideSpinButtons="true" />
+                                </td>
+                                <td>
+                                    <MudNumericField T="int" Value="region.Width" ValueChanged="value => region.Width = value"
+                                                     Margin="Margin.Dense" Variant="Variant.Text" HideSpinButtons="true" />
+                                </td>
+                                <td>
+                                    <MudNumericField T="int" Value="region.Height" ValueChanged="value => region.Height = value"
+                                                     Margin="Margin.Dense" Variant="Variant.Text" HideSpinButtons="true" />
+                                </td>
+                                <td>
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => _regions.Remove(region))"
+                                                   aria-label="@L["RemoveAria"]" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+
+            <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="AddRegion">
+                @L["AddRegion"]
+            </MudButton>
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" data-gdm-save>
+            @L["Save"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public required Asset Asset { get; set; }
+
+    private List<AssetRegion> _regions = [];
+    private int _selected = -1;
+
+    private int _cellWidth = 32;
+    private int _cellHeight = 32;
+    private int _offsetX;
+    private int _offsetY;
+    private int _spacingX;
+    private int _spacingY;
+
+    private bool HasDimensions => Asset.Width is > 0 && Asset.Height is > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _regions = await Library.GetRegionsAsync(Asset.Id);
+    }
+
+    private void AddRegion()
+    {
+        _regions.Add(new AssetRegion
+        {
+            AssetId = Asset.Id,
+            Name = L["NewRegionName", _regions.Count + 1],
+            X = 0,
+            Y = 0,
+            Width = Math.Min(_cellWidth, Asset.Width ?? _cellWidth),
+            Height = Math.Min(_cellHeight, Asset.Height ?? _cellHeight)
+        });
+    }
+
+    private async Task BuildGridAsync()
+    {
+        try
+        {
+            // Der Raster-Vorschlag ersetzt die Liste, statt sie zu ergänzen: Ein zweites Raster
+            // über dasselbe Bild ist fast immer eine Korrektur des ersten. Gespeichert ist
+            // nichts, bis der Nutzer speichert — der Weg zurück ist „Abbrechen“.
+            _regions = await Library.BuildGridAsync(
+                Asset.Id, _cellWidth, _cellHeight, _offsetX, _offsetY, _spacingX, _spacingY);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        try
+        {
+            await Library.SaveRegionsAsync(Asset.Id, _regions);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

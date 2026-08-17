@@ -139,6 +139,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
     /// <summary>Frühere Fassungen ersetzter Dateien — die Zeile des Assets bleibt bestehen.</summary>
     public DbSet<AssetVersion> AssetVersions => Set<AssetVersion>();
 
+    /// <summary>Benannte Ausschnitte innerhalb eines Assets — die Zellen eines Sprite-Sheets.</summary>
+    public DbSet<AssetRegion> AssetRegions => Set<AssetRegion>();
+
     public DbSet<AssetTag> AssetTags => Set<AssetTag>();
 
     public DbSet<AssetTagAssignment> AssetTagAssignments => Set<AssetTagAssignment>();
@@ -329,6 +332,18 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(version => version.AssetId);
+        });
+
+        modelBuilder.Entity<AssetRegion>(entity =>
+        {
+            entity.Property(region => region.Name).HasMaxLength(200).IsRequired();
+
+            entity.HasOne(region => region.Asset)
+                .WithMany(asset => asset.Regions)
+                .HasForeignKey(region => region.AssetId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(region => region.AssetId);
         });
 
         modelBuilder.Entity<AssetTag>(entity =>

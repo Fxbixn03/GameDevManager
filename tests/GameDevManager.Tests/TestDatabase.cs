@@ -161,26 +161,37 @@ public sealed class TestDatabase : IDisposable
     /// Dateispeicher-Attrappe: es geht in den Tests nie um echte Dateien. Die Schlüssel führt
     /// sie trotzdem mit — die Suche nach verwaisten Dateien braucht die Gegenrichtung.
     /// </summary>
+    /// <summary>
+    /// Der Dateispeicher der Tests. Er hält den Inhalt wirklich — sonst läse der
+    /// <c>ImageDimensionReader</c> nie Maße, und alles, was von Breite und Höhe abhängt
+    /// (Ausschnitte, Anzeige), wäre im Test nicht zu prüfen.
+    /// </summary>
     public sealed class InMemoryAssetStorage : IAssetStorage
     {
-        private readonly HashSet<string> _keys = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal);
 
-        public Task<string> SaveAsync(
+        public async Task<string> SaveAsync(
             Guid projectId, Guid assetId, string extension, Stream content, CancellationToken ct = default)
         {
-            var key = $"{projectId:N}/{assetId:N}{extension}";
-            _keys.Add(key);
+            // Ein neuer Schlüssel je Ablage — beim Ersetzen bekommt dasselbe Asset einen
+            // anderen, weil der Auslieferungs-Endpunkt unbefristet cached.
+            var key = $"{projectId:N}/{assetId:N}-{Guid.NewGuid():N}{extension}";
 
-            return Task.FromResult(key);
+            using var buffer = new MemoryStream();
+            await content.CopyToAsync(buffer, ct);
+            _files[key] = buffer.ToArray();
+
+            return key;
         }
 
-        public Stream? OpenRead(string storageKey) => null;
+        public Stream? OpenRead(string storageKey) =>
+            _files.TryGetValue(storageKey, out var bytes) ? new MemoryStream(bytes) : null;
 
-        public void Delete(string storageKey) => _keys.Remove(storageKey);
+        public void Delete(string storageKey) => _files.Remove(storageKey);
 
-        public IReadOnlyList<string> ListKeys() => [.. _keys.Order(StringComparer.Ordinal)];
+        public IReadOnlyList<string> ListKeys() => [.. _files.Keys.Order(StringComparer.Ordinal)];
 
         /// <summary>Legt einen Schlüssel ab, ohne dass es dazu eine Zeile gäbe — ein Waise.</summary>
-        public void AddStrayFile(string storageKey) => _keys.Add(storageKey);
+        public void AddStrayFile(string storageKey) => _files[storageKey] = [];
     }
 }

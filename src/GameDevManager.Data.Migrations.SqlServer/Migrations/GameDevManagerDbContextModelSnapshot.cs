@@ -246,6 +246,42 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("Assets");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.AssetRegion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AssetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("int");
+
+                    b.Property<int>("X")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Y")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetId");
+
+                    b.ToTable("AssetRegions");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.AssetTag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3052,6 +3088,17 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.AssetRegion", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Asset", "Asset")
+                        .WithMany("Regions")
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Asset");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.AssetTag", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -3997,6 +4044,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Asset", b =>
                 {
+                    b.Navigation("Regions");
+
                     b.Navigation("Tags");
 
                     b.Navigation("Versions");

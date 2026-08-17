@@ -70,6 +70,9 @@ public class ExportService(
     /// deren Wert semikolongetrennt in <c>content/field-values.json</c> steht. Version 13:
     /// Inhalte tragen einen <c>status</c> (Entwurf, in Arbeit, im Review, fertig); das Manifest
     /// nennt unter <c>minimumStatus</c> den Mindeststand, auf den ein Export eingeschränkt war.
+    /// Version 19: Assets tragen <c>regions</c> — benannte Ausschnitte in Pixeln, mit denen die
+    /// Engine ein Sprite-Sheet selbst schneidet; die früheren Fassungen eines ersetzten Assets
+    /// stehen umgekehrt nicht mehr als leere Liste darin, sie sind Werkzeug-Daten.
     /// Version 18: Werte berechneter Felder (Typ <c>formula</c>) tragen im Export zusätzlich
     /// zur Formel den gerechneten Wert in <c>numberValue</c> — die Engine soll keinen
     /// Ausdrucksrechner brauchen. Version 17: NPCs tragen <c>spawnRules</c> — wo, wie viele und wie oft sie erscheinen;
@@ -80,7 +83,7 @@ public class ExportService(
     /// ihr Skizzenbild hängt als Asset an ihrer GUID und steht damit ohne neue Spalte im
     /// Archiv.
     /// </remarks>
-    public const int FormatVersion = 18;
+    public const int FormatVersion = 19;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -223,6 +226,7 @@ public class ExportService(
 
         var assets = await db.Assets.AsNoTracking()
             .Include(a => a.Tags)
+            .Include(a => a.Regions.OrderBy(region => region.SortOrder).ThenBy(region => region.Id))
             .Where(a => a.GameProjectId == projectId)
             .OrderBy(a => a.FileName).ThenBy(a => a.Id)
             .ToListAsync(ct);

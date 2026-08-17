@@ -115,6 +115,9 @@ internal static class ExportFormat
     private static bool IsUnloadedCollection(Type type, string propertyName) =>
         (type == typeof(AssetTag) && Is(propertyName, nameof(AssetTag.Assignments)))
         // Die Zuordnungen stehen an den Assets.
+        || (type == typeof(Asset) && Is(propertyName, nameof(Asset.Versions)))
+        // Frühere Fassungen sind Werkzeug-Daten wie das Änderungsprotokoll und stehen in
+        // keinem Export; ungenannt erschienen sie als immer leere Liste im Archiv.
         || (type == typeof(ContentType) && Is(propertyName, nameof(ContentType.InheritedFields)))
         // Geerbte Felder stehen an der Eltern-Art.
         || (type == typeof(ContentType) && Is(propertyName, nameof(ContentType.Children)));

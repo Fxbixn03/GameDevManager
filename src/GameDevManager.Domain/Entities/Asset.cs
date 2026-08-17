@@ -72,4 +72,10 @@ public class Asset
     /// </summary>
     public List<AssetVersion> Versions { get; set; } = [];
 
+    /// <summary>
+    /// Benannte Ausschnitte innerhalb dieser Datei — die Zellen eines Sprite-Sheets. Sie stehen
+    /// als Kind-Sammlung am Asset und fallen über den Fremdschlüssel mit ihm, genau wie die
+    /// Fassungen; anders als die gehen sie aber in den Export: Die Engine braucht sie.
+    /// </summary>
+    public List<AssetRegion> Regions { get; set; } = [];
 }

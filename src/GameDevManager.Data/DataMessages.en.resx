@@ -130,6 +130,27 @@
   <data name="AssetPrimaryNeedsOwner" xml:space="preserve">
     <value>Only an asset that belongs to an entity can be its icon.</value>
   </data>
+  <data name="AssetRegionNameRequired" xml:space="preserve">
+    <value>Every region needs a name.</value>
+  </data>
+  <data name="AssetRegionNameDuplicate" xml:space="preserve">
+    <value>The region “{0}” exists twice. Names become identifiers in the engine and must be unique per file.</value>
+  </data>
+  <data name="AssetRegionSizePositive" xml:space="preserve">
+    <value>A region needs a width and a height of at least one pixel.</value>
+  </data>
+  <data name="AssetRegionOutsideImage" xml:space="preserve">
+    <value>The region “{0}” lies outside the image.</value>
+  </data>
+  <data name="AssetRegionNeedsDimensions" xml:space="preserve">
+    <value>A grid requires the image dimensions. They could not be read for this format — regions can still be added by hand.</value>
+  </data>
+  <data name="AssetRegionGridNegative" xml:space="preserve">
+    <value>Margin and spacing of a grid cannot be negative.</value>
+  </data>
+  <data name="AssetRegionGridEmpty" xml:space="preserve">
+    <value>Not a single cell fits into the image with these dimensions.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

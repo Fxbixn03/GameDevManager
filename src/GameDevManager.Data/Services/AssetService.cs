@@ -513,6 +513,188 @@ public class AssetService(
         }
     }
 
+    // -------------------------------------------------------------------------------- Ausschnitte
+
+    /// <summary>Die Ausschnitte eines Assets in ihrer Reihenfolge.</summary>
+    public async Task<List<AssetRegion>> GetRegionsAsync(Guid assetId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        return await db.AssetRegions
+            .AsNoTracking()
+            .Where(region => region.AssetId == assetId)
+            .OrderBy(region => region.SortOrder).ThenBy(region => region.Name)
+            .ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Schreibt die Ausschnitte eines Assets fort — die übergebene Liste ist der vollständige
+    /// Stand, was fehlt, wird entfernt. Dasselbe Abgleich-Muster wie bei den Karten-Ebenen.
+    /// </summary>
+    public async Task SaveRegionsAsync(
+        Guid assetId, IReadOnlyList<AssetRegion> regions, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var asset = await db.Assets
+            .Include(a => a.Regions)
+            .FirstOrDefaultAsync(a => a.Id == assetId, ct)
+            ?? throw new ContentValidationException(messages["AssetGone"]);
+
+        ValidateRegions(asset, regions);
+
+        var wantedIds = regions.Select(region => region.Id).ToHashSet();
+
+        // Nur aus der Navigationsliste entfernen — der Fremdschlüssel ist pflicht, EF löscht
+        // die Waise dadurch von selbst.
+        foreach (var obsolete in asset.Regions.Where(r => !wantedIds.Contains(r.Id)).ToList())
+        {
+            asset.Regions.Remove(obsolete);
+        }
+
+        for (var index = 0; index < regions.Count; index++)
+        {
+            var region = regions[index];
+            var target = asset.Regions.FirstOrDefault(r => r.Id == region.Id);
+
+            if (target is null)
+            {
+                // Ausdrücklich über das DbSet: Die GUID steht schon fest, über die
+                // Navigationsliste hielte EF den Ausschnitt für eine bestehende Zeile.
+                db.AssetRegions.Add(new AssetRegion
+                {
+                    Id = region.Id,
+                    AssetId = asset.Id,
+                    Name = region.Name.Trim(),
+                    X = region.X,
+                    Y = region.Y,
+                    Width = region.Width,
+                    Height = region.Height,
+                    SortOrder = index
+                });
+            }
+            else
+            {
+                target.Name = region.Name.Trim();
+                target.X = region.X;
+                target.Y = region.Y;
+                target.Width = region.Width;
+                target.Height = region.Height;
+                target.SortOrder = index;
+            }
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// Legt ein gleichmäßiges Raster über das Bild und gibt die entstehenden Ausschnitte
+    /// zurück — <b>gespeichert wird nicht</b>: Das Raster ist ein Vorschlag, den der Nutzer
+    /// vor dem Übernehmen noch benennen und beschneiden können soll.
+    /// <para>
+    /// Gezählt wird zeilenweise von links oben, weil Sprite-Sheets so gelesen werden. Eine
+    /// Zelle, die über den Bildrand hinausragt, entsteht gar nicht erst — ein angeschnittener
+    /// letzter Streifen ist fast immer Rest und nicht Inhalt.
+    /// </para>
+    /// </summary>
+    public async Task<List<AssetRegion>> BuildGridAsync(
+        Guid assetId, int cellWidth, int cellHeight, int offsetX = 0, int offsetY = 0,
+        int spacingX = 0, int spacingY = 0, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var asset = await db.Assets.AsNoTracking().FirstOrDefaultAsync(a => a.Id == assetId, ct)
+            ?? throw new ContentValidationException(messages["AssetGone"]);
+
+        if (cellWidth <= 0 || cellHeight <= 0)
+        {
+            throw new ContentValidationException(messages["AssetRegionSizePositive"]);
+        }
+
+        if (offsetX < 0 || offsetY < 0 || spacingX < 0 || spacingY < 0)
+        {
+            throw new ContentValidationException(messages["AssetRegionGridNegative"]);
+        }
+
+        // Ohne bekannte Maße gibt es keinen Bildrand, an dem das Raster enden könnte — bei SVG
+        // etwa liest der ImageDimensionReader nichts. Ein Raster ins Ungewisse zu legen hieße
+        // zu raten, wie viele Zellen es sind.
+        if (asset.Width is not { } imageWidth || asset.Height is not { } imageHeight)
+        {
+            throw new ContentValidationException(messages["AssetRegionNeedsDimensions"]);
+        }
+
+        var baseName = Path.GetFileNameWithoutExtension(asset.FileName);
+        var regions = new List<AssetRegion>();
+        var index = 0;
+
+        for (var y = offsetY; y + cellHeight <= imageHeight; y += cellHeight + spacingY)
+        {
+            for (var x = offsetX; x + cellWidth <= imageWidth; x += cellWidth + spacingX)
+            {
+                regions.Add(new AssetRegion
+                {
+                    AssetId = asset.Id,
+                    Name = $"{baseName}_{index}",
+                    X = x,
+                    Y = y,
+                    Width = cellWidth,
+                    Height = cellHeight,
+                    SortOrder = index
+                });
+
+                index++;
+            }
+        }
+
+        if (regions.Count == 0)
+        {
+            throw new ContentValidationException(messages["AssetRegionGridEmpty"]);
+        }
+
+        return regions;
+    }
+
+    private void ValidateRegions(Asset asset, IReadOnlyList<AssetRegion> regions)
+    {
+        foreach (var region in regions)
+        {
+            if (string.IsNullOrWhiteSpace(region.Name))
+            {
+                throw new ContentValidationException(messages["AssetRegionNameRequired"]);
+            }
+
+            if (region.Width <= 0 || region.Height <= 0)
+            {
+                throw new ContentValidationException(messages["AssetRegionSizePositive"]);
+            }
+
+            if (region.X < 0 || region.Y < 0)
+            {
+                throw new ContentValidationException(messages["AssetRegionOutsideImage", region.Name.Trim()]);
+            }
+
+            // Nur prüfen, was sich prüfen lässt: Für SVG und unbekannte Formate bleiben die
+            // Maße leer, und ein Ausschnitt daraus ist deshalb nicht falsch.
+            if ((asset.Width is { } width && region.X + region.Width > width)
+                || (asset.Height is { } height && region.Y + region.Height > height))
+            {
+                throw new ContentValidationException(messages["AssetRegionOutsideImage", region.Name.Trim()]);
+            }
+        }
+
+        // Der Name wird in der Engine zum Bezeichner des Sprites — zwei gleiche in einem Atlas
+        // wären nicht auseinanderzuhalten.
+        var duplicate = regions
+            .GroupBy(region => region.Name.Trim(), StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault(group => group.Count() > 1);
+
+        if (duplicate is not null)
+        {
+            throw new ContentValidationException(messages["AssetRegionNameDuplicate", duplicate.Key]);
+        }
+    }
+
     // ------------------------------------------------------------------------------ Stichwörter
 
     // ------------------------------------------------------------------- Zuordnung nach Namen

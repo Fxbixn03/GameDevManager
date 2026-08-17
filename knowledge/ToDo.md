@@ -613,7 +613,7 @@ MudBlazor schließt seine Dialoge bereits selbst damit.
 
 ## F. Produktion und Assets
 
-### F32 — Sprite-Sheet zerlegen
+### F32 — Sprite-Sheet zerlegen ✅ umgesetzt
 
 > **Als** Grafiker **möchte ich** ein Atlas-Bild hochladen, ein Raster angeben und daraus einzelne
 > Sprites schneiden lassen, **damit** ich nicht 24 Einzeldateien exportieren muss.
@@ -627,6 +627,17 @@ Engine selbst anwendet. Das passt besser zur Linie des Hauses und ist für Unity
 gebräuchlichere Weg.
 
 *Aufwand: M · Migration: ja · Format: +1*
+
+**Umgesetzt** als der zweite Weg — Ausschnitte verwalten statt schneiden: `AssetRegion` als
+Kind-Sammlung des Assets, Migration `AssetRegions` in allen vier Providern, `FormatVersion` auf
+**19**. Gemessen wird in **Pixeln** und nicht relativ wie beim `MapMarker`: Ein Raster ist in
+Pixeln definiert, die Engine erwartet ein Pixel-Rechteck, und die Maße stehen am Asset. Das
+Raster (`BuildGridAsync` — Zellmaß, Rand, Abstand) erzeugt einen **Vorschlag und speichert
+nicht**; Zellen über den Bildrand hinaus entstehen gar nicht erst. Ohne lesbare Bildmaße gibt es
+kein Raster, aber weiterhin Ausschnitte von Hand. Oberfläche als `AssetRegionsDialog` in der
+Bibliothek, mit dem Bild und einem SVG-Overlay der Rechtecke. Nebenbei berichtigt: Die früheren
+Fassungen eines Assets standen als immer leere Liste im Archiv — sie sind Werkzeug-Daten und
+stehen jetzt in `IsUnloadedCollection`.
 
 ### F33 — Asset ersetzen statt neu hochladen ✅ umgesetzt
 

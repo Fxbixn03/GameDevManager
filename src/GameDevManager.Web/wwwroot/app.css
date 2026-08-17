@@ -537,6 +537,52 @@ html {
     padding-top: 0.25rem;
 }
 
+/* --------------------------------------------------------------- Ausschnitte am Asset */
+/* Bild und Rechteck-Overlay teilen sich denselben Kasten; die viewBox des SVG trägt die
+   Pixelmaße des Bildes, damit die Ausschnitte ohne Umrechnung an ihrer Stelle sitzen. */
+.gdm-region-preview {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    border: 1px solid var(--mud-palette-lines-default);
+    /* Ein Atlas hat oft transparente Zellen — auf einfarbigem Grund wäre nicht zu sehen,
+       welche leer sind und welche nicht. */
+    background-image: linear-gradient(45deg, var(--mud-palette-background-gray) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--mud-palette-background-gray) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--mud-palette-background-gray) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--mud-palette-background-gray) 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.gdm-region-preview img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    /* Ein hochskaliertes Pixel-Sheet soll pixelig bleiben, nicht verwaschen. */
+    image-rendering: pixelated;
+}
+
+.gdm-region-preview svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.gdm-region {
+    fill: none;
+    stroke: var(--mud-palette-primary);
+    stroke-width: 1;
+    opacity: 0.65;
+}
+
+.gdm-region-active {
+    opacity: 1;
+    stroke-width: 2;
+}
+
 /* ------------------------------------------------------------------- Item-Kacheln */
 /* Items sind Sprites — die Übersicht zeigt sie wie die Karten als Kacheln statt als
    Tabellenzeilen. */

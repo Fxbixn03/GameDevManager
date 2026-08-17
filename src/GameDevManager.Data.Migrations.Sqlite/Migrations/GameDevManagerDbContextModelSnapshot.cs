@@ -241,6 +241,42 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("Assets");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.AssetRegion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AssetId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("X")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Y")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetId");
+
+                    b.ToTable("AssetRegions");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.AssetTag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3047,6 +3083,17 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Navigation("GameProject");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.AssetRegion", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.Asset", "Asset")
+                        .WithMany("Regions")
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Asset");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.AssetTag", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
@@ -3992,6 +4039,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Asset", b =>
                 {
+                    b.Navigation("Regions");
+
                     b.Navigation("Tags");
 
                     b.Navigation("Versions");

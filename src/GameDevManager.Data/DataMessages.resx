@@ -84,6 +84,27 @@
   <data name="AssetPrimaryNeedsOwner" xml:space="preserve">
     <value>Nur ein Asset, das zu einer Entität gehört, kann deren Icon sein.</value>
   </data>
+  <data name="AssetRegionNameRequired" xml:space="preserve">
+    <value>Jeder Ausschnitt braucht einen Namen.</value>
+  </data>
+  <data name="AssetRegionNameDuplicate" xml:space="preserve">
+    <value>Den Ausschnitt „{0}“ gibt es zweimal. Namen werden in der Engine zu Bezeichnern und müssen je Datei eindeutig sein.</value>
+  </data>
+  <data name="AssetRegionSizePositive" xml:space="preserve">
+    <value>Ein Ausschnitt braucht eine Breite und eine Höhe von mindestens einem Pixel.</value>
+  </data>
+  <data name="AssetRegionOutsideImage" xml:space="preserve">
+    <value>Der Ausschnitt „{0}“ liegt außerhalb des Bildes.</value>
+  </data>
+  <data name="AssetRegionNeedsDimensions" xml:space="preserve">
+    <value>Für ein Raster müssen die Maße des Bildes bekannt sein. Bei diesem Format ließen sie sich nicht lesen — die Ausschnitte lassen sich von Hand anlegen.</value>
+  </data>
+  <data name="AssetRegionGridNegative" xml:space="preserve">
+    <value>Rand und Abstand eines Rasters können nicht negativ sein.</value>
+  </data>
+  <data name="AssetRegionGridEmpty" xml:space="preserve">
+    <value>Mit diesen Maßen passt keine einzige Zelle in das Bild.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>

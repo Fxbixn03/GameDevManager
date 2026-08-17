@@ -162,6 +162,12 @@ else
                                                            OnClick="@(() => EditAsync(entry.Asset))"
                                                            aria-label="@L["EditTooltip"]" />
                                         </MudTooltip>
+                                        <MudTooltip Text="@L["RegionsTooltip"]">
+                                            <MudIconButton Icon="@Icons.Material.Filled.GridOn"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => EditRegionsAsync(entry.Asset))"
+                                                           aria-label="@L["RegionsTooltip"]" />
+                                        </MudTooltip>
                                         <MudTooltip Text="@L["DeleteTooltip"]">
                                             <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                            Size="Size.Small"
@@ -291,6 +297,18 @@ else
         {
             await LoadAsync();
         }
+    }
+
+    private async Task EditRegionsAsync(Asset asset)
+    {
+        var parameters = new DialogParameters<AssetRegionsDialog> { { dialog => dialog.Asset, asset } };
+
+        await Dialogs.ShowAsync<AssetRegionsDialog>(
+            L["RegionsDialogTitle", asset.FileName],
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+
+        // Kein Neuladen: Ausschnitte ändern nichts an dem, was die Kachel zeigt.
     }
 
     private async Task DeleteAsync(Asset asset)
