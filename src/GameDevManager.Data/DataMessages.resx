@@ -797,6 +797,9 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="Reference_StoryMention" xml:space="preserve">
     <value>Erwähnt im Text</value>
   </data>
+  <data name="Reference_TaskMention" xml:space="preserve">
+    <value>Erwähnt in Aufgabe</value>
+  </data>
   <data name="Reference_StoryLink" xml:space="preserve">
     <value>Szenen-Verknüpfung</value>
   </data>

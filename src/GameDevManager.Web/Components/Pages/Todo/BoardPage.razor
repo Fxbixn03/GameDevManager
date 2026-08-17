@@ -348,7 +348,8 @@ else
             Id = card.Id,
             ColumnId = card.ColumnId,
             Title = card.Title,
-            Notes = card.Notes,
+            // Gespeichert ist die stabile Erwähnungs-Form — bearbeitet wird die lesbare.
+            Notes = ContentMentions.ToEditable(card.Notes),
             AssignedUserId = card.AssignedUserId,
             DueDate = card.DueDate,
             Color = card.Color,
@@ -493,8 +494,13 @@ else
             ? _users.FirstOrDefault(user => user.Id == userId)?.DisplayName
             : null;
 
-    private static string Shorten(string? text) =>
-        string.IsNullOrWhiteSpace(text)
+    /// <summary>Die Kurzfassung der Notiz — Erwähnungen wieder als lesbares <c>@Name</c>.</summary>
+    private static string Shorten(string? text)
+    {
+        var editable = ContentMentions.ToEditable(text);
+
+        return string.IsNullOrWhiteSpace(editable)
             ? string.Empty
-            : text.Length <= 120 ? text : string.Concat(text.AsSpan(0, 120), "…");
+            : editable.Length <= 120 ? editable : string.Concat(editable.AsSpan(0, 120), "…");
+    }
 }

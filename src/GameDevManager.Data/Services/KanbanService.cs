@@ -38,6 +38,7 @@ public class KanbanService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     PermissionGuard guard,
     IChangeAuthorProvider authors,
+    MentionResolver mentions,
     IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<KanbanBoardRow>> GetBoardsAsync(Guid projectId, CancellationToken ct = default)
@@ -284,7 +285,15 @@ public class KanbanService(
         }
 
         card.Title = edited.Title.Trim();
-        card.Notes = Normalize(edited.Notes);
+
+        // Erwähnungen (@Name) werden wie beim Story-Text im Dienst aufgelöst — die Notiz trägt
+        // danach die stabile Form, und die Referenzansicht des Erwähnten findet die Karte.
+        var projectId = await db.KanbanColumns
+            .Where(column => column.Id == card.ColumnId)
+            .Select(column => column.Board!.GameProjectId)
+            .FirstAsync(ct);
+        card.Notes = await mentions.ResolveAsync(projectId, Normalize(edited.Notes), ct);
+
         card.AssignedUserId = edited.AssignedUserId;
         card.DueDate = edited.DueDate?.Date;
         card.Color = Normalize(edited.Color);

@@ -238,9 +238,14 @@ Textsuche nach der GUID, dasselbe wie bei den GUID-Spalten. Gilt genauso für `K
 
 **Umgesetzt** für den Story-Text: `ContentMentions` und `SimpleMarkdown` in der Domäne,
 `MentionResolver` in der Datenschicht, `MarkdownView` als Anzeige, Vorschau-Umschalter im
-Story-Editor. Die Referenzansicht findet Erwähnungen über die GUID im Text. Für
-`KanbanCard.Notes` und `ContentEntity.Description` steht die Anbindung noch aus — die Bausteine
-liegen bereit, es fehlt nur der Aufruf im jeweiligen Dienst.
+Story-Editor. Die Referenzansicht findet Erwähnungen über die GUID im Text. **Auch für
+`KanbanCard.Notes` umgesetzt**: `KanbanService.UpdateCardAsync` löst über den `MentionResolver`
+auf, Kartenfläche und Dialog zeigen die `@Name`-Fassung, und die Referenzansicht meldet
+„Erwähnt in Aufgabe“ mit dem Board als Ziel (die Karte hat keine eigene Seite; die Suche steht
+im `ReferenceService`, weil Werkzeug-Daten bewusst keine `IModuleEntitySource` haben). Offen
+bleibt `ContentEntity.Description`: Die Beschreibung wird in ~20 Masken und allen Listen roh
+angezeigt — ohne einen zentralen Lade-/Anzeigepfad würde die gespeicherte stabile Form überall
+durchsickern; das ist mehr als „nur der Aufruf im Dienst“ und braucht eine eigene Entscheidung.
 
 ### F13 — Cutscene-Storyboard mit Bild je Einstellung ✅ umgesetzt
 

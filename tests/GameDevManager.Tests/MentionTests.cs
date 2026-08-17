@@ -96,6 +96,33 @@ public class MentionTests
     }
 
     [Fact]
+    public async Task Kanban_Notizen_loesen_Erwaehnungen_auf()
+    {
+        using var test = new TestDatabase();
+        var itemId = await SeedItemAsync(test, "Eisenschwert");
+
+        var kanban = test.GetService<KanbanService>();
+        var board = await kanban.CreateBoardAsync(test.ProjectId, "Produktion");
+        var loaded = await kanban.GetBoardAsync(test.ProjectId, board.Id);
+        var card = await kanban.AddCardAsync(loaded!.Columns[0].Id, "Schaden prüfen");
+
+        card.Notes = "Siehe @Eisenschwert, der Wert ist zu hoch.";
+        await kanban.UpdateCardAsync(card);
+
+        var stored = (await kanban.GetBoardAsync(test.ProjectId, board.Id))!.Columns[0].Cards[0];
+
+        Assert.Equal(itemId, Assert.Single(ContentMentions.Parse(stored.Notes)).EntityId);
+        Assert.Equal("Siehe @Eisenschwert, der Wert ist zu hoch.", ContentMentions.ToEditable(stored.Notes));
+
+        // Die Referenzansicht führt zum Board — die Karte hat keine eigene Seite.
+        var hit = Assert.Single(await test.GetService<ReferenceService>().FindReferencesAsync(itemId));
+
+        Assert.Equal(ModuleKeys.Todo, hit.SourceModuleKey);
+        Assert.Equal(board.Id, hit.SourceEntityId);
+        Assert.Equal("Schaden prüfen", hit.SourceName);
+    }
+
+    [Fact]
     public void Markdown_zeichnet_aus_und_maskiert_alles_Uebrige()
     {
         var blocks = SimpleMarkdown.Render("# Titel\n**fett** und *kursiv*\n<script>böse</script>");

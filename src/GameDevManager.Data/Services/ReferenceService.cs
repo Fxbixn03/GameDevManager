@@ -1,3 +1,4 @@
+using GameDevManager.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 
@@ -67,6 +68,19 @@ public class ReferenceService(
         {
             hits.AddRange(await source.FindReferencesAsync(db, entityId, ct));
         }
+
+        // Erwähnungen in Kanban-Notizen — dieselbe GUID-Textsuche wie im Story-Text. Die Suche
+        // steht hier und nicht an einer IModuleEntitySource, weil die Boards Werkzeug-Daten
+        // sind und bewusst keine Quelle haben. Als Ziel dient das Board: Die Karte hat keine
+        // eigene Seite, dort findet man sie wieder.
+        var taskMention = messages["Reference_TaskMention"].Value;
+
+        hits.AddRange(await db.KanbanCards
+            .AsNoTracking()
+            .Where(card => card.Notes != null && card.Notes.Contains(needle))
+            .Select(card => new EntityReferenceHit(
+                card.Column!.BoardId, ModuleKeys.Todo, card.Title, taskMention))
+            .ToListAsync(ct));
 
         return [.. hits.OrderBy(h => h.SourceModuleKey).ThenBy(h => h.SourceName).ThenBy(h => h.FieldName)];
     }

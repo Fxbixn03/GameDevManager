@@ -843,6 +843,9 @@ Unpack the ZIP into the root directory of your Godot project: the content lands 
   <data name="Reference_StoryMention" xml:space="preserve">
     <value>Mentioned in text</value>
   </data>
+  <data name="Reference_TaskMention" xml:space="preserve">
+    <value>Mentioned in task</value>
+  </data>
   <data name="Reference_StoryLink" xml:space="preserve">
     <value>Scene link</value>
   </data>
