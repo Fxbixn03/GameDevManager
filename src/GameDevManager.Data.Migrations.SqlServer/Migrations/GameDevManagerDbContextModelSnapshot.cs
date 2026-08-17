@@ -159,6 +159,10 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<DateTime?>("FeedReadAtUtc")
                         .HasColumnType("datetime2");
 
@@ -199,6 +203,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique();
 
                     b.HasIndex("RoleId");
 

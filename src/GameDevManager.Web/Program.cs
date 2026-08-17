@@ -52,7 +52,15 @@ builder.Services.AddSingleton<ISystemUserName>(sp => sp.GetRequiredService<Accou
 // Anmeldung über ein Cookie. Bewusst kein ASP.NET-Identity: Gebraucht wird ein Konto mit
 // Passwort, und dafür sieben Identity-Tabellen in alle vier Provider zu migrieren wäre ein
 // Vielfaches an Umfang für dasselbe Ergebnis — das Hashing steht in PasswordHasher.
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+// Der externe Anbieter ist Installations-Konfiguration; ohne Authority und ClientId bleibt er
+// abgeschaltet, und die Anmeldeseite zeigt den Knopf gar nicht erst.
+var externalLogin = builder.Configuration
+    .GetSection(ExternalLoginOptions.SectionName)
+    .Get<ExternalLoginOptions>() ?? new ExternalLoginOptions();
+
+builder.Services.AddSingleton(externalLogin);
+
+var authentication = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/konto/anmelden";
@@ -70,6 +78,48 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromDays(14);
         options.SlidingExpiration = true;
     });
+
+if (externalLogin.IsConfigured)
+{
+    // OpenID Connect als **zweites** Schema neben dem Cookie: Die Anmeldung selbst bleibt das
+    // Cookie — der externe Anbieter beweist nur, wer da ist, und der Rest (Ansprüche,
+    // Berechtigungen, IChangeAuthorProvider) läuft unverändert weiter.
+    authentication.AddOpenIdConnect(ExternalLoginDefaults.Scheme, externalLogin.DisplayName, options =>
+    {
+        options.Authority = externalLogin.Authority;
+        options.ClientId = externalLogin.ClientId;
+        options.ClientSecret = externalLogin.ClientSecret;
+
+        // Der Authorization-Code-Ablauf: Das Token geht über den Server und nie durch den
+        // Browser des Nutzers.
+        options.ResponseType = "code";
+        options.UsePkce = true;
+        options.SaveTokens = false;
+
+        options.CallbackPath = "/konto/extern/rueckkehr";
+        options.SignedOutCallbackPath = "/konto/extern/abgemeldet";
+
+        // Das Ergebnis landet in einem eigenen Zwischen-Cookie; das Anmelde-Cookie setzt erst
+        // die Rückkehr-Seite, nachdem sie das Konto zum externen Bezeichner gefunden hat.
+        options.SignInScheme = ExternalLoginDefaults.TemporaryScheme;
+
+        foreach (var scope in externalLogin.Scopes)
+        {
+            options.Scope.Add(scope);
+        }
+    })
+    // Ein eigenes Zwischen-Cookie für den halben Weg: Ohne es wäre die externe Anmeldung
+    // schon die Anmeldung — auch für einen, der hier gar kein Konto hat.
+    .AddCookie(ExternalLoginDefaults.TemporaryScheme, options =>
+    {
+        options.Cookie.Name = "gdm.external";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+    });
+}
+
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 // Statisch gerenderte Seiten und die Datei-Endpunkte kennen ihren Benutzer über den

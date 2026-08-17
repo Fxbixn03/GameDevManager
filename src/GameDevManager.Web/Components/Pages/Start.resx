@@ -45,6 +45,9 @@
   <data name="FailedCode" xml:space="preserve">
     <value>Der Code stimmt nicht. Prüfen Sie die Uhrzeit Ihres Geräts oder verwenden Sie einen Wiederherstellungscode.</value>
   </data>
+  <data name="SignInExternal" xml:space="preserve">
+    <value>Mit {0} anmelden</value>
+  </data>
   <data name="RememberMe" xml:space="preserve">
     <value>Angemeldet bleiben</value>
   </data>

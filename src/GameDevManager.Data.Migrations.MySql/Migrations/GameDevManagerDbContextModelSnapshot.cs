@@ -156,6 +156,10 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
                     b.Property<DateTime?>("FeedReadAtUtc")
                         .HasColumnType("datetime(6)");
 
@@ -196,6 +200,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique();
 
                     b.HasIndex("RoleId");
 

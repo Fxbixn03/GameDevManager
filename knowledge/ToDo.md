@@ -1011,7 +1011,7 @@ auf die nicht-abweichenden Konten, sonst fielen die auf ihre alten Spalten zurü
 still mehr. Ein Verwalterrecht kennt die Rolle bewusst nicht. Verwaltung als Panel in der
 Benutzerverwaltung (`RoleDialog`), Zuweisung im Benutzer-Dialog.
 
-### F46 — Anmeldung über einen externen Anbieter
+### F46 — Anmeldung über einen externen Anbieter ✅ umgesetzt
 
 > **Als** Betreiber eines kleinen Studios **möchte ich** die Anmeldung an unser vorhandenes Konto
 > (GitHub, Google, ein eigener OIDC-Server) hängen, **damit** niemand ein weiteres Passwort braucht.
@@ -1023,6 +1023,18 @@ bekommt eine Spalte für den externen Bezeichner, und alles Weitere (Ansprüche,
 Anmelden angelegt wird — Vorgabe: niemand, ein Verwalter muss das Konto vorbereiten.
 
 *Aufwand: M · Migration: ja · Format: unverändert*
+
+**Umgesetzt** genau so: OpenID Connect als zweites Schema neben dem Cookie, `AppUser.ExternalId`
+(Migration `ExternalLogin`), Konfiguration unter `ExternalLogin:*`. Vier Dinge: **Angelegt wird
+niemand** — sonst käme jeder herein, der beim Anbieter ein Konto hat, und das Tool wäre nur so
+geschlossen wie die offenste Registrierung des Anbieters; ein Verwalter verknüpft das Konto
+vorher im Benutzer-Dialog, und die Fehlerseite zeigt dafür den Bezeichner an. Zwischen Anbieter
+und Anmeldung liegt ein **kurzlebiges Zwischen-Cookie**: Ohne es wäre die externe Anmeldung
+schon die Anmeldung. Der **`sub` und nicht der Name** ist der Schlüssel — er ist stabil, der
+Name beim Anbieter kann sich ändern; zwei Konten dürfen sich keinen teilen. Und **alles Weitere
+bleibt unverändert**: Ansprüche, Berechtigungen, `IChangeAuthorProvider` und die Sperre gelten
+wie zuvor. Ohne `Authority` und `ClientId` ist die externe Anmeldung abgeschaltet, und die
+Anmeldeseite zeigt den Knopf gar nicht erst.
 
 ### F47 — Zwei-Faktor-Anmeldung ✅ umgesetzt
 

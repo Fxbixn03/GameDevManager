@@ -1353,6 +1353,23 @@ html {
     border-color: var(--mud-palette-primary);
 }
 
+/* Der Weg zum externen Anbieter: ein Link, kein Formular — die Anmeldung dort ist eine
+   Umleitung und kein Postback. Optisch tritt er hinter den Hauptknopf zurück; der Normalfall
+   bleibt das Passwort. */
+.gdm-auth-external {
+    display: block;
+    margin-top: 0.75rem;
+    padding: 0.65rem 1rem;
+    text-align: center;
+    border: 1px solid var(--mud-palette-lines-default);
+    color: var(--mud-palette-text-primary);
+    text-decoration: none;
+}
+
+.gdm-auth-external:hover {
+    border-color: var(--mud-palette-primary);
+}
+
 .gdm-auth-hint {
     margin-top: 6px;
     font-size: .78rem;

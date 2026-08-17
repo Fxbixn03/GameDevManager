@@ -1,0 +1,105 @@
+@page "/konto/extern/fertig"
+@using System.Security.Claims
+@attribute [AllowAnonymous]
+@attribute [ExcludeFromInteractiveRouting]
+@inject UserService Users
+@inject NavigationManager Navigation
+@inject IStringLocalizer<ExternalLoginCallback> L
+
+@*
+    Die Rückkehr vom externen Anbieter. Hier — und nur hier — wird aus „jemand hat sich beim
+    Anbieter ausgewiesen“ eine Anmeldung in diesem Tool.
+
+    Angelegt wird dabei niemand: Sonst käme jeder herein, der beim Anbieter ein Konto hat, und
+    das Tool wäre nur so geschlossen wie die offenste Registrierung des Anbieters. Ein
+    Verwalter verknüpft das Konto vorher in der Benutzerverwaltung.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<div class="gdm-auth-shell">
+    <div class="gdm-auth-card">
+        <MudText Typo="Typo.h5" GutterBottom="true">@L["Heading"]</MudText>
+
+        @if (_error is { } error)
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4">@error</MudAlert>
+
+            @if (_externalId is { } id)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-1">
+                    @L["IdCaption"]
+                </MudText>
+                <MudText Typo="Typo.body2" Class="gdm-mono mb-4">@id</MudText>
+            }
+
+            <MudButton Variant="Variant.Outlined" Href="/konto/anmelden">@L["BackToSignIn"]</MudButton>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Working"]</MudText>
+        }
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromQuery(Name = "ziel")]
+    private string? ReturnUrl { get; set; }
+
+    private string? _error;
+    private string? _externalId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Das Ergebnis des Anbieters steht im kurzlebigen Zwischen-Cookie.
+        var result = await HttpContext.AuthenticateAsync(ExternalLoginDefaults.TemporaryScheme);
+
+        if (!result.Succeeded || result.Principal is null)
+        {
+            _error = L["NoResult"];
+            return;
+        }
+
+        // Der „sub“ ist der stabile Bezeichner beim Anbieter — der Name kann sich ändern.
+        _externalId = result.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? result.Principal.FindFirst("sub")?.Value;
+
+        // Das Zwischen-Cookie hat seinen Zweck erfüllt; stehen lassen hieße, den halben Weg
+        // offen zu lassen.
+        await HttpContext.SignOutAsync(ExternalLoginDefaults.TemporaryScheme);
+
+        if (_externalId is null)
+        {
+            _error = L["NoIdentifier"];
+            return;
+        }
+
+        var user = await Users.AuthenticateExternalAsync(_externalId);
+
+        if (user is null)
+        {
+            // Die GUID steht oben in der Meldung: Ein Verwalter braucht sie, um das Konto zu
+            // verknüpfen — sie zu verschweigen hieße, ihn raten zu lassen.
+            _error = L["NoAccount"];
+            return;
+        }
+
+        await HttpContext.SignInWithUserAsync(user, persistent: true);
+
+        Navigation.NavigateTo(SafeReturnUrl(), forceLoad: false);
+    }
+
+    /// <summary>
+    /// Nur Pfade innerhalb der Anwendung — dieselbe Regel wie beim gewöhnlichen Anmelden: Ein
+    /// „ziel“ aus der Adresszeile darf nicht auf eine fremde Seite führen.
+    /// </summary>
+    private string SafeReturnUrl() =>
+        !string.IsNullOrWhiteSpace(ReturnUrl)
+            && ReturnUrl.StartsWith('/')
+            && !ReturnUrl.StartsWith("//", StringComparison.Ordinal)
+            ? ReturnUrl
+            : "/dashboard";
+}

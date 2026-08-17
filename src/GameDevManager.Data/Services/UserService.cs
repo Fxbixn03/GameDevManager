@@ -29,7 +29,8 @@ public sealed record UserRow(
     DateTime? LastLoginAtUtc,
     UserRoleRow? Role = null,
     bool OverridesRole = false,
-    bool HasTwoFactor = false)
+    bool HasTwoFactor = false,
+    string? ExternalId = null)
 {
     /// <summary>
     /// Die aufgelösten Rechte dieser Zeile — Verwalter bekommen immer alles, sonst ist die
@@ -93,7 +94,8 @@ public class UserService(
                 // Der zweite Faktor gilt erst als eingerichtet, wenn er bestätigt wurde —
                 // die berechnete Eigenschaft ist ignoriert und in einer Projektion nicht zu
                 // übersetzen, deshalb hier ausgeschrieben.
-                user.TotpConfirmedAtUtc != null && user.TotpSecret != null))
+                user.TotpConfirmedAtUtc != null && user.TotpSecret != null,
+                user.ExternalId))
             .ToListAsync(ct);
     }
 
@@ -125,7 +127,8 @@ public class UserService(
                 // Der zweite Faktor gilt erst als eingerichtet, wenn er bestätigt wurde —
                 // die berechnete Eigenschaft ist ignoriert und in einer Projektion nicht zu
                 // übersetzen, deshalb hier ausgeschrieben.
-                user.TotpConfirmedAtUtc != null && user.TotpSecret != null))
+                user.TotpConfirmedAtUtc != null && user.TotpSecret != null,
+                user.ExternalId))
             .FirstOrDefaultAsync(ct);
     }
 
@@ -437,7 +440,77 @@ public class UserService(
                     user.Role.Id, user.Role.Name, user.Role.CanWrite, user.Role.CanExport,
                     user.Role.CanImport, user.Role.AllowedModuleKeys),
             user.OverridesRole,
-            user.HasTwoFactor);
+            user.HasTwoFactor,
+            user.ExternalId);
+
+    // -------------------------------------------------------------- Externe Anmeldung
+
+    /// <summary>
+    /// Sucht das Konto zu einem externen Bezeichner (dem <c>sub</c> aus OpenID Connect) und
+    /// meldet es an. <c>null</c>, wenn es keines gibt oder es gesperrt ist.
+    /// <para>
+    /// <b>Angelegt wird hier niemand.</b> Wer sich extern anmeldet, muss ein vorbereitetes
+    /// Konto haben — sonst könnte jeder, der beim Anbieter ein Konto hat, hier hereinspazieren,
+    /// und das Tool wäre nur so geschlossen wie die offenste Registrierung des Anbieters. Ein
+    /// Verwalter verknüpft das Konto vorher über <see cref="LinkExternalAsync"/>.
+    /// </para>
+    /// </summary>
+    public async Task<UserRow?> AuthenticateExternalAsync(
+        string externalId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(externalId))
+        {
+            return null;
+        }
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var user = await db.AppUsers
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.ExternalId == externalId, ct);
+
+        if (user is null || user.IsDisabled)
+        {
+            return null;
+        }
+
+        user.LastLoginAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+
+        return Describe(user);
+    }
+
+    /// <summary>
+    /// Verknüpft ein Konto mit einem externen Bezeichner — oder löst die Verknüpfung wieder
+    /// (<paramref name="externalId"/> leer). Verwalter-Sache wie alles an fremden Konten.
+    /// </summary>
+    public async Task LinkExternalAsync(
+        Guid userId, string? externalId, CancellationToken ct = default)
+    {
+        await guard.EnsureAdministratorAsync(ct);
+
+        externalId = string.IsNullOrWhiteSpace(externalId) ? null : externalId.Trim();
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        if (externalId is not null)
+        {
+            // Zwei Konten mit demselben Bezeichner wären beim Anmelden nicht auseinanderzuhalten.
+            var taken = await db.AppUsers.AnyAsync(
+                u => u.ExternalId == externalId && u.Id != userId, ct);
+
+            if (taken)
+            {
+                throw new ContentValidationException(messages["ExternalIdTaken", externalId]);
+            }
+        }
+
+        var user = await db.AppUsers.FirstOrDefaultAsync(u => u.Id == userId, ct)
+            ?? throw new ContentValidationException(messages["UserGone"]);
+
+        user.ExternalId = externalId;
+        await db.SaveChangesAsync(ct);
+    }
 
     // ------------------------------------------------------------------- Zweiter Faktor
 

@@ -91,6 +91,9 @@
   <data name="FailedCode" xml:space="preserve">
     <value>The code is not correct. Check your device clock or use a recovery code.</value>
   </data>
+  <data name="SignInExternal" xml:space="preserve">
+    <value>Sign in with {0}</value>
+  </data>
   <data name="RememberMe" xml:space="preserve">
     <value>Stay signed in</value>
   </data>

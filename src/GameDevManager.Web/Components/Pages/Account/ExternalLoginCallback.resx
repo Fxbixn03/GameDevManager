@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Anmeldung</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Anmeldung wird abgeschlossen …</value>
+  </data>
+  <data name="Working" xml:space="preserve">
+    <value>Einen Augenblick.</value>
+  </data>
+  <data name="NoResult" xml:space="preserve">
+    <value>Vom Anbieter kam kein gültiges Ergebnis zurück. Bitte erneut versuchen.</value>
+  </data>
+  <data name="NoIdentifier" xml:space="preserve">
+    <value>Der Anbieter hat keinen Bezeichner mitgeschickt — ohne ihn lässt sich kein Konto zuordnen.</value>
+  </data>
+  <data name="NoAccount" xml:space="preserve">
+    <value>Zu dieser Anmeldung gibt es hier kein Konto. Ein Verwalter muss es zuerst mit dem folgenden Bezeichner verknüpfen.</value>
+  </data>
+  <data name="IdCaption" xml:space="preserve">
+    <value>Externer Bezeichner</value>
+  </data>
+  <data name="BackToSignIn" xml:space="preserve">
+    <value>Zur Anmeldung</value>
+  </data>
+</root>

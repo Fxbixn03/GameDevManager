@@ -177,6 +177,9 @@
   <data name="Api_ModuleUnknown" xml:space="preserve">
     <value>Das Modul „{0}“ ist nicht bekannt.</value>
   </data>
+  <data name="ExternalIdTaken" xml:space="preserve">
+    <value>Der externe Bezeichner „{0}“ gehört bereits zu einem anderen Konto.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>

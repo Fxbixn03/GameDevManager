@@ -5,6 +5,7 @@
 @attribute [ExcludeFromInteractiveRouting]
 @inject NavigationManager Navigation
 @inject IStringLocalizer<Start> L
+@inject ExternalLoginOptions ExternalLogin
 @inject ProjectContext Project
 @inject StartScreenService StartScreen
 @inject ModuleLabels Modules
@@ -151,6 +152,16 @@
 
                     <button type="submit" class="gdm-auth-submit gdm-start-login-submit">@L["SignIn"]</button>
                 </EditForm>
+
+                @* Der Knopf steht nur da, wenn ein Anbieter eingerichtet ist — ein Knopf, der
+                   in eine Fehlermeldung führt, ist schlechter als keiner. Ein Link und kein
+                   Formular: Der Weg zum Anbieter ist eine Umleitung, kein Postback. *@
+                @if (ExternalLogin.IsConfigured)
+                {
+                    <a class="gdm-auth-external" href="@ExternalHref">
+                        @L["SignInExternal", ExternalLogin.DisplayName]
+                    </a>
+                }
             </div>
         }
     </div>
@@ -158,6 +169,12 @@
 
 @code {
     private const int PixelCount = 9;
+
+    /// <summary>Der Weg zum externen Anbieter, mit dem ursprünglichen Ziel im Gepäck.</summary>
+    private string ExternalHref =>
+        "/konto/extern" + (string.IsNullOrWhiteSpace(ReturnUrl)
+            ? string.Empty
+            : "?ziel=" + Uri.EscapeDataString(ReturnUrl));
 
     /// <summary>
     /// Wie viele Entitäten höchstens gleichzeitig fallen. Mehr wird unruhig und verdeckt den

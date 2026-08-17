@@ -238,6 +238,9 @@
   <data name="Api_ModuleUnknown" xml:space="preserve">
     <value>The module “{0}” is unknown.</value>
   </data>
+  <data name="ExternalIdTaken" xml:space="preserve">
+    <value>The external identifier “{0}” already belongs to another account.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

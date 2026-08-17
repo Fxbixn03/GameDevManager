@@ -163,4 +163,10 @@
   <data name="SavedMessage" xml:space="preserve">
     <value>„{0}“ wurde gespeichert.</value>
   </data>
+  <data name="ExternalIdLabel" xml:space="preserve">
+    <value>Bezeichner bei {0}</value>
+  </data>
+  <data name="ExternalIdHelper" xml:space="preserve">
+    <value>Verknüpft dieses Konto mit einer externen Anmeldung. Den Bezeichner zeigt die Anmeldeseite an, wenn sich jemand extern anmeldet, für den es hier noch kein Konto gibt.</value>
+  </data>
 </root>

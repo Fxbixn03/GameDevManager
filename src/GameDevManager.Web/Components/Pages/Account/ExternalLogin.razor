@@ -1,0 +1,66 @@
+@page "/konto/extern"
+@attribute [AllowAnonymous]
+@attribute [ExcludeFromInteractiveRouting]
+@inject UserService Users
+@inject ExternalLoginOptions Options
+@inject NavigationManager Navigation
+@inject IStringLocalizer<ExternalLogin> L
+
+@*
+    Die Anmeldung über einen externen Anbieter (F46).
+
+    Zwei Schritte: „/konto/extern“ schickt zum Anbieter, „/konto/extern/fertig“ nimmt das
+    Ergebnis entgegen. Dazwischen liegt ein kurzlebiges Zwischen-Cookie — der Anbieter beweist
+    nur, wer da ist; ob dieser Jemand hier ein Konto hat, entscheidet erst diese Seite.
+
+    Statisch gerendert wie das Anmeldeformular: Ein Cookie lässt sich nur während einer echten
+    HTTP-Antwort setzen.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<div class="gdm-auth-shell">
+    <div class="gdm-auth-card">
+        <MudText Typo="Typo.h5" GutterBottom="true">@L["Heading"]</MudText>
+
+        @if (_error is { } error)
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4">@error</MudAlert>
+            <MudButton Variant="Variant.Outlined" Href="/konto/anmelden">@L["BackToSignIn"]</MudButton>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Working"]</MudText>
+        }
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromQuery(Name = "ziel")]
+    private string? ReturnUrl { get; set; }
+
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Options.IsConfigured)
+        {
+            _error = L["NotConfigured"];
+            return;
+        }
+
+        // Der Anbieter kommt auf „/konto/extern/fertig“ zurück; von dort führt der Weg mit dem
+        // ursprünglichen Ziel weiter.
+        await HttpContext.ChallengeAsync(
+            ExternalLoginDefaults.Scheme,
+            new AuthenticationProperties
+            {
+                RedirectUri = "/konto/extern/fertig" + (string.IsNullOrWhiteSpace(ReturnUrl)
+                    ? string.Empty
+                    : "?ziel=" + Uri.EscapeDataString(ReturnUrl))
+            });
+    }
+}

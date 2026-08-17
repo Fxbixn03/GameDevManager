@@ -1086,9 +1086,16 @@ public class GameDevManagerDbContext(
             entity.Property(u => u.DisplayName).HasMaxLength(200).IsRequired();
             entity.Property(u => u.PasswordHash).HasMaxLength(400).IsRequired();
             entity.Property(u => u.TotpSecret).HasMaxLength(100);
+            entity.Property(u => u.ExternalId).HasMaxLength(200);
             // Zehn Codes à ~400 Zeichen Hash plus Trennzeichen.
             entity.Property(u => u.TotpRecoveryCodes).HasMaxLength(5000);
             entity.Ignore(u => u.HasTwoFactor);
+
+            // Zwei Konten dürfen sich denselben externen Bezeichner nicht teilen — sonst wäre
+            // beim Anmelden nicht zu entscheiden, welches gemeint ist. Der Filter lässt die
+            // vielen Konten ohne externe Anmeldung heraus (SQLite, PostgreSQL und SQL Server
+            // können das; MySQL ignoriert ihn, dort trägt der Dienst die Prüfung).
+            entity.HasIndex(u => u.ExternalId).IsUnique().HasFilter(null);
 
             // Berechtigungen. Der Datenbank-Standard steht ausdrücklich auf „erlaubt“, damit
             // Konten aus der Zeit vor diesen Spalten bei der Migration nichts verlieren —

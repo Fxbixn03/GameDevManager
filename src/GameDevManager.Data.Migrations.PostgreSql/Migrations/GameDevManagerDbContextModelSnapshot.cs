@@ -159,6 +159,10 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<DateTime?>("FeedReadAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -199,6 +203,9 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique();
 
                     b.HasIndex("RoleId");
 

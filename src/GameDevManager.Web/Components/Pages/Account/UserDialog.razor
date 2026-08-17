@@ -3,6 +3,7 @@
 @inject PasswordPolicySelection Policy
 @inject ModuleLabels Modules
 @inject IStringLocalizer<UserDialog> L
+@inject ExternalLoginOptions ExternalLogin
 
 @*
     Anlegen und Ändern eines Benutzers. Das Passwort steht getrennt: Beim Anlegen ist es
@@ -49,6 +50,19 @@
             {
                 <MudSwitch @bind-Value="_isDisabled" Color="Color.Warning" Label="@L["DisabledLabel"]" />
                 <MudText Typo="Typo.caption" Color="Color.Secondary">@L["DisabledHelper"]</MudText>
+
+                @* Der externe Bezeichner wird von Hand eingetragen: Wer sich zum ersten Mal
+                   extern anmeldet, bekommt ihn auf der Fehlerseite angezeigt — angelegt wird
+                   dabei niemand, sonst käme jeder herein, der beim Anbieter ein Konto hat. *@
+                @if (ExternalLogin.IsConfigured)
+                {
+                    <MudTextField @bind-Value="_externalId"
+                                  T="string"
+                                  Label="@L["ExternalIdLabel", ExternalLogin.DisplayName]"
+                                  HelperText="@L["ExternalIdHelper"]"
+                                  Variant="Variant.Outlined"
+                                  Clearable="true" />
+                }
             }
 
             <MudDivider />
@@ -158,6 +172,7 @@
     private IReadOnlyCollection<string> _selectedModules = [];
     private Guid? _roleId;
     private bool _overridesRole;
+    private string? _externalId;
     private bool _saving;
 
     private bool IsNew => User is null;
@@ -171,6 +186,7 @@
         _canWrite = User?.CanWrite ?? true;
         _canExport = User?.CanExport ?? true;
         _canImport = User?.CanImport ?? true;
+        _externalId = User?.ExternalId;
 
         var allowed = UserPermissions.ParseModuleKeys(User?.AllowedModuleKeys);
         _restrictModules = allowed is not null;
@@ -258,6 +274,11 @@
                 if (!string.IsNullOrWhiteSpace(_password))
                 {
                     await Users.SetPasswordAsync(User.Id, _password);
+                }
+
+                if (ExternalLogin.IsConfigured)
+                {
+                    await Users.LinkExternalAsync(User.Id, _externalId);
                 }
             }
 

@@ -55,6 +55,16 @@ public class AppUser
     public bool HasTwoFactor => TotpConfirmedAtUtc is not null && !string.IsNullOrEmpty(TotpSecret);
 
     /// <summary>
+    /// Der Bezeichner beim externen Anbieter (der <c>sub</c>-Anspruch aus OpenID Connect),
+    /// wenn sich dieses Konto darüber anmeldet.
+    /// <para>
+    /// Eine eigene Spalte und nicht der Anmeldename: Der <c>sub</c> ist stabil, der Name beim
+    /// Anbieter kann sich ändern — und zwei Konten dürfen sich nicht denselben teilen.
+    /// </para>
+    /// </summary>
+    public string? ExternalId { get; set; }
+
+    /// <summary>
     /// Darf Benutzer anlegen, umbenennen und entfernen. Der erste Benutzer bekommt das Recht
     /// bei der Ersteinrichtung; ohne wenigstens einen Verwalter käme man nicht mehr an die
     /// Benutzerverwaltung heran.
