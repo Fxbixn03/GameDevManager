@@ -195,7 +195,7 @@ ist der Weg, den jeder Übersetzer ohne Werkzeug öffnet.
 Download über `/export/translations/{projectId}/{code}`, Knöpfe auf der Lokalisierungs-Seite.
 Der Ausgangstext kommt beim Zurücklesen aus dem Bestand, nicht aus der Datei.
 
-### F10 — Vertonung: Audiodatei und Sprecher je Dialogzeile
+### F10 — Vertonung: Audiodatei und Sprecher je Dialogzeile ✅ umgesetzt
 
 > **Als** Audio-Verantwortlicher **möchte ich** an jeder Dialogzeile die aufgenommene Datei und die
 > Sprecherrolle hinterlegen, je Sprache, **damit** ich sehe, was noch nicht eingesprochen ist.
@@ -207,6 +207,20 @@ Zeilen vertont sind. Der Health Check dazu ist naheliegend: Zeilen mit Übersetz
 Aufnahme.
 
 *Aufwand: M · Migration: nein · Format: +1*
+
+**Umgesetzt.** `VoiceOverService` ohne eigenen Datenbestand: Eine Aufnahme ist ein `Asset` an
+der GUID der Zeile — dieselbe Anbindung wie beim Skizzenbild einer Cutscene-Einstellung.
+**Doch eine Migration**, anders als hier vermutet: Sprache und Sprecher mussten irgendwo stehen,
+und zwei Spalten am Asset (`LanguageCode`, `VoiceActor`, Migration `AssetVoiceOver`) waren
+weniger als eine Vertonungs-Tabelle, die die Zuordnung Zeile→Datei ein zweites Mal geführt
+hätte. `FormatVersion` auf **20**. Vier Entscheidungen: Der **Sprecher steht am Asset und nicht
+an der Zeile** — die Rolle sagt `SpeakerNpcId` längst, und jede Sprache hat ihre eigene
+Besetzung. Aufgenommen wird in **allen** Sprachen, die Ausgangssprache eingeschlossen: Ihr Text
+steht am Inhalt, ihre Aufnahme aber nirgends. Eine zweite Aufnahme derselben Sprache **löst die
+erste ab** (gelöscht, nicht `ReplaceAsync` — an einer Aufnahme hängt kein Verweis, sie wird über
+Zeile und Sprache gefunden). Und der Health Check fragt **nur nach Sprachen, in denen der Text
+vorliegt**; ohne Sprachen im Projekt findet er nichts, sonst meldete er beim Anlegen der zweiten
+Sprache auf einen Schlag jede Zeile.
 
 ### F11 — Dialog durchspielen ✅ umgesetzt
 

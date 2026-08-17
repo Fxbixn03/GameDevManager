@@ -108,6 +108,21 @@
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>
+  <data name="VoiceOverLanguageRequired" xml:space="preserve">
+    <value>Eine Aufnahme braucht die Sprache, in der sie eingesprochen wurde.</value>
+  </data>
+  <data name="VoiceOverLanguageUnknown" xml:space="preserve">
+    <value>Die Sprache „{0}“ gibt es in diesem Projekt nicht.</value>
+  </data>
+  <data name="VoiceOverLineGone" xml:space="preserve">
+    <value>Die Dialogzeile existiert nicht mehr.</value>
+  </data>
+  <data name="VoiceOverPlayerSpeaker" xml:space="preserve">
+    <value>Spieler</value>
+  </data>
+  <data name="VoiceOverUnknownSpeaker" xml:space="preserve">
+    <value>Unbekannter Sprecher</value>
+  </data>
   <data name="AssetTagExists" xml:space="preserve">
     <value>Das Stichwort „{0}“ gibt es bereits.</value>
   </data>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Vertonung — {0}</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Vertonung: {0}</value>
+  </data>
+  <data name="BreadcrumbVoiceOver" xml:space="preserve">
+    <value>Vertonung</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Diesen Dialog gibt es nicht mehr.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Zur Übersicht</value>
+  </data>
+  <data name="ToEditor" xml:space="preserve">
+    <value>Zum Dialog</value>
+  </data>
+  <data name="NoLanguagesHint" xml:space="preserve">
+    <value>Dieses Projekt hat noch keine Sprachen. Eine Aufnahme gehört immer zu einer Sprache — legen Sie zuerst eine an.</value>
+  </data>
+  <data name="ToLocalization" xml:space="preserve">
+    <value>Zur Lokalisierung</value>
+  </data>
+  <data name="NoLinesHint" xml:space="preserve">
+    <value>Dieser Dialog hat noch keine Zeilen.</value>
+  </data>
+  <data name="ProgressHeading" xml:space="preserve">
+    <value>Fortschritt je Sprache</value>
+  </data>
+  <data name="ProgressCounts" xml:space="preserve">
+    <value>{0} von {1} Zeilen · {2} %</value>
+  </data>
+  <data name="ColumnLanguage" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="ColumnRecording" xml:space="preserve">
+    <value>Aufnahme</value>
+  </data>
+  <data name="ColumnVoiceActor" xml:space="preserve">
+    <value>Sprecher/in</value>
+  </data>
+  <data name="NotRecorded" xml:space="preserve">
+    <value>noch nicht eingesprochen</value>
+  </data>
+  <data name="VoiceActorPlaceholder" xml:space="preserve">
+    <value>Wer hat es eingesprochen?</value>
+  </data>
+  <data name="AddRecording" xml:space="preserve">
+    <value>Aufnahme</value>
+  </data>
+  <data name="ReplaceRecording" xml:space="preserve">
+    <value>Ersetzen</value>
+  </data>
+</root>

@@ -1,0 +1,207 @@
+@page "/modules/dialogs/{Id:guid}/vertonung"
+@inject VoiceOverService VoiceOvers
+@inject AssetService Library
+@inject ProjectContext Project
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<DialogueVoiceOver> L
+
+@*
+    Die Vertonung eines Dialogs (F10): je Zeile und Sprache eine Aufnahme — oder eben keine.
+
+    Kein eigener Datenbestand: Eine Aufnahme ist ein Asset an der GUID der Zeile, genau wie das
+    Skizzenbild einer Cutscene-Einstellung. Dazugekommen sind nur Sprache und Sprecher am Asset.
+*@
+
+<PageTitle>@L["PageTitle", _data?.DialogueName ?? string.Empty]</PageTitle>
+
+@if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">@L["NotFound"]</MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/modules/dialogs">@L["BackToList"]</MudButton>
+}
+else if (_data is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <ModuleHeader Module="Module"
+                  Title="@L["Heading", _data.DialogueName]"
+                  Breadcrumbs="Breadcrumbs">
+        <Actions>
+            <MudButton Variant="Variant.Outlined"
+                       StartIcon="@Icons.Material.Filled.Edit"
+                       Href="@($"/modules/dialogs/{Id}")">
+                @L["ToEditor"]
+            </MudButton>
+        </Actions>
+    </ModuleHeader>
+
+    @if (_data.Languages.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Class="mb-4">
+            @L["NoLanguagesHint"]
+            <MudLink Href="/modules/localization" Class="ml-1">@L["ToLocalization"]</MudLink>
+        </MudAlert>
+    }
+    else
+    {
+        @* ------------------------------------------------------------- Fortschritt *@
+        <MudPaper Elevation="0" Outlined="true" Class="pa-4 mb-4">
+            <MudText Typo="Typo.subtitle2" Class="mb-3">@L["ProgressHeading"]</MudText>
+            <MudStack Spacing="3">
+                @foreach (var progress in _data.Progress)
+                {
+                    <div>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.body2">@progress.LanguageName (@progress.LanguageCode)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @L["ProgressCounts", progress.Recorded, progress.Total, progress.Percent]
+                            </MudText>
+                        </MudStack>
+                        <MudProgressLinear Value="progress.Percent"
+                                           Color="@(progress.Missing == 0 ? Color.Success : Color.Primary)"
+                                           Size="Size.Small" />
+                    </div>
+                }
+            </MudStack>
+        </MudPaper>
+
+        @* ------------------------------------------------------------------ Zeilen *@
+        @if (_data.Lines.Count == 0)
+        {
+            <MudAlert Severity="Severity.Normal">@L["NoLinesHint"]</MudAlert>
+        }
+        else
+        {
+            <MudStack Spacing="3">
+                @foreach (var line in _data.Lines)
+                {
+                    <MudPaper Elevation="0" Outlined="true" Class="pa-4">
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-3">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@line.SpeakerName</MudChip>
+                            <MudText Typo="Typo.body1">@line.Text</MudText>
+                        </MudStack>
+
+                        <MudSimpleTable Dense="true" Elevation="0" Style="overflow-x:auto;">
+                            <thead>
+                                <tr>
+                                    <th style="width:20%;">@L["ColumnLanguage"]</th>
+                                    <th style="width:30%;">@L["ColumnRecording"]</th>
+                                    <th style="width:30%;">@L["ColumnVoiceActor"]</th>
+                                    <th style="width:20%;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var take in line.Takes)
+                                {
+                                    <tr>
+                                        <td>
+                                            <MudText Typo="Typo.body2">@LanguageName(take.LanguageCode)</MudText>
+                                        </td>
+                                        <td>
+                                            @if (take.IsRecorded)
+                                            {
+                                                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                                                    <MudIcon Icon="@Icons.Material.Filled.GraphicEq"
+                                                             Color="Color.Success" Size="Size.Small" />
+                                                    <MudLink Href="@($"/assets/{take.AssetId}")" Target="_blank">
+                                                        @take.FileName
+                                                    </MudLink>
+                                                </MudStack>
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    @L["NotRecorded"]
+                                                </MudText>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (take.IsRecorded)
+                                            {
+                                                <MudTextField T="string"
+                                                              Value="take.VoiceActor"
+                                                              ValueChanged="value => SaveVoiceActorAsync(take.AssetId!.Value, value)"
+                                                              Margin="Margin.Dense"
+                                                              Variant="Variant.Text"
+                                                              Placeholder="@L["VoiceActorPlaceholder"]" />
+                                            }
+                                        </td>
+                                        <td>
+                                            <AssetUpload OwnerModuleKey="@ModuleKeys.Dialogs"
+                                                         OwnerEntityId="line.LineId"
+                                                         Variant="Variant.Outlined"
+                                                         Color="Color.Default"
+                                                         Size="Size.Small"
+                                                         Text="@(take.IsRecorded ? L["ReplaceRecording"] : L["AddRecording"])"
+                                                         OnAssetUploaded="asset => AttachAsync(asset, line.LineId, take.LanguageCode)" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudPaper>
+                }
+            </MudStack>
+        }
+    }
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Dialogs);
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private VoiceOverOverview? _data;
+    private bool _notFound;
+
+    private List<BreadcrumbItem> Breadcrumbs =>
+        [new(_data?.DialogueName ?? string.Empty, $"/modules/dialogs/{Id}"),
+         new(L["BreadcrumbVoiceOver"], null, disabled: true)];
+
+    protected override async Task OnParametersSetAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        _data = await VoiceOvers.GetOverviewAsync(projectId, Id);
+        _notFound = _data is null;
+    }
+
+    private string LanguageName(string code) =>
+        _data?.Languages.FirstOrDefault(language => language.Code == code) is { } language
+            ? $"{language.Name} ({language.Code})"
+            : code;
+
+    private async Task AttachAsync(Asset asset, Guid lineId, string languageCode)
+    {
+        try
+        {
+            await VoiceOvers.SetRecordingAsync(asset.Id, lineId, languageCode, asset.VoiceActor);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            // Die Datei liegt schon in der Bibliothek — sie bleibt dort als noch nicht
+            // zugeordnetes Asset stehen, statt still zu verschwinden.
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task SaveVoiceActorAsync(Guid assetId, string? voiceActor)
+    {
+        try
+        {
+            // Je Zelle gespeichert wie im Übersetzungsraster: Eine Vertonungssitzung geht über
+            // viele Zeilen, ein vergessener Klick auf „Speichern“ verlöre sie alle.
+            await VoiceOvers.SetVoiceActorAsync(assetId, voiceActor);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

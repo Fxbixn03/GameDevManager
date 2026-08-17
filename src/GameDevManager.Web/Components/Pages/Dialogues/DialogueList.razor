@@ -144,6 +144,17 @@ else
                                                        aria-label="@L["GraphAria", dialogue.Name]" />
                                     </MudTooltip>
                                 }
+                                @* Vertonung gibt es für beide Formen — auch eine Sprechblase
+                                   wird eingesprochen. *@
+                                @if (dialogue.LineCount > 0)
+                                {
+                                    <MudTooltip Text="@L["VoiceOverTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.RecordVoiceOver"
+                                                       Size="Size.Small"
+                                                       Href="@($"/modules/dialogs/{dialogue.Id}/vertonung")"
+                                                       aria-label="@L["VoiceOverAria", dialogue.Name]" />
+                                    </MudTooltip>
+                                }
                                 <EntityDuplicateButton ModuleKey="@Module.Id"
                                                        EntityId="dialogue.Id"
                                                        Name="@dialogue.Name"

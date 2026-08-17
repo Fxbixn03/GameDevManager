@@ -70,6 +70,9 @@ public class ExportService(
     /// deren Wert semikolongetrennt in <c>content/field-values.json</c> steht. Version 13:
     /// Inhalte tragen einen <c>status</c> (Entwurf, in Arbeit, im Review, fertig); das Manifest
     /// nennt unter <c>minimumStatus</c> den Mindeststand, auf den ein Export eingeschränkt war.
+    /// Version 20: Assets tragen <c>languageCode</c> und <c>voiceActor</c> — eine Aufnahme
+    /// hängt als Asset an der GUID einer Dialogzeile, und diese zwei Angaben sagen, in welcher
+    /// Sprache sie eingesprochen wurde und von wem.
     /// Version 19: Assets tragen <c>regions</c> — benannte Ausschnitte in Pixeln, mit denen die
     /// Engine ein Sprite-Sheet selbst schneidet; die früheren Fassungen eines ersetzten Assets
     /// stehen umgekehrt nicht mehr als leere Liste darin, sie sind Werkzeug-Daten.
@@ -83,7 +86,7 @@ public class ExportService(
     /// ihr Skizzenbild hängt als Asset an ihrer GUID und steht damit ohne neue Spalte im
     /// Archiv.
     /// </remarks>
-    public const int FormatVersion = 19;
+    public const int FormatVersion = 20;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.

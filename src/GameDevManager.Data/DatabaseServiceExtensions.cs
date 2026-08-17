@@ -126,6 +126,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<MapService>();
         services.AddScoped<ConditionService>();
         services.AddScoped<DialogueService>();
+        services.AddScoped<VoiceOverService>();
         services.AddScoped<ReferenceService>();
         services.AddScoped<AssetService>();
         services.AddScoped<SearchService>();

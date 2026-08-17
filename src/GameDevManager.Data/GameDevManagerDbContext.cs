@@ -307,6 +307,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.Property(a => a.MimeType).HasMaxLength(100).IsRequired();
             entity.Property(a => a.StorageKey).HasMaxLength(400).IsRequired();
             entity.Property(a => a.Description).HasMaxLength(2000);
+            entity.Property(a => a.LanguageCode).HasMaxLength(20);
+            entity.Property(a => a.VoiceActor).HasMaxLength(200);
             entity.Ignore(a => a.IsToolAsset);
 
             entity.HasOne(a => a.GameProject)

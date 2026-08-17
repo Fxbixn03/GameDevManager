@@ -16,6 +16,7 @@ public static class HealthCheckKeys
     public const string ImpossibleConditions = "impossibleConditions";
     public const string UnlockCycles = "unlockCycles";
     public const string MoneyPrinters = "moneyPrinters";
+    public const string MissingRecordings = "missingRecordings";
 }
 
 /// <summary>
@@ -48,7 +49,8 @@ public class DashboardOverviewService(
     LootService loot,
     ConditionService conditions,
     TechTreeService techTree,
-    EconomyService economy)
+    EconomyService economy,
+    VoiceOverService voiceOvers)
 {
     /// <summary>
     /// Die zuletzt bearbeiteten Entitäten quer durch alle Module, jüngste zuerst.
@@ -149,7 +151,13 @@ public class DashboardOverviewService(
             // Die Wirtschafts-Prüfung: Zutaten billiger als das Ergebnis. Der Weg dorthin
             // führt ins Crafting — dort steht das Rezept, das man ändern muss.
             new(HealthCheckKeys.MoneyPrinters, ModuleKeys.Crafting,
-                (await economy.FindMoneyPrintersAsync(projectId, ct)).Count)
+                (await economy.FindMoneyPrintersAsync(projectId, ct)).Count),
+
+            // Zeilen, deren Text in einer Sprache vorliegt, ohne dass sie eingesprochen wäre.
+            // Ohne Sprachen im Projekt findet die Prüfung nichts — wer keine Lokalisierung
+            // pflegt, plant auch keine Vertonung.
+            new(HealthCheckKeys.MissingRecordings, ModuleKeys.Dialogs,
+                (await voiceOvers.FindMissingRecordingsAsync(projectId, ct)).Count)
         ];
 
         return new HealthSummary(

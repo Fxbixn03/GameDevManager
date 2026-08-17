@@ -78,6 +78,15 @@
   <data name="ConditionsTitle" xml:space="preserve">
     <value>Unerfüllbare Bedingungen</value>
   </data>
+  <data name="MissingRecordingsTitle" xml:space="preserve">
+    <value>Zeilen ohne Aufnahme</value>
+  </data>
+  <data name="MissingRecordingsMore" xml:space="preserve">
+    <value>… und {0} weitere. Die Vertonungsseite eines Dialogs zeigt sie je Zeile und Sprache.</value>
+  </data>
+  <data name="ToDialogs" xml:space="preserve">
+    <value>Zu den Dialogen</value>
+  </data>
   <data name="NoFindings" xml:space="preserve">
     <value>keine Funde</value>
   </data>

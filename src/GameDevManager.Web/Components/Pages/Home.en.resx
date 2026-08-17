@@ -253,6 +253,9 @@
   <data name="Check_moneyPrinters" xml:space="preserve">
     <value>Money printers</value>
   </data>
+  <data name="Check_missingRecordings" xml:space="preserve">
+    <value>Lines without a recording</value>
+  </data>
   <data name="Check_unlockCycles" xml:space="preserve">
     <value>Cycles in the unlock tree</value>
   </data>

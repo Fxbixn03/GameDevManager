@@ -208,6 +208,10 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("bit");
 
+                    b.Property<string>("LanguageCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -233,6 +237,10 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
 
                     b.Property<DateTime>("UploadedAtUtc")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("VoiceActor")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int?>("Width")
                         .HasColumnType("int");

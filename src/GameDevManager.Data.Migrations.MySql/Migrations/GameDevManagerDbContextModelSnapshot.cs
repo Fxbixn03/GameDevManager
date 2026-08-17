@@ -205,6 +205,10 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("LanguageCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -230,6 +234,10 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
                     b.Property<DateTime>("UploadedAtUtc")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("VoiceActor")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<int?>("Width")
                         .HasColumnType("int");

@@ -151,6 +151,21 @@
   <data name="AssetRegionGridEmpty" xml:space="preserve">
     <value>Not a single cell fits into the image with these dimensions.</value>
   </data>
+  <data name="VoiceOverLanguageRequired" xml:space="preserve">
+    <value>A recording needs the language it was voiced in.</value>
+  </data>
+  <data name="VoiceOverLanguageUnknown" xml:space="preserve">
+    <value>The language “{0}” does not exist in this project.</value>
+  </data>
+  <data name="VoiceOverLineGone" xml:space="preserve">
+    <value>The dialogue line no longer exists.</value>
+  </data>
+  <data name="VoiceOverPlayerSpeaker" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="VoiceOverUnknownSpeaker" xml:space="preserve">
+    <value>Unknown speaker</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

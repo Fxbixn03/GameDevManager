@@ -51,6 +51,24 @@ public class Asset
     public string? Description { get; set; }
 
     /// <summary>
+    /// Sprachkürzel einer Aufnahme — das <see cref="ContentLanguage.Code"/> des Projekts. Bei
+    /// einem Sprite bleibt es leer: Ein Bild ist in jeder Sprache dasselbe.
+    /// <para>
+    /// Es steht am Asset und nicht an einer eigenen Vertonungs-Tabelle, weil die Aufnahme
+    /// ohnehin schon über <see cref="OwnerEntityId"/> an der Dialogzeile hängt — eine zweite
+    /// Tabelle trüge nur dieselbe Zuordnung ein weiteres Mal, plus diese eine Angabe.
+    /// </para>
+    /// </summary>
+    public string? LanguageCode { get; set; }
+
+    /// <summary>
+    /// Wer die Aufnahme eingesprochen hat. Eine Produktionsangabe zur <b>Datei</b> und nicht
+    /// zur Zeile: Die Rolle steht als <see cref="DialogueLine.SpeakerNpcId"/> längst dort, und
+    /// jede Sprache hat ihre eigene Besetzung.
+    /// </summary>
+    public string? VoiceActor { get; set; }
+
+    /// <summary>
     /// Das Sprite, das die Module als Icon der Entität zeigen. Je Entität ist höchstens eines
     /// primär; der <c>AssetService</c> hält das beim Setzen nach.
     /// </summary>

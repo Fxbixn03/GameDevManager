@@ -52,6 +52,14 @@ else
                     @L["Play"]
                 </MudButton>
             }
+            @if (!_context.IsNew)
+            {
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.RecordVoiceOver"
+                           Href="@($"/modules/dialogs/{_context.Entity.Id}/vertonung")">
+                    @L["VoiceOver"]
+                </MudButton>
+            }
             <MudButton Variant="Variant.Outlined" Href="/modules/dialogs">@L["Cancel"]</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"

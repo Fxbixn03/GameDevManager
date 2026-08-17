@@ -150,6 +150,13 @@ public class DialogueService(
         // Antwortmöglichkeiten haben eigene GUIDs und können später eigene Bedingungen tragen.
         await EntityCleanup.DeleteForEntitiesAsync(db, removedOwners, ct);
 
+        // An einer entfernten Zeile hängen die Aufnahmen ihrer Vertonung. EntityCleanup deckt
+        // sie nicht ab — Assets laufen bewusst getrennt, weil dabei Dateien verschwinden.
+        foreach (var ownerId in removedOwners)
+        {
+            await assets.DeleteForOwnerAsync(ownerId, ct);
+        }
+
         // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier
         // gesetzt und nicht in jedem Zweig der Fallunterscheidung darüber.
         stored.Status = context.Entity.Status;
@@ -398,13 +405,22 @@ public class DialogueService(
         await assets.DeleteForOwnerAsync(dialogueId, ct);
 
         await using var db = await factory.CreateDbContextAsync(ct);
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         // Zeilen und Antworten haben eigene GUIDs und können Bedingungen tragen.
         var lineIds = await db.DialogueLines
             .Where(line => line.DialogueId == dialogueId)
             .Select(line => line.Id)
             .ToListAsync(ct);
+
+        // An den Zeilen hängen die Aufnahmen ihrer Vertonung. Vor der Transaktion, wie beim
+        // Dialog selbst: Beim Aufräumen der Assets verschwinden Dateien, und das ließe sich
+        // nicht zurückrollen.
+        foreach (var lineId in lineIds)
+        {
+            await assets.DeleteForOwnerAsync(lineId, ct);
+        }
+
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         var choiceIds = await db.DialogueChoices
             .Where(choice => lineIds.Contains(choice.DialogueLineId))

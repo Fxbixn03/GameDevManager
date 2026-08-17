@@ -41,6 +41,14 @@
     public EventCallback OnUploaded { get; set; }
 
     /// <summary>
+    /// Wird je hochgeladener Datei mit dem angelegten Asset aufgerufen. Wer die frische GUID
+    /// braucht — die Vertonung hängt daran gleich Sprache und Sprecher an —, hört hier zu;
+    /// <see cref="OnUploaded"/> bleibt das Signal „fertig, bitte neu laden“.
+    /// </summary>
+    [Parameter]
+    public EventCallback<Asset> OnAssetUploaded { get; set; }
+
+    /// <summary>
     /// Beschriftung des Knopfes. Leer bedeutet Standardtext aus der resx — deshalb nullable
     /// statt Feldinitialisierer, der den Localizer noch nicht kennt.
     /// </summary>
@@ -93,9 +101,10 @@
                     // OpenReadStream lässt standardmäßig nur 512 KB zu — das Limit dieser
                     // Anwendung steht in der Konfiguration.
                     await using var content = file.OpenReadStream(Library.Options.MaxFileSizeBytes);
-                    await Library.UploadAsync(
+                    var asset = await Library.UploadAsync(
                         projectId, file.Name, file.ContentType, content, OwnerModuleKey, OwnerEntityId);
 
+                    await OnAssetUploaded.InvokeAsync(asset);
                     uploaded++;
                 }
                 catch (ContentValidationException ex)
