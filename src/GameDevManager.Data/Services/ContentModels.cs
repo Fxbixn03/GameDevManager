@@ -260,6 +260,15 @@ public sealed record MapSpawnRuleRow(
     public string DescribeCount() => MinCount == MaxCount ? MinCount.ToString() : $"{MinCount}–{MaxCount}";
 }
 
+/// <summary>
+/// Der Stoff der Durchspiel-Ansicht eines Dialogs: Zeilen und Antworten in ihrer Reihenfolge,
+/// die Verfügbarkeits-Bedingungen je Besitzer-GUID und die Namen der Beteiligten.
+/// </summary>
+public sealed record DialoguePlayData(
+    Dialogue Dialogue,
+    Dictionary<Guid, ConditionSet> AvailabilityByOwner,
+    Dictionary<Guid, string> NpcNames);
+
 /// <summary>Ein Händler, der ein bestimmtes Item führt — für die Item-Maske.</summary>
 public sealed record TraderForItem(
     Guid NpcId,

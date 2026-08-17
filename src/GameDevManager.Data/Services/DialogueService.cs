@@ -339,6 +339,60 @@ public class DialogueService(
     };
 
     /// <summary>Löscht einen Dialog samt allem, was daran hängt.</summary>
+    /// <summary>
+    /// Alles, was die Durchspiel-Ansicht braucht: der Dialog mit Zeilen und Antworten in ihrer
+    /// Reihenfolge, die Verfügbarkeits-Bedingungen an Dialog, Zeilen und Antworten (je Besitzer
+    /// höchstens ein Satz — ein leerer wird gelöscht statt gespeichert) und die Namen der
+    /// Beteiligten.
+    /// </summary>
+    public async Task<DialoguePlayData?> GetPlayDataAsync(
+        Guid projectId, Guid dialogueId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var dialogue = await db.Dialogues
+            .AsNoTracking()
+            .Include(d => d.Participants)
+            .Include(d => d.Lines).ThenInclude(line => line.Choices)
+            .FirstOrDefaultAsync(d => d.Id == dialogueId && d.GameProjectId == projectId, ct);
+
+        if (dialogue is null)
+        {
+            return null;
+        }
+
+        dialogue.Lines = [.. dialogue.Lines.OrderBy(line => line.SortOrder)];
+        foreach (var line in dialogue.Lines)
+        {
+            line.Choices = [.. line.Choices.OrderBy(choice => choice.SortOrder)];
+        }
+
+        List<Guid> owners =
+        [
+            dialogue.Id,
+            .. dialogue.Lines.Select(line => line.Id),
+            .. dialogue.Lines.SelectMany(line => line.Choices).Select(choice => choice.Id)
+        ];
+
+        var slot = ConditionSlots.Availability;
+        var sets = await db.ConditionSets
+            .AsNoTracking()
+            .Include(set => set.Conditions)
+            .Where(set => owners.Contains(set.OwnerId) && set.Slot == slot)
+            .ToListAsync(ct);
+
+        var npcIds = dialogue.Participants.Select(p => p.NpcId).ToList();
+        var npcNames = await db.Npcs
+            .AsNoTracking()
+            .Where(npc => npcIds.Contains(npc.Id))
+            .ToDictionaryAsync(npc => npc.Id, npc => npc.Name, ct);
+
+        return new DialoguePlayData(
+            dialogue,
+            sets.ToDictionary(set => set.OwnerId),
+            npcNames);
+    }
+
     public async Task DeleteDialogueAsync(Guid dialogueId, CancellationToken ct = default)
     {
         await assets.DeleteForOwnerAsync(dialogueId, ct);

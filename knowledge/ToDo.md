@@ -208,7 +208,7 @@ Aufnahme.
 
 *Aufwand: M · Migration: nein · Format: +1*
 
-### F11 — Dialog durchspielen
+### F11 — Dialog durchspielen ✅ umgesetzt
 
 > **Als** Autor **möchte ich** einen Dialog im Browser durchklicken, mit setzbaren Flags und
 > Beständen, **damit** ich sehe, wo eine Bedingung ihn stumm abbricht — bevor es die Engine tut.
@@ -221,6 +221,16 @@ Bedingungssystem **ausgewertet** statt nur verwaltet wird — die Auswertungslog
 davon leben (siehe F19).
 
 *Aufwand: L · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `ConditionEvaluator` als reine Rechenklasse in der Datenschicht
+(`GameStateAssumption` → Ergebnis je Bedingung und Satz; nicht Rechenbares — `Custom`, fehlende
+Ziele — gilt als **ausgewiesene Annahme** statt als stummes Nein). Zeilen und Antworten tragen
+jetzt eigene Verfügbarkeits-Bedingungen (Slot `Availability` an ihren GUIDs — die Aufräumpfade
+dafür lagen schon bereit); die Knöpfe in der Maske sind wie bei den Quest-Zielen gesperrt,
+solange Ungespeichertes ansteht. Die Seite `/modules/dialogs/{id}/play` bietet als
+Zustandsleiste **genau die Stellschrauben an, die in den Bedingungen dieses Dialogs vorkommen**,
+spielt das Gespräch mit, meldet gesperrte Antworten samt Begründung und zeigt den stummen
+Abbruch, wenn eine erreichte Zeile nicht verfügbar wäre. F19 lebt vom selben Kern.
 
 ### F12 — Story-Text als Markdown mit Entitäts-Erwähnungen ✅ umgesetzt
 

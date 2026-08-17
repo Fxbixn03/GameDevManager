@@ -204,4 +204,22 @@
   <data name="DeletedMessage" xml:space="preserve">
     <value>Dialog gelöscht.</value>
   </data>
+  <data name="Play" xml:space="preserve">
+    <value>Durchspielen</value>
+  </data>
+  <data name="LineConditionsTooltip" xml:space="preserve">
+    <value>Verfügbarkeit dieser Zeile</value>
+  </data>
+  <data name="ChoiceConditionsTooltip" xml:space="preserve">
+    <value>Verfügbarkeit dieser Antwort</value>
+  </data>
+  <data name="ConditionsLockedTooltip" xml:space="preserve">
+    <value>Erst speichern — Bedingungen hängen an der gespeicherten Zeile.</value>
+  </data>
+  <data name="ConditionsDialogTitle" xml:space="preserve">
+    <value>Verfügbarkeit</value>
+  </data>
+  <data name="ConditionsEmptyHint" xml:space="preserve">
+    <value>Ohne Bedingung ist die Zeile bzw. Antwort immer verfügbar.</value>
+  </data>
 </root>

@@ -2,6 +2,7 @@
 @page "/modules/dialogs/{Id:guid}"
 @inject DialogueService Dialogues
 @inject ReferenceService References
+@inject ConditionService Conditions
 @inject ProjectContext Project
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -41,6 +42,14 @@ else
                            StartIcon="@Icons.Material.Filled.DeleteOutline"
                            OnClick="DeleteAsync">
                     @L["Delete"]
+                </MudButton>
+            }
+            @if (!_context.IsNew && !IsBark)
+            {
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.PlayArrow"
+                           Href="@($"/modules/dialogs/{_context.Entity.Id}/play")">
+                    @L["Play"]
                 </MudButton>
             }
             <MudButton Variant="Variant.Outlined" Href="/modules/dialogs">@L["Cancel"]</MudButton>
@@ -250,6 +259,16 @@ else
                                                                OnClick="@(() => MoveLine(line, 1))"
                                                                aria-label="@L["MoveDownAria"]" />
                                             </MudTooltip>
+                                            @* Die Verfügbarkeit hängt an der GUID der Zeile — erst nach
+                                               dem Speichern gibt es sie in der Datenbank. *@
+                                            <MudTooltip Text="@(ConditionsLocked ? L["ConditionsLockedTooltip"] : L["LineConditionsTooltip"])">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Rule"
+                                                               Size="Size.Small"
+                                                               Color="@(CountFor(line.Id) > 0 ? Color.Primary : Color.Default)"
+                                                               Disabled="@ConditionsLocked"
+                                                               OnClick="@(() => EditConditionsAsync(line.Id, LineLabel(line)))"
+                                                               aria-label="@L["LineConditionsTooltip"]" />
+                                            </MudTooltip>
                                             <MudTooltip Text="@L["RemoveLine"]">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                                Size="Size.Small"
@@ -300,6 +319,14 @@ else
                                                         }
                                                     </MudSelect>
 
+                                                    <MudTooltip Text="@(ConditionsLocked ? L["ConditionsLockedTooltip"] : L["ChoiceConditionsTooltip"])">
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Rule"
+                                                                       Size="Size.Small"
+                                                                       Color="@(CountFor(choice.Id) > 0 ? Color.Primary : Color.Default)"
+                                                                       Disabled="@ConditionsLocked"
+                                                                       OnClick="@(() => EditConditionsAsync(choice.Id, choice.Text))"
+                                                                       aria-label="@L["ChoiceConditionsTooltip"]" />
+                                                    </MudTooltip>
                                                     <MudTooltip Text="@L["RemoveChoice"]">
                                                         <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                                        Size="Size.Small"
@@ -403,6 +430,7 @@ else
     private bool _notFound;
     private bool _saving;
     private bool _dirty;
+    private Dictionary<Guid, int> _availabilityCounts = [];
 
     private bool IsBark => _context?.Entity.Kind == DialogueKind.Bark;
 
@@ -449,7 +477,58 @@ else
         if (_context is null)
         {
             _notFound = true;
+            return;
         }
+
+        await RefreshConditionCountsAsync();
+    }
+
+    /// <summary>
+    /// Die Bedingungen hängen an GUIDs, die es erst nach dem Speichern gibt — solange etwas
+    /// ungespeichert ist, bleiben die Knöpfe zu, wie bei den Quest-Zielen.
+    /// </summary>
+    private bool ConditionsLocked => _context is null || _context.IsNew || _dirty;
+
+    private int CountFor(Guid ownerId) => _availabilityCounts.GetValueOrDefault(ownerId);
+
+    private async Task RefreshConditionCountsAsync()
+    {
+        if (_context is null || _context.IsNew)
+        {
+            _availabilityCounts = [];
+            return;
+        }
+
+        List<Guid> owners =
+        [
+            .. _context.Entity.Lines.Select(line => line.Id),
+            .. _context.Entity.Lines.SelectMany(line => line.Choices).Select(choice => choice.Id)
+        ];
+
+        _availabilityCounts = owners.Count == 0
+            ? []
+            : await Conditions.CountByOwnersAsync(owners, ConditionSlots.Availability);
+    }
+
+    /// <summary>Die Verfügbarkeit einer Zeile oder Antwort — der Dialog speichert selbst.</summary>
+    private async Task EditConditionsAsync(Guid ownerId, string subject)
+    {
+        var parameters = new DialogParameters<ConditionDialog>
+        {
+            { dialog => dialog.OwnerId, ownerId },
+            { dialog => dialog.OwnerModuleKey, ModuleKeys.Dialogs },
+            { dialog => dialog.Slot, ConditionSlots.Availability },
+            { dialog => dialog.Subject, subject },
+            { dialog => dialog.EmptyHint, L["ConditionsEmptyHint"].Value }
+        };
+
+        var reference = await Dialogs.ShowAsync<ConditionDialog>(
+            L["ConditionsDialogTitle"],
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        await reference.Result;
+        await RefreshConditionCountsAsync();
     }
 
     private EntitySummary? NpcFor(Guid npcId) => _npcs.FirstOrDefault(entity => entity.Id == npcId);
@@ -631,6 +710,9 @@ else
             {
                 await _historyPanel.RefreshAsync();
             }
+
+            // Entfernte Zeilen nehmen ihre Bedingungen mit — die Zähler sollen es auch wissen.
+            await RefreshConditionCountsAsync();
         }
         catch (ContentValidationException ex)
         {
