@@ -60,6 +60,32 @@ window.gdmShortcuts = {
                 return;
             }
 
+            // Esc: aus einer Maske zurück auf die Modulseite. Welche das ist, entscheidet C# —
+            // hier steht nur, wann die Taste überhaupt uns gehört.
+            if (e.key === "Escape" && !e.altKey && !e.shiftKey) {
+                // Liegt eine Schicht über der Seite, gehört Esc ihr: MudBlazor schließt damit
+                // Dialoge, Menüs und Auswahllisten. Eine Navigation daneben nähme dem Nutzer
+                // den Dialog unter den Händen weg.
+                if (self.hasOpenLayer()) {
+                    return;
+                }
+
+                // Im Eingabefeld verlässt der erste Druck nur das Feld. Ein einzelner
+                // Tastendruck beim Tippen darf die Maske nicht schließen — der zweite tut es.
+                if (typing) {
+                    if (typeof target.blur === "function") {
+                        target.blur();
+                    }
+                    return;
+                }
+
+                if (self.ref) {
+                    e.preventDefault();
+                    self.ref.invokeMethodAsync("LeaveToList");
+                }
+                return;
+            }
+
             // Alt+Buchstabe: Navigation — nicht beim Tippen, dort gehören die Tasten dem Feld.
             if (e.altKey && !typing && self.ref) {
                 const route = self.routes[e.key.toLowerCase()];
@@ -114,5 +140,25 @@ window.gdmShortcuts = {
                 }
             }
         });
+    },
+
+    // Liegt gerade eine Schicht über der Seite? Ein Dialog oder ein geöffnetes Popover
+    // (Auswahlfeld, Menü, Datumswähler). Beide Klassen tragen die Elemente nur im geöffneten
+    // Zustand — MudBlazor rendert sie sonst gar nicht bzw. ohne das „-open“.
+    //
+    // Tooltips zählen ausdrücklich nicht dazu: Sie hängen am Mauszeiger, sperren nichts und
+    // stehen offen, während die Hand längst auf der Tastatur liegt.
+    hasOpenLayer: function () {
+        if (document.querySelector(".mud-dialog-container")) {
+            return true;
+        }
+
+        for (const popover of document.querySelectorAll(".mud-popover-open")) {
+            if (!popover.querySelector(".mud-tooltip")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 };

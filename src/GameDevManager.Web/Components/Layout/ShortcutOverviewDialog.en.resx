@@ -16,13 +16,19 @@
     <value>Keyboard shortcuts</value>
   </data>
   <data name="Hint" xml:space="preserve">
-    <value>Keys without a modifier only apply outside input fields — otherwise you could no longer type an “n”. Alt + letter jumps into a module: H dashboard, I items, N NPCs, Q quests, T todo, W whiteboard, K maps, D dialogues, S story, A assets.</value>
+    <value>Keys without a modifier only apply outside input fields — otherwise you could no longer type an “n”; inside a field the first Esc only leaves the field, the second one leaves the form. Alt + letter jumps into a module: H dashboard, I items, N NPCs, Q quests, T todo, W whiteboard, K maps, D dialogues, S story, A assets.</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>
   </data>
   <data name="KeyCtrl" xml:space="preserve">
     <value>Ctrl</value>
+  </data>
+  <data name="KeyEscape" xml:space="preserve">
+    <value>Esc</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Leave a form and go back to its module page</value>
   </data>
   <data name="KeyAlt" xml:space="preserve">
     <value>Alt</value>

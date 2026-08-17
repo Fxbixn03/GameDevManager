@@ -6,8 +6,9 @@
 
 @* Unsichtbare Komponente im MainLayout: verdrahtet die globalen Tastatur-Shortcuts.
    Strg+K (Suche), Strg+S (Knopf mit data-gdm-save), „n“ (Knopf mit data-gdm-new) und „e“
-   (Eintrag mit data-gdm-entity) laufen rein im Browser; Alt-Navigation und „?“ rufen hierher
-   zurück, weil nur Blazor navigieren und nur C# einen Dialog öffnen kann. *@
+   (die erste bzw. fokussierte Kachel einer Liste) laufen rein im Browser; Alt-Navigation,
+   Esc und „?“ rufen hierher zurück, weil nur Blazor navigieren, nur C# die Adressen der
+   Module kennt und nur C# einen Dialog öffnen kann. *@
 
 @code {
     private DotNetObjectReference<KeyboardShortcuts>? _reference;
@@ -49,6 +50,52 @@
 
     [JSInvokable]
     public void NavigateTo(string route) => Navigation.NavigateTo(route);
+
+    /// <summary>
+    /// Esc führt aus einer Maske zurück auf die Modulseite — dieselbe Adresse, die der
+    /// Abbrechen-Knopf jeder Maske trägt (und wie der ohne Rückfrage: Ungespeichertes bleibt
+    /// ungespeichert, dafür steht der Hinweis-Chip in der Kopfzeile).
+    /// </summary>
+    [JSInvokable]
+    public void LeaveToList()
+    {
+        var route = ListRouteFor(Navigation.ToBaseRelativePath(Navigation.Uri));
+
+        if (route is not null)
+        {
+            Navigation.NavigateTo(route);
+        }
+    }
+
+    /// <summary>
+    /// Die Modulseite zu einer Adresse — <c>null</c>, wenn die Adresse zu keinem Modul gehört
+    /// oder schon die Modulseite selbst ist.
+    /// <para>
+    /// Gefragt wird die Adresse und nicht die Seite: Alles unterhalb von
+    /// <c>/modules/&lt;schlüssel&gt;</c> gehört zu diesem Modul, gleich wie tief
+    /// (<c>…/neu</c>, <c>…/{id}</c>, <c>…/arten</c>, <c>…/{id}/graph</c>) — eine Marke an den
+    /// Abbrechen-Knöpfen von rund dreißig Masken müsste dagegen gepflegt werden, und die
+    /// Seiten ohne einen solchen Knopf (Arten, Graphen, Simulation) hätten gar keine.
+    /// </para>
+    /// <para>
+    /// Und bewusst auf die Modulseite statt eine Ebene höher: Die gibt es nicht überall
+    /// (<c>/modules/crafting/baum/{id}</c> hätte keine), eine Modulseite hat dagegen jedes
+    /// Modul. Auf ihr selbst tut Esc nichts — ein Sprung von dort ins Dashboard wäre ein
+    /// anderer Wunsch als „zurück aus der Maske“.
+    /// </para>
+    /// </summary>
+    internal static string? ListRouteFor(string relativePath)
+    {
+        var path = relativePath.Split('?', '#')[0];
+        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (segments.Length < 3 || !segments[0].Equals("modules", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return ModuleRegistry.Find(segments[1])?.Route;
+    }
 
     [JSInvokable]
     public async Task ShowPalette()

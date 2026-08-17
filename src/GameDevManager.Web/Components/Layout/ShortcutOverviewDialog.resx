@@ -16,13 +16,19 @@
     <value>Tastenkürzel</value>
   </data>
   <data name="Hint" xml:space="preserve">
-    <value>Tasten ohne Zusatztaste gelten nur außerhalb von Eingabefeldern — sonst ließe sich kein „n“ mehr tippen. Alt + Buchstabe springt in ein Modul: H Dashboard, I Items, N NPCs, Q Quests, T ToDo, W Whiteboard, K Karten, D Dialoge, S Story, A Assets.</value>
+    <value>Tasten ohne Zusatztaste gelten nur außerhalb von Eingabefeldern — sonst ließe sich kein „n“ mehr tippen; Esc verlässt in einem Eingabefeld erst das Feld und beim zweiten Druck die Maske. Alt + Buchstabe springt in ein Modul: H Dashboard, I Items, N NPCs, Q Quests, T ToDo, W Whiteboard, K Karten, D Dialoge, S Story, A Assets.</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Schließen</value>
   </data>
   <data name="KeyCtrl" xml:space="preserve">
     <value>Strg</value>
+  </data>
+  <data name="KeyEscape" xml:space="preserve">
+    <value>Esc</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Aus einer Maske zurück auf die Modulseite</value>
   </data>
   <data name="KeyAlt" xml:space="preserve">
     <value>Alt</value>
