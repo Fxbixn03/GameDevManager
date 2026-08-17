@@ -10,18 +10,27 @@
     Projekt, ein Ereignis an 57 Seiten wäre der aufwendigere Weg.
 *@
 
+@* „Open“ ist ein zweiweg-gebundener Parameter — beobachten heißt hier binden, sonst wäre der
+   Elternteil die Quelle der Wahrheit für einen Wert, den er nie setzt. *@
 <MudMenu Dense="true"
          AnchorOrigin="Origin.BottomLeft"
          TransformOrigin="Origin.TopLeft"
-         OpenChanged="OnOpenChangedAsync">
+         @bind-Open:get="_open"
+         @bind-Open:set="OnOpenChangedAsync">
+    @* Das Öffnen wird selbst verdrahtet, wie beim EntityContextMenu und den Kanban-Karten:
+       ActivatorContent ist ein RenderFragment<MenuContext> — MudBlazor legt um eigenen
+       Aktivator-Inhalt keinen Klick-Handler, es reicht nur den Kontext herein. Ohne den Aufruf
+       ist der Knopf ein gewöhnlicher Knopf und das Menü geht nie auf.
+
+       Kein MudTooltip mehr darum: Der Knopf trägt Projektnamen und Pfeil und sagt damit
+       selbst, was er ist. *@
     <ActivatorContent>
-        <MudTooltip Text="@L["Tooltip"]">
-            <MudButton Color="Color.Inherit"
-                       StartIcon="@Icons.Material.Filled.FolderSpecial"
-                       EndIcon="@Icons.Material.Filled.ArrowDropDown">
-                @(_current?.Name ?? L["Loading"])
-            </MudButton>
-        </MudTooltip>
+        <MudButton Color="Color.Inherit"
+                   StartIcon="@Icons.Material.Filled.FolderSpecial"
+                   EndIcon="@Icons.Material.Filled.ArrowDropDown"
+                   OnClick="@(args => context.OpenAsync(args))">
+            @(_current?.Name ?? L["Loading"])
+        </MudButton>
     </ActivatorContent>
     <ChildContent>
         @if (_projects is not null)
@@ -43,6 +52,7 @@
 @code {
     private GameProject? _current;
     private List<GameProject>? _projects;
+    private bool _open;
 
     protected override async Task OnInitializedAsync()
     {
@@ -54,6 +64,8 @@
     // Beim Öffnen frisch laden — auf der Projektseite kann inzwischen eines dazugekommen sein.
     private async Task OnOpenChangedAsync(bool open)
     {
+        _open = open;
+
         if (open)
         {
             _projects = await Projects.GetProjectsAsync();
