@@ -187,6 +187,9 @@ public class GameDevManagerDbContext(
     /// <summary>Eigene Health-Check-Regeln je Projekt.</summary>
     public DbSet<ContentRule> ContentRules => Set<ContentRule>();
 
+    /// <summary>Ziele, die bei Änderungen aufgerufen werden — Werkzeug-Daten, nicht im Export.</summary>
+    public DbSet<Webhook> Webhooks => Set<Webhook>();
+
     /// <summary>Anmerkungen an Entitäten — Werkzeug-Daten wie das Änderungsprotokoll.</summary>
     public DbSet<ContentComment> ContentComments => Set<ContentComment>();
 
@@ -332,6 +335,22 @@ public class GameDevManagerDbContext(
 
             // Trägt die Referenzansicht („Find All References"): wer zeigt auf diese GUID?
             entity.HasIndex(v => v.ReferenceValue);
+        });
+
+        modelBuilder.Entity<Webhook>(entity =>
+        {
+            entity.Property(hook => hook.Name).HasMaxLength(200).IsRequired();
+            entity.Property(hook => hook.Url).HasMaxLength(1000).IsRequired();
+            entity.Property(hook => hook.Secret).HasMaxLength(200);
+            entity.Property(hook => hook.ModuleKeys).HasMaxLength(2000);
+            entity.Property(hook => hook.LastError).HasMaxLength(500);
+
+            entity.HasOne(hook => hook.GameProject)
+                .WithMany()
+                .HasForeignKey(hook => hook.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(hook => hook.GameProjectId);
         });
 
         modelBuilder.Entity<ContentRule>(entity =>

@@ -21,6 +21,9 @@
   <data name="Subtitle" xml:space="preserve">
     <value>Der komplette Projektstand als ZIP: exportieren, wieder importieren und Stände aufbewahren, um Änderungen nachzuvollziehen.</value>
   </data>
+  <data name="ToWebhooks" xml:space="preserve">
+    <value>Webhooks</value>
+  </data>
   <data name="TargetHeading" xml:space="preserve">
     <value>Ziel</value>
   </data>

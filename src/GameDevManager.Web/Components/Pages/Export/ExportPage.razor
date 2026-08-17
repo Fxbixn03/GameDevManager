@@ -19,7 +19,16 @@
 <PageTitle>@L["PageTitle"]</PageTitle>
 
 <MudText Typo="Typo.h4" GutterBottom="true">@L["Heading"]</MudText>
-<MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">@L["Subtitle"]</MudText>
+<MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">@L["Subtitle"]</MudText>
+
+@* Webhooks holen den Export nicht selbst ab — sie sagen einem anderen System, dass es
+   etwas abzuholen gibt. Deshalb hier und nicht in den Einstellungen. *@
+<MudButton Variant="Variant.Outlined"
+           StartIcon="@Icons.Material.Filled.Webhook"
+           Href="/export/webhooks"
+           Class="mb-6">
+    @L["ToWebhooks"]
+</MudButton>
 
 <MudGrid Spacing="3">
     @* ------------------------------------------------------------------------ Export *@

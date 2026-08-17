@@ -98,6 +98,14 @@ builder.Services.AddHostedService<ChangeLogMaintenance>();
 // letzten Stand etwas geändert hat. Ohne „Exports:ScheduleTime“ tut er nichts.
 builder.Services.AddHostedService<ScheduledExportSnapshots>();
 
+// Ruft die Webhooks eines Projekts auf, wenn sich etwas geändert hat. Der Zeitgeber bündelt
+// die Änderungen einer Bearbeitungssitzung zu einem Aufruf; die Zeitgrenze ist knapp, weil ein
+// Empfänger, der nicht antwortet, den Dienst nicht aufhalten darf.
+builder.Services.AddHttpClient(nameof(WebhookDispatcher), client =>
+    client.Timeout = TimeSpan.FromSeconds(15));
+
+builder.Services.AddHostedService<WebhookDispatcher>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

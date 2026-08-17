@@ -1,0 +1,97 @@
+@inject WebhookService Webhooks
+@inject ModuleLabels Modules
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<WebhookDialog> L
+
+@*
+    Ein Webhook-Ziel erfassen. Das Geheimnis ist optional — ohne es ist die Adresse selbst das
+    einzige, was den Aufruf ausweist.
+*@
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="4" Style="min-width:min(560px, 80vw);">
+            <MudTextField @bind-Value="Hook.Name"
+                          Label="@L["NameLabel"]"
+                          Variant="Variant.Outlined"
+                          Immediate="true" />
+
+            <MudTextField @bind-Value="Hook.Url"
+                          Label="@L["UrlLabel"]"
+                          HelperText="@L["UrlHelper"]"
+                          Variant="Variant.Outlined"
+                          Immediate="true" />
+
+            <MudTextField @bind-Value="Hook.Secret"
+                          Label="@L["SecretLabel"]"
+                          HelperText="@L["SecretHelper"]"
+                          Variant="Variant.Outlined" />
+
+            <MudSelect T="string"
+                       MultiSelection="true"
+                       SelectedValues="_selectedModules"
+                       SelectedValuesChanged="SetModules"
+                       MultiSelectionTextFunc="@(_ => DescribeModules())"
+                       Label="@L["ModulesLabel"]"
+                       HelperText="@L["ModulesHelper"]"
+                       Variant="Variant.Outlined">
+                @foreach (var module in ModuleRegistry.All.Where(m => m.Implemented))
+                {
+                    <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSwitch @bind-Value="Hook.IsEnabled" Color="Color.Primary" Label="@L["EnabledLabel"]" />
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" data-gdm-save>
+            @L["Save"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public required Webhook Hook { get; set; }
+
+    private HashSet<string> _selectedModules = [];
+
+    protected override void OnInitialized() =>
+        _selectedModules =
+        [
+            .. (Hook.ModuleKeys ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        ];
+
+    private void SetModules(IEnumerable<string> chosen)
+    {
+        _selectedModules = [.. chosen];
+
+        // Leer heißt „alle“ — ein Webhook ohne Häkchen wäre einer, der nie anruft.
+        Hook.ModuleKeys = _selectedModules.Count == 0 ? null : string.Join(",", _selectedModules);
+    }
+
+    private string DescribeModules() =>
+        _selectedModules.Count == 0
+            ? L["AllModules"]
+            : string.Join(", ", _selectedModules.Select(Modules.NameOrKey));
+
+    private async Task SaveAsync()
+    {
+        try
+        {
+            await Webhooks.SaveWebhookAsync(Hook);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

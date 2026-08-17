@@ -208,6 +208,12 @@
   <data name="RuleSlotRequired" xml:space="preserve">
     <value>This kind of rule checks a condition slot — please choose one.</value>
   </data>
+  <data name="WebhookNameRequired" xml:space="preserve">
+    <value>The webhook needs a name.</value>
+  </data>
+  <data name="WebhookUrlInvalid" xml:space="preserve">
+    <value>The address has to be a complete http or https URL.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

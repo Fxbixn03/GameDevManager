@@ -806,7 +806,7 @@ wiederholter Aufruf nach einem Verbindungsabbruch nichts doppelt anlegt.
 
 *Aufwand: L · Migration: ja (Rechte am Schlüssel) · Format: unverändert*
 
-### F37 — Webhooks
+### F37 — Webhooks ✅ umgesetzt
 
 > **Als** Betreiber **möchte ich**, dass das Tool bei Änderungen eine URL aufruft, **damit** ein
 > Build-Server den Export automatisch abholen kann, wenn sich etwas geändert hat.
@@ -818,6 +818,19 @@ Wiederholversuche mit wachsendem Abstand, ein signierter Kopfeintrag. Zusammen m
 damit von einer Insel zu einem Glied in der Kette.
 
 *Aufwand: M · Migration: ja · Format: unverändert*
+
+**Umgesetzt.** `Webhook` (Migration `Webhooks` in allen vier Providern) plus `WebhookQueue` und
+`WebhookDispatcher` als Hintergrunddienst; verwaltet unter `/export/webhooks`. Fünf
+Entscheidungen: Der `ChangeLogInterceptor` **reiht nur in den Arbeitsspeicher ein** — eine
+HTTP-Anfrage in seiner Methode hielte die Transaktion auf. Die Warteschlange ist **keine
+Tabelle**: Ein Webhook meldet „es hat sich etwas geändert“, und geht die Nachricht bei einem
+Neustart verloren, meldet die nächste Änderung es erneut; eine Auslieferungstabelle wäre eine
+Warteschlange in der Datenbank für eine Nachricht, die in Sekunden veraltet. Zugestellt wird
+**gebündelt** (alle fünf Sekunden ein Aufruf mit allem Wartenden) — ein Aufruf je Änderung
+machte aus einer Bearbeitungssitzung einen Sturm. **Drei Versuche** mit wachsendem Abstand: Ein
+Empfänger, der nach einer Minute nicht steht, steht auch nach zehn nicht. Und die Signatur ist
+HMAC-SHA256 im Kopfeintrag `X-GDM-Signature`, selbst gerechnet — es ist ein Aufruf, und das
+Format kennt ein Empfänger von GitHub und Stripe.
 
 ### F38 — Export-Profile ✅ umgesetzt
 

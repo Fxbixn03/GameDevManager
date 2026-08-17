@@ -22,7 +22,8 @@ namespace GameDevManager.Data.Services;
 /// Benutzernamen dabei leer, damit auch dort nur diese Klasse beantwortet, wer gehandelt hat.
 /// </para>
 /// </summary>
-public sealed class ChangeLogInterceptor(IChangeAuthorProvider authors) : SaveChangesInterceptor
+public sealed class ChangeLogInterceptor(IChangeAuthorProvider authors, WebhookQueue webhooks)
+    : SaveChangesInterceptor
 {
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
@@ -92,6 +93,13 @@ public sealed class ChangeLogInterceptor(IChangeAuthorProvider authors) : SaveCh
         foreach (var entry in entries)
         {
             db.ChangeLogEntries.Add(entry!);
+
+            // Dieselbe Stelle bedient die Webhooks: Der Interceptor sieht jede Änderung ohnehin,
+            // und eingereiht wird nur in den Arbeitsspeicher — eine HTTP-Anfrage hier drin
+            // hielte die Transaktion auf. Zugestellt wird aus dem Hintergrunddienst.
+            webhooks.Enqueue(new WebhookEvent(
+                entry!.GameProjectId, entry.ModuleKey, entry.EntityId, entry.EntityName,
+                entry.Action, entry.UserName, entry.AtUtc));
         }
     }
 

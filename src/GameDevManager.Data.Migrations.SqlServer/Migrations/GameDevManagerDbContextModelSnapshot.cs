@@ -3148,6 +3148,56 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("UserRoles");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Webhook", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastDeliveryAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("LastStatusCode")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModuleKeys")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Secret")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.ToTable("Webhooks");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Whiteboard", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4283,6 +4333,17 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Navigation("GameProject");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.Webhook", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.Whiteboard", b =>

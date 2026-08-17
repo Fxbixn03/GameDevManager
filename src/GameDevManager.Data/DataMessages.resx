@@ -147,6 +147,12 @@
   <data name="RuleSlotRequired" xml:space="preserve">
     <value>Diese Regelart prüft einen Bedingungs-Slot — bitte einen auswählen.</value>
   </data>
+  <data name="WebhookNameRequired" xml:space="preserve">
+    <value>Der Webhook braucht einen Namen.</value>
+  </data>
+  <data name="WebhookUrlInvalid" xml:space="preserve">
+    <value>Die Adresse muss eine vollständige http- oder https-Adresse sein.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>

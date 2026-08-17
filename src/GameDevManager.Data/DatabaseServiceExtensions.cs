@@ -141,6 +141,11 @@ public static class DatabaseServiceExtensions
         services.AddScoped<BulkEditService>();
         services.AddScoped<SavedViewService>();
         services.AddScoped<ContentRuleService>();
+        services.AddScoped<WebhookService>();
+
+        // Die Warteschlange ist ein Singleton: Der Interceptor stellt je Verbindung ein, der
+        // Zustelldienst leert prozessweit — dieselbe Bauart wie EditingPresence.
+        services.TryAddSingleton<WebhookQueue>();
         services.AddScoped<CsvContentService>();
         services.AddScoped<LocalizationService>();
         services.AddScoped<EnginePresetService>();

@@ -1,0 +1,198 @@
+@page "/export/webhooks"
+@inject WebhookService Webhooks
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject IStringLocalizer<WebhooksPage> L
+
+@*
+    Webhooks (F37): Bei jeder Änderung wird eine Adresse aufgerufen, damit ein Build-Server den
+    Export abholen kann.
+
+    Aufgerufen wird aus dem Hintergrunddienst und nicht im SaveChanges — eine hängende
+    HTTP-Anfrage darf keine Transaktion aufhalten. Der ChangeLogInterceptor stellt ein, der
+    WebhookDispatcher stellt gebündelt zu.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">@L["Heading"]</MudText>
+<MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">@L["Subtitle"]</MudText>
+
+<MudStack Row="true" Spacing="2" Class="mb-4">
+    <MudButton Variant="Variant.Outlined" Href="/export">@L["ToExport"]</MudButton>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add"
+               Disabled="@(!_permissions.CanWrite)"
+               data-gdm-new
+               OnClick="AddAsync">
+        @L["Add"]
+    </MudButton>
+</MudStack>
+
+@if (_hooks is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_hooks.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Webhook" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyHeading"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["EmptyHint"]</MudText>
+    </div>
+}
+else
+{
+    <MudStack Spacing="3">
+        @foreach (var hook in _hooks)
+        {
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+                    <MudIcon Icon="@StatusIcon(hook)" Color="@StatusColor(hook)" Size="Size.Small" />
+                    <MudText Typo="Typo.subtitle1"><b>@hook.Name</b></MudText>
+
+                    @if (!hook.IsEnabled)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary">
+                            @L["Disabled"]
+                        </MudChip>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(hook.Secret))
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["Signed"]</MudChip>
+                    }
+
+                    <MudSpacer />
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Size="Size.Small"
+                                   Disabled="@(!_permissions.CanWrite)"
+                                   OnClick="@(() => EditAsync(hook))"
+                                   aria-label="@L["EditAria", hook.Name]" />
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                   Size="Size.Small"
+                                   Disabled="@(!_permissions.CanWrite)"
+                                   OnClick="@(() => DeleteAsync(hook))"
+                                   aria-label="@L["DeleteAria", hook.Name]" />
+                </MudStack>
+
+                <MudText Typo="Typo.body2" Class="gdm-mono gdm-ellipsis mt-1">@hook.Url</MudText>
+
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1">
+                    @ModulesLabel(hook)
+                </MudText>
+
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">
+                    @DeliveryLabel(hook)
+                </MudText>
+            </MudPaper>
+        }
+    </MudStack>
+}
+
+@code {
+    private UserPermissions _permissions = UserPermissions.Full;
+    private List<Webhook>? _hooks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync() =>
+        _hooks = await Webhooks.GetWebhooksAsync(await Project.GetCurrentIdAsync());
+
+    private static string StatusIcon(Webhook hook) =>
+        hook.LastDeliveryAtUtc is null
+            ? Icons.Material.Filled.HourglassEmpty
+            : hook.LastStatusCode is >= 200 and < 300
+                ? Icons.Material.Filled.CheckCircle
+                : Icons.Material.Filled.ReportProblem;
+
+    private static Color StatusColor(Webhook hook) =>
+        hook.LastDeliveryAtUtc is null
+            ? Color.Secondary
+            : hook.LastStatusCode is >= 200 and < 300 ? Color.Success : Color.Warning;
+
+    private string ModulesLabel(Webhook hook) =>
+        string.IsNullOrWhiteSpace(hook.ModuleKeys)
+            ? L["AllModules"]
+            : L["SomeModules", string.Join(", ", hook.ModuleKeys
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(Modules.NameOrKey))];
+
+    private string DeliveryLabel(Webhook hook)
+    {
+        if (hook.LastDeliveryAtUtc is not { } at)
+        {
+            return L["NeverDelivered"];
+        }
+
+        var stamp = at.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+
+        return hook.LastError is { } error
+            ? L["LastFailed", stamp, hook.LastStatusCode?.ToString() ?? "—", error]
+            : L["LastOk", stamp, hook.LastStatusCode?.ToString() ?? "—"];
+    }
+
+    private Task AddAsync() =>
+        ShowDialogAsync(new Webhook
+        {
+            GameProjectId = Guid.Empty,
+            Name = string.Empty,
+            Url = "https://"
+        }, isNew: true);
+
+    private Task EditAsync(Webhook hook) =>
+        ShowDialogAsync(new Webhook
+        {
+            Id = hook.Id,
+            GameProjectId = hook.GameProjectId,
+            Name = hook.Name,
+            Url = hook.Url,
+            Secret = hook.Secret,
+            ModuleKeys = hook.ModuleKeys,
+            IsEnabled = hook.IsEnabled
+        }, isNew: false);
+
+    private async Task ShowDialogAsync(Webhook draft, bool isNew)
+    {
+        draft.GameProjectId = await Project.GetCurrentIdAsync();
+
+        var parameters = new DialogParameters<WebhookDialog>
+        {
+            { dialog => dialog.Hook, draft }
+        };
+
+        var reference = await Dialogs.ShowAsync<WebhookDialog>(
+            isNew ? L["NewDialogTitle"] : L["EditDialogTitle"],
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        if (await reference.Result is { Canceled: false })
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(Webhook hook)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", hook.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["Cancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Webhooks.DeleteWebhookAsync(hook.Id);
+        await LoadAsync();
+    }
+}
