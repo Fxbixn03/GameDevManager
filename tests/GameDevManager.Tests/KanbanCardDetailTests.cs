@@ -127,6 +127,58 @@ public class KanbanCardDetailTests
     }
 
     [Fact]
+    public async Task Meine_Aufgaben_zeigen_offene_Karten_Faelliges_zuerst()
+    {
+        using var test = new TestDatabase();
+        var (board, first) = await SeedAsync(test);
+        var userId = await SeedUserAsync(test, "Alrik");
+        var otherId = await SeedUserAsync(test, "Brida");
+
+        var kanban = test.GetService<KanbanService>();
+        var columns = (await kanban.GetBoardAsync(test.ProjectId, board.Id))!.Columns;
+
+        first.AssignedUserId = userId;
+        await kanban.UpdateCardAsync(first);
+
+        var dated = await kanban.AddCardAsync(columns[0].Id, "Loot prüfen");
+        dated.AssignedUserId = userId;
+        dated.DueDate = new DateTime(2026, 5, 1);
+        await kanban.UpdateCardAsync(dated);
+
+        // Eine erledigte (letzte Spalte) und eine fremde Karte gehören nicht in die Liste.
+        var done = await kanban.AddCardAsync(columns[^1].Id, "Schon erledigt");
+        done.AssignedUserId = userId;
+        await kanban.UpdateCardAsync(done);
+
+        var foreign = await kanban.AddCardAsync(columns[0].Id, "Bridas Aufgabe");
+        foreign.AssignedUserId = otherId;
+        await kanban.UpdateCardAsync(foreign);
+
+        test.Author.Current = new ChangeAuthor(userId, "Alrik");
+        var tasks = await kanban.GetMyOpenCardsAsync(test.ProjectId);
+
+        // Was einen Termin hat, drängt zuerst; ohne Fälligkeit ans Ende.
+        Assert.Equal(["Loot prüfen", "Schaden prüfen"], tasks.Select(task => task.Title));
+        Assert.Equal(board.Id, tasks[0].BoardId);
+    }
+
+    [Fact]
+    public async Task Ohne_Anmeldung_gibt_es_keine_Aufgabenliste()
+    {
+        using var test = new TestDatabase();
+        var (_, card) = await SeedAsync(test);
+        var userId = await SeedUserAsync(test, "Alrik");
+
+        var kanban = test.GetService<KanbanService>();
+        card.AssignedUserId = userId;
+        await kanban.UpdateCardAsync(card);
+
+        test.Author.Current = new ChangeAuthor(null, "System");
+
+        Assert.Empty(await kanban.GetMyOpenCardsAsync(test.ProjectId));
+    }
+
+    [Fact]
     public async Task Ein_geloeschtes_Konto_nimmt_die_Karte_nicht_mit()
     {
         using var test = new TestDatabase();

@@ -41,9 +41,19 @@ else
         </Actions>
     </ModuleHeader>
 
+    @* Der Filter blendet nur aus, er verschiebt nichts: Überfälliges zählt zu „diese Woche“,
+       denn wer nach Fälligem filtert, will das Liegengebliebene zuerst sehen. *@
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+        <MudSwitch T="bool"
+                   @bind-Value="_dueThisWeekOnly"
+                   Color="Color.Primary"
+                   Label="@L["FilterDueThisWeek"]" />
+    </MudStack>
+
     <div style="display:flex;gap:16px;align-items:flex-start;overflow-x:auto;padding-bottom:8px;">
         @foreach (var column in _board.Columns)
         {
+            var visibleCards = VisibleCards(column);
             <div class="mud-paper gdm-panel pa-3"
                  style="min-width:280px;max-width:280px;flex-shrink:0;"
                  @ondragover:preventDefault="true"
@@ -56,7 +66,7 @@ else
                                   Variant="Variant.Text"
                                   Margin="Margin.Dense"
                                   Style="flex-grow:1;font-weight:600;" />
-                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">@column.Cards.Count</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">@visibleCards.Count</MudText>
                     <MudTooltip Text="@L["MoveColumnLeft"]">
                         <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
                                        Size="Size.Small"
@@ -80,7 +90,7 @@ else
                 </MudStack>
 
                 <MudStack Spacing="2">
-                    @foreach (var card in column.Cards)
+                    @foreach (var card in visibleCards)
                     {
                         @* Rechtsklick auf eine Karte: dieselben Handgriffe wie im Dialog, nur ohne
                            Umweg — dazu das Verschieben in eine andere Spalte für alle, die nicht
@@ -98,7 +108,7 @@ else
                                      @oncontextmenu:preventDefault="true"
                                      @oncontextmenu:stopPropagation="true">
                                     <div class="mud-paper gdm-panel pa-3"
-                                         style="@(ReferenceEquals(_dragging, card) ? "opacity:0.4;cursor:grab;" : "cursor:grab;")"
+                                         style="@CardFaceStyle(card)"
                                          draggable="true"
                                          @ondragstart="@(() => _dragging = card)"
                                          @ondragend="@(() => _dragging = null)"
@@ -110,6 +120,34 @@ else
                                         @if (!string.IsNullOrWhiteSpace(card.Notes))
                                         {
                                             <MudText Typo="Typo.caption" Color="Color.Secondary">@Shorten(card.Notes)</MudText>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(card.Label) || card.DueDate is not null || AssigneeName(card) is not null)
+                                        {
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-1" Wrap="Wrap.Wrap">
+                                                @if (!string.IsNullOrWhiteSpace(card.Label))
+                                                {
+                                                    <MudText Typo="Typo.caption" Class="gdm-mono">@card.Label</MudText>
+                                                }
+                                                @if (card.DueDate is { } due)
+                                                {
+                                                    <MudText Typo="Typo.caption"
+                                                             Color="@(due.Date < DateTime.Today ? Color.Error : Color.Secondary)">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Event"
+                                                                 Size="Size.Small"
+                                                                 Style="font-size:0.9rem;vertical-align:text-bottom;" />
+                                                        @due.ToString("dd.MM.yyyy")
+                                                    </MudText>
+                                                }
+                                                @if (AssigneeName(card) is { } assignee)
+                                                {
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Person"
+                                                                 Size="Size.Small"
+                                                                 Style="font-size:0.9rem;vertical-align:text-bottom;" />
+                                                        @assignee
+                                                    </MudText>
+                                                }
+                                            </MudStack>
                                         }
                                     </div>
                                 </div>
@@ -190,6 +228,7 @@ else
 
     private List<TaskAssignee> _users = [];
     private KanbanCard? _dragging;
+    private bool _dueThisWeekOnly;
     private Guid? _newCardColumnId;
     private string? _newCardTitle;
     private Guid? _loadedId;
@@ -405,6 +444,54 @@ else
 
         await LoadAsync();
     }
+
+    /// <summary>
+    /// Die Karten einer Spalte, wie der Filter sie zeigt. Gefiltert wird nur die Anzeige —
+    /// Verschieben und Ablegen rechnen weiter auf der vollen Liste der Spalte.
+    /// </summary>
+    private List<KanbanCard> VisibleCards(KanbanColumn column) =>
+        _dueThisWeekOnly ? [.. column.Cards.Where(IsDueThisWeek)] : column.Cards;
+
+    /// <summary>
+    /// Fällig diese Woche heißt: bis einschließlich Sonntag — und alles Überfällige dazu,
+    /// denn der Filter soll das Drängende zeigen, nicht das Liegengebliebene verstecken.
+    /// </summary>
+    private static bool IsDueThisWeek(KanbanCard card)
+    {
+        if (card.DueDate is not { } due)
+        {
+            return false;
+        }
+
+        var today = DateTime.Today;
+        var endOfWeek = today.AddDays(((int)DayOfWeek.Sunday - (int)today.DayOfWeek + 7) % 7);
+
+        return due.Date <= endOfWeek;
+    }
+
+    /// <summary>
+    /// Der Rand in der Kartenfarbe. Die Farbe kommt aus dem Farbwähler, steht aber als freier
+    /// Text in der Datenbank — in das style-Attribut geht nur, was wie ein Hex-Wert aussieht.
+    /// </summary>
+    private string CardFaceStyle(KanbanCard card)
+    {
+        var style = ReferenceEquals(_dragging, card) ? "opacity:0.4;cursor:grab;" : "cursor:grab;";
+
+        if (card.Color is { } color
+            && color.Length is 4 or 7 or 9
+            && color[0] == '#'
+            && color.Skip(1).All(Uri.IsHexDigit))
+        {
+            style += $"border-left:3px solid {color};";
+        }
+
+        return style;
+    }
+
+    private string? AssigneeName(KanbanCard card) =>
+        card.AssignedUserId is { } userId
+            ? _users.FirstOrDefault(user => user.Id == userId)?.DisplayName
+            : null;
 
     private static string Shorten(string? text) =>
         string.IsNullOrWhiteSpace(text)

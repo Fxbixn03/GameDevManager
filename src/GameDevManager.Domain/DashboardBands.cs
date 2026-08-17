@@ -27,6 +27,9 @@ public static class DashboardBands
     /// <summary>Die angehefteten Entitäten des angemeldeten Benutzers.</summary>
     public const string Pinned = "pinned";
 
+    /// <summary>Die offenen Kanban-Karten, die dem angemeldeten Benutzer zugewiesen sind.</summary>
+    public const string Tasks = "tasks";
+
     /// <summary>Offene Anmerkungen an Entitäten des Projekts.</summary>
     public const string Comments = "comments";
 
@@ -38,7 +41,7 @@ public static class DashboardBands
 
     /// <summary>Voreingestellte Reihenfolge: von dringlich nach nachschlagend.</summary>
     public static readonly IReadOnlyList<string> All =
-        [Project, Pinned, Comments, Recent, Health, Status, Inventory, Database];
+        [Project, Pinned, Tasks, Comments, Recent, Health, Status, Inventory, Database];
 
     /// <summary>
     /// Bänder, die ohne eigene Zeile <b>nicht</b> erscheinen. Bisher nur die Datenbank: Provider

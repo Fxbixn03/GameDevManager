@@ -90,4 +90,7 @@
   <data name="CardDialogTitle" xml:space="preserve">
     <value>Karte bearbeiten</value>
   </data>
+  <data name="FilterDueThisWeek" xml:space="preserve">
+    <value>Nur fällig diese Woche</value>
+  </data>
 </root>

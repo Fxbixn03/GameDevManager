@@ -172,6 +172,18 @@
   <data name="PinnedEmpty" xml:space="preserve">
     <value>Nichts angeheftet. Der Stern in einer Bearbeitungsmaske legt einen Eintrag hier ab — anders als „Weiterarbeiten“ bleibt er stehen.</value>
   </data>
+  <data name="Band_tasks" xml:space="preserve">
+    <value>Meine Aufgaben</value>
+  </data>
+  <data name="TasksHeading" xml:space="preserve">
+    <value>Meine Aufgaben</value>
+  </data>
+  <data name="TasksEmpty" xml:space="preserve">
+    <value>Nichts zugewiesen. Aufgaben entstehen auf den ToDo-Boards und werden dort einem Konto zugewiesen.</value>
+  </data>
+  <data name="ToBoards" xml:space="preserve">
+    <value>Zu den Boards</value>
+  </data>
   <data name="Band_comments" xml:space="preserve">
     <value>Anmerkungen</value>
   </data>

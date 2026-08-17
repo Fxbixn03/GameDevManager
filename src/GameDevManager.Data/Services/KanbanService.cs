@@ -37,6 +37,7 @@ public sealed record KanbanBoardRow(
 public class KanbanService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     PermissionGuard guard,
+    IChangeAuthorProvider authors,
     IStringLocalizer<DataMessages> messages)
 {
     public async Task<List<KanbanBoardRow>> GetBoardsAsync(Guid projectId, CancellationToken ct = default)
@@ -347,6 +348,49 @@ public class KanbanService(
                 .ThenBy(card => card.DueDate ?? DateTime.MaxValue)
                 .ThenBy(card => card.Title)
         ];
+    }
+
+    /// <summary>
+    /// Die offenen Karten, die dem angemeldeten Benutzer zugewiesen sind — quer über alle
+    /// Boards des Projekts, Fälliges zuerst. Das Dashboard-Band „Meine Aufgaben“ lebt davon.
+    /// <para>
+    /// „Offen“ heißt wie in <see cref="GetCardsForEntityAsync"/>: nicht in der letzten Spalte
+    /// ihres Boards. Wer der Benutzer ist, beantwortet der <see cref="IChangeAuthorProvider"/> —
+    /// dieselbe Quelle wie bei den Favoriten; ohne Anmeldung gibt es keine Aufgabenliste.
+    /// </para>
+    /// </summary>
+    public async Task<List<KanbanCardLink>> GetMyOpenCardsAsync(
+        Guid projectId, int limit = 20, CancellationToken ct = default)
+    {
+        if ((await authors.GetCurrentAsync(ct)).UserId is not { } userId)
+        {
+            return [];
+        }
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        return await db.KanbanCards
+            .AsNoTracking()
+            .Where(card => card.AssignedUserId == userId
+                && card.Column!.Board!.GameProjectId == projectId
+                && card.Column!.SortOrder < db.KanbanColumns
+                    .Where(column => column.BoardId == card.Column!.BoardId)
+                    .Max(column => column.SortOrder))
+            // Ohne Fälligkeit ans Ende — was einen Termin hat, drängt zuerst.
+            .OrderBy(card => card.DueDate == null)
+            .ThenBy(card => card.DueDate)
+            .ThenBy(card => card.Title)
+            .Take(limit)
+            .Select(card => new KanbanCardLink(
+                card.Id,
+                card.Column!.BoardId,
+                card.Column!.Board!.Name,
+                card.Column!.Name,
+                card.Title,
+                card.AssignedUser != null ? card.AssignedUser.DisplayName : null,
+                card.DueDate,
+                false))
+            .ToListAsync(ct);
     }
 
     /// <summary>

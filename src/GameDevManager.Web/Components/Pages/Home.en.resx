@@ -202,6 +202,18 @@
   <data name="PinnedEmpty" xml:space="preserve">
     <value>Nothing pinned. The star in an edit form puts an entry here — unlike “Continue working”, it stays.</value>
   </data>
+  <data name="Band_tasks" xml:space="preserve">
+    <value>My tasks</value>
+  </data>
+  <data name="TasksHeading" xml:space="preserve">
+    <value>My tasks</value>
+  </data>
+  <data name="TasksEmpty" xml:space="preserve">
+    <value>Nothing assigned to you. Tasks are created on the to-do boards and assigned to an account there.</value>
+  </data>
+  <data name="ToBoards" xml:space="preserve">
+    <value>To the boards</value>
+  </data>
   <data name="Band_comments" xml:space="preserve">
     <value>Comments</value>
   </data>

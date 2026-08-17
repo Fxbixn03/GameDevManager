@@ -417,8 +417,10 @@ diese Woche". Bleibt Werkzeug-Daten — nicht im Export.
 
 **Umgesetzt.** `AssignedUserId`, `DueDate`, `Color`, `Label`, `TargetModuleKey` und
 `TargetEntityId` an `KanbanCard`, Migration `KanbanCardDetails` in allen vier Providern. Der
-Gegenzug steht als `EntityTasksPanel` in jeder Bearbeitungsmaske. Ein Dashboard-Band „meine
-Aufgaben“ und der Filter „fällig diese Woche“ stehen noch aus.
+Gegenzug steht als `EntityTasksPanel` in jeder Bearbeitungsmaske. Das Dashboard-Band
+„Meine Aufgaben“ (`KanbanService.GetMyOpenCardsAsync`, Fälliges zuerst, Überfälliges rot) und
+der Filter „Nur fällig diese Woche“ auf der Board-Seite sind nachgezogen; die Kartenfläche
+zeigt seither auch Farbe, Etikett, Fälligkeit und Zuständigen.
 
 ### F23 — Aktivitäts-Feed und Benachrichtigungen ✅ umgesetzt
 

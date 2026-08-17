@@ -5,6 +5,7 @@
 @inject ModuleLabels Modules
 @inject ContentStatusLabels Statuses
 @inject UserPinService Pins
+@inject KanbanService Kanban
 @inject ContentCommentService Comments
 @inject ModuleState ModuleState
 @inject ProjectContext Project
@@ -199,6 +200,40 @@ else
                     </MudPaper>
                 }
 
+                @* ----------------------------------------------------- Meine Aufgaben *@
+                else if (band.BandKey == DashboardBands.Tasks)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel">
+                        <div class="gdm-panel-head pa-3 d-flex align-center justify-space-between">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["TasksHeading"]</MudText>
+                            <MudLink Href="/modules/todo" Typo="Typo.caption">@L["ToBoards"]</MudLink>
+                        </div>
+
+                        @if (_myTasks is not { Count: > 0 })
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-3">@L["TasksEmpty"]</MudText>
+                        }
+                        else
+                        {
+                            @foreach (var task in _myTasks)
+                            {
+                                <MudLink Href="@($"/modules/todo/{task.BoardId}")"
+                                         Underline="Underline.None" Color="Color.Inherit"
+                                         Class="gdm-health-row">
+                                    <MudIcon Icon="@Icons.Material.Filled.RadioButtonUnchecked"
+                                             Size="Size.Small"
+                                             Color="@(IsOverdue(task) ? Color.Error : Color.Warning)" />
+                                    <MudText Typo="Typo.body2" Class="gdm-ellipsis">@task.Title</MudText>
+                                    <MudText Typo="Typo.caption"
+                                             Color="@(IsOverdue(task) ? Color.Error : Color.Secondary)">
+                                        @TaskSubtitle(task)
+                                    </MudText>
+                                </MudLink>
+                            }
+                        }
+                    </MudPaper>
+                }
+
                 @* ------------------------------------------------------- Anmerkungen *@
                 else if (band.BandKey == DashboardBands.Comments)
                 {
@@ -358,6 +393,8 @@ else
 
     private List<PinnedEntry>? _pinned;
 
+    private List<KanbanCardLink>? _myTasks;
+
     private List<OpenComment>? _openComments;
     private DateTime? _lastExportUtc;
     private string _projectName = string.Empty;
@@ -401,6 +438,7 @@ else
 
             _statusCounts = await Overview.GetStatusCountsAsync(_projectId);
             _pinned = await Pins.GetPinnedAsync(_projectId);
+            _myTasks = await Kanban.GetMyOpenCardsAsync(_projectId, 8);
             _openComments = await Comments.GetOpenAsync(_projectId, 8);
 
             // Zuletzt: erst damit gilt die Seite als geladen.
@@ -523,6 +561,15 @@ else
             ? Modules.NameOrKey(entry.Hit.ModuleKey)
             : $"{Modules.NameOrKey(entry.Hit.ModuleKey)} · {entry.Hit.Subtitle}";
 
+    /// <summary>Überfällig ist, was gestern oder früher fällig war — heute drängt nur.</summary>
+    private static bool IsOverdue(KanbanCardLink task) =>
+        task.DueDate is { } due && due.Date < DateTime.Today;
+
+    private string TaskSubtitle(KanbanCardLink task) =>
+        task.DueDate is { } due
+            ? $"{task.BoardName} · {due.ToString("dd.MM.yyyy")}"
+            : task.BoardName;
+
     private static string StatusIcon(bool clean) =>
         clean ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.ReportProblem;
 
@@ -641,6 +688,7 @@ else
         DashboardBands.Project => Icons.Material.Filled.Flag,
         DashboardBands.Recent => Icons.Material.Filled.History,
         DashboardBands.Pinned => Icons.Material.Filled.Star,
+        DashboardBands.Tasks => Icons.Material.Filled.TaskAlt,
         DashboardBands.Comments => Icons.Material.Filled.Comment,
         DashboardBands.Health => Icons.Material.Filled.HealthAndSafety,
         DashboardBands.Status => Icons.Material.Filled.Rule,
