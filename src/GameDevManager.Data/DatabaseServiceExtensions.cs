@@ -140,6 +140,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<CurveService>();
         services.AddScoped<BulkEditService>();
         services.AddScoped<SavedViewService>();
+        services.AddScoped<ContentRuleService>();
         services.AddScoped<CsvContentService>();
         services.AddScoped<LocalizationService>();
         services.AddScoped<EnginePresetService>();

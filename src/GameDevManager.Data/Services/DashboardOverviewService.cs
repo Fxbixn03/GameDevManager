@@ -17,6 +17,13 @@ public static class HealthCheckKeys
     public const string UnlockCycles = "unlockCycles";
     public const string MoneyPrinters = "moneyPrinters";
     public const string MissingRecordings = "missingRecordings";
+
+    /// <summary>
+    /// Die eigenen Regeln des Projekts, zusammengefasst zu einer Zeile. Eine Zeile je Regel
+    /// sprengte das Band, sobald jemand zwanzig davon anlegt — die Statistik-Seite listet sie
+    /// einzeln auf.
+    /// </summary>
+    public const string CustomRules = "customRules";
 }
 
 /// <summary>
@@ -50,7 +57,8 @@ public class DashboardOverviewService(
     ConditionService conditions,
     TechTreeService techTree,
     EconomyService economy,
-    VoiceOverService voiceOvers)
+    VoiceOverService voiceOvers,
+    ContentRuleService rules)
 {
     /// <summary>
     /// Die zuletzt bearbeiteten Entitäten quer durch alle Module, jüngste zuerst.
@@ -157,7 +165,12 @@ public class DashboardOverviewService(
             // Ohne Sprachen im Projekt findet die Prüfung nichts — wer keine Lokalisierung
             // pflegt, plant auch keine Vertonung.
             new(HealthCheckKeys.MissingRecordings, ModuleKeys.Dialogs,
-                (await voiceOvers.FindMissingRecordingsAsync(projectId, ct)).Count)
+                (await voiceOvers.FindMissingRecordingsAsync(projectId, ct)).Count),
+
+            // Die eigenen Regeln des Projekts. Sie verteilen sich über mehrere Module — ein
+            // einzelnes Sprungziel gibt es dafür nicht, die Zeile führt auf die Statistik-Seite.
+            new(HealthCheckKeys.CustomRules, null,
+                (await rules.EvaluateAsync(projectId, ct)).Sum(result => result.Findings.Count))
         ];
 
         return new HealthSummary(

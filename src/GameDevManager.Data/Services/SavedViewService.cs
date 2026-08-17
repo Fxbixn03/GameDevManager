@@ -138,6 +138,7 @@ public class SavedViewService(
                 candidate.Id,
                 moduleKey,
                 candidate.Name,
+                candidate.Description,
                 candidate.TypeName,
                 candidate.Status,
                 candidate.UpdatedAtUtc,

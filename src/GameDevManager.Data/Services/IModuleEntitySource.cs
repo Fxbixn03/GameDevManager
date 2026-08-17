@@ -479,6 +479,7 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
                 entity.Id,
                 moduleKey,
                 entity.Name,
+                entity.Description,
                 entity.ContentType!.Name,
                 entity.Status,
                 entity.UpdatedAtUtc,

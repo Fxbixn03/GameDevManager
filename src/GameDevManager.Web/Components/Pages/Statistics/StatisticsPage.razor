@@ -14,8 +14,16 @@
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
-<ModuleHeader Module="Module"
-              Subtitle="@L["Subtitle"]" />
+<ModuleHeader Module="Module" Subtitle="@L["Subtitle"]">
+    <Actions>
+        @* Was nur dieses Projekt von seinen Inhalten verlangt — neben den eingebauten Checks. *@
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Rule"
+                   Href="/modules/statistics/regeln">
+            @L["ToRules"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
 
 @if (_counts is null)
 {

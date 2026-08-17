@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Check_FieldEmpty" xml:space="preserve">
+    <value>Feld ist leer</value>
+  </data>
+  <data name="Check_NoPrimarySprite" xml:space="preserve">
+    <value>Kein Sprite</value>
+  </data>
+  <data name="Check_NoDescription" xml:space="preserve">
+    <value>Keine Beschreibung</value>
+  </data>
+  <data name="Check_NoTag" xml:space="preserve">
+    <value>Kein Tag</value>
+  </data>
+  <data name="Check_NoConditions" xml:space="preserve">
+    <value>Keine Bedingung</value>
+  </data>
+  <data name="Check_NoContentType" xml:space="preserve">
+    <value>Keine Art</value>
+  </data>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Eigene Regeln</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Eigene Regeln</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Prüfungen, die nur dieses Projekt kennt — sie stehen neben den eingebauten Health Checks.</value>
+  </data>
+  <data name="ToStatistics" xml:space="preserve">
+    <value>Zur Statistik</value>
+  </data>
+  <data name="AddRule" xml:space="preserve">
+    <value>Regel anlegen</value>
+  </data>
+  <data name="EmptyHeading" xml:space="preserve">
+    <value>Noch keine eigenen Regeln.</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Eine Regel sagt, was dieses Projekt von seinen Inhalten verlangt — „jedes Item braucht ein Sprite“ etwa.</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>abgeschaltet</value>
+  </data>
+  <data name="NoFindings" xml:space="preserve">
+    <value>nichts zu beanstanden</value>
+  </data>
+  <data name="FindingsCount" xml:space="preserve">
+    <value>{0} Funde</value>
+  </data>
+  <data name="MoreFindings" xml:space="preserve">
+    <value>… und {0} weitere.</value>
+  </data>
+  <data name="EditAria" xml:space="preserve">
+    <value>„{0}“ bearbeiten</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>„{0}“ löschen</value>
+  </data>
+  <data name="NewDialogTitle" xml:space="preserve">
+    <value>Neue Regel</value>
+  </data>
+  <data name="EditDialogTitle" xml:space="preserve">
+    <value>Regel bearbeiten</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Regel löschen?</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>„{0}“ wird entfernt. Die geprüften Inhalte bleiben unangetastet.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+</root>

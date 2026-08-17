@@ -1,0 +1,215 @@
+@page "/modules/statistics/regeln"
+@inject ContentRuleService Rules
+@inject ContentTypeService ContentTypes
+@inject TagService Tags
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject IStringLocalizer<ContentRulesPage> L
+
+@*
+    Eigene Health-Check-Regeln (F18): „jedes Item braucht ein Sprite“, „kein NPC ohne Art“,
+    „jede Quest braucht eine Freischaltbedingung“.
+
+    Bewusst keine freie Skriptsprache — eine Handvoll Regelarten deckt neunzig Prozent ab und
+    lässt sich in einer Maske erfassen. Ausgewertet wird über die IModuleEntitySource, also über
+    denselben Weg wie Suche und gespeicherte Ansichten; ein neues Modul ist von selbst prüfbar.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Title="@L["Heading"]" Subtitle="@L["Subtitle"]" Breadcrumbs="Breadcrumbs">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Href="/modules/statistics">@L["ToStatistics"]</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Disabled="@(!_permissions.CanWrite)"
+                   data-gdm-new
+                   OnClick="AddRuleAsync">
+            @L["AddRule"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_results is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_results.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Rule" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyHeading"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["EmptyHint"]</MudText>
+    </div>
+}
+else
+{
+    <MudStack Spacing="3">
+        @foreach (var result in _results)
+        {
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
+                    <MudIcon Icon="@StatusIcon(result)" Color="@StatusColor(result)" Size="Size.Small" />
+                    <MudText Typo="Typo.subtitle1"><b>@result.Rule.Name</b></MudText>
+
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                        @Modules.NameOrKey(result.Rule.ModuleKey)
+                    </MudChip>
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                        @L[$"Check_{result.Rule.Check}"]
+                    </MudChip>
+                    @if (!result.Rule.IsEnabled)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary">
+                            @L["Disabled"]
+                        </MudChip>
+                    }
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(result)</MudText>
+
+                    <MudSpacer />
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Size="Size.Small"
+                                   Disabled="@(!_permissions.CanWrite)"
+                                   OnClick="@(() => EditRuleAsync(result.Rule))"
+                                   aria-label="@L["EditAria", result.Rule.Name]" />
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                   Size="Size.Small"
+                                   Disabled="@(!_permissions.CanWrite)"
+                                   OnClick="@(() => DeleteRuleAsync(result.Rule))"
+                                   aria-label="@L["DeleteAria", result.Rule.Name]" />
+                </MudStack>
+
+                @* Bei hunderten Funden ist die vollständige Liste keine Auskunft mehr — die
+                   ersten zwanzig sagen, worum es geht. *@
+                @foreach (var finding in result.Findings.Take(20))
+                {
+                    <MudLink Href="@($"{RouteFor(finding.ModuleKey)}/{finding.EntityId}")" Class="d-block py-1">
+                        @finding.EntityName
+                    </MudLink>
+                }
+
+                @if (result.Findings.Count > 20)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1">
+                        @L["MoreFindings", result.Findings.Count - 20]
+                    </MudText>
+                }
+            </MudPaper>
+        }
+    </MudStack>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Statistics);
+
+    private UserPermissions _permissions = UserPermissions.Full;
+    private List<ContentRuleResult>? _results;
+
+    private List<BreadcrumbItem> Breadcrumbs =>
+        [new(Modules.Name(Module), "/modules/statistics"), new(L["Heading"], null, disabled: true)];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+
+        // Die abgeschalteten Regeln stehen mit in der Liste — sonst wären sie nur noch über
+        // die Datenbank wiederzufinden.
+        var rules = await Rules.GetRulesAsync(projectId);
+        var evaluated = await Rules.EvaluateAsync(projectId);
+
+        _results =
+        [
+            .. rules.Select(rule =>
+                evaluated.FirstOrDefault(result => result.Rule.Id == rule.Id)
+                ?? new ContentRuleResult(rule, []))
+        ];
+    }
+
+    private static string RouteFor(string moduleKey) =>
+        ModuleRegistry.Find(moduleKey)?.Route ?? "/";
+
+    private static string StatusIcon(ContentRuleResult result) =>
+        result.Findings.Count == 0 ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.ReportProblem;
+
+    private static Color StatusColor(ContentRuleResult result) =>
+        result.Findings.Count == 0
+            ? Color.Success
+            : result.Rule.Severity == ContentRuleSeverity.Warning ? Color.Warning : Color.Info;
+
+    private string FundLabel(ContentRuleResult result) =>
+        result.Findings.Count == 0 ? L["NoFindings"] : L["FindingsCount", result.Findings.Count];
+
+    private Task AddRuleAsync() =>
+        ShowDialogAsync(new ContentRule
+        {
+            GameProjectId = Guid.Empty,
+            Name = string.Empty,
+            ModuleKey = ModuleKeys.Items
+        }, isNew: true);
+
+    private Task EditRuleAsync(ContentRule rule) =>
+        ShowDialogAsync(new ContentRule
+        {
+            Id = rule.Id,
+            GameProjectId = rule.GameProjectId,
+            Name = rule.Name,
+            ModuleKey = rule.ModuleKey,
+            ContentTypeId = rule.ContentTypeId,
+            Check = rule.Check,
+            FieldDefinitionId = rule.FieldDefinitionId,
+            TagId = rule.TagId,
+            Slot = rule.Slot,
+            Severity = rule.Severity,
+            IsEnabled = rule.IsEnabled,
+            SortOrder = rule.SortOrder
+        }, isNew: false);
+
+    private async Task ShowDialogAsync(ContentRule draft, bool isNew)
+    {
+        draft.GameProjectId = await Project.GetCurrentIdAsync();
+
+        var parameters = new DialogParameters<ContentRuleDialog>
+        {
+            { dialog => dialog.Rule, draft },
+            { dialog => dialog.IsNew, isNew }
+        };
+
+        var reference = await Dialogs.ShowAsync<ContentRuleDialog>(
+            isNew ? L["NewDialogTitle"] : L["EditDialogTitle"],
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        if (await reference.Result is { Canceled: false })
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteRuleAsync(ContentRule rule)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteConfirmTitle"],
+            L["DeleteConfirmMessage", rule.Name],
+            yesText: L["DeleteYes"],
+            cancelText: L["Cancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        await Rules.DeleteRuleAsync(rule.Id);
+        await LoadAsync();
+    }
+}

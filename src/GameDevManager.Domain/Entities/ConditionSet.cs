@@ -71,4 +71,11 @@ public static class ConditionSlots
     /// weil ein NPC mehrere Spawn-Regeln mit je eigenen Bedingungen haben darf.
     /// </summary>
     public const string Spawn = "spawn";
+
+    /// <summary>
+    /// Alle Slots in fester Reihenfolge — für Auswahlfelder, die einen davon verlangen (die
+    /// eigenen Health-Check-Regeln). Eine Liste hier und keine in der Oberfläche: Ein neu
+    /// hinzugekommener Slot soll dort von selbst auftauchen.
+    /// </summary>
+    public static readonly string[] All = [Availability, Shop, Completion, Unlock, Spawn];
 }

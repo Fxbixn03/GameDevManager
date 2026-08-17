@@ -256,6 +256,9 @@
   <data name="Check_missingRecordings" xml:space="preserve">
     <value>Lines without a recording</value>
   </data>
+  <data name="Check_customRules" xml:space="preserve">
+    <value>Custom rules</value>
+  </data>
   <data name="Check_unlockCycles" xml:space="preserve">
     <value>Cycles in the unlock tree</value>
   </data>

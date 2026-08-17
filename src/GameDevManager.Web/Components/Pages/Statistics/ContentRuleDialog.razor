@@ -1,0 +1,193 @@
+@inject ContentRuleService Rules
+@inject ContentTypeService ContentTypes
+@inject TagService Tags
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<ContentRuleDialog> L
+
+@*
+    Eine eigene Prüfung erfassen. Welche Zusatzangabe sichtbar ist, entscheidet die Regelart —
+    eine Regel ohne ihre Angabe prüfte nichts und stünde trotzdem als Zeile da.
+*@
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="4" Style="min-width:min(520px, 80vw);">
+            <MudTextField @bind-Value="Rule.Name"
+                          Label="@L["NameLabel"]"
+                          HelperText="@L["NameHelper"]"
+                          Variant="Variant.Outlined"
+                          Immediate="true" />
+
+            <MudSelect T="string"
+                       Value="Rule.ModuleKey"
+                       ValueChanged="ChangeModuleAsync"
+                       Label="@L["ModuleLabel"]"
+                       Variant="Variant.Outlined">
+                @foreach (var module in ModuleRegistry.All.Where(m => m.Implemented && m.Group != ModuleGroup.Tools))
+                {
+                    <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="Guid?"
+                       @bind-Value="Rule.ContentTypeId"
+                       Label="@L["TypeLabel"]"
+                       HelperText="@L["TypeHelper"]"
+                       Variant="Variant.Outlined"
+                       Clearable="true">
+                @foreach (var type in _types)
+                {
+                    <MudSelectItem T="Guid?" Value="@type.Id">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="ContentRuleCheck"
+                       @bind-Value="Rule.Check"
+                       Label="@L["CheckLabel"]"
+                       Variant="Variant.Outlined">
+                @foreach (var check in Checks)
+                {
+                    <MudSelectItem T="ContentRuleCheck" Value="@check">@L[$"Check_{check}"]</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (Rule.Check == ContentRuleCheck.FieldEmpty)
+            {
+                <MudSelect T="Guid?"
+                           @bind-Value="Rule.FieldDefinitionId"
+                           Label="@L["FieldLabel"]"
+                           Variant="Variant.Outlined"
+                           Disabled="@(_fields.Count == 0)"
+                           HelperText="@(_fields.Count == 0 ? L["NoFieldsHint"].Value : null)">
+                    @foreach (var definition in _fields)
+                    {
+                        <MudSelectItem T="Guid?" Value="@definition.Id">@definition.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            @if (Rule.Check == ContentRuleCheck.NoTag)
+            {
+                <MudSelect T="Guid?"
+                           @bind-Value="Rule.TagId"
+                           Label="@L["TagLabel"]"
+                           HelperText="@L["TagHelper"]"
+                           Variant="Variant.Outlined"
+                           Clearable="true">
+                    @foreach (var tag in _tags)
+                    {
+                        <MudSelectItem T="Guid?" Value="@tag.Id">@tag.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            @if (Rule.Check == ContentRuleCheck.NoConditions)
+            {
+                <MudSelect T="string"
+                           @bind-Value="Rule.Slot"
+                           Label="@L["SlotLabel"]"
+                           HelperText="@L["SlotHelper"]"
+                           Variant="Variant.Outlined">
+                    @foreach (var slot in ConditionSlots.All)
+                    {
+                        <MudSelectItem T="string" Value="@slot">@slot</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="ContentRuleSeverity"
+                           @bind-Value="Rule.Severity"
+                           Label="@L["SeverityLabel"]"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Style="max-width:200px;">
+                    <MudSelectItem T="ContentRuleSeverity" Value="@(ContentRuleSeverity.Info)">@L["SeverityInfo"]</MudSelectItem>
+                    <MudSelectItem T="ContentRuleSeverity" Value="@(ContentRuleSeverity.Warning)">@L["SeverityWarning"]</MudSelectItem>
+                </MudSelect>
+
+                <MudSwitch @bind-Value="Rule.IsEnabled" Color="Color.Primary" Label="@L["EnabledLabel"]" />
+            </MudStack>
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" data-gdm-save>
+            @L["Save"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private static readonly ContentRuleCheck[] Checks =
+    [
+        ContentRuleCheck.FieldEmpty, ContentRuleCheck.NoPrimarySprite, ContentRuleCheck.NoDescription,
+        ContentRuleCheck.NoTag, ContentRuleCheck.NoConditions, ContentRuleCheck.NoContentType
+    ];
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public required ContentRule Rule { get; set; }
+
+    [Parameter]
+    public bool IsNew { get; set; }
+
+    private List<ContentType> _types = [];
+    private List<FieldDefinition> _fields = [];
+    private List<ContentTagRow> _tags = [];
+
+    protected override async Task OnInitializedAsync() => await LoadModuleDataAsync();
+
+    private async Task ChangeModuleAsync(string moduleKey)
+    {
+        Rule.ModuleKey = moduleKey;
+
+        // Art, Feld und Tag gehören zum vorherigen Modul — sie stehen lassen hieße, eine Regel
+        // zu speichern, die auf etwas zeigt, was es in diesem Modul nicht gibt.
+        Rule.ContentTypeId = null;
+        Rule.FieldDefinitionId = null;
+        Rule.TagId = null;
+
+        await LoadModuleDataAsync();
+    }
+
+    private async Task LoadModuleDataAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+
+        _types = await ContentTypes.GetTypesAsync(projectId, Rule.ModuleKey);
+
+        _fields =
+        [
+            .. _types
+                .SelectMany(type => type.InheritedFields.Concat(type.Fields))
+                .GroupBy(definition => definition.Name, StringComparer.CurrentCultureIgnoreCase)
+                .Select(group => group.First())
+                .OrderBy(definition => definition.Name)
+        ];
+
+        _tags =
+        [
+            .. (await Tags.GetTagsAsync(projectId))
+                .Where(tag => tag.ModuleKeys.Count == 0 || tag.ModuleKeys.Contains(Rule.ModuleKey))
+        ];
+    }
+
+    private async Task SaveAsync()
+    {
+        try
+        {
+            await Rules.SaveRuleAsync(Rule);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

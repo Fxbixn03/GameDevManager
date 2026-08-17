@@ -163,6 +163,7 @@ public class DashboardTests
         Assert.Equal(
             [
                 HealthCheckKeys.CraftingCycles,
+                HealthCheckKeys.CustomRules,
                 HealthCheckKeys.DeadItems,
                 HealthCheckKeys.DialogueDeadEnds,
                 HealthCheckKeys.ImpossibleConditions,

@@ -135,6 +135,18 @@
   <data name="SavedViewNeedsUser" xml:space="preserve">
     <value>Ansichten gehören zu einem Konto — bitte zuerst anmelden.</value>
   </data>
+  <data name="RuleNameRequired" xml:space="preserve">
+    <value>Die Regel braucht einen Namen.</value>
+  </data>
+  <data name="RuleModuleUnknown" xml:space="preserve">
+    <value>Das Modul „{0}“ ist nicht bekannt.</value>
+  </data>
+  <data name="RuleFieldRequired" xml:space="preserve">
+    <value>Diese Regelart prüft ein bestimmtes Feld — bitte eines auswählen.</value>
+  </data>
+  <data name="RuleSlotRequired" xml:space="preserve">
+    <value>Diese Regelart prüft einen Bedingungs-Slot — bitte einen auswählen.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>

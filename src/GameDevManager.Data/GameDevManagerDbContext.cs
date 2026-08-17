@@ -184,6 +184,9 @@ public class GameDevManagerDbContext(
     /// <summary>Benannte Listenansichten je Benutzer und Projekt — Werkzeug-Daten wie die Favoriten.</summary>
     public DbSet<SavedView> SavedViews => Set<SavedView>();
 
+    /// <summary>Eigene Health-Check-Regeln je Projekt.</summary>
+    public DbSet<ContentRule> ContentRules => Set<ContentRule>();
+
     /// <summary>Anmerkungen an Entitäten — Werkzeug-Daten wie das Änderungsprotokoll.</summary>
     public DbSet<ContentComment> ContentComments => Set<ContentComment>();
 
@@ -329,6 +332,20 @@ public class GameDevManagerDbContext(
 
             // Trägt die Referenzansicht („Find All References"): wer zeigt auf diese GUID?
             entity.HasIndex(v => v.ReferenceValue);
+        });
+
+        modelBuilder.Entity<ContentRule>(entity =>
+        {
+            entity.Property(rule => rule.Name).HasMaxLength(200).IsRequired();
+            entity.Property(rule => rule.ModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Property(rule => rule.Slot).HasMaxLength(50);
+
+            entity.HasOne(rule => rule.GameProject)
+                .WithMany()
+                .HasForeignKey(rule => rule.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(rule => rule.GameProjectId);
         });
 
         modelBuilder.Entity<SavedView>(entity =>

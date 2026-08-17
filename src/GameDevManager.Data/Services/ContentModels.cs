@@ -31,6 +31,7 @@ public sealed record ContentRow(
     Guid Id,
     string ModuleKey,
     string Name,
+    string? Description,
     string? TypeName,
     ContentStatus Status,
     DateTime UpdatedAtUtc,

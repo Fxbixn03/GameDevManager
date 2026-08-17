@@ -237,6 +237,16 @@ NPCs verweisen über `Npc.LootTableId` auf eine Tabelle. Beim Löschen einer Tab
 - **Die Wartezeit ist ein Median, kein Mittelwert** — bei seltenen Dingen sagt die Mitte der Verteilung mehr als der Durchschnitt. Gemessen werden die Abstände zwischen zwei Treffern; ein Eintrag, der im ganzen Lauf nie fiel, bekommt `null` statt einer erfundenen Zahl.
 - **Beide Verfahren rechnen wirklich verschieden**: `Independent` würfelt je Eintrag, `SinglePick` verteilt einen Wurf auf der Skala von 0 bis 100. Der Lauf macht damit sichtbar, was der Health Check meldet — was über 100 % hinausragt, fällt nie.
 
+### Eigene Health-Check-Regeln
+
+`ContentRule` + `ContentRuleService`, Migration `ContentRules` in allen vier Providern; verwaltet unter `/modules/statistics/regeln`, angezeigt auf der Statistik-Seite und als eine Zeile im Zustandsband des Dashboards. Fünf Dinge:
+
+- **Regelarten statt Skriptsprache** (`ContentRuleCheck`: Feld leer, kein Sprite, keine Beschreibung, kein Tag, kein Bedingungssatz in einem Slot, keine Art). Eine Handvoll deckt neunzig Prozent ab und lässt sich in einer Maske erfassen; ein Ausdrucksrechner wäre ein zweites Werkzeug im Werkzeug, und wer ihn nicht beherrscht, bekäme keine Regel zustande.
+- **Ausgewertet über `IModuleEntitySource.QueryAsync`** — denselben Weg wie die gespeicherten Ansichten, samt Auflösung der Unterarten. Ein neues Modul ist von selbst prüfbar.
+- **„Auf diese Entität zeigt nichts aus Modul Y“ fehlt bewusst.** Verweise laufen teils über Feldwerte, teils über modul-eigene Spalten (Fraktions-Mitglieder, Rezept-Zutaten); die zweite Hälfte ließe sich nur je Entität erfragen — bei dreihundert NPCs tausende Abfragen. Und ein Modul, das die Umkehrung nicht überschriebe, meldete still Fehlfunde: Eine Prüfung, der man nicht trauen kann, ist schlechter als keine. Den wichtigsten Fall deckt der eingebaute Check „tote Items“ ab.
+- **Angaben fremder Regelarten werden beim Speichern geleert** (Feld, Tag, Slot) — dieselbe Regel wie beim Feldtyp-Wechsel: Stehen gebliebene Angaben wirkten beim Zurückwechseln unbemerkt weiter. Eine Regel ohne ihre Angabe wird abgelehnt, statt stumm nichts zu prüfen.
+- **Werkzeug-Daten**: nicht im Export, `FormatVersion` unverändert. Eine Regel sagt etwas über die Arbeit am Projekt und nicht über den Spielinhalt. Regeln ohne Fund bleiben in der Liste stehen — sonst wäre nicht erkennbar, dass geprüft wurde; dieselbe Linie wie bei den eingebauten Checks.
+
 ### Wirtschafts-Prüfung
 
 `EconomyService.FindMoneyPrintersAsync` sucht Rezepte, deren Zutaten beim Händler weniger kosten als das Ergebnis dort einbringt — der Health Check „Gelddruckmaschinen“ auf Dashboard und Statistik-Seite. Reine Auswertung über zwei vorhandene Bestände, kein eigener Datenbestand. Fünf Dinge:

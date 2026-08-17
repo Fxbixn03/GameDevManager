@@ -87,6 +87,9 @@
   <data name="ToDialogs" xml:space="preserve">
     <value>Zu den Dialogen</value>
   </data>
+  <data name="ToRules" xml:space="preserve">
+    <value>Eigene Regeln</value>
+  </data>
   <data name="NoFindings" xml:space="preserve">
     <value>keine Funde</value>
   </data>

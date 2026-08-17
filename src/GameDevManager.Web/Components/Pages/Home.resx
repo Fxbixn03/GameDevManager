@@ -226,6 +226,9 @@
   <data name="Check_missingRecordings" xml:space="preserve">
     <value>Zeilen ohne Aufnahme</value>
   </data>
+  <data name="Check_customRules" xml:space="preserve">
+    <value>Eigene Regeln</value>
+  </data>
   <data name="Check_unlockCycles" xml:space="preserve">
     <value>Ringe im Freischaltungs-Baum</value>
   </data>

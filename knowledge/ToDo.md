@@ -391,7 +391,7 @@ und stellt es als Bänder je Stufe dar. Inhalte ohne Stufenbezug landen in einer
 `/modules/techtree/fortschritt` mit einem Band je Stufe. Die Stufe erbt sich über die
 Voraussetzungen; Inhalte ohne Stufenbezug stehen unter „jederzeit“.
 
-### F18 — Eigene Health-Check-Regeln
+### F18 — Eigene Health-Check-Regeln ✅ umgesetzt
 
 > **Als** Nutzer **möchte ich** eigene Prüfungen festlegen („jedes Item braucht ein Sprite", „jeder
 > Mob braucht eine Loot-Table", „kein NPC ohne Fraktion"), **damit** die Qualitätsprüfung die Regeln
@@ -404,6 +404,20 @@ wie heute (Dashboard-Band und Statistik-Seite). Bewusst keine freie Skriptsprach
 Regelarten deckt neunzig Prozent ab und lässt sich in einer Maske erfassen.
 
 *Aufwand: L · Migration: ja · Format: +1*
+
+**Umgesetzt.** `ContentRule` + `ContentRuleService`, Migration `ContentRules` in allen vier
+Providern; Verwaltung unter `/modules/statistics/regeln`, angezeigt in derselben Statistik-Seite
+und als eigene Zeile im Zustandsband des Dashboards. **`FormatVersion` blieb unverändert**:
+Regeln sagen etwas über die Arbeit am Projekt und nicht über den Spielinhalt — Werkzeug-Daten
+wie die Dashboard-Bänder. Sechs Regelarten: Feld leer, kein Sprite, keine Beschreibung, kein
+Tag, kein Bedingungssatz in einem Slot, keine Art. Ausgewertet wird über
+`IModuleEntitySource.QueryAsync` — denselben Weg wie die gespeicherten Ansichten, samt
+Unterarten-Auflösung. **Bewusst nicht dabei ist „auf diese Entität zeigt nichts aus Modul Y“**:
+Verweise laufen teils über Feldwerte, teils über modul-eigene Spalten, und die zweite Hälfte
+ließe sich nur je Entität erfragen — bei dreihundert NPCs tausende Abfragen; ein Modul, das die
+Umkehrung nicht überschriebe, meldete zudem still Fehlfunde. Den wichtigsten Referenzfall deckt
+der eingebaute Check „tote Items“ ab. Angaben fremder Regelarten werden beim Speichern geleert,
+dieselbe Regel wie beim Feldtyp-Wechsel; eine Regel ohne ihre Angabe wird abgelehnt.
 
 ### F19 — Bedingungen auswerten statt nur verwalten ✅ umgesetzt
 

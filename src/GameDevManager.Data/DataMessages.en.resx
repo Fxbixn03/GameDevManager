@@ -196,6 +196,18 @@
   <data name="SavedViewNeedsUser" xml:space="preserve">
     <value>Views belong to an account — please sign in first.</value>
   </data>
+  <data name="RuleNameRequired" xml:space="preserve">
+    <value>The rule needs a name.</value>
+  </data>
+  <data name="RuleModuleUnknown" xml:space="preserve">
+    <value>The module “{0}” is unknown.</value>
+  </data>
+  <data name="RuleFieldRequired" xml:space="preserve">
+    <value>This kind of rule checks a specific field — please choose one.</value>
+  </data>
+  <data name="RuleSlotRequired" xml:space="preserve">
+    <value>This kind of rule checks a condition slot — please choose one.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

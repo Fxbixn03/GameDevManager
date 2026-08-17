@@ -682,6 +682,57 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.ToTable("ContentLanguages");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Check")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ContentTypeId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("FieldDefinitionId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("ModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("Severity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Slot")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("TagId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId");
+
+                    b.ToTable("ContentRules");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentTag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3420,6 +3471,17 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ContentLanguage", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.ContentRule", b =>
                 {
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
                         .WithMany()
