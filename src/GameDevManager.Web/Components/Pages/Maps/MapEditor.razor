@@ -1,6 +1,7 @@
 @page "/modules/maps/neu"
 @page "/modules/maps/{Id:guid}"
 @inject MapService Maps
+@inject NpcService Npcs
 @inject ReferenceService References
 @inject AssetService Library
 @inject ProjectContext Project
@@ -403,6 +404,31 @@ else
                                 </MudSelect>
                             }
 
+                            @* Die Spawn-Regeln, die auf diese Markierung zeigen — gepflegt
+                               werden sie in der NPC-Maske, hier steht, was die Karte darüber
+                               weiß: wer, wie viele, wie oft und ob bedingt. *@
+                            @if (SpawnRulesFor(marker.Id) is { Count: > 0 } markerSpawns)
+                            {
+                                <MudExpansionPanels Elevation="0" Dense="true">
+                                    <MudExpansionPanel Text="@L["MarkerSpawns", markerSpawns.Count]">
+                                        @foreach (var rule in markerSpawns)
+                                        {
+                                            <MudLink Href="@($"/modules/npcs/{rule.NpcId}")"
+                                                     Underline="Underline.None" Color="Color.Inherit"
+                                                     Class="gdm-health-row">
+                                                <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Small" Color="Color.Secondary" />
+                                                <MudText Typo="Typo.body2" Class="gdm-ellipsis">
+                                                    @rule.DescribeCount()× @rule.NpcName
+                                                </MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    @SpawnDetails(rule)
+                                                </MudText>
+                                            </MudLink>
+                                        }
+                                    </MudExpansionPanel>
+                                </MudExpansionPanels>
+                            }
+
                             <MudStack Row="true" Spacing="2">
                                 <MudNumericField T="double"
                                                  Value="@(marker.X * 100)"
@@ -539,6 +565,35 @@ else
                     </MudPaper>
                 }
 
+                @* -------------------------------------------- Spawns ohne festen Ort *@
+                @if (SpawnRulesFor(null) is { Count: > 0 } mapSpawns)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                        <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">
+                            @L["SectionMapSpawns", mapSpawns.Count]
+                        </MudText>
+
+                        @foreach (var rule in mapSpawns)
+                        {
+                            <MudLink Href="@($"/modules/npcs/{rule.NpcId}")"
+                                     Underline="Underline.None" Color="Color.Inherit"
+                                     Class="gdm-health-row">
+                                <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Small" Color="Color.Secondary" />
+                                <MudText Typo="Typo.body2" Class="gdm-ellipsis">
+                                    @rule.DescribeCount()× @rule.NpcName
+                                </MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @SpawnDetails(rule)
+                                </MudText>
+                            </MudLink>
+                        }
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2 d-block">
+                            @L["MapSpawnsHint"]
+                        </MudText>
+                    </MudPaper>
+                }
+
                 <MudPaper Elevation="0" Class="gdm-panel pa-4">
                     <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionReference"]</MudText>
 
@@ -605,6 +660,7 @@ else
     private Guid? _imageAssetId;
     private Guid? _activeLayerId;
     private List<AssetLibraryEntry> _markerIcons = [];
+    private List<MapSpawnRuleRow> _spawnRules = [];
     private readonly Dictionary<string, List<EntitySummary>> _targets = [];
     private Guid? _loadedId;
     private bool _notFound;
@@ -661,6 +717,9 @@ else
 
         // Werkzeug-Assets ohne Entität sind laut Konzept genau die Marker für Karten.
         _markerIcons = [.. (await Library.GetLibraryAsync(projectId)).Where(entry => entry.Asset.IsToolAsset)];
+
+        // Was auf dieser Karte erscheint, steht an den NPCs — hier nur die Auskunft dazu.
+        _spawnRules = _context.IsNew ? [] : await Npcs.GetSpawnRulesForMapAsync(_context.Entity.Id);
 
         await RefreshImageAsync();
         await LoadTargetsAsync();
@@ -1011,6 +1070,26 @@ else
                 _selected.Radius = isArea ? 0.05 : null;
             }
         });
+
+    /// <summary>Die Regeln, die auf eine Markierung zeigen — <c>null</c> meint die ganze Karte.</summary>
+    private List<MapSpawnRuleRow> SpawnRulesFor(Guid? markerId) =>
+        [.. _spawnRules.Where(rule => rule.TargetMarkerId == markerId)];
+
+    /// <summary>Wie oft nachgewachsen wird und ob die Regel bedingt ist — was davon zutrifft.</summary>
+    private string SpawnDetails(MapSpawnRuleRow rule)
+    {
+        var parts = new List<string>
+        {
+            rule.RespawnSeconds is { } seconds ? L["SpawnEvery", seconds] : L["SpawnOnce"]
+        };
+
+        if (rule.HasConditions)
+        {
+            parts.Add(L["SpawnConditional"]);
+        }
+
+        return string.Join(" · ", parts);
+    }
 
     private static string MarkerIcon(MapMarker marker) =>
         marker.IsMapLink ? Icons.Material.Filled.Map

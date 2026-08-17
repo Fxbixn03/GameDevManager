@@ -158,6 +158,49 @@ public class SpawnRuleTests
     }
 
     [Fact]
+    public async Task Die_Karte_kennt_ihre_Spawn_Regeln()
+    {
+        using var test = new TestDatabase();
+
+        var maps = test.GetService<MapService>();
+        var mapContext = await maps.LoadForEditAsync(test.ProjectId, null);
+        mapContext!.Entity.Name = "Wald";
+        var marker = new MapMarker { MapId = mapContext.Entity.Id, X = 0.5, Y = 0.5 };
+        mapContext.Entity.Markers.Add(marker);
+        await maps.SaveMapAsync(mapContext);
+
+        var npc = await CreateNpcAsync(test,
+            new SpawnRule
+            {
+                TargetMapId = mapContext.Entity.Id,
+                TargetMarkerId = marker.Id,
+                MinCount = 2,
+                MaxCount = 5,
+                RespawnSeconds = 60
+            },
+            new SpawnRule { TargetMapId = mapContext.Entity.Id });
+
+        var conditioned = (await test.GetService<NpcService>().LoadForEditAsync(test.ProjectId, npc.Id))!
+            .Entity.SpawnRules.First(rule => rule.TargetMarkerId == marker.Id);
+        await SetSpawnConditionAsync(test, conditioned.Id);
+
+        var rows = await test.GetService<NpcService>().GetSpawnRulesForMapAsync(mapContext.Entity.Id);
+
+        Assert.Equal(2, rows.Count);
+
+        // An der Markierung: Anzahl, Nachwachsen und der Schalter für den Bedingungssatz.
+        var atMarker = Assert.Single(rows, row => row.TargetMarkerId == marker.Id);
+        Assert.Equal("Wolf", atMarker.NpcName);
+        Assert.Equal("2–5", atMarker.DescribeCount());
+        Assert.Equal(60, atMarker.RespawnSeconds);
+        Assert.True(atMarker.HasConditions);
+
+        // Ohne Markierung meint die Regel die ganze Karte — und ist hier unbedingt.
+        var wholeMap = Assert.Single(rows, row => row.TargetMarkerId is null);
+        Assert.False(wholeMap.HasConditions);
+    }
+
+    [Fact]
     public async Task Regeln_ueberstehen_Export_und_Import()
     {
         using var test = new TestDatabase();

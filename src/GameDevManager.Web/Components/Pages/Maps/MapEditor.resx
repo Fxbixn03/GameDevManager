@@ -249,4 +249,22 @@
   <data name="MarkerLayerLabel" xml:space="preserve">
     <value>Ebene</value>
   </data>
+  <data name="MarkerSpawns" xml:space="preserve">
+    <value>Spawn-Regeln ({0})</value>
+  </data>
+  <data name="SectionMapSpawns" xml:space="preserve">
+    <value>Spawns ohne festen Ort ({0})</value>
+  </data>
+  <data name="MapSpawnsHint" xml:space="preserve">
+    <value>Diese Regeln meinen die ganze Karte. Gepflegt werden Spawn-Regeln in der NPC-Maske.</value>
+  </data>
+  <data name="SpawnEvery" xml:space="preserve">
+    <value>alle {0} s</value>
+  </data>
+  <data name="SpawnOnce" xml:space="preserve">
+    <value>einmalig</value>
+  </data>
+  <data name="SpawnConditional" xml:space="preserve">
+    <value>bedingt</value>
+  </data>
 </root>

@@ -242,6 +242,24 @@ public sealed record NpcListRow(
     DateTime UpdatedAtUtc,
     Guid? PrimaryAssetId);
 
+/// <summary>
+/// Eine Spawn-Regel aus Sicht der Karte — der Karten-Editor zeigt sie an der Markierung.
+/// <see cref="TargetMarkerId"/> <c>null</c> heißt: die Regel meint die ganze Karte.
+/// </summary>
+public sealed record MapSpawnRuleRow(
+    Guid RuleId,
+    Guid NpcId,
+    string NpcName,
+    Guid? TargetMarkerId,
+    int MinCount,
+    int MaxCount,
+    int? RespawnSeconds,
+    bool HasConditions)
+{
+    /// <summary>Kurzfassung der Anzahl wie an der Regel selbst: „3“ oder „1–5“.</summary>
+    public string DescribeCount() => MinCount == MaxCount ? MinCount.ToString() : $"{MinCount}–{MaxCount}";
+}
+
 /// <summary>Ein Händler, der ein bestimmtes Item führt — für die Item-Maske.</summary>
 public sealed record TraderForItem(
     Guid NpcId,

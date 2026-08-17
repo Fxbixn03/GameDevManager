@@ -126,7 +126,9 @@ gibt es nur einmal … andere spawnen nur in bestimmten Bereichen") sauber ab.
 
 **Umgesetzt.** `SpawnRule` als Kind-Sammlung des NPCs, Migration `SpawnRules` in allen vier
 Providern, `FormatVersion` auf **17**, Bedingungen im neuen Slot `Spawn`. Der Abschnitt steht in
-der NPC-Maske; im Karten-Editor als Aufklappliste an der Markierung steht er noch aus.
+der NPC-Maske; der Karten-Editor zeigt die Regeln inzwischen als Aufklappliste an der
+ausgewählten Markierung (`NpcService.GetSpawnRulesForMapAsync`) und Regeln ohne Markierung als
+eigenen Abschnitt „Spawns ohne festen Ort“ — gepflegt wird weiterhin in der NPC-Maske.
 
 ### F7 — Formeln über Feldnamen statt nur über `x` ✅ umgesetzt
 

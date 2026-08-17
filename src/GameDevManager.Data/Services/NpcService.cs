@@ -64,6 +64,59 @@ public class NpcService(
             .ToListAsync(ct);
     }
 
+    /// <summary>
+    /// Die Spawn-Regeln, die auf eine Karte zeigen — für die Aufklappliste im Karten-Editor.
+    /// Ob eine Regel bedingt ist, steht als Schalter daneben: Der Bedingungssatz hängt im Slot
+    /// <see cref="ConditionSlots.Spawn"/> an der GUID der Regel.
+    /// </summary>
+    public async Task<List<MapSpawnRuleRow>> GetSpawnRulesForMapAsync(
+        Guid mapId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var rules = await db.SpawnRules
+            .AsNoTracking()
+            .Where(rule => rule.TargetMapId == mapId)
+            .OrderBy(rule => rule.Npc!.Name)
+            .ThenBy(rule => rule.SortOrder)
+            .Select(rule => new
+            {
+                rule.Id,
+                rule.NpcId,
+                NpcName = rule.Npc!.Name,
+                rule.TargetMarkerId,
+                rule.MinCount,
+                rule.MaxCount,
+                rule.RespawnSeconds
+            })
+            .ToListAsync(ct);
+
+        if (rules.Count == 0)
+        {
+            return [];
+        }
+
+        var ruleIds = rules.Select(rule => rule.Id).ToList();
+        var conditioned = await db.ConditionSets
+            .AsNoTracking()
+            .Where(set => ruleIds.Contains(set.OwnerId) && set.Slot == ConditionSlots.Spawn)
+            .Select(set => set.OwnerId)
+            .ToListAsync(ct);
+
+        return
+        [
+            .. rules.Select(rule => new MapSpawnRuleRow(
+                rule.Id,
+                rule.NpcId,
+                rule.NpcName,
+                rule.TargetMarkerId,
+                rule.MinCount,
+                rule.MaxCount,
+                rule.RespawnSeconds,
+                conditioned.Contains(rule.Id)))
+        ];
+    }
+
     public async Task<ContentEditContext<Npc>?> LoadForEditAsync(
         Guid projectId, Guid? npcId, CancellationToken ct = default)
     {
