@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>There is no map with this GUID. Perhaps it was deleted.</value>
+  </data>
+  <data name="BackToOverview" xml:space="preserve">
+    <value>Back to the overview</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SectionMap" xml:space="preserve">
+    <value>Map</value>
+  </data>
+  <data name="ClickToPlace" xml:space="preserve">
+    <value>Click the map to place it</value>
+  </data>
+  <data name="ClickToMove" xml:space="preserve">
+    <value>Click the map to move it</value>
+  </data>
+  <data name="PlacingDone" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="SetMarker" xml:space="preserve">
+    <value>Place marker</value>
+  </data>
+  <data name="DrawArea" xml:space="preserve">
+    <value>Draw region</value>
+  </data>
+  <data name="ClickToDraw" xml:space="preserve">
+    <value>Click the map to set corner points</value>
+  </data>
+  <data name="ClickToExtend" xml:space="preserve">
+    <value>Click the map to add points</value>
+  </data>
+  <data name="FinishArea" xml:space="preserve">
+    <value>Accept region ({0})</value>
+  </data>
+  <data name="DiscardArea" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="NewMapHint" xml:space="preserve">
+    <value>Map image and markers hang on the map’s GUID — both can be created once it has been saved.</value>
+  </data>
+  <data name="UploadImageHint" xml:space="preserve">
+    <value>Upload an image below — the first one automatically becomes the map image.</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Map type</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>For details only this one map needs.</value>
+  </data>
+  <data name="SectionMarker" xml:space="preserve">
+    <value>Marker</value>
+  </data>
+  <data name="MoveTooltip" xml:space="preserve">
+    <value>Move on the map</value>
+  </data>
+  <data name="MoveAria" xml:space="preserve">
+    <value>Move</value>
+  </data>
+  <data name="RemoveTooltip" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="RemoveAria" xml:space="preserve">
+    <value>Remove marker</value>
+  </data>
+  <data name="MarkerMenuMove" xml:space="preserve">
+    <value>Move on the map</value>
+  </data>
+  <data name="MarkerMenuExtend" xml:space="preserve">
+    <value>Extend region</value>
+  </data>
+  <data name="MarkerMenuRemove" xml:space="preserve">
+    <value>Remove marker</value>
+  </data>
+  <data name="MarkerLabelLabel" xml:space="preserve">
+    <value>Label</value>
+  </data>
+  <data name="TargetModuleLabel" xml:space="preserve">
+    <value>Points at</value>
+  </data>
+  <data name="TargetNone" xml:space="preserve">
+    <value>Nothing (plain note)</value>
+  </data>
+  <data name="NoTargetsHint" xml:space="preserve">
+    <value>There is nothing in this module the marker could point at yet.</value>
+  </data>
+  <data name="TargetLabel" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="OpenLinkedMap" xml:space="preserve">
+    <value>Open the linked map</value>
+  </data>
+  <data name="AreaSwitchLabel" xml:space="preserve">
+    <value>Area instead of point</value>
+  </data>
+  <data name="PolygonPointCount" xml:space="preserve">
+    <value>Polygon with {0} corner points</value>
+  </data>
+  <data name="ExtendPolygon" xml:space="preserve">
+    <value>Add points</value>
+  </data>
+  <data name="RemoveLastPoint" xml:space="preserve">
+    <value>Remove the last point</value>
+  </data>
+  <data name="DissolvePolygon" xml:space="preserve">
+    <value>Convert into a point</value>
+  </data>
+  <data name="RadiusLabel" xml:space="preserve">
+    <value>Radius: {0} % of the width</value>
+  </data>
+  <data name="IconLabel" xml:space="preserve">
+    <value>Symbol</value>
+  </data>
+  <data name="IconHelperText" xml:space="preserve">
+    <value>Tool assets without an entity are available here.</value>
+  </data>
+  <data name="ColorLabel" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="ColorHelperText" xml:space="preserve">
+    <value>Without a choice the accent color applies.</value>
+  </data>
+  <data name="ColorIconHint" xml:space="preserve">
+    <value>With a custom symbol it only tints the area outline.</value>
+  </data>
+  <data name="XLabel" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="YLabel" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="SectionMarkers" xml:space="preserve">
+    <value>Markers ({0})</value>
+  </data>
+  <data name="NoMarkersHint" xml:space="preserve">
+    <value>None yet. “Place marker” plus a click on the map creates the first one.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="GuidLabel" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="LastModified" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>Map</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>New map</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Map without a name</value>
+  </data>
+  <data name="MarkerFallbackArea" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="MarkerFallbackPolygon" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="MarkerFallback" xml:space="preserve">
+    <value>Marker</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete map</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with markers, images and field values. Links from other maps to here lose their target.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Map deleted.</value>
+  </data>
+  <data name="SectionLayers" xml:space="preserve">
+    <value>Layers</value>
+  </data>
+  <data name="AddLayer" xml:space="preserve">
+    <value>New layer</value>
+  </data>
+  <data name="BaseLayer" xml:space="preserve">
+    <value>Base layer</value>
+  </data>
+  <data name="NewLayerName" xml:space="preserve">
+    <value>Layer {0}</value>
+  </data>
+  <data name="ActivateLayerTooltip" xml:space="preserve">
+    <value>Activate layer — new markers land here</value>
+  </data>
+  <data name="HideLayerTooltip" xml:space="preserve">
+    <value>Hide layer</value>
+  </data>
+  <data name="ShowLayerTooltip" xml:space="preserve">
+    <value>Show layer</value>
+  </data>
+  <data name="RemoveLayerTooltip" xml:space="preserve">
+    <value>Delete layer — its markers fall back to the base layer</value>
+  </data>
+  <data name="LayersHint" xml:space="preserve">
+    <value>Layers group markers — “NPCs”, “regions” and “notes”, for example — and can be shown and hidden individually. The active layer takes newly placed markers.</value>
+  </data>
+  <data name="MarkerLayerLabel" xml:space="preserve">
+    <value>Layer</value>
+  </data>
+  <data name="MarkerSpawns" xml:space="preserve">
+    <value>Spawn rules ({0})</value>
+  </data>
+  <data name="SectionMapSpawns" xml:space="preserve">
+    <value>Spawns without a fixed place ({0})</value>
+  </data>
+  <data name="MapSpawnsHint" xml:space="preserve">
+    <value>These rules mean the whole map. Spawn rules are maintained in the NPC form.</value>
+  </data>
+  <data name="SpawnEvery" xml:space="preserve">
+    <value>every {0} s</value>
+  </data>
+  <data name="SpawnOnce" xml:space="preserve">
+    <value>once</value>
+  </data>
+  <data name="SpawnConditional" xml:space="preserve">
+    <value>conditional</value>
+  </data>
+</root>

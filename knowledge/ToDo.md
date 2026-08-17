@@ -3,6 +3,10 @@
 Ideensammlung für die Zeit nach dem Konzept. Alles aus [Konzept.md](Konzept.md) ist umgesetzt —
 was hier steht, geht darüber hinaus.
 
+**Stand: alle 48 Punkte sind umgesetzt.** Die Liste bleibt trotzdem stehen: Unter jedem Punkt
+steht, *wie* er gelöst wurde und was dabei bewusst anders entschieden wurde als hier vorgeschlagen —
+das ist die Begründung, die im Code selbst keinen Platz hat. Neue Ideen kommen hinten dazu.
+
 Jeder Punkt trägt eine Userstory und einen Umsetzungshinweis, der sagt, wo im Bestand er
 andockt. Die Marker am Ende jedes Punktes:
 
@@ -643,7 +647,7 @@ Providern, Sternsymbol im Referenz-Panel jeder Maske und ein Dashboard-Band dane
 besucht“ bleibt bewusst draußen — das zuletzt Geänderte zeigt „Weiterarbeiten“ bereits, und ein
 drittes, nur beiläufig gefülltes Band sagte weniger als der Stern.
 
-### F29 — Deutsche und englische Modulseiten fertigstellen
+### F29 — Deutsche und englische Modulseiten fertigstellen ✅ umgesetzt
 
 > **Als** englischsprachiger Nutzer **möchte ich** auch die Modulseiten auf Englisch sehen, **damit**
 > nicht nach dem Umschalten der Rahmen englisch und der Inhalt deutsch ist.
@@ -657,6 +661,16 @@ nach dem Muster von `LanguageTests`, der **jede** neutrale `.resx` mit ihrer eng
 und fehlende Schlüssel meldet, macht daraus eine abhakbare Aufgabe.
 
 *Aufwand: L (aber trivial) · Migration: nein · Format: unverändert*
+
+**Umgesetzt** — jede neutrale `.resx` im Repo hat jetzt ihre `*.en.resx` mit denselben Schlüsseln;
+kein Codewechsel war dafür nötig. Der Testfall kam zuerst: `TranslationCompletenessTests` sucht die
+Repo-Wurzel, geht über alle `.resx` und meldet fehlende Dateien, fehlende **und** überzählige
+Schlüssel — Letzteres, weil ein umbenannter Schlüssel sonst als Leiche in der englischen Fassung
+stehen bliebe und niemandem auffiele. Drei Dinge aus der Fleißarbeit: Platzhalter (`{0}`) wurden
+mitgezählt statt nur mitkopiert, sonst wirft `string.Format` erst in der Oberfläche; die
+Anführungszeichen bleiben typografisch (`“…”` statt `„…“`), weil die englischen Texte sonst neben
+den deutschen wie ein Fremdkörper aussähen; und `ProgressionPage.resx` trug kaputte Umlaute aus
+einem früheren Werkzeuglauf — repariert, es war die einzige betroffene Datei.
 
 ### F30 — Beispielprojekt zum Laden ✅ umgesetzt
 
@@ -1102,19 +1116,23 @@ ist schon da.
 
 ---
 
-## Reihenfolge-Vorschlag
+## Abgearbeitet
 
-Wenn zuerst das gemacht werden soll, was am meisten fehlt und am wenigsten kostet:
+Die Reihenfolge, in der diese Liste entstanden ist, war ein Vorschlag — abgearbeitet wurde sie
+am Ende vollständig. Was dabei über die einzelnen Punkte hinaus hängen blieb:
 
-1. **F8** — übersetzbare Dialogzeilen. Die einzige echte Lücke im Bestand: Das Lokalisierungsmodul
-   erfasst ausgerechnet den textlastigsten Inhalt nicht.
-2. **F1** — Quest-Ziele. Der letzte fachlich unvollständige Punkt aus dem Konzept.
-3. **F29** — englische Modulseiten. Die auffälligste Unfertigkeit, und sie braucht keinen Code.
-4. **F20 + F21 + F22** — Status, Kommentare, Aufgaben-Verknüpfung. Zusammen machen sie aus dem
-   Verwaltungstool ein Werkzeug, mit dem zu zweit oder zu dritt gearbeitet wird.
-5. **F15 + F14** — Loot-Simulator und Balancing-Tabelle. Der Bestand ist vollständig, die
-   Auswertung ist es nicht.
-6. **F3 + F4 + F2** — Feldgruppen, Wertebereiche, Referenzlisten. Kleine Eingriffe ins Feldsystem
-   mit Wirkung in allen 22 Inhaltsmodulen.
-7. **F24** — Papierkorb. Nicht dringend, bis es einmal dringend ist.
-8. Alles Weitere nach Bedarf.
+- **Das Feldsystem trägt inzwischen fast alles.** Feldgruppen, Wertebereiche, Referenzlisten,
+  Stichwortlisten, Formeln und Kurven sind allesamt Schalter oder Typen an `FieldDefinition` und
+  keine eigenen Tabellen — jedes davon wirkt dadurch in allen Inhaltsmodulen auf einmal und geht
+  ohne Zutun durch Export, Import, Duplizieren und die Feldvererbung.
+- **Werkzeug-Daten und Spielinhalt bleiben getrennt.** Boards, Whiteboards, Papierkorb, Ansichten,
+  Regeln, Webhooks und das Änderungsprotokoll stehen in keinem Projekt-Export und überstehen den
+  ersetzenden Import. Nur die Installations-Sicherung (F44) nimmt beides mit — sie ist der Umzug,
+  nicht der Austausch von Inhalt.
+- **Ausgewertet statt gespeichert.** Freischaltungs-Graph, Fortschritts-Sicht, Verbindungen,
+  Loot-Simulator, Wirtschafts-Prüfung und das Design-Dokument haben keinen eigenen Datenbestand.
+  Eine zweite Fassung derselben Aussage liefe ab der ersten Bearbeitung auseinander.
+- **Die Erweiterungspunkte haben getragen.** `IModuleEntitySource` ist von fünf auf über ein
+  Dutzend Aufgaben gewachsen (Suche, Referenzen, Duplizieren, Papierkorb, Filter, API-Schreibweg,
+  Übersetzungen …), ohne dass ein Modul davon etwas mitbekommen hätte — neue Module sind bei
+  jeder davon von selbst dabei.

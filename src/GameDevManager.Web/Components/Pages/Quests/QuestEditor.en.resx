@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>There is no quest with this GUID. Perhaps it was deleted.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to the overview</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Quest type</value>
+  </data>
+  <data name="EventHintBefore" xml:space="preserve">
+    <value>Random events with spawns, loot and places have more options in the</value>
+  </data>
+  <data name="EventHintLink" xml:space="preserve">
+    <value>event module</value>
+  </data>
+  <data name="EventHintAfter" xml:space="preserve">
+    <value>.</value>
+  </data>
+  <data name="SectionLinks" xml:space="preserve">
+    <value>Links</value>
+  </data>
+  <data name="GiverLabel" xml:space="preserve">
+    <value>Quest giver (NPC)</value>
+  </data>
+  <data name="GiverHelper" xml:space="preserve">
+    <value>Who hands out the quest. The “quest giver” role is set on the NPC.</value>
+  </data>
+  <data name="StoryEntryLabel" xml:space="preserve">
+    <value>Story section</value>
+  </data>
+  <data name="StoryEntryHelper" xml:space="preserve">
+    <value>Which part of the story the quest leans on.</value>
+  </data>
+  <data name="DialogueLabel" xml:space="preserve">
+    <value>Dialogue</value>
+  </data>
+  <data name="DialogueHelper" xml:space="preserve">
+    <value>The dialogue the quest comes out of.</value>
+  </data>
+  <data name="SectionObjectives" xml:space="preserve">
+    <value>Objectives</value>
+  </data>
+  <data name="AddObjective" xml:space="preserve">
+    <value>Add objective</value>
+  </data>
+  <data name="NoObjectives" xml:space="preserve">
+    <value>No objectives yet. Without them the quest is either done or not — there is nothing in between.</value>
+  </data>
+  <data name="ObjectiveTextLabel" xml:space="preserve">
+    <value>What to do</value>
+  </data>
+  <data name="ObjectiveOptional" xml:space="preserve">
+    <value>Optional</value>
+  </data>
+  <data name="ObjectiveConditions" xml:space="preserve">
+    <value>Completion condition of this objective</value>
+  </data>
+  <data name="ObjectiveConditionsShort" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="ObjectiveConditionsAfterSave" xml:space="preserve">
+    <value>Save first — the condition hangs on the objective’s GUID.</value>
+  </data>
+  <data name="ObjectiveConditionsDialogTitle" xml:space="preserve">
+    <value>Completion condition of the objective</value>
+  </data>
+  <data name="ObjectiveConditionSubject" xml:space="preserve">
+    <value>“{0}” in {1}</value>
+  </data>
+  <data name="ObjectiveConditionEmptyHint" xml:space="preserve">
+    <value>Without a condition this step could never be ticked off.</value>
+  </data>
+  <data name="MoveObjectiveUp" xml:space="preserve">
+    <value>Move objective up</value>
+  </data>
+  <data name="MoveObjectiveDown" xml:space="preserve">
+    <value>Move objective down</value>
+  </data>
+  <data name="RemoveObjective" xml:space="preserve">
+    <value>Remove objective</value>
+  </data>
+  <data name="ObjectivesHint" xml:space="preserve">
+    <value>Once every objective has a completion condition the quest counts as covered — the health check then looks at the objectives instead of the quest.</value>
+  </data>
+  <data name="SectionConditions" xml:space="preserve">
+    <value>Conditions</value>
+  </data>
+  <data name="AvailabilityPanel" xml:space="preserve">
+    <value>Availability</value>
+  </data>
+  <data name="AvailabilityPanelCount" xml:space="preserve">
+    <value>Availability ({0})</value>
+  </data>
+  <data name="AvailabilityHint" xml:space="preserve">
+    <value>Without a condition the quest is available from the start.</value>
+  </data>
+  <data name="CompletionPanel" xml:space="preserve">
+    <value>Completion</value>
+  </data>
+  <data name="CompletionPanelCount" xml:space="preserve">
+    <value>Completion ({0})</value>
+  </data>
+  <data name="CompletionHint" xml:space="preserve">
+    <value>Without a completion condition the game would never know when the quest is done.</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>For details only this one quest needs.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="HeadingDefault" xml:space="preserve">
+    <value>Quest</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>New quest</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Quest without a name</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete quest</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with field values, individual fields, conditions and sprites.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Quest deleted.</value>
+  </data>
+</root>

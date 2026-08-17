@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Installation backup</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Installation backup</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Everything at once — for moving to a new server. An export snapshot secures one project, this archive the whole installation.</value>
+  </data>
+  <data name="AdminOnly" xml:space="preserve">
+    <value>An installation backup contains the entire content including the accounts. It is reserved for administrators.</value>
+  </data>
+  <data name="BackupHeading" xml:space="preserve">
+    <value>Back up</value>
+  </data>
+  <data name="BackupHint" xml:space="preserve">
+    <value>The archive contains the normal export ZIP with asset files per project, and next to it everything that appears in no project export.</value>
+  </data>
+  <data name="ContainsProjects" xml:space="preserve">
+    <value>All projects including assets</value>
+  </data>
+  <data name="ContainsUsers" xml:space="preserve">
+    <value>Users, roles and API keys (including password hashes)</value>
+  </data>
+  <data name="ContainsTools" xml:space="preserve">
+    <value>Boards, whiteboards, change log, recycle bin, views, rules, webhooks</value>
+  </data>
+  <data name="ContainsNoConnection" xml:space="preserve">
+    <value>No connection string — it describes the server you are moving away from.</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>Download the backup</value>
+  </data>
+  <data name="RestoreHeading" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="RestoreWarning" xml:space="preserve">
+    <value>The entire content of this installation will be replaced. Every existing project automatically gets an export snapshot as a safety net beforehand.</value>
+  </data>
+  <data name="ImportNotAllowed" xml:space="preserve">
+    <value>Restoring requires the import permission.</value>
+  </data>
+  <data name="ChooseFile" xml:space="preserve">
+    <value>Choose an archive</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="ConfirmTitle" xml:space="preserve">
+    <value>Restore the installation?</value>
+  </data>
+  <data name="ConfirmMessage" xml:space="preserve">
+    <value>All projects, accounts and tool data of this installation will be replaced by the contents of the archive. Your own account too — sign in afterwards with the credentials from the archive.</value>
+  </data>
+  <data name="ConfirmYes" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="RestoredMessage" xml:space="preserve">
+    <value>The installation has been restored.</value>
+  </data>
+  <data name="RestoreDone" xml:space="preserve">
+    <value>{0} projects, {1} users, {2} roles and {3} API keys imported.</value>
+  </data>
+</root>

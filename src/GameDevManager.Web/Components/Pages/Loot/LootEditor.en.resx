@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>There is no loot table with this GUID. Perhaps it was deleted.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to the overview</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="Simulate" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="RollModeLabel" xml:space="preserve">
+    <value>Roll</value>
+  </data>
+  <data name="RollModeIndependent" xml:space="preserve">
+    <value>Independently per entry</value>
+  </data>
+  <data name="RollModeSinglePick" xml:space="preserve">
+    <value>One roll across all</value>
+  </data>
+  <data name="RollModeHintSinglePick" xml:space="preserve">
+    <value>At most one entry drops; the chances share a single roll.</value>
+  </data>
+  <data name="RollModeHintIndependent" xml:space="preserve">
+    <value>Every entry is rolled on its own — several hits are possible.</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Loot type</value>
+  </data>
+  <data name="SectionEntries" xml:space="preserve">
+    <value>Entries</value>
+  </data>
+  <data name="TotalChance" xml:space="preserve">
+    <value>{0} %</value>
+  </data>
+  <data name="AddEntry" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="OverfullWarning" xml:space="preserve">
+    <value>With a single roll the entries share one draw. Beyond 100 % the later entries are unreachable.</value>
+  </data>
+  <data name="NoItemsHint" xml:space="preserve">
+    <value>There are no items yet —</value>
+  </data>
+  <data name="NoItemsLink" xml:space="preserve">
+    <value>create some now</value>
+  </data>
+  <data name="NoEntries" xml:space="preserve">
+    <value>No entry yet. The same item may appear several times — a coin at 50 % and twenty of them at 5 %, for example.</value>
+  </data>
+  <data name="ItemLabel" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="ChanceLabel" xml:space="preserve">
+    <value>Chance</value>
+  </data>
+  <data name="QuantityFromLabel" xml:space="preserve">
+    <value>from</value>
+  </data>
+  <data name="QuantityToLabel" xml:space="preserve">
+    <value>to</value>
+  </data>
+  <data name="RemoveEntry" xml:space="preserve">
+    <value>Remove entry</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>For details only this one table needs.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="HeadingDefault" xml:space="preserve">
+    <value>Loot table</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>New loot table</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Loot table without a name</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete loot table</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with its entries. NPCs referring to it lose their assignment.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Loot table deleted.</value>
+  </data>
+</root>

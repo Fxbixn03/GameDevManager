@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>There is no NPC with this GUID. Perhaps it was deleted.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to the overview</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="MasterDataSection" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Kind</value>
+  </data>
+  <data name="KindNpc" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="KindMob" xml:space="preserve">
+    <value>Mob (enemy)</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>NPC type</value>
+  </data>
+  <data name="RolesLabel" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+  <data name="TraderLabel" xml:space="preserve">
+    <value>Trader</value>
+  </data>
+  <data name="QuestGiverLabel" xml:space="preserve">
+    <value>Quest giver</value>
+  </data>
+  <data name="LootTableLabel" xml:space="preserve">
+    <value>Loot table</value>
+  </data>
+  <data name="NoLootTablesHint" xml:space="preserve">
+    <value>No loot tables created yet.</value>
+  </data>
+  <data name="LootTableHint" xml:space="preserve">
+    <value>What drops when defeated.</value>
+  </data>
+  <data name="ClassLabel" xml:space="preserve">
+    <value>Class</value>
+  </data>
+  <data name="NoClassesHint" xml:space="preserve">
+    <value>No classes created yet.</value>
+  </data>
+  <data name="ClassHint" xml:space="preserve">
+    <value>The class from the class module.</value>
+  </data>
+  <data name="OpenLootTable" xml:space="preserve">
+    <value>Open loot table</value>
+  </data>
+  <data name="OffersSection" xml:space="preserve">
+    <value>Trade offers</value>
+  </data>
+  <data name="AddOffer" xml:space="preserve">
+    <value>Offer</value>
+  </data>
+  <data name="ShopAvailability" xml:space="preserve">
+    <value>Availability of the shop</value>
+  </data>
+  <data name="ShopAvailabilityCount" xml:space="preserve">
+    <value>Availability of the shop ({0})</value>
+  </data>
+  <data name="ShopConditionEmptyHint" xml:space="preserve">
+    <value>Without a condition the shop is always open.</value>
+  </data>
+  <data name="NoItemsToTrade" xml:space="preserve">
+    <value>There are no items to trade yet —</value>
+  </data>
+  <data name="CreateItemsNow" xml:space="preserve">
+    <value>create some now</value>
+  </data>
+  <data name="NoOffersHint" xml:space="preserve">
+    <value>No offer yet. For each offer you can set sell and buy price, currency, stock and restock time.</value>
+  </data>
+  <data name="NoCurrenciesWarning" xml:space="preserve">
+    <value>There are no currencies yet. Without a currency no price can be entered —</value>
+  </data>
+  <data name="CreateCurrencyNow" xml:space="preserve">
+    <value>create one now</value>
+  </data>
+  <data name="ItemLabel" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="SellLabel" xml:space="preserve">
+    <value>Sell</value>
+  </data>
+  <data name="SellHelper" xml:space="preserve">
+    <value>to the player</value>
+  </data>
+  <data name="BuyLabel" xml:space="preserve">
+    <value>Buy</value>
+  </data>
+  <data name="BuyHelper" xml:space="preserve">
+    <value>from the player</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="StockLabel" xml:space="preserve">
+    <value>Stock</value>
+  </data>
+  <data name="StockHelper" xml:space="preserve">
+    <value>empty = unlimited</value>
+  </data>
+  <data name="RestockLabel" xml:space="preserve">
+    <value>Restock time</value>
+  </data>
+  <data name="OfferConditionsTooltip" xml:space="preserve">
+    <value>Conditions for this offer</value>
+  </data>
+  <data name="ConditionsButton" xml:space="preserve">
+    <value>Conditions</value>
+  </data>
+  <data name="ConditionsButtonCount" xml:space="preserve">
+    <value>Conditions ({0})</value>
+  </data>
+  <data name="RemoveOffer" xml:space="preserve">
+    <value>Remove offer</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>For unique values that no other NPC of this type has.</value>
+  </data>
+  <data name="ReferenceSection" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="GuidLabel" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedLabel" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="UpdatedLabel" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="DialoguesSection" xml:space="preserve">
+    <value>Dialogues</value>
+  </data>
+  <data name="NewButton" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="NoDialogues" xml:space="preserve">
+    <value>Not part of any dialogue.</value>
+  </data>
+  <data name="Barks" xml:space="preserve">
+    <value>Barks</value>
+  </data>
+  <data name="LineCount" xml:space="preserve">
+    <value>{0} line(s)</value>
+  </data>
+  <data name="FactionsSection" xml:space="preserve">
+    <value>Factions</value>
+  </data>
+  <data name="NoFactions" xml:space="preserve">
+    <value>Not a member of any faction. Members are assigned in the faction module.</value>
+  </data>
+  <data name="MemberFallback" xml:space="preserve">
+    <value>Member</value>
+  </data>
+  <data name="SpawnSection" xml:space="preserve">
+    <value>Spawn rules</value>
+  </data>
+  <data name="NoSpawns" xml:space="preserve">
+    <value>Not marked on any map. To do so, place a marker in the map module that points at this NPC.</value>
+  </data>
+  <data name="Area" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="Point" xml:space="preserve">
+    <value>Point</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>New NPC</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>NPC without a name</value>
+  </data>
+  <data name="OfferFallbackName" xml:space="preserve">
+    <value>Offer</value>
+  </data>
+  <data name="ConditionSubject" xml:space="preserve">
+    <value>{0} at {1}</value>
+  </data>
+  <data name="OfferConditionEmptyHint" xml:space="preserve">
+    <value>Without a condition this offer is always available.</value>
+  </data>
+  <data name="ConditionsDialogTitle" xml:space="preserve">
+    <value>Conditions</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete NPC</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with trade offers, field values, individual fields and sprites.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>NPC deleted.</value>
+  </data>
+  <data name="UniqueLabel" xml:space="preserve">
+    <value>Unique</value>
+  </data>
+  <data name="UniqueOnHint" xml:space="preserve">
+    <value>This character exists exactly once — the smith who walks through the village, for example.</value>
+  </data>
+  <data name="UniqueOffHint" xml:space="preserve">
+    <value>This character can spawn several times and again and again — a raccoon, for example.</value>
+  </data>
+  <data name="SpawnSection" xml:space="preserve">
+    <value>Spawn rules</value>
+  </data>
+  <data name="AddSpawnRule" xml:space="preserve">
+    <value>Add rule</value>
+  </data>
+  <data name="NoSpawnRules" xml:space="preserve">
+    <value>No spawn rule. Without one only the map marker says where this NPC stands — but not how many and how often.</value>
+  </data>
+  <data name="SpawnMapLabel" xml:space="preserve">
+    <value>Map</value>
+  </data>
+  <data name="SpawnMinLabel" xml:space="preserve">
+    <value>At least</value>
+  </data>
+  <data name="SpawnMaxLabel" xml:space="preserve">
+    <value>At most</value>
+  </data>
+  <data name="SpawnRespawnLabel" xml:space="preserve">
+    <value>Respawn</value>
+  </data>
+  <data name="SpawnRespawnHelper" xml:space="preserve">
+    <value>Empty means: does not grow back.</value>
+  </data>
+  <data name="SpawnConditions" xml:space="preserve">
+    <value>Appears when …</value>
+  </data>
+  <data name="SpawnConditionsShort" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="SpawnConditionsAfterSave" xml:space="preserve">
+    <value>Save first — the condition hangs on the rule’s GUID.</value>
+  </data>
+  <data name="SpawnConditionsDialogTitle" xml:space="preserve">
+    <value>Appears when …</value>
+  </data>
+  <data name="SpawnConditionSubject" xml:space="preserve">
+    <value>Spawn rule of {0}</value>
+  </data>
+  <data name="SpawnConditionEmptyHint" xml:space="preserve">
+    <value>Without a condition the NPC always appears — time of day, weather and unlocks belong here.</value>
+  </data>
+  <data name="RemoveSpawnRule" xml:space="preserve">
+    <value>Remove rule</value>
+  </data>
+  <data name="PersonalitySection" xml:space="preserve">
+    <value>Personality &amp; traits</value>
+  </data>
+  <data name="PreferencesLabel" xml:space="preserve">
+    <value>Preferences</value>
+  </data>
+  <data name="PersonalityLabel" xml:space="preserve">
+    <value>Personality</value>
+  </data>
+  <data name="ChipInputHint" xml:space="preserve">
+    <value>Separate with commas and confirm with Enter.</value>
+  </data>
+  <data name="TraitsLabel" xml:space="preserve">
+    <value>Traits (0 to 10 — click the bars)</value>
+  </data>
+  <data name="RelationsSection" xml:space="preserve">
+    <value>Relations</value>
+  </data>
+  <data name="ManageRelationTypes" xml:space="preserve">
+    <value>Relation types</value>
+  </data>
+  <data name="AddRelation" xml:space="preserve">
+    <value>Add relation</value>
+  </data>
+  <data name="NoRelationTypesHint" xml:space="preserve">
+    <value>No relation types defined yet. Use “relation types” to create a pair of labels first — “is father of” with the inverse “is son of”, for example.</value>
+  </data>
+  <data name="NoRelationsHint" xml:space="preserve">
+    <value>No relations yet. Use “add relation” to link this NPC with another one.</value>
+  </data>
+  <data name="RelationTypeLabel" xml:space="preserve">
+    <value>Relation type</value>
+  </data>
+  <data name="RelationOtherLabel" xml:space="preserve">
+    <value>Other NPC</value>
+  </data>
+  <data name="RelationStanceLabel" xml:space="preserve">
+    <value>Stance</value>
+  </data>
+  <data name="StanceFriendly" xml:space="preserve">
+    <value>Friendly</value>
+  </data>
+  <data name="StanceNeutral" xml:space="preserve">
+    <value>Neutral</value>
+  </data>
+  <data name="StanceHostile" xml:space="preserve">
+    <value>Hostile</value>
+  </data>
+  <data name="RemoveRelation" xml:space="preserve">
+    <value>Remove relation</value>
+  </data>
+  <data name="IncomingRelations" xml:space="preserve">
+    <value>Maintained from other NPCs</value>
+  </data>
+  <data name="RelationPreview" xml:space="preserve">
+    <value>{0} {1} {2} — {2} {3} {0}.</value>
+  </data>
+  <data name="RelationTypesDialogTitle" xml:space="preserve">
+    <value>Manage relation types</value>
+  </data>
+</root>

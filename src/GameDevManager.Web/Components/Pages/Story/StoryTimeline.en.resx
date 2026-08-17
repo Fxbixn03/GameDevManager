@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Story – GameDevManager</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>Section types</value>
+  </data>
+  <data name="NewEntry" xml:space="preserve">
+    <value>New section</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No story yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>The story is written in sections and shown here as a timeline. Participating NPCs, factions and places are linked by reference.</value>
+  </data>
+  <data name="FirstEntry" xml:space="preserve">
+    <value>First section</value>
+  </data>
+  <data name="ParticipantCount" xml:space="preserve">
+    <value>{0} participants</value>
+  </data>
+  <data name="DragHint" xml:space="preserve">
+    <value>Grab to move and drop it on the target card</value>
+  </data>
+  <data name="MoveUpTooltip" xml:space="preserve">
+    <value>Move up</value>
+  </data>
+  <data name="MoveUpAria" xml:space="preserve">
+    <value>Move {0} up</value>
+  </data>
+  <data name="MoveDownTooltip" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+  <data name="MoveDownAria" xml:space="preserve">
+    <value>Move {0} down</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete {0}</value>
+  </data>
+  <data name="NoBodyYet" xml:space="preserve">
+    <value>No story text written yet.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} section(s) in the timeline</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete story section</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with its text, participants, field values and sprites.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>“{0}” has been deleted.</value>
+  </data>
+</root>

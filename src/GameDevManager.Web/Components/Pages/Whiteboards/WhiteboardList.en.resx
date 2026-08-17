@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Whiteboards – GameDevManager</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} whiteboard(s) in this project</value>
+  </data>
+  <data name="NewBoard" xml:space="preserve">
+    <value>New whiteboard</value>
+  </data>
+  <data name="NewBoardName" xml:space="preserve">
+    <value>Whiteboard {0}</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No whiteboards yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>A whiteboard is a free surface for sketching and for pinned notes — everyone who has it open sees the others’ changes immediately.</value>
+  </data>
+  <data name="FirstBoard" xml:space="preserve">
+    <value>Create the first whiteboard</value>
+  </data>
+  <data name="BoardStats" xml:space="preserve">
+    <value>{0} note(s), {1} stroke(s)</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete whiteboard</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete the whiteboard “{0}”</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete whiteboard?</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>Delete the whiteboard “{0}” together with all notes and drawings?</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Whiteboard “{0}” deleted.</value>
+  </data>
+</root>

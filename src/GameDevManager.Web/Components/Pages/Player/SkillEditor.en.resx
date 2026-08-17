@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>There is no skill with this GUID. Perhaps it was deleted.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to the skill list</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SectionMasterData" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>What does the skill do?</value>
+  </data>
+  <data name="TreeLabel" xml:space="preserve">
+    <value>Skill tree</value>
+  </data>
+  <data name="TreeHelperEmpty" xml:space="preserve">
+    <value>Trees are created in the overview.</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Skill type</value>
+  </data>
+  <data name="ParentLabel" xml:space="preserve">
+    <value>Prerequisite</value>
+  </data>
+  <data name="ParentHelperEmpty" xml:space="preserve">
+    <value>There are no other skills in the chosen tree yet.</value>
+  </data>
+  <data name="ParentHelper" xml:space="preserve">
+    <value>The skill that has to be unlocked first — that is what makes up the tree.</value>
+  </data>
+  <data name="SectionUnlock" xml:space="preserve">
+    <value>Unlocking</value>
+  </data>
+  <data name="UnlockHint" xml:space="preserve">
+    <value>How the skill is reached — through points, resources or both.</value>
+  </data>
+  <data name="CostPointsLabel" xml:space="preserve">
+    <value>Skill points</value>
+  </data>
+  <data name="CostItemLabel" xml:space="preserve">
+    <value>Resource (item)</value>
+  </data>
+  <data name="CostAmountLabel" xml:space="preserve">
+    <value>Amount</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>For details only this one skill needs.</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="HeadingDefault" xml:space="preserve">
+    <value>Skill</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>New skill</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Skill without a name</value>
+  </data>
+  <data name="BreadcrumbSkills" xml:space="preserve">
+    <value>Skills</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete skill</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with field values, individual fields and sprites. Skills that require it lose their prerequisite.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Skill deleted.</value>
+  </data>
+</root>

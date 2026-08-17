@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Statistics – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Figures across all modules and the health checks of the concept in one place.</value>
+  </data>
+  <data name="MetricsHeading" xml:space="preserve">
+    <value>Figures</value>
+  </data>
+  <data name="NpcBreakdownIntro" xml:space="preserve">
+    <value>Of those, NPCs:</value>
+  </data>
+  <data name="NpcBreakdownPeaceful" xml:space="preserve">
+    <value>{0} peaceful</value>
+  </data>
+  <data name="NpcBreakdownHostile" xml:space="preserve">
+    <value>{0} hostile (mobs)</value>
+  </data>
+  <data name="NpcBreakdownRoles" xml:space="preserve">
+    <value>— {0} traders, {1} quest givers.</value>
+  </data>
+  <data name="HealthChecksHeading" xml:space="preserve">
+    <value>Health checks</value>
+  </data>
+  <data name="CyclesTitle" xml:space="preserve">
+    <value>Cyclic recipes</value>
+  </data>
+  <data name="ToCrafting" xml:space="preserve">
+    <value>To crafting</value>
+  </data>
+  <data name="DeadItemsTitle" xml:space="preserve">
+    <value>Items without a source</value>
+  </data>
+  <data name="ToItems" xml:space="preserve">
+    <value>To the items</value>
+  </data>
+  <data name="DeadItemsHint" xml:space="preserve">
+    <value>No recipe produces them, no trader carries them, no loot table drops them — dead content.</value>
+  </data>
+  <data name="QuestsTitle" xml:space="preserve">
+    <value>Quests without a completion condition</value>
+  </data>
+  <data name="ToQuests" xml:space="preserve">
+    <value>To the quests</value>
+  </data>
+  <data name="DialoguesTitle" xml:space="preserve">
+    <value>Dialogue dead ends</value>
+  </data>
+  <data name="ToDialogues" xml:space="preserve">
+    <value>To the dialogues</value>
+  </data>
+  <data name="LootTitle" xml:space="preserve">
+    <value>Loot probabilities above 100 %</value>
+  </data>
+  <data name="ToLoot" xml:space="preserve">
+    <value>To the loot tables</value>
+  </data>
+  <data name="OrphansTitle" xml:space="preserve">
+    <value>Orphaned sprites</value>
+  </data>
+  <data name="ToAssets" xml:space="preserve">
+    <value>To the asset library</value>
+  </data>
+  <data name="ConditionsTitle" xml:space="preserve">
+    <value>Unfulfillable conditions</value>
+  </data>
+  <data name="MissingRecordingsTitle" xml:space="preserve">
+    <value>Lines without a recording</value>
+  </data>
+  <data name="MissingRecordingsMore" xml:space="preserve">
+    <value>… and {0} more. The voice-over page of a dialogue shows them per line and language.</value>
+  </data>
+  <data name="ToDialogs" xml:space="preserve">
+    <value>To the dialogues</value>
+  </data>
+  <data name="ToRules" xml:space="preserve">
+    <value>Custom rules</value>
+  </data>
+  <data name="NoFindings" xml:space="preserve">
+    <value>no findings</value>
+  </data>
+  <data name="FindingsCount" xml:space="preserve">
+    <value>{0} finding(s)</value>
+  </data>
+  <data name="MoneyPrintersTitle" xml:space="preserve">
+    <value>Money printers</value>
+  </data>
+  <data name="MoneyPrintersHint" xml:space="preserve">
+    <value>For these recipes the ingredients cost less at a trader than the result earns there. The calculation uses the cheapest purchase and the best sale — that is what a player will look for.</value>
+  </data>
+  <data name="MoneyPrinterProfit" xml:space="preserve">
+    <value>+{0} (buy {1} → sell {2})</value>
+  </data>
+  <data name="MoneyPrinterUncertain" xml:space="preserve">
+    <value>{0} price(s) unknown</value>
+  </data>
+  <data name="ToCrafting" xml:space="preserve">
+    <value>To crafting</value>
+  </data>
+  <data name="UnlockCyclesTitle" xml:space="preserve">
+    <value>Cycles in the unlock tree</value>
+  </data>
+  <data name="ToTechTree" xml:space="preserve">
+    <value>To the tree</value>
+  </data>
+</root>

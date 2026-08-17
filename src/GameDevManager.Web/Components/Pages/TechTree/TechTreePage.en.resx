@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Unlocks — GameDevManager</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} nodes, {1} prerequisites</value>
+  </data>
+  <data name="ToProgression" xml:space="preserve">
+    <value>Progress by level</value>
+  </data>
+  <data name="ToStatistics" xml:space="preserve">
+    <value>To the statistics</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No unlocks yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>The tree grows by itself out of the condition system: as soon as an entry gets an “unlocked” condition or an availability pointing at another entry, it appears here.</value>
+  </data>
+  <data name="LegendRoot" xml:space="preserve">
+    <value>without a prerequisite</value>
+  </data>
+  <data name="LegendUnlocked" xml:space="preserve">
+    <value>gets unlocked</value>
+  </data>
+  <data name="LegendCycle" xml:space="preserve">
+    <value>in a cycle</value>
+  </data>
+  <data name="LegendOptional" xml:space="preserve">
+    <value>one of several ways</value>
+  </data>
+  <data name="LegendHint" xml:space="preserve">
+    <value>Clicking a node opens the entry.</value>
+  </data>
+  <data name="GraphAria" xml:space="preserve">
+    <value>Unlock graph with {0} nodes and {1} edges</value>
+  </data>
+  <data name="EdgeTitle" xml:space="preserve">
+    <value>“{0}” unlocks “{1}”</value>
+  </data>
+  <data name="EdgeTitleOptional" xml:space="preserve">
+    <value>“{0}” is one of the ways to “{1}”</value>
+  </data>
+  <data name="CycleTitle" xml:space="preserve">
+    <value>{0} cycle(s) found</value>
+  </data>
+  <data name="CycleHint" xml:space="preserve">
+    <value>Everything in a cycle waits for itself and can never be reached in the game — like cyclic recipes.</value>
+  </data>
+  <data name="ToState" xml:space="preserve">
+    <value>State view</value>
+  </data>
+</root>

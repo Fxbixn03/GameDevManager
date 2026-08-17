@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Localization</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} languages in the project</value>
+  </data>
+  <data name="LanguagesHeading" xml:space="preserve">
+    <value>Languages</value>
+  </data>
+  <data name="AddLanguage" xml:space="preserve">
+    <value>Add language</value>
+  </data>
+  <data name="NoLanguages" xml:space="preserve">
+    <value>No language created yet. The first one becomes the source language — the one the content is written in.</value>
+  </data>
+  <data name="SourceLanguage" xml:space="preserve">
+    <value>Source language</value>
+  </data>
+  <data name="EditLanguage" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="DeleteLanguage" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="CodeLabel" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="CodeHelper" xml:space="preserve">
+    <value>The engine looks up the texts under this code — “de”, “en”, “pt-BR”.</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="IsSourceLabel" xml:space="preserve">
+    <value>Source language</value>
+  </data>
+  <data name="IsSourceHelper" xml:space="preserve">
+    <value>The source language lives in the content itself and is not translated. Exactly one language per project carries the switch.</value>
+  </data>
+  <data name="SaveLanguage" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="LanguageSaved" xml:space="preserve">
+    <value>The language has been saved.</value>
+  </data>
+  <data name="LanguageDeleted" xml:space="preserve">
+    <value>The language has been deleted.</value>
+  </data>
+  <data name="DeleteLanguageTitle" xml:space="preserve">
+    <value>Delete language?</value>
+  </data>
+  <data name="DeleteLanguageMessage" xml:space="preserve">
+    <value>“{0}” and all translations in this language will be removed for good.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ProgressHeading" xml:space="preserve">
+    <value>Progress</value>
+  </data>
+  <data name="ProgressHint" xml:space="preserve">
+    <value>Counted across all modules: name, description and every text field of every entity. Stale means: translated, but the original has changed since.</value>
+  </data>
+  <data name="ProgressCounts" xml:space="preserve">
+    <value>{0} of {1} translated · {2} open · {3} stale</value>
+  </data>
+  <data name="NoTargets" xml:space="preserve">
+    <value>There is no second language yet — until then there is nothing to translate.</value>
+  </data>
+  <data name="WorkHeading" xml:space="preserve">
+    <value>Translate</value>
+  </data>
+  <data name="TargetLanguage" xml:space="preserve">
+    <value>Target language</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="OpenOnly" xml:space="preserve">
+    <value>Open only</value>
+  </data>
+  <data name="CsvHint" xml:space="preserve">
+    <value>Hand it out as a table and read the filled file back in — for a translator without access to the tool.</value>
+  </data>
+  <data name="CsvDownloadOpen" xml:space="preserve">
+    <value>Open items as CSV</value>
+  </data>
+  <data name="CsvDownloadAll" xml:space="preserve">
+    <value>Everything as CSV</value>
+  </data>
+  <data name="CsvSelectButton" xml:space="preserve">
+    <value>Choose file</value>
+  </data>
+  <data name="CsvImportButton" xml:space="preserve">
+    <value>Read in</value>
+  </data>
+  <data name="CsvImportedMessage" xml:space="preserve">
+    <value>{0} new, {1} changed, {2} unchanged.</value>
+  </data>
+  <data name="RowCount" xml:space="preserve">
+    <value>{0} rows</value>
+  </data>
+  <data name="PickHint" xml:space="preserve">
+    <value>First choose target language and module.</value>
+  </data>
+  <data name="NothingOpen" xml:space="preserve">
+    <value>Nothing is open in this module any more.</value>
+  </data>
+  <data name="ColumnOwner" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="ColumnSlot" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="ColumnSource" xml:space="preserve">
+    <value>Source language</value>
+  </data>
+  <data name="ColumnTranslation" xml:space="preserve">
+    <value>Translation</value>
+  </data>
+  <data name="SlotName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="SlotDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Stale" xml:space="preserve">
+    <value>stale</value>
+  </data>
+  <data name="StaleHint" xml:space="preserve">
+    <value>Translated from: {0}</value>
+  </data>
+  <data name="TranslationPlaceholder" xml:space="preserve">
+    <value>not translated yet</value>
+  </data>
+</root>

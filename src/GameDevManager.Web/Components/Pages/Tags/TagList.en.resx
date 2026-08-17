@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Tags – GameDevManager</value>
+  </data>
+  <data name="NewTag" xml:space="preserve">
+    <value>New tag</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No tags yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Tags are cross-module labels. For each tag you can set in which modules it is available — without a choice it applies everywhere. It is assigned directly in the edit forms.</value>
+  </data>
+  <data name="FirstTag" xml:space="preserve">
+    <value>First tag</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="ColorLabel" xml:space="preserve">
+    <value>Color (hex)</value>
+  </data>
+  <data name="ModulesLabel" xml:space="preserve">
+    <value>Available in</value>
+  </data>
+  <data name="ModulesHelper" xml:space="preserve">
+    <value>Empty = everywhere</value>
+  </data>
+  <data name="SaveTooltip" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SaveAria" xml:space="preserve">
+    <value>Save tag</value>
+  </data>
+  <data name="DiscardTooltip" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="DiscardAria" xml:space="preserve">
+    <value>Discard tag</value>
+  </data>
+  <data name="UsageCountChip" xml:space="preserve">
+    <value>{0} use(s)</value>
+  </data>
+  <data name="Everywhere" xml:space="preserve">
+    <value>Available everywhere</value>
+  </data>
+  <data name="EditTooltip" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="EditAria" xml:space="preserve">
+    <value>Edit {0}</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete {0}</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} tag(s)</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete tag</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with all {1} assignment(s). The entities are kept.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>“{0}” has been deleted.</value>
+  </data>
+</root>

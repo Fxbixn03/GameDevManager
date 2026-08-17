@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Views</value>
+  </data>
+  <data name="SubtitleEmpty" xml:space="preserve">
+    <value>Put filters together, name them and find them again — including the columns you want to see.</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} matches in {1}.</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="TextLabel" xml:space="preserve">
+    <value>Name or description</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>Editing status</value>
+  </data>
+  <data name="TagsLabel" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="WithoutSprite" xml:space="preserve">
+    <value>Without a sprite</value>
+  </data>
+  <data name="OnlyVariants" xml:space="preserve">
+    <value>Variants only</value>
+  </data>
+  <data name="IncludeSubtypes" xml:space="preserve">
+    <value>Count subtypes too</value>
+  </data>
+  <data name="FieldLabel" xml:space="preserve">
+    <value>Field</value>
+  </data>
+  <data name="ComparisonLabel" xml:space="preserve">
+    <value>Comparison</value>
+  </data>
+  <data name="ValueLabel" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="AddCriterion" xml:space="preserve">
+    <value>Add a field condition</value>
+  </data>
+  <data name="RemoveCriterion" xml:space="preserve">
+    <value>Remove the condition</value>
+  </data>
+  <data name="Comparison_Contains" xml:space="preserve">
+    <value>contains</value>
+  </data>
+  <data name="Comparison_Equals" xml:space="preserve">
+    <value>equals</value>
+  </data>
+  <data name="Comparison_GreaterThan" xml:space="preserve">
+    <value>greater than</value>
+  </data>
+  <data name="Comparison_LessThan" xml:space="preserve">
+    <value>less than</value>
+  </data>
+  <data name="Comparison_IsEmpty" xml:space="preserve">
+    <value>is empty</value>
+  </data>
+  <data name="Comparison_IsNotEmpty" xml:space="preserve">
+    <value>is filled</value>
+  </data>
+  <data name="ColumnsLabel" xml:space="preserve">
+    <value>Columns</value>
+  </data>
+  <data name="ColumnsHelper" xml:space="preserve">
+    <value>Without a choice the table only shows the master data — a type with 25 fields would otherwise be wider than any screen.</value>
+  </data>
+  <data name="ColumnsChosen" xml:space="preserve">
+    <value>{0} columns</value>
+  </data>
+  <data name="ColumnName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ColumnType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="ColumnStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="ColumnUpdated" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="PickModuleTitle" xml:space="preserve">
+    <value>Choose a module</value>
+  </data>
+  <data name="PickModuleHint" xml:space="preserve">
+    <value>The filter works on the content of one module — please pick one above.</value>
+  </data>
+  <data name="NoMatches" xml:space="preserve">
+    <value>No entry matches this filter.</value>
+  </data>
+  <data name="SavedViewsLabel" xml:space="preserve">
+    <value>Saved:</value>
+  </data>
+  <data name="NamePlaceholder" xml:space="preserve">
+    <value>Name of the view</value>
+  </data>
+  <data name="SaveView" xml:space="preserve">
+    <value>Save the view</value>
+  </data>
+  <data name="UpdateView" xml:space="preserve">
+    <value>Update the view</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>View “{0}” saved.</value>
+  </data>
+  <data name="EditValues" xml:space="preserve">
+    <value>Edit the values</value>
+  </data>
+  <data name="DeviationValue" xml:space="preserve">
+    <value>{0} % from the average</value>
+  </data>
+  <data name="AverageRow" xml:space="preserve">
+    <value>Average (min/max)</value>
+  </data>
+  <data name="MinMax" xml:space="preserve">
+    <value>{0} … {1}</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>no</value>
+  </data>
+</root>

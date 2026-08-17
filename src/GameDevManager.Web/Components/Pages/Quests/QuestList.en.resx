@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Quests – GameDevManager</value>
+  </data>
+  <data name="TypesButton" xml:space="preserve">
+    <value>Quest types</value>
+  </data>
+  <data name="NewQuest" xml:space="preserve">
+    <value>New quest</value>
+  </data>
+  <data name="WithoutCompletionCount" xml:space="preserve">
+    <value>{0} quest(s) without a completion condition</value>
+  </data>
+  <data name="WithoutCompletionHint" xml:space="preserve">
+    <value>— the game would never know when they are done:</value>
+  </data>
+  <data name="AndMore" xml:space="preserve">
+    <value>… and {0} more</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No quests yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Main and side missions as well as events — linkable with story sections, quest-giver NPCs and dialogues, with conditions for availability and completion.</value>
+  </data>
+  <data name="FirstQuest" xml:space="preserve">
+    <value>First quest</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search by name, quest giver or story</value>
+  </data>
+  <data name="KindFilterLabel" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="TypeFilterLabel" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="FilterCount" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Changed {0}</value>
+  </data>
+  <data name="GiverChip" xml:space="preserve">
+    <value>from {0}</value>
+  </data>
+  <data name="ObjectiveChip" xml:space="preserve">
+    <value>{0} objective(s)</value>
+  </data>
+  <data name="DeletedNpc" xml:space="preserve">
+    <value>(deleted NPC)</value>
+  </data>
+  <data name="DeletedStoryEntry" xml:space="preserve">
+    <value>(deleted section)</value>
+  </data>
+  <data name="NoType" xml:space="preserve">
+    <value>no type</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete {0}</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>No quest matches the search.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} quest(s)</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete quest</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with field values, conditions and sprites.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>“{0}” has been deleted.</value>
+  </data>
+</root>

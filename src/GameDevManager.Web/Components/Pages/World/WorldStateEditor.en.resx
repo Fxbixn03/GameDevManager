@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} — World</value>
+  </data>
+  <data name="HeadingFallback" xml:space="preserve">
+    <value>World state</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>New world state</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Without a name</value>
+  </data>
+  <data name="BreadcrumbList" xml:space="preserve">
+    <value>World</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>This world state does not (any longer) exist.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to the overview</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>not saved yet</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>unsaved changes</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SectionBasics" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="SectionReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Kind</value>
+  </data>
+  <data name="KindHelperText" xml:space="preserve">
+    <value>Time of day, weather or biome — it decides which kind of condition can point at it.</value>
+  </data>
+  <data name="Kind_TimeOfDay" xml:space="preserve">
+    <value>Time of day</value>
+  </data>
+  <data name="Kind_Weather" xml:space="preserve">
+    <value>Weather</value>
+  </data>
+  <data name="Kind_Biome" xml:space="preserve">
+    <value>Biome</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NameHelperText" xml:space="preserve">
+    <value>Unique within the kind “{0}”.</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="ColorLabel" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="ColorHelperText" xml:space="preserve">
+    <value>For display in lists and on maps. Without a choice the default line applies.</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="TypeHelperText" xml:space="preserve">
+    <value>Decides the additional fields — the length of a time of day or the view distance in fog, for example.</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>Fields for this one state only.</value>
+  </data>
+  <data name="GuidCaption" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="UsageHint" xml:space="preserve">
+    <value>World states take effect through the condition system: a spawn, a shop offer or an event gets a condition “time of day is …”.</value>
+  </data>
+  <data name="CreatedCaption" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="UpdatedCaption" xml:space="preserve">
+    <value>Changed</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete state?</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be removed together with all field values and sprites.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>The world state has been deleted.</value>
+  </data>
+</root>

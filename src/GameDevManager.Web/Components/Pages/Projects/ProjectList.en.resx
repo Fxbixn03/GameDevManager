@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Projects – GameDevManager</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Manage several games side by side — all content hangs on the active project.</value>
+  </data>
+  <data name="AddButton" xml:space="preserve">
+    <value>New project</value>
+  </data>
+  <data name="ActiveChip" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Created on {0}</value>
+  </data>
+  <data name="ActivateTooltip" xml:space="preserve">
+    <value>Make this the active project</value>
+  </data>
+  <data name="ActivateAria" xml:space="preserve">
+    <value>Activate project</value>
+  </data>
+  <data name="EditTooltip" xml:space="preserve">
+    <value>Edit name and description</value>
+  </data>
+  <data name="EditAria" xml:space="preserve">
+    <value>Edit project</value>
+  </data>
+  <data name="DuplicateTooltip" xml:space="preserve">
+    <value>Create a copy</value>
+  </data>
+  <data name="DuplicateAria" xml:space="preserve">
+    <value>Duplicate project</value>
+  </data>
+  <data name="DialogTitleDuplicate" xml:space="preserve">
+    <value>Duplicate project</value>
+  </data>
+  <data name="CopyNameSuffix" xml:space="preserve">
+    <value>{0} (copy)</value>
+  </data>
+  <data name="DuplicatedMessage" xml:space="preserve">
+    <value>“{0}” has been created as a copy.</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteActiveTooltip" xml:space="preserve">
+    <value>The active project cannot be deleted — activate another one first.</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete project</value>
+  </data>
+  <data name="DialogTitleNew" xml:space="preserve">
+    <value>New project</value>
+  </data>
+  <data name="DialogTitleEdit" xml:space="preserve">
+    <value>Edit project</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete project</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with all content of every module, types, fields, conditions, tags and uploaded files. An export snapshot is created automatically beforehand — it is the only way back, and only into a new project.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Project deleted.</value>
+  </data>
+  <data name="SampleButton" xml:space="preserve">
+    <value>Create a sample project</value>
+  </data>
+  <data name="SampleTooltip" xml:space="preserve">
+    <value>Creates a filled sample project: types with field inheritance, a recipe tree, a trader with a conditional offer, a dialogue and a map.</value>
+  </data>
+  <data name="SampleCreatedMessage" xml:space="preserve">
+    <value>The sample project “{0}” has been created.</value>
+  </data>
+</root>

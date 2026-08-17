@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Database connection, modules, topbar and appearance of this installation.</value>
+  </data>
+  <data name="TabDatabase" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="TabModules" xml:space="preserve">
+    <value>Modules</value>
+  </data>
+  <data name="TabTopbar" xml:space="preserve">
+    <value>Topbar</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TabBackup" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="TabStorage" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="StorageHint" xml:space="preserve">
+    <value>Files in the asset directory that have no row in the database. They come from aborted imports — the search covers the whole installation, across all projects.</value>
+  </data>
+  <data name="StorageScan" xml:space="preserve">
+    <value>Check the storage</value>
+  </data>
+  <data name="StorageNotScanned" xml:space="preserve">
+    <value>Not looked at yet.</value>
+  </data>
+  <data name="StorageClean" xml:space="preserve">
+    <value>No orphaned files — every file has its row.</value>
+  </data>
+  <data name="StorageFound" xml:space="preserve">
+    <value>{0} file(s) without a row in the database:</value>
+  </data>
+  <data name="StorageDelete" xml:space="preserve">
+    <value>Delete {0} file(s)</value>
+  </data>
+  <data name="StorageDeleteTitle" xml:space="preserve">
+    <value>Delete orphaned files?</value>
+  </data>
+  <data name="StorageDeleteMessage" xml:space="preserve">
+    <value>{0} file(s) will be removed from the storage for good. Before deleting we check once more that really no row hangs on them.</value>
+  </data>
+  <data name="StorageDeleteYes" xml:space="preserve">
+    <value>Delete for good</value>
+  </data>
+  <data name="StorageDeletedMessage" xml:space="preserve">
+    <value>{0} file(s) deleted.</value>
+  </data>
+  <data name="TabAppearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="TopbarHint" xml:space="preserve">
+    <value>Order of the module icons in the top bar. Drag them or move them with the arrows — the change applies immediately.</value>
+  </data>
+  <data name="TopbarOverflowHint" xml:space="preserve">
+    <value>Whatever no longer fits the bar on narrow windows collects at the right end under “more modules”. The module currently open always stays visible.</value>
+  </data>
+  <data name="ModuleHidden" xml:space="preserve">
+    <value>hidden</value>
+  </data>
+  <data name="DragHint" xml:space="preserve">
+    <value>Drag to move</value>
+  </data>
+  <data name="MoveUpTooltip" xml:space="preserve">
+    <value>Move forward</value>
+  </data>
+  <data name="MoveDownTooltip" xml:space="preserve">
+    <value>Move back</value>
+  </data>
+  <data name="MoveUpAria" xml:space="preserve">
+    <value>Move “{0}” forward</value>
+  </data>
+  <data name="MoveDownAria" xml:space="preserve">
+    <value>Move “{0}” back</value>
+  </data>
+  <data name="ResetOrder" xml:space="preserve">
+    <value>Reset the order</value>
+  </data>
+  <data name="OrderReset" xml:space="preserve">
+    <value>The order is back to the default.</value>
+  </data>
+  <data name="RestartHint" xml:space="preserve">
+    <value>Changes to the database connection are stored in appsettings.Local.json and only apply after restarting the application.</value>
+  </data>
+  <data name="ProviderLabel" xml:space="preserve">
+    <value>Database provider</value>
+  </data>
+  <data name="ConnectionStringLabel" xml:space="preserve">
+    <value>Connection string</value>
+  </data>
+  <data name="ConnectionStringHelper" xml:space="preserve">
+    <value>Connection string for the chosen provider.</value>
+  </data>
+  <data name="TestButton" xml:space="preserve">
+    <value>Test the connection</value>
+  </data>
+  <data name="SaveButton" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="TestSucceeded" xml:space="preserve">
+    <value>Connection established successfully.</value>
+  </data>
+  <data name="TestFailed" xml:space="preserve">
+    <value>Connection failed: {0}</value>
+  </data>
+  <data name="ConnectionStringRequired" xml:space="preserve">
+    <value>Please enter a connection string.</value>
+  </data>
+  <data name="SavedRestartRequired" xml:space="preserve">
+    <value>Saved. The changes apply after restarting the application.</value>
+  </data>
+  <data name="ModulesHint" xml:space="preserve">
+    <value>Switched-off modules disappear from the topbar, the dashboard and the search. Their content is kept and reappears unchanged when they are switched back on.</value>
+  </data>
+  <data name="ProviderSqlServer" xml:space="preserve">
+    <value>SQL Server</value>
+  </data>
+  <data name="ProviderPostgreSql" xml:space="preserve">
+    <value>PostgreSQL</value>
+  </data>
+  <data name="ProviderMySql" xml:space="preserve">
+    <value>MySQL</value>
+  </data>
+  <data name="ProviderSqlite" xml:space="preserve">
+    <value>SQLite</value>
+  </data>
+  <data name="DarkModeLabel" xml:space="preserve">
+    <value>Dark design</value>
+  </data>
+  <data name="DarkModeHint" xml:space="preserve">
+    <value>Applies installation-wide — the same choice as the button in the header. Other open connections follow on the next load.</value>
+  </data>
+  <data name="LanguageLabel" xml:space="preserve">
+    <value>Language of the interface</value>
+  </data>
+  <data name="LanguageHint" xml:space="preserve">
+    <value>Applies to the interface, not to the game content — that lives in the “localization” module. The choice applies installation-wide and survives a restart.</value>
+  </data>
+</root>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Check_FieldEmpty" xml:space="preserve">
+    <value>Field is empty</value>
+  </data>
+  <data name="Check_NoPrimarySprite" xml:space="preserve">
+    <value>No sprite</value>
+  </data>
+  <data name="Check_NoDescription" xml:space="preserve">
+    <value>No description</value>
+  </data>
+  <data name="Check_NoTag" xml:space="preserve">
+    <value>No tag</value>
+  </data>
+  <data name="Check_NoConditions" xml:space="preserve">
+    <value>No condition</value>
+  </data>
+  <data name="Check_NoContentType" xml:space="preserve">
+    <value>No type</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name of the rule</value>
+  </data>
+  <data name="NameHelper" xml:space="preserve">
+    <value>The findings appear in the list under this name.</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Only this type (optional)</value>
+  </data>
+  <data name="TypeHelper" xml:space="preserve">
+    <value>Subtypes count too — choosing “weapon” also means “melee”.</value>
+  </data>
+  <data name="CheckLabel" xml:space="preserve">
+    <value>What is checked</value>
+  </data>
+  <data name="FieldLabel" xml:space="preserve">
+    <value>Field</value>
+  </data>
+  <data name="NoFieldsHint" xml:space="preserve">
+    <value>This module has no fields yet.</value>
+  </data>
+  <data name="TagLabel" xml:space="preserve">
+    <value>Required tag</value>
+  </data>
+  <data name="TagHelper" xml:space="preserve">
+    <value>Without a choice: some tag has to be assigned.</value>
+  </data>
+  <data name="SlotLabel" xml:space="preserve">
+    <value>Condition slot</value>
+  </data>
+  <data name="SlotHelper" xml:space="preserve">
+    <value>A condition set with at least one condition has to hang in this slot.</value>
+  </data>
+  <data name="SeverityLabel" xml:space="preserve">
+    <value>Severity</value>
+  </data>
+  <data name="SeverityInfo" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="SeverityWarning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="EnabledLabel" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+</root>

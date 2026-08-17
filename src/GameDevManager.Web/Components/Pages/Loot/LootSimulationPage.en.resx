@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Simulation: {0} – GameDevManager</value>
+  </data>
+  <data name="TitleFormat" xml:space="preserve">
+    <value>Simulation: {0}</value>
+  </data>
+  <data name="SubtitleIdle" xml:space="preserve">
+    <value>Not rolled yet</value>
+  </data>
+  <data name="SubtitleResult" xml:space="preserve">
+    <value>{0} rolls, seed {1}</value>
+  </data>
+  <data name="BreadcrumbList" xml:space="preserve">
+    <value>Loot tables</value>
+  </data>
+  <data name="BreadcrumbSelf" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="ToList" xml:space="preserve">
+    <value>To the overview</value>
+  </data>
+  <data name="ToEditor" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>This loot table does not exist in the current project.</value>
+  </data>
+  <data name="RollsLabel" xml:space="preserve">
+    <value>Rolls</value>
+  </data>
+  <data name="SeedLabel" xml:space="preserve">
+    <value>Seed</value>
+  </data>
+  <data name="SeedHelper" xml:space="preserve">
+    <value>The same seed produces the same run.</value>
+  </data>
+  <data name="Run" xml:space="preserve">
+    <value>Roll</value>
+  </data>
+  <data name="RunNewSeed" xml:space="preserve">
+    <value>New seed</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No result yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>The percentage on an entry does not yet tell you how long a player waits for the rare sword. The run does.</value>
+  </data>
+  <data name="NoEntriesTitle" xml:space="preserve">
+    <value>This table has no entries</value>
+  </data>
+  <data name="NoEntriesHint" xml:space="preserve">
+    <value>Without entries nothing drops on any roll — there is nothing to evaluate.</value>
+  </data>
+  <data name="StatRolls" xml:space="preserve">
+    <value>Rolls</value>
+  </data>
+  <data name="StatMode" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="ModeIndependent" xml:space="preserve">
+    <value>Independent</value>
+  </data>
+  <data name="ModeSinglePick" xml:space="preserve">
+    <value>One hit</value>
+  </data>
+  <data name="StatEmpty" xml:space="preserve">
+    <value>Empty rolls</value>
+  </data>
+  <data name="StatAverageItems" xml:space="preserve">
+    <value>Items per roll</value>
+  </data>
+  <data name="ChartHeading" xml:space="preserve">
+    <value>Distribution</value>
+  </data>
+  <data name="ChartHint" xml:space="preserve">
+    <value>One bar per entry, in the order of the table below. They all share one scale — otherwise they would compare nothing.</value>
+  </data>
+  <data name="TableHeading" xml:space="preserve">
+    <value>Result per entry</value>
+  </data>
+  <data name="ColumnItem" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="ColumnChance" xml:space="preserve">
+    <value>Configured</value>
+  </data>
+  <data name="ColumnDropRate" xml:space="preserve">
+    <value>Dropped</value>
+  </data>
+  <data name="ColumnDrops" xml:space="preserve">
+    <value>Hits</value>
+  </data>
+  <data name="ColumnAverageQuantity" xml:space="preserve">
+    <value>Quantity per hit</value>
+  </data>
+  <data name="ColumnExpected" xml:space="preserve">
+    <value>Expected per roll</value>
+  </data>
+  <data name="ColumnMedianWait" xml:space="preserve">
+    <value>Rolls until a hit</value>
+  </data>
+  <data name="NeverDropped" xml:space="preserve">
+    <value>never</value>
+  </data>
+  <data name="DeletedItem" xml:space="preserve">
+    <value>Deleted item</value>
+  </data>
+  <data name="TableHint" xml:space="preserve">
+    <value>“Configured” is the probability entered, “dropped” is what the run made of it — with a single-hit mode the two drift apart as soon as the sum exceeds 100 %. “Rolls until a hit” is the median of the gaps, not their average.</value>
+  </data>
+</root>

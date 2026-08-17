@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>{0} – GameDevManager</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>There is no story section with this GUID. Perhaps it was deleted.</value>
+  </data>
+  <data name="BackToTimeline" xml:space="preserve">
+    <value>Back to the timeline</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="MasterDataSection" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="SummaryLabel" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="SummaryHelper" xml:space="preserve">
+    <value>Appears in the timeline and in the search.</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Section type</value>
+  </data>
+  <data name="TypeHelper" xml:space="preserve">
+    <value>The type adds its own fields, act or chapter for example.</value>
+  </data>
+  <data name="BodySection" xml:space="preserve">
+    <value>Story text</value>
+  </data>
+  <data name="BodyPreview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="BodyEdit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="BodyHelper" xml:space="preserve">
+    <value>Markdown: # heading, **bold**, *italic*, `code`, - list. @@Name mentions an entity — on saving it becomes a link.</value>
+  </data>
+  <data name="BodyLabel" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="BodyPlaceholder" xml:space="preserve">
+    <value>The story is written here …</value>
+  </data>
+  <data name="ParticipantsSection" xml:space="preserve">
+    <value>Participants</value>
+  </data>
+  <data name="AddParticipant" xml:space="preserve">
+    <value>Participant</value>
+  </data>
+  <data name="NoParticipants" xml:space="preserve">
+    <value>Nobody involved yet. NPCs, factions and map places are linked by reference and then show up in their reference view.</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="EntityLabel" xml:space="preserve">
+    <value>Entity</value>
+  </data>
+  <data name="RemoveParticipant" xml:space="preserve">
+    <value>Remove participant</value>
+  </data>
+  <data name="IndividualHint" xml:space="preserve">
+    <value>For details only this one section needs.</value>
+  </data>
+  <data name="ReferenceSection" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="GuidLabel" xml:space="preserve">
+    <value>GUID</value>
+  </data>
+  <data name="TimelinePosition" xml:space="preserve">
+    <value>Position in the timeline</value>
+  </data>
+  <data name="TimelineReorderHint" xml:space="preserve">
+    <value>Reordering happens in the timeline itself.</value>
+  </data>
+  <data name="CreatedLabel" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="UpdatedLabel" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="HeadingDefault" xml:space="preserve">
+    <value>Story section</value>
+  </data>
+  <data name="HeadingNew" xml:space="preserve">
+    <value>New section</value>
+  </data>
+  <data name="HeadingUnnamed" xml:space="preserve">
+    <value>Section without a name</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete story section</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with its text, participants, field values, individual fields and sprites.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Story section deleted.</value>
+  </data>
+  <data name="MoodLabel" xml:space="preserve">
+    <value>Mood</value>
+  </data>
+  <data name="MoodPlaceholder" xml:space="preserve">
+    <value>oppressive, cheerful, …</value>
+  </data>
+  <data name="GameDateLabel" xml:space="preserve">
+    <value>Date (game world)</value>
+  </data>
+  <data name="GameDatePlaceholder" xml:space="preserve">
+    <value>3rd day of the ash week</value>
+  </data>
+  <data name="DurationLabel" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="DurationPlaceholder" xml:space="preserve">
+    <value>one night</value>
+  </data>
+  <data name="LocationSection" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="LocationLabel" xml:space="preserve">
+    <value>Place</value>
+  </data>
+  <data name="LocationPlaceholder" xml:space="preserve">
+    <value>Harbour quarter of Aldenhus</value>
+  </data>
+  <data name="TargetMapLabel" xml:space="preserve">
+    <value>Map</value>
+  </data>
+  <data name="NoMapsHint" xml:space="preserve">
+    <value>No maps in the project yet — the setting stays free text for now.</value>
+  </data>
+  <data name="TargetMarkerLabel" xml:space="preserve">
+    <value>Marker on the map</value>
+  </data>
+  <data name="NoMarkersHint" xml:space="preserve">
+    <value>This map has no markers yet.</value>
+  </data>
+  <data name="OpenMap" xml:space="preserve">
+    <value>Open the map</value>
+  </data>
+  <data name="MarkerFallback" xml:space="preserve">
+    <value>Marker at {0} / {1}</value>
+  </data>
+  <data name="LinksSection" xml:space="preserve">
+    <value>Linked scenes</value>
+  </data>
+  <data name="AddLink" xml:space="preserve">
+    <value>Link a scene</value>
+  </data>
+  <data name="NoOtherEntries" xml:space="preserve">
+    <value>There are no other sections yet this scene could be linked with.</value>
+  </data>
+  <data name="NoLinks" xml:space="preserve">
+    <value>No links yet — “plays in parallel with” or “flashback to”, for example.</value>
+  </data>
+  <data name="LinkTargetLabel" xml:space="preserve">
+    <value>Section</value>
+  </data>
+  <data name="LinkLabelLabel" xml:space="preserve">
+    <value>Meaning</value>
+  </data>
+  <data name="LinkLabelPlaceholder" xml:space="preserve">
+    <value>flashback, plays in parallel, …</value>
+  </data>
+  <data name="OpenLinkedEntry" xml:space="preserve">
+    <value>Open the linked section</value>
+  </data>
+  <data name="RemoveLink" xml:space="preserve">
+    <value>Remove the link</value>
+  </data>
+</root>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>To-do boards – GameDevManager</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} board(s) in this project</value>
+  </data>
+  <data name="NewBoard" xml:space="preserve">
+    <value>New board</value>
+  </data>
+  <data name="NewBoardName" xml:space="preserve">
+    <value>Board {0}</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No boards yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>A board organizes the work on the project in columns and cards — “programming”, “art” or a release plan, for example. Create as many as you need.</value>
+  </data>
+  <data name="FirstBoard" xml:space="preserve">
+    <value>Create the first board</value>
+  </data>
+  <data name="BoardStats" xml:space="preserve">
+    <value>{0} column(s), {1} card(s)</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete board</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete the board “{0}”</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete board?</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>Delete the board “{0}” together with all columns and cards?</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Board “{0}” deleted.</value>
+  </data>
+</root>
