@@ -24,7 +24,6 @@
       "Skill(update-config:*)",
       "Skill(humanizer)",
       "Skill(humanizer:*)",
-
       "PowerShell(dotnet build:*)",
       "PowerShell(dotnet build-server shutdown)",
       "PowerShell(dotnet test:*)",
@@ -35,10 +34,8 @@
       "PowerShell(dotnet tool:*)",
       "PowerShell(dotnet ef migrations add:*)",
       "PowerShell(dotnet ef migrations list:*)",
-
       "PowerShell(node --version)",
       "PowerShell(node --check:*)",
-
       "PowerShell(git status:*)",
       "PowerShell(git diff:*)",
       "PowerShell(git log:*)",
@@ -46,7 +43,6 @@
       "PowerShell(git check-ignore:*)",
       "PowerShell(git add:*)",
       "PowerShell(git commit:*)",
-
       "PowerShell(Get-ChildItem:*)",
       "PowerShell(Get-Item:*)",
       "PowerShell(Get-Content:*)",
@@ -58,8 +54,10 @@
       "PowerShell(New-Item:*)",
       "PowerShell(Copy-Item:*)",
       "PowerShell(Set-Location:*)",
-
-      "Read(//c/Users/FabianStangl/.nuget/packages/mudblazor/**)"
+      "Read(//c/Users/FabianStangl/.nuget/packages/mudblazor/**)",
+      "PowerShell(dotnet test 2>&1)",
+      "PowerShell(git add CLAUDE.md knowledge/ToDo.md src/GameDevManager.Data/Services/ConditionStateService.cs src/GameDevManager.Data/DatabaseServiceExtensions.cs src/GameDevManager.Data/DataMessages.resx src/GameDevManager.Data/DataMessages.en.resx src/GameDevManager.Web/Components/Content/GameStateAssumptionPanel.razor src/GameDevManager.Web/Components/Content/GameStateAssumptionPanel.resx src/GameDevManager.Web/Components/Pages/Dialogues/DialoguePlay.razor src/GameDevManager.Web/Components/Pages/TechTree tests/GameDevManager.Tests/ConditionStateTests.cs)",
+      "PowerShell(git commit -m \"Zustands-Sicht fuer Bedingungen erg�nzt\")"
     ],
     "deny": [
       "Bash(rm:*)",
