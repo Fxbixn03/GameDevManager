@@ -1,5 +1,6 @@
 @page "/projekte"
 @inject ProjectService Projects
+@inject SampleProjectService Samples
 @inject ProjectContext Project
 @inject NavigationManager Navigation
 @inject IDialogService Dialogs
@@ -13,13 +14,29 @@
         <MudText Typo="Typo.h4" GutterBottom="true">@L["Heading"]</MudText>
         <MudText Typo="Typo.body1" Color="Color.Secondary">@L["Subtitle"]</MudText>
     </div>
-    <MudButton Variant="Variant.Filled"
-               Color="Color.Primary"
-               StartIcon="@Icons.Material.Filled.Add"
-               OnClick="AddAsync">
-        @L["AddButton"]
-    </MudButton>
+    <MudStack Row="true" Spacing="2">
+        <MudTooltip Text="@L["SampleTooltip"]">
+            <MudButton Variant="Variant.Outlined"
+                       StartIcon="@Icons.Material.Filled.AutoAwesome"
+                       Disabled="@_creatingSample"
+                       OnClick="CreateSampleAsync">
+                @L["SampleButton"]
+            </MudButton>
+        </MudTooltip>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddAsync">
+            @L["AddButton"]
+        </MudButton>
+    </MudStack>
 </MudStack>
+
+@* Das Anlegen läuft durch alle Modul-Dienste — kurz, aber nicht sofort. *@
+@if (_creatingSample)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-3" />
+}
 
 @* Beim Duplizieren bleibt die Liste stehen — das Kopieren läuft über Export und Import
    und kann bei einem großen Projekt dauern. *@
@@ -95,6 +112,7 @@ else
     private List<GameProject>? _projects;
     private Guid _currentId;
     private bool _duplicating;
+    private bool _creatingSample;
 
     protected override Task OnInitializedAsync() => LoadAsync();
 
@@ -106,6 +124,29 @@ else
 
     private Task AddAsync() =>
         EditWithDialogAsync(new GameProject { Name = string.Empty }, isNew: true);
+
+    /// <summary>
+    /// Legt das Beispielprojekt an und wechselt hinein — wer es anlegt, will es sehen.
+    /// Der Name weicht von selbst aus, wenn es schon eines gibt.
+    /// </summary>
+    private async Task CreateSampleAsync()
+    {
+        _creatingSample = true;
+
+        try
+        {
+            var sample = await Samples.CreateAsync();
+            Snackbar.Add(L["SampleCreatedMessage", sample.Name], Severity.Success);
+
+            await Project.SetCurrentAsync(sample.Id);
+            Navigation.NavigateTo("/dashboard", forceLoad: true);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            _creatingSample = false;
+        }
+    }
 
     // Kopie statt Original in den Dialog — Abbrechen darf die Liste nicht verändert zurücklassen.
     private Task EditAsync(GameProject project) =>

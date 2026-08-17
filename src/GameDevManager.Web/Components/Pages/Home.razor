@@ -655,6 +655,11 @@ else
             steps.Add(new StarterStep(
                 "/export", Icons.Material.Filled.Download, L["StarterImportTitle"], L["StarterImportHint"]));
 
+            // Der vierte Weg: nicht selbst anfangen, sondern am gefüllten Beispiel sehen,
+            // wie Arten, Felder, Bedingungen und Referenzen zusammenspielen.
+            steps.Add(new StarterStep(
+                "/projekte", Icons.Material.Filled.AutoAwesome, L["StarterSampleTitle"], L["StarterSampleHint"]));
+
             return steps;
         }
     }

@@ -851,4 +851,76 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="NpcRelationTypeInUse" xml:space="preserve">
     <value>Diese Beziehungsart wird noch von {0} Beziehung(en) verwendet und kann nicht gelöscht werden.</value>
   </data>
+  <data name="SampleProjectName" xml:space="preserve">
+    <value>Beispielprojekt</value>
+  </data>
+  <data name="SampleProjectDescription" xml:space="preserve">
+    <value>Ein kleines Fantasy-Set zum Kennenlernen: Arten mit Feldvererbung, ein Rezeptbaum, ein Händler mit bedingtem Angebot, ein Dialog mit Verzweigung und eine Karte mit Gebiet.</value>
+  </data>
+  <data name="SampleCurrencyGold" xml:space="preserve">
+    <value>Gold</value>
+  </data>
+  <data name="SampleTypeWeapon" xml:space="preserve">
+    <value>Waffe</value>
+  </data>
+  <data name="SampleTypeMelee" xml:space="preserve">
+    <value>Nahkampf</value>
+  </data>
+  <data name="SampleFieldDamage" xml:space="preserve">
+    <value>Schaden</value>
+  </data>
+  <data name="SampleFieldValue" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="SampleFieldRange" xml:space="preserve">
+    <value>Reichweite</value>
+  </data>
+  <data name="SampleItemOre" xml:space="preserve">
+    <value>Eisenerz</value>
+  </data>
+  <data name="SampleItemWood" xml:space="preserve">
+    <value>Holz</value>
+  </data>
+  <data name="SampleItemIngot" xml:space="preserve">
+    <value>Eisenbarren</value>
+  </data>
+  <data name="SampleItemHilt" xml:space="preserve">
+    <value>Schwertgriff</value>
+  </data>
+  <data name="SampleItemSword" xml:space="preserve">
+    <value>Eisenschwert</value>
+  </data>
+  <data name="SampleNpcSmith" xml:space="preserve">
+    <value>Alrik der Schmied</value>
+  </data>
+  <data name="SampleNpcWolf" xml:space="preserve">
+    <value>Wolf</value>
+  </data>
+  <data name="SampleDialogueName" xml:space="preserve">
+    <value>Begrüßung beim Schmied</value>
+  </data>
+  <data name="SampleDialogueLineWelcome" xml:space="preserve">
+    <value>Willkommen in meiner Schmiede! Was kann ich für dich tun?</value>
+  </data>
+  <data name="SampleDialogueChoiceWares" xml:space="preserve">
+    <value>Zeig mir deine Waren.</value>
+  </data>
+  <data name="SampleDialogueLineWares" xml:space="preserve">
+    <value>Nur das Beste aus Eisental-Eisen — sieh dich um.</value>
+  </data>
+  <data name="SampleDialogueChoicePassing" xml:space="preserve">
+    <value>Ich bin nur auf der Durchreise.</value>
+  </data>
+  <data name="SampleDialogueLineFarewell" xml:space="preserve">
+    <value>Dann gute Reise — und pass auf die Wölfe auf.</value>
+  </data>
+  <data name="SampleMapName" xml:space="preserve">
+    <value>Eisental</value>
+  </data>
+  <data name="SampleMarkerSmithy" xml:space="preserve">
+    <value>Schmiede</value>
+  </data>
+  <data name="SampleMarkerDistrict" xml:space="preserve">
+    <value>Wolfsrevier</value>
+  </data>
 </root>

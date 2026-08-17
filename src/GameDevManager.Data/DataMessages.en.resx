@@ -897,4 +897,76 @@ Unpack the ZIP into the root directory of your Godot project: the content lands 
   <data name="NpcRelationTypeInUse" xml:space="preserve">
     <value>This relation type is still used by {0} relation(s) and cannot be deleted.</value>
   </data>
+  <data name="SampleProjectName" xml:space="preserve">
+    <value>Sample project</value>
+  </data>
+  <data name="SampleProjectDescription" xml:space="preserve">
+    <value>A small fantasy set to explore the tool: types with field inheritance, a crafting chain, a trader with a conditional offer, a branching dialogue, and a map with an area.</value>
+  </data>
+  <data name="SampleCurrencyGold" xml:space="preserve">
+    <value>Gold</value>
+  </data>
+  <data name="SampleTypeWeapon" xml:space="preserve">
+    <value>Weapon</value>
+  </data>
+  <data name="SampleTypeMelee" xml:space="preserve">
+    <value>Melee</value>
+  </data>
+  <data name="SampleFieldDamage" xml:space="preserve">
+    <value>Damage</value>
+  </data>
+  <data name="SampleFieldValue" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="SampleFieldRange" xml:space="preserve">
+    <value>Range</value>
+  </data>
+  <data name="SampleItemOre" xml:space="preserve">
+    <value>Iron ore</value>
+  </data>
+  <data name="SampleItemWood" xml:space="preserve">
+    <value>Wood</value>
+  </data>
+  <data name="SampleItemIngot" xml:space="preserve">
+    <value>Iron ingot</value>
+  </data>
+  <data name="SampleItemHilt" xml:space="preserve">
+    <value>Sword hilt</value>
+  </data>
+  <data name="SampleItemSword" xml:space="preserve">
+    <value>Iron sword</value>
+  </data>
+  <data name="SampleNpcSmith" xml:space="preserve">
+    <value>Alrik the Smith</value>
+  </data>
+  <data name="SampleNpcWolf" xml:space="preserve">
+    <value>Wolf</value>
+  </data>
+  <data name="SampleDialogueName" xml:space="preserve">
+    <value>Greeting at the smithy</value>
+  </data>
+  <data name="SampleDialogueLineWelcome" xml:space="preserve">
+    <value>Welcome to my smithy! What can I do for you?</value>
+  </data>
+  <data name="SampleDialogueChoiceWares" xml:space="preserve">
+    <value>Show me your wares.</value>
+  </data>
+  <data name="SampleDialogueLineWares" xml:space="preserve">
+    <value>Only the finest Iron Valley steel — have a look around.</value>
+  </data>
+  <data name="SampleDialogueChoicePassing" xml:space="preserve">
+    <value>I am just passing through.</value>
+  </data>
+  <data name="SampleDialogueLineFarewell" xml:space="preserve">
+    <value>Safe travels, then — and mind the wolves.</value>
+  </data>
+  <data name="SampleMapName" xml:space="preserve">
+    <value>Iron Valley</value>
+  </data>
+  <data name="SampleMarkerSmithy" xml:space="preserve">
+    <value>Smithy</value>
+  </data>
+  <data name="SampleMarkerDistrict" xml:space="preserve">
+    <value>Wolf territory</value>
+  </data>
 </root>

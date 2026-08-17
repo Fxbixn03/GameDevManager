@@ -548,7 +548,7 @@ und fehlende Schlüssel meldet, macht daraus eine abhakbare Aufgabe.
 
 *Aufwand: L (aber trivial) · Migration: nein · Format: unverändert*
 
-### F30 — Beispielprojekt zum Laden
+### F30 — Beispielprojekt zum Laden ✅ umgesetzt
 
 > **Als** neuer Nutzer **möchte ich** beim ersten Start ein gefülltes Beispielprojekt einspielen
 > können, **damit** ich sehe, wie Arten, Felder, Bedingungen und Referenzen zusammenspielen, statt
@@ -561,6 +561,16 @@ Stufen, ein Dialog mit Verzweigung, eine Karte mit Gebieten. Damit ist zugleich 
 Testbestand für die Entwicklung da.
 
 *Aufwand: M · Migration: nein · Format: unverändert*
+
+**Umgesetzt** — als `SampleProjectService` statt als mitgeliefertes ZIP: Ein ZIP im
+Anwendungsverzeichnis veraltete bei jeder `FormatVersion`-Erhöhung still; der Seeder geht durch
+die echten Modul-Dienste und ist damit zu jedem Stand gültig. Der Knopf steht auf `/projekte`
+(nicht in der Ersteinrichtung — die ist statisch gerendert und liegt vor der Anmeldung, der
+Seeder braucht aber einen angemeldeten Urheber mit Schreibrecht) und wechselt nach dem Anlegen
+direkt ins Beispiel; das leere Dashboard verlinkt als vierter Einstieg dorthin. Die Inhalte
+kommen aus `DataMessages` (deutsch und englisch), der Name weicht bei Wiederholung aus
+(„Beispielprojekt 2“), und `SampleProjectTests` stellt sicher, dass die Health Checks am
+Beispiel nichts zu beanstanden haben.
 
 ### F31 — Tastatur-Übersicht und mehr Shortcuts ✅ umgesetzt
 

@@ -90,4 +90,13 @@
   <data name="DeletedMessage" xml:space="preserve">
     <value>Projekt gelöscht.</value>
   </data>
+  <data name="SampleButton" xml:space="preserve">
+    <value>Beispielprojekt anlegen</value>
+  </data>
+  <data name="SampleTooltip" xml:space="preserve">
+    <value>Legt ein gefülltes Beispielprojekt an: Arten mit Feldvererbung, Rezeptbaum, Händler mit bedingtem Angebot, Dialog und Karte.</value>
+  </data>
+  <data name="SampleCreatedMessage" xml:space="preserve">
+    <value>Beispielprojekt „{0}“ ist angelegt.</value>
+  </data>
 </root>

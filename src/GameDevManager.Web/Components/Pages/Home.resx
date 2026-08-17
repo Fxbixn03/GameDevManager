@@ -172,6 +172,12 @@
   <data name="PinnedEmpty" xml:space="preserve">
     <value>Nichts angeheftet. Der Stern in einer Bearbeitungsmaske legt einen Eintrag hier ab — anders als „Weiterarbeiten“ bleibt er stehen.</value>
   </data>
+  <data name="StarterSampleTitle" xml:space="preserve">
+    <value>Beispielprojekt anlegen</value>
+  </data>
+  <data name="StarterSampleHint" xml:space="preserve">
+    <value>Ein gefülltes Fantasy-Set zeigt, wie Arten, Felder, Bedingungen und Referenzen zusammenspielen.</value>
+  </data>
   <data name="Band_tasks" xml:space="preserve">
     <value>Meine Aufgaben</value>
   </data>

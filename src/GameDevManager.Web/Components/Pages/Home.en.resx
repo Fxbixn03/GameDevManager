@@ -202,6 +202,12 @@
   <data name="PinnedEmpty" xml:space="preserve">
     <value>Nothing pinned. The star in an edit form puts an entry here — unlike “Continue working”, it stays.</value>
   </data>
+  <data name="StarterSampleTitle" xml:space="preserve">
+    <value>Create a sample project</value>
+  </data>
+  <data name="StarterSampleHint" xml:space="preserve">
+    <value>A filled fantasy set shows how types, fields, conditions and references work together.</value>
+  </data>
   <data name="Band_tasks" xml:space="preserve">
     <value>My tasks</value>
   </data>
