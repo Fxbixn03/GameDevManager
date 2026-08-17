@@ -129,6 +129,21 @@ public interface IModuleEntitySource
         GameDevManagerDbContext db, Guid projectId, ContentFilter filter, CancellationToken ct);
 
     /// <summary>
+    /// Legt eine Entität an oder ändert sie — der Weg, über den die <b>schreibende API</b>
+    /// geht. Geschrieben werden Stammdaten (Name, Beschreibung, Art, Stand, Vorbild) und
+    /// Feldwerte; Kind-Sammlungen bleiben der Oberfläche vorbehalten.
+    /// <para>
+    /// Der Weg führt bewusst durch <see cref="ContentFields.StageValuesAsync"/> und ein
+    /// gewöhnliches <c>SaveChanges</c>: Damit greifen Pflichtfeldprüfung, Wertegrenzen,
+    /// Variantenprüfung, Schreibkonflikt-Erkennung, Schreibschutz und Änderungsprotokoll
+    /// genauso wie in der Maske. Ein eigener Schreibpfad wäre genau der zweite Weg daran
+    /// vorbei, den die API bisher nicht haben sollte.
+    /// </para>
+    /// </summary>
+    Task<ContentWriteResult> SaveAsync(
+        GameDevManagerDbContext db, Guid projectId, ContentWrite write, CancellationToken ct);
+
+    /// <summary>
     /// Liest einen aufbewahrten Baum zurück und hängt ihn an den Kontext an — gespeichert wird
     /// vom Aufrufer. Die GUIDs bleiben die originalen, damit jeder Verweis wieder trägt.
     /// </summary>
@@ -427,6 +442,102 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
     /// <inheritdoc />
     public void Restore(GameDevManagerDbContext db, string payload) =>
         EntityDuplication.Restore<TEntity>(db, payload);
+
+    /// <inheritdoc />
+    public async Task<ContentWriteResult> SaveAsync(
+        GameDevManagerDbContext db, Guid projectId, ContentWrite write, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(write.Name))
+        {
+            throw new ContentValidationException(Messages["Api_NameRequired"]);
+        }
+
+        var stored = write.Id is { } id
+            ? await Set(db).FirstOrDefaultAsync(entity => entity.Id == id && entity.GameProjectId == projectId, ct)
+            : null;
+
+        var isNew = stored is null;
+
+        if (stored is null)
+        {
+            // Die GUID darf mitkommen: Wer Inhalte aus einem anderen System einspielt, hat
+            // dort schon eine — dieselbe Überlegung wie beim Import.
+            stored = Activator.CreateInstance<TEntity>();
+            stored.Id = write.Id ?? Guid.NewGuid();
+            stored.GameProjectId = projectId;
+            stored.CreatedAtUtc = DateTime.UtcNow;
+
+            Set(db).Add(stored);
+        }
+
+        // Der bisherige Stand, bevor irgendetwas daran geändert wird: Er ist es, gegen den
+        // die Schreibkonflikt-Erkennung prüft, wenn der Aufrufer kein If-Match mitgibt.
+        var previous = stored.UpdatedAtUtc;
+
+        stored.Name = write.Name.Trim();
+        stored.Description = string.IsNullOrWhiteSpace(write.Description) ? null : write.Description.Trim();
+        stored.ContentTypeId = write.ContentTypeId;
+        stored.BasedOnId = write.BasedOnId;
+        stored.Status = write.Status ?? stored.Status;
+
+        var types = await db.ContentTypes
+            .AsNoTracking()
+            .Include(type => type.Fields).ThenInclude(field => field.Options)
+            .Where(type => type.GameProjectId == projectId && type.ModuleKey == ModuleKey)
+            .ToListAsync(ct);
+
+        var context = new ContentEditContext<TEntity>
+        {
+            // Die Entität, die die Maske hätte: Der Zeitstempel darin ist der Stand, gegen den
+            // die Schreibkonflikt-Erkennung prüft — die API gibt ihn als If-Match mit.
+            Entity = CloneForContext(stored, write.ExpectedUpdatedAtUtc ?? previous),
+            IsNew = isNew,
+            AvailableTypes = types,
+            IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, stored.Id, ct),
+            Values = []
+        };
+
+        foreach (var field in context.ApplicableFields)
+        {
+            if (write.Values.TryGetValue(field.Id, out var value))
+            {
+                ContentFields.CopyValues(value, context.ValueFor(field));
+            }
+        }
+
+        ContentFields.ValidateRequired(context, Messages);
+        await ContentFields.StageValuesAsync(db, context, Messages, ct);
+
+        // Erst nach der Prüfung: Vorher gesetzt läse die Schreibkonflikt-Erkennung über den
+        // Änderungsverfolger den neuen Wert und verglich ihn mit sich selbst.
+        stored.UpdatedAtUtc = DateTime.UtcNow;
+
+        await db.SaveChangesAsync(ct);
+
+        return new ContentWriteResult(stored.Id, isNew, stored.UpdatedAtUtc);
+    }
+
+    /// <summary>
+    /// Eine flache Kopie für den Bearbeitungskontext — der bekommt den erwarteten Zeitstempel
+    /// mit, während der verfolgte Datensatz schon den neuen trägt. Ohne die Trennung meldete
+    /// die Schreibkonflikt-Erkennung einen Konflikt mit dem eigenen Schreibvorgang.
+    /// </summary>
+    private static TEntity CloneForContext(TEntity stored, DateTime expected)
+    {
+        var clone = Activator.CreateInstance<TEntity>();
+
+        clone.Id = stored.Id;
+        clone.GameProjectId = stored.GameProjectId;
+        clone.Name = stored.Name;
+        clone.Description = stored.Description;
+        clone.ContentTypeId = stored.ContentTypeId;
+        clone.BasedOnId = stored.BasedOnId;
+        clone.Status = stored.Status;
+        clone.CreatedAtUtc = stored.CreatedAtUtc;
+        clone.UpdatedAtUtc = expected;
+
+        return clone;
+    }
 
     /// <inheritdoc />
     public async Task<List<ContentRow>> QueryAsync(

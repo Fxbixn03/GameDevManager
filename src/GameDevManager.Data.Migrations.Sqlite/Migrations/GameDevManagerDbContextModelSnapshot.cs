@@ -74,6 +74,12 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("AppUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("CanWrite")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -105,6 +111,8 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("GameProjectId");
 
@@ -3373,12 +3381,19 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ApiKey", b =>
                 {
+                    b.HasOne("GameDevManager.Domain.Entities.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
                         .WithMany()
                         .HasForeignKey("GameProjectId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("GameProject");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.AppUser", b =>

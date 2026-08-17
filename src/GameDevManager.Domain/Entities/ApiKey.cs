@@ -45,6 +45,25 @@ public class ApiKey
     /// <summary>Gesperrt statt gelöscht — so bleibt sichtbar, dass es ihn gab.</summary>
     public bool IsDisabled { get; set; }
 
+    /// <summary>
+    /// Ob der Schlüssel auch schreiben darf. Die Vorgabe ist <c>false</c> — ein Schlüssel ist
+    /// zuerst ein Lesezugang, und das Schreibrecht muss man ausdrücklich vergeben.
+    /// </summary>
+    public bool CanWrite { get; set; }
+
+    /// <summary>
+    /// In wessen Namen der Schlüssel schreibt. Ohne Konto kein Schreibrecht: Das
+    /// Änderungsprotokoll braucht einen Urheber, und „irgendein Skript“ wäre als Auskunft
+    /// wertlos. Beim Löschen des Kontos fällt der Bezug (SetNull) — der Schlüssel liest dann
+    /// weiter und schreibt nicht mehr.
+    /// </summary>
+    public Guid? AppUserId { get; set; }
+
+    public AppUser? User { get; set; }
+
+    /// <summary>Er darf schreiben und weiß, in wessen Namen.</summary>
+    public bool CanWriteNow => CanWrite && AppUserId is not null && IsValidNow;
+
     /// <summary>Ob er jetzt gerade gilt.</summary>
     public bool IsValidNow => !IsDisabled && (ExpiresAtUtc is null || ExpiresAtUtc > DateTime.UtcNow);
 }

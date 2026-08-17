@@ -47,7 +47,8 @@ public class ApiKeyService(
     /// der Datenbank nur noch sein Hash — ein zweites Anzeigen gibt es nicht.
     /// </summary>
     public async Task<CreatedApiKey> CreateAsync(
-        string name, Guid? projectId, DateTime? expiresAtUtc, CancellationToken ct = default)
+        string name, Guid? projectId, DateTime? expiresAtUtc, CancellationToken ct = default,
+        bool canWrite = false, Guid? appUserId = null)
     {
         await guard.EnsureAdministratorAsync(ct);
 
@@ -69,7 +70,11 @@ public class ApiKeyService(
             Prefix = plain[..PrefixLength],
             KeyHash = PasswordHasher.Hash(plain),
             GameProjectId = projectId,
-            ExpiresAtUtc = expiresAtUtc
+            ExpiresAtUtc = expiresAtUtc,
+            // Ohne Konto kein Schreibrecht: Das Änderungsprotokoll braucht einen Urheber, und
+            // „irgendein Skript“ wäre als Auskunft wertlos.
+            CanWrite = canWrite && appUserId is not null,
+            AppUserId = appUserId
         };
 
         await using var db = await factory.CreateDbContextAsync(ct);

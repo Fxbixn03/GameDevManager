@@ -168,6 +168,15 @@
   <data name="TwoFactorCodeInvalid" xml:space="preserve">
     <value>Der Code stimmt nicht. Prüfen Sie die Uhrzeit Ihres Geräts oder verwenden Sie einen Wiederherstellungscode.</value>
   </data>
+  <data name="Api_NameRequired" xml:space="preserve">
+    <value>Der Eintrag braucht einen Namen.</value>
+  </data>
+  <data name="Api_WriteDenied" xml:space="preserve">
+    <value>Dieser Schlüssel darf nur lesen.</value>
+  </data>
+  <data name="Api_ModuleUnknown" xml:space="preserve">
+    <value>Das Modul „{0}“ ist nicht bekannt.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>

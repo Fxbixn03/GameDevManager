@@ -152,6 +152,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<EngineExportWriter>();
         services.AddScoped<ApiKeyService>();
         services.AddScoped<ContentApiService>();
+        services.AddScoped<ContentApiWriteService>();
         services.AddScoped<EntityDuplicationService>();
         services.AddScoped<StartScreenService>();
         services.AddScoped<ExportService>();

@@ -45,6 +45,40 @@ public sealed record ContentRow(
 public sealed record RecentEntry(SearchHit Hit, DateTime UpdatedAtUtc);
 
 /// <summary>
+/// Was die schreibende API an einer Entität setzt: Stammdaten und Feldwerte. Kind-Sammlungen
+/// (Rezept-Zutaten, Dialogzeilen, Händler-Posten) bleiben bewusst draußen — sie tragen eigene
+/// Bedingungen und Aufräumpfade, und die gehören in die Maske, nicht in einen HTTP-Aufruf.
+/// </summary>
+public sealed class ContentWrite
+{
+    /// <summary>Die GUID der Entität. <c>null</c> legt eine neue an.</summary>
+    public Guid? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Description { get; set; }
+
+    public Guid? ContentTypeId { get; set; }
+
+    public Guid? BasedOnId { get; set; }
+
+    public ContentStatus? Status { get; set; }
+
+    /// <summary>
+    /// Der Stand, von dem der Aufrufer ausgeht — der <c>If-Match</c>-Kopfeintrag. Weicht er
+    /// vom gespeicherten ab, meldet die Schreibkonflikt-Erkennung. <c>null</c> heißt „ohne
+    /// Prüfung“: Wer keine Angabe macht, hat auch keinen Stand gelesen.
+    /// </summary>
+    public DateTime? ExpectedUpdatedAtUtc { get; set; }
+
+    /// <summary>Die zu setzenden Feldwerte, nach Felddefinition.</summary>
+    public Dictionary<Guid, FieldValue> Values { get; set; } = [];
+}
+
+/// <summary>Was beim Schreiben herauskam.</summary>
+public sealed record ContentWriteResult(Guid Id, bool Created, DateTime UpdatedAtUtc);
+
+/// <summary>
 /// Eine für den Papierkorb erfasste Entität: ihr Name zum Zeitpunkt des Löschens und der
 /// vollständige Baum als JSON.
 /// </summary>

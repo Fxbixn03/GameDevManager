@@ -229,6 +229,15 @@
   <data name="TwoFactorCodeInvalid" xml:space="preserve">
     <value>The code is not correct. Check your device clock or use a recovery code.</value>
   </data>
+  <data name="Api_NameRequired" xml:space="preserve">
+    <value>The entry needs a name.</value>
+  </data>
+  <data name="Api_WriteDenied" xml:space="preserve">
+    <value>This key is read-only.</value>
+  </data>
+  <data name="Api_ModuleUnknown" xml:space="preserve">
+    <value>The module “{0}” is unknown.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

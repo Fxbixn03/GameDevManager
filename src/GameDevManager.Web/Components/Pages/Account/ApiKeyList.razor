@@ -2,6 +2,7 @@
 @inject ApiKeyService Keys
 @inject ProjectService Projects
 @inject IUserPermissionsProvider PermissionsProvider
+@inject AuthenticationStateProvider Authentication
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<ApiKeyList> L
@@ -82,6 +83,15 @@ else
                 </MudItem>
             </MudGrid>
 
+            @* Ein Schlüssel ist zuerst ein Lesezugang. Das Schreibrecht wird ausdrücklich
+               vergeben — und geschrieben wird im Namen des angemeldeten Verwalters, weil das
+               Änderungsprotokoll einen Urheber braucht. *@
+            <MudSwitch @bind-Value="_canWrite"
+                       Color="Color.Primary"
+                       Label="@L["CanWriteLabel"]"
+                       Class="mt-2" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">@L["CanWriteHint"]</MudText>
+
             <MudStack Row="true" Spacing="2" Class="mt-3">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAsync">@L["Create"]</MudButton>
                 <MudButton OnClick="@(() => _creating = false)">@L["Cancel"]</MudButton>
@@ -160,6 +170,7 @@ else
     private string _name = string.Empty;
     private Guid? _projectId;
     private DateTime? _expires;
+    private bool _canWrite;
     private CreatedApiKey? _created;
 
     protected override async Task OnInitializedAsync()
@@ -183,7 +194,11 @@ else
         {
             // Ein Ablaufdatum meint den ganzen Tag — sonst liefe der Schlüssel um Mitternacht
             // der Vornacht ab, was niemand meint, der ein Datum wählt.
-            _created = await Keys.CreateAsync(_name, _projectId, _expires?.Date.AddDays(1).ToUniversalTime());
+            var state = await Authentication.GetAuthenticationStateAsync();
+
+            _created = await Keys.CreateAsync(
+                _name, _projectId, _expires?.Date.AddDays(1).ToUniversalTime(),
+                canWrite: _canWrite, appUserId: state.User.UserId());
 
             Snackbar.Add(L["CreatedMessage"], Severity.Success);
 

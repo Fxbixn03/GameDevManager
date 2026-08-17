@@ -79,6 +79,12 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("AppUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("CanWrite")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -110,6 +116,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("nvarchar(16)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("GameProjectId");
 
@@ -3378,12 +3386,19 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ApiKey", b =>
                 {
+                    b.HasOne("GameDevManager.Domain.Entities.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
                         .WithMany()
                         .HasForeignKey("GameProjectId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("GameProject");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.AppUser", b =>

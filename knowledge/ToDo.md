@@ -789,7 +789,7 @@ gelöscht; vor dem Löschen wird erneut geprüft.
 
 ## G. Import, Export und Integration
 
-### F36 — Schreibende API
+### F36 — Schreibende API ✅ umgesetzt
 
 > **Als** Entwickler eines eigenen Werkzeugs **möchte ich** Inhalte über die API anlegen und ändern,
 > **damit** ich ein Skript schreiben kann, das 200 Items aus einer Tabelle einspielt, ohne den
@@ -805,6 +805,19 @@ braucht ein eigenes Schreibrecht und einen Benutzerbezug für das Protokoll, und
 wiederholter Aufruf nach einem Verbindungsabbruch nichts doppelt anlegt.
 
 *Aufwand: L · Migration: ja (Rechte am Schlüssel) · Format: unverändert*
+
+**Umgesetzt** genau nach dieser Anforderungsliste: `IModuleEntitySource.SaveAsync` schreibt über
+`ContentFields.StageValuesAsync` und ein gewöhnliches `SaveChanges` — damit greifen
+Pflichtfeldprüfung, Wertegrenzen, Variantenprüfung, Schreibkonflikt-Erkennung,
+`WriteGuardInterceptor` und `ChangeLogInterceptor` von selbst; `ApiKey.CanWrite` plus
+`ApiKey.AppUserId` (Migration `ApiKeyWriteAccess`), `If-Match` mit dem Zeitstempel als ETag,
+Idempotenz über den Kopfeintrag `Idempotency-Key`. Drei Abgrenzungen: **Ohne Konto kein
+Schreibrecht** — das Protokoll braucht einen Urheber, und „irgendein Skript“ wäre als Auskunft
+wertlos. **Geschrieben werden Stammdaten und Feldwerte**, nicht die Kind-Sammlungen: Die tragen
+eigene Bedingungen und Aufräumpfade und gehören in die Maske, nicht in einen HTTP-Aufruf. Und
+**gelöscht wird über die API gar nicht** — Löschen räumt Assets, Kind-Sammlungen, Bedingungen
+und den Papierkorb ab, je Modul anders; ein generischer Löschpfad wäre die Stelle, an der ein
+Modul etwas liegen ließe.
 
 ### F37 — Webhooks ✅ umgesetzt
 

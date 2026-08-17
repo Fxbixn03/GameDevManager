@@ -170,4 +170,10 @@ GET /api/v1/projects/{projektId}/modules/items/{eintragId}
 Header: X-API-Key: gdm_…
    oder: Authorization: Bearer gdm_…</value>
   </data>
+  <data name="CanWriteLabel" xml:space="preserve">
+    <value>Darf auch schreiben</value>
+  </data>
+  <data name="CanWriteHint" xml:space="preserve">
+    <value>Geschrieben wird in Ihrem Namen — so steht im Änderungsprotokoll, wer gehandelt hat. Gelöscht wird über die API nicht.</value>
+  </data>
 </root>

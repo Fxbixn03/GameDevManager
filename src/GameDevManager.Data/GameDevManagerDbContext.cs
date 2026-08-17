@@ -878,6 +878,15 @@ public class GameDevManagerDbContext(
                 .HasForeignKey(k => k.GameProjectId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Ohne Konto kein Schreibrecht: Das Änderungsprotokoll braucht einen Urheber.
+            // Fällt das Konto, liest der Schlüssel weiter und schreibt nicht mehr.
+            entity.HasOne(k => k.User)
+                .WithMany()
+                .HasForeignKey(k => k.AppUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.Ignore(k => k.CanWriteNow);
+
             entity.HasIndex(k => k.Prefix);
         });
 

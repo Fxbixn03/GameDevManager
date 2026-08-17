@@ -1,3 +1,4 @@
+using System.Globalization;
 using GameDevManager.Data;
 using GameDevManager.Data.Services;
 using GameDevManager.Domain.Entities;
@@ -316,6 +317,54 @@ api.MapGet("/projects/{projectId:guid}/modules/{moduleKey}/{entityId:guid}", asy
     return payload is null
         ? Results.NotFound()
         : Results.Json(payload, ContentApiService.JsonOptions);
+});
+
+// Der schreibende Teil (F36). Bewusst kein Löschen: Das räumt Assets, Kind-Sammlungen und
+// Bedingungen ab — je Modul anders, und ein generischer Löschpfad wäre die Stelle, an der ein
+// Modul etwas liegen ließe. Wer löschen will, tut es in der Oberfläche.
+api.MapPost("/projects/{projectId:guid}/modules/{moduleKey}", async (
+    Guid projectId, string moduleKey, ContentWrite write,
+    ContentApiWriteService writer, IUserPermissionsProvider permissions,
+    HttpContext http, CancellationToken ct) =>
+{
+    var key = (ApiKey)http.Items["ApiKey"]!;
+
+    // Ein Schlüssel ist zuerst ein Lesezugang; das Schreibrecht wird ausdrücklich vergeben —
+    // und ohne Konto gibt es keins, weil das Änderungsprotokoll einen Urheber braucht.
+    if (!key.CanWriteNow)
+    {
+        return Results.Forbid();
+    }
+
+    // Der If-Match-Kopfeintrag trägt den Stand, von dem der Aufrufer ausgeht; die
+    // Schreibkonflikt-Erkennung in StageValuesAsync prüft ihn wie bei jeder Maske.
+    if (http.Request.Headers.IfMatch.FirstOrDefault()?.Trim('"') is { } tag
+        && DateTime.TryParse(tag, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var expected))
+    {
+        write.ExpectedUpdatedAtUtc = expected;
+    }
+
+    try
+    {
+        var result = await writer.WriteAsync(
+            projectId, moduleKey, write,
+            http.Request.Headers["Idempotency-Key"].FirstOrDefault(), ct);
+
+        http.Response.Headers.ETag = $"\"{result.UpdatedAtUtc:o}\"";
+
+        return result.Created
+            ? Results.Created($"/api/v1/projects/{projectId}/modules/{moduleKey}/{result.Id}", result)
+            : Results.Json(result, ContentApiService.JsonOptions);
+    }
+    catch (ContentConcurrencyException ex)
+    {
+        // 409 und nicht 400: Der Aufruf war richtig, nur der Stand ist überholt.
+        return Results.Conflict(new { error = ex.Message });
+    }
+    catch (ContentValidationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
 });
 
 // Der CSV-Export eines einzelnen Moduls — der Weg Tabelle ↔ Tool fürs Balancing. Wie beim

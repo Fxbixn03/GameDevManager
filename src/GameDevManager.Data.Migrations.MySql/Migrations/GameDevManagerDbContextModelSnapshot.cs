@@ -76,6 +76,12 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("AppUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("CanWrite")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
 
@@ -107,6 +113,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("varchar(16)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("GameProjectId");
 
@@ -3375,12 +3383,19 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.ApiKey", b =>
                 {
+                    b.HasOne("GameDevManager.Domain.Entities.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
                         .WithMany()
                         .HasForeignKey("GameProjectId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("GameProject");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GameDevManager.Domain.Entities.AppUser", b =>
