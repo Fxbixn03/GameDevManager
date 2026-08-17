@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Role name</value>
+  </data>
+  <data name="CanWriteLabel" xml:space="preserve">
+    <value>May change content</value>
+  </data>
+  <data name="CanExportLabel" xml:space="preserve">
+    <value>May export</value>
+  </data>
+  <data name="CanImportLabel" xml:space="preserve">
+    <value>May import</value>
+  </data>
+  <data name="RestrictModulesLabel" xml:space="preserve">
+    <value>Only certain modules</value>
+  </data>
+  <data name="ModulesLabel" xml:space="preserve">
+    <value>Modules</value>
+  </data>
+  <data name="TakesEffectHint" xml:space="preserve">
+    <value>Changed roles apply, like all permissions, from the next sign-in.</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>Role “{0}” saved.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+</root>

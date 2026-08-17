@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description (optional)</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Belongs to module</value>
+  </data>
+  <data name="ModuleHelper" xml:space="preserve">
+    <value>Without a module it stays a tool asset, e.g. a map marker.</value>
+  </data>
+  <data name="ToolAssetOption" xml:space="preserve">
+    <value>Tool asset (no entity)</value>
+  </data>
+  <data name="NoEntitiesHint" xml:space="preserve">
+    <value>This module has no entity yet that the asset could be assigned to.</value>
+  </data>
+  <data name="EntityLabel" xml:space="preserve">
+    <value>Entity</value>
+  </data>
+  <data name="TagsLabel" xml:space="preserve">
+    <value>Keywords</value>
+  </data>
+  <data name="TagsHelperEmpty" xml:space="preserve">
+    <value>No keywords yet — add one below.</value>
+  </data>
+  <data name="NewTagLabel" xml:space="preserve">
+    <value>New keyword</value>
+  </data>
+  <data name="AddTag" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Dimensions" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+</root>

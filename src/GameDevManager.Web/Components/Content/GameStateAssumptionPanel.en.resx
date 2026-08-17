@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Heading" xml:space="preserve">
+    <value>Assumed game state</value>
+  </data>
+  <data name="PlayerLevelLabel" xml:space="preserve">
+    <value>Player level</value>
+  </data>
+  <data name="ItemCountLabel" xml:space="preserve">
+    <value>In the bag: {0}</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>Wealth: {0}</value>
+  </data>
+  <data name="FlagLabel" xml:space="preserve">
+    <value>Flag “{0}”</value>
+  </data>
+  <data name="DefeatedLabel" xml:space="preserve">
+    <value>{0} defeated</value>
+  </data>
+  <data name="UnlockedLabel" xml:space="preserve">
+    <value>{0} unlocked</value>
+  </data>
+  <data name="QuestStateLabel" xml:space="preserve">
+    <value>State of “{0}”</value>
+  </data>
+  <data name="CustomHint" xml:space="preserve">
+    <value>The tool cannot evaluate free-text conditions — they count as met here.</value>
+  </data>
+  <data name="NoKnobsHint" xml:space="preserve">
+    <value>The conditions contain nothing adjustable — only the level counts.</value>
+  </data>
+  <data name="UnknownTarget" xml:space="preserve">
+    <value>Unknown target</value>
+  </data>
+  <data name="Negated" xml:space="preserve">
+    <value>explicitly not</value>
+  </data>
+</root>

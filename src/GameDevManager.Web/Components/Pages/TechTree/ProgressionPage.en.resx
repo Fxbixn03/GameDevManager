@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -13,40 +13,39 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Fortschritt – GameDevManager</value>
+    <value>Progression – GameDevManager</value>
   </data>
   <data name="Heading" xml:space="preserve">
-    <value>Fortschritt nach Stufe</value>
+    <value>Progression by level</value>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>lädt …</value>
+    <value>loading …</value>
   </data>
   <data name="SubtitleCount" xml:space="preserve">
-    <value>{0} von {1} Inhalten hängen an einer Spielerstufe.</value>
+    <value>{0} of {1} entries depend on a player level.</value>
   </data>
   <data name="ToGraph" xml:space="preserve">
-    <value>Zum Graphen</value>
+    <value>To the graph</value>
   </data>
   <data name="EmptyTitle" xml:space="preserve">
-    <value>Nichts freizuschalten</value>
+    <value>Nothing to unlock</value>
   </data>
   <data name="EmptyHint" xml:space="preserve">
-    <value>Diese Ansicht liest dieselben Bedingungen wie der Freischaltungs-Graph. Ohne Bedingungen, die auf andere Entitäten zeigen, gibt es keinen Verlauf.</value>
+    <value>This view reads the same conditions as the unlock graph. Without conditions pointing at other entities there is no progression.</value>
   </data>
   <data name="LevelHeading" xml:space="preserve">
-    <value>Ab Stufe {0}</value>
+    <value>From level {0}</value>
   </data>
   <data name="AnytimeHeading" xml:space="preserve">
-    <value>Jederzeit</value>
+    <value>Any time</value>
   </data>
   <data name="Count" xml:space="preserve">
-    <value>{0} Inhalt(e)</value>
+    <value>{0} entry/entries</value>
   </data>
   <data name="InheritedHint" xml:space="preserve">
-    <value>Die Stufe steht an einer Voraussetzung, nicht an diesem Inhalt selbst.</value>
+    <value>The level sits on a prerequisite, not on this entry itself.</value>
   </data>
   <data name="ToState" xml:space="preserve">
-    <value>Zustands-Sicht</value>
+    <value>State view</value>
   </data>
 </root>
-

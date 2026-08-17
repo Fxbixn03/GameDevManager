@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Placeholder" xml:space="preserve">
+    <value>Type: module, action or name …</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Nothing found. The search is fuzzy — the letters only have to appear in order.</value>
+  </data>
+  <data name="GroupNavigation" xml:space="preserve">
+    <value>Go to</value>
+  </data>
+  <data name="GroupModules" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="GroupCreate" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="ActionDashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="ActionActivity" xml:space="preserve">
+    <value>Activity</value>
+  </data>
+  <data name="ActionProjects" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="ActionSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="ActionStatistics" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="ActionExport" xml:space="preserve">
+    <value>Import / export</value>
+  </data>
+  <data name="ActionOpen" xml:space="preserve">
+    <value>Open {0}</value>
+  </data>
+  <data name="ActionNew" xml:space="preserve">
+    <value>New: {0}</value>
+  </data>
+</root>

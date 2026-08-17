@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="RequiredLabel" xml:space="preserve">
+    <value>{0} *</value>
+  </data>
+  <data name="ExpressionLabel" xml:space="preserve">
+    <value>Formula over x</value>
+  </data>
+  <data name="ExpressionHelper" xml:space="preserve">
+    <value>x is the level. Available: + - * / % ^, parentheses, pi, e as well as {0}. Leave empty for a pure value table.</value>
+  </data>
+  <data name="ExpressionInvalid" xml:space="preserve">
+    <value>The formula does not work out: {0}</value>
+  </data>
+  <data name="UnitLabel" xml:space="preserve">
+    <value>Unit of the values</value>
+  </data>
+  <data name="FromLabel" xml:space="preserve">
+    <value>From x</value>
+  </data>
+  <data name="ToLabel" xml:space="preserve">
+    <value>To x</value>
+  </data>
+  <data name="StepLabel" xml:space="preserve">
+    <value>Step</value>
+  </data>
+  <data name="AddOverride" xml:space="preserve">
+    <value>Set a value by hand</value>
+  </data>
+  <data name="RemoveOverride" xml:space="preserve">
+    <value>Remove value</value>
+  </data>
+  <data name="OverrideHint" xml:space="preserve">
+    <value>Values set by hand replace the result of the formula at their position.</value>
+  </data>
+  <data name="PointX" xml:space="preserve">
+    <value>At x</value>
+  </data>
+  <data name="PointY" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="NoSample" xml:space="preserve">
+    <value>The curve does not yield any values yet.</value>
+  </data>
+  <data name="SampleSummary" xml:space="preserve">
+    <value>{0} levels, from {1} to {2}</value>
+  </data>
+  <data name="CompareButton" xml:space="preserve">
+    <value>Compare</value>
+  </data>
+  <data name="CompareLabel" xml:space="preserve">
+    <value>Curves to compare</value>
+  </data>
+  <data name="CompareOption" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="CompareSelected" xml:space="preserve">
+    <value>{0} for comparison</value>
+  </data>
+  <data name="CompareEmpty" xml:space="preserve">
+    <value>There is no other filled curve in the project to compare this one with.</value>
+  </data>
+</root>

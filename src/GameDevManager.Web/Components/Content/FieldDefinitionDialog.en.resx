@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TitleNew" xml:space="preserve">
+    <value>New field</value>
+  </data>
+  <data name="TitleEdit" xml:space="preserve">
+    <value>Edit field</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Help text (optional)</value>
+  </data>
+  <data name="DescriptionHelper" xml:space="preserve">
+    <value>Appears below the input field in the form.</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Data type</value>
+  </data>
+  <data name="TypeChangeWarning" xml:space="preserve">
+    <value>Changing the data type deletes the values recorded for this field so far — they live in a different column and cannot be reinterpreted.</value>
+  </data>
+  <data name="ReferenceModuleLabel" xml:space="preserve">
+    <value>Target module</value>
+  </data>
+  <data name="ReferenceModuleHelper" xml:space="preserve">
+    <value>Entities of which module may this field refer to?</value>
+  </data>
+  <data name="ModuleNotImplemented" xml:space="preserve">
+    <value>(not implemented yet)</value>
+  </data>
+  <data name="SectionOptions" xml:space="preserve">
+    <value>Choices</value>
+  </data>
+  <data name="OptionLabel" xml:space="preserve">
+    <value>Label</value>
+  </data>
+  <data name="RemoveOptionTooltip" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="RemoveOptionAria" xml:space="preserve">
+    <value>Remove choice</value>
+  </data>
+  <data name="AddOption" xml:space="preserve">
+    <value>Choice</value>
+  </data>
+  <data name="UnitLabel" xml:space="preserve">
+    <value>Unit (optional)</value>
+  </data>
+  <data name="UnitHelper" xml:space="preserve">
+    <value>Display only, e.g. “kg”, “s” or “%”.</value>
+  </data>
+  <data name="MultiValueLabel" xml:space="preserve">
+    <value>Allow several targets</value>
+  </data>
+  <data name="MultiValueHelper" xml:space="preserve">
+    <value>The field then takes a list of entities — the three effects of a sword, the four classes allowed for an armor.</value>
+  </data>
+  <data name="MinLabel" xml:space="preserve">
+    <value>Minimum</value>
+  </data>
+  <data name="MaxLabel" xml:space="preserve">
+    <value>Maximum</value>
+  </data>
+  <data name="RangeHelper" xml:space="preserve">
+    <value>Empty means “open”. When an entity is saved it is checked that the value lies in between.</value>
+  </data>
+  <data name="PatternLabel" xml:space="preserve">
+    <value>Pattern (regular expression)</value>
+  </data>
+  <data name="PatternHelper" xml:space="preserve">
+    <value>The whole value has to match, e.g. “[A-Z]{2}-[0-9]{3}”. For a keyword list the pattern applies per keyword.</value>
+  </data>
+  <data name="GroupLabel" xml:space="preserve">
+    <value>Section (optional)</value>
+  </data>
+  <data name="GroupHelper" xml:space="preserve">
+    <value>Groups fields in the form under a heading — “combat”, “economy”, “presentation”. Without a section the field sits at the top.</value>
+  </data>
+  <data name="TagListLabel" xml:space="preserve">
+    <value>As keywords</value>
+  </data>
+  <data name="TagListHelper" xml:space="preserve">
+    <value>Several values instead of one text, e.g. elements: confirm with comma or Enter.</value>
+  </data>
+  <data name="RequiredLabel" xml:space="preserve">
+    <value>Required field</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="NameRequired" xml:space="preserve">
+    <value>Please enter a name.</value>
+  </data>
+  <data name="ReferenceModuleRequired" xml:space="preserve">
+    <value>Please choose the target module of the reference.</value>
+  </data>
+  <data name="OptionsRequired" xml:space="preserve">
+    <value>A choice list needs at least one option.</value>
+  </data>
+  <data name="OptionLabelRequired" xml:space="preserve">
+    <value>Choices must not be empty.</value>
+  </data>
+</root>

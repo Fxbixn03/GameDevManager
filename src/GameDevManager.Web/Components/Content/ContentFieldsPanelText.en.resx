@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SectionTypeFields" xml:space="preserve">
+    <value>Fields of the type “{0}”</value>
+  </data>
+  <data name="EditTypeFieldsTooltip" xml:space="preserve">
+    <value>Edit the fields of this type</value>
+  </data>
+  <data name="TypeWithoutFields" xml:space="preserve">
+    <value>This type has no fields yet.</value>
+  </data>
+  <data name="GroupHeading" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="SectionIndividualFields" xml:space="preserve">
+    <value>Individual fields</value>
+  </data>
+  <data name="AddField" xml:space="preserve">
+    <value>Add field</value>
+  </data>
+  <data name="NewEntityHint" xml:space="preserve">
+    <value>Individual fields belong to exactly this entry — they can be created once it has been saved.</value>
+  </data>
+  <data name="DefaultIndividualHint" xml:space="preserve">
+    <value>For unique values that no other entry of this type has.</value>
+  </data>
+  <data name="EditFieldTooltip" xml:space="preserve">
+    <value>Edit field</value>
+  </data>
+  <data name="EditFieldAria" xml:space="preserve">
+    <value>Edit field {0}</value>
+  </data>
+  <data name="DeleteFieldTooltip" xml:space="preserve">
+    <value>Delete field</value>
+  </data>
+  <data name="DeleteFieldAria" xml:space="preserve">
+    <value>Delete field {0}</value>
+  </data>
+  <data name="NewFieldDialogTitle" xml:space="preserve">
+    <value>New field</value>
+  </data>
+  <data name="EditFieldDialogTitle" xml:space="preserve">
+    <value>Edit field</value>
+  </data>
+  <data name="FieldSavedMessage" xml:space="preserve">
+    <value>Field “{0}” saved.</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete field</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>The field “{0}” and its recorded value will be deleted.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="FieldDeletedMessage" xml:space="preserve">
+    <value>Field deleted.</value>
+  </data>
+</root>

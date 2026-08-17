@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Keyboard shortcuts</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Keys without a modifier only apply outside input fields — otherwise you could no longer type an “n”. Alt + letter jumps into a module: H dashboard, I items, N NPCs, Q quests, T todo, W whiteboard, K maps, D dialogues, S story, A assets.</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="KeyCtrl" xml:space="preserve">
+    <value>Ctrl</value>
+  </data>
+  <data name="KeyAlt" xml:space="preserve">
+    <value>Alt</value>
+  </data>
+  <data name="KeyLetter" xml:space="preserve">
+    <value>Letter</value>
+  </data>
+  <data name="Palette" xml:space="preserve">
+    <value>Open the command palette</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Jump into the global search</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save the open form</value>
+  </data>
+  <data name="New" xml:space="preserve">
+    <value>Create a new entry in a list</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Open the first or the focused entry</value>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>This overview</value>
+  </data>
+  <data name="Navigate" xml:space="preserve">
+    <value>Jump into a module</value>
+  </data>
+</root>

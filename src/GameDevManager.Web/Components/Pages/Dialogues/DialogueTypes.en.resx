@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Dialogue types – GameDevManager</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Dialogue types</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Form, participants and flow sit on the dialogue itself — everything else is defined by the fields of the type.</value>
+  </data>
+  <data name="ToDialogues" xml:space="preserve">
+    <value>To the dialogues</value>
+  </data>
+  <data name="NewType" xml:space="preserve">
+    <value>New type</value>
+  </data>
+  <data name="EntityNoun" xml:space="preserve">
+    <value>dialogue</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No dialogue types yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Types let you add what the dialogue itself does not know — mood, a voice-over key or whether it repeats.</value>
+  </data>
+  <data name="BreadcrumbTypes" xml:space="preserve">
+    <value>Types</value>
+  </data>
+</root>

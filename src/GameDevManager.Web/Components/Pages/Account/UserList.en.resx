@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Users — GameDevManager</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>loading …</value>
+  </data>
+  <data name="SubtitleCount" xml:space="preserve">
+    <value>{0} accounts of this installation</value>
+  </data>
+  <data name="NotAllowed" xml:space="preserve">
+    <value>Only administrators may manage users. Ask someone with that right.</value>
+  </data>
+  <data name="NewUser" xml:space="preserve">
+    <value>New user</value>
+  </data>
+  <data name="Administrator" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>blocked</value>
+  </data>
+  <data name="ReadOnly" xml:space="preserve">
+    <value>read only</value>
+  </data>
+  <data name="NoExport" xml:space="preserve">
+    <value>no export</value>
+  </data>
+  <data name="NoImport" xml:space="preserve">
+    <value>no import</value>
+  </data>
+  <data name="ModuleCount" xml:space="preserve">
+    <value>{0} modules</value>
+  </data>
+  <data name="LastLogin" xml:space="preserve">
+    <value>last {0}</value>
+  </data>
+  <data name="NeverLoggedIn" xml:space="preserve">
+    <value>never signed in</value>
+  </data>
+  <data name="EditTooltip" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="EditAria" xml:space="preserve">
+    <value>Edit “{0}”</value>
+  </data>
+  <data name="EditTitle" xml:space="preserve">
+    <value>Edit {0}</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete “{0}”</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete user?</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will no longer be able to sign in. The entries in the change log keep their name.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>“{0}” has been deleted.</value>
+  </data>
+  <data name="PolicyTitle" xml:space="preserve">
+    <value>Password policy</value>
+  </data>
+  <data name="PolicyDisabledLabel" xml:space="preserve">
+    <value>Disable passwords — sign in with the user name alone</value>
+  </data>
+  <data name="PolicyDisabledWarning" xml:space="preserve">
+    <value>Without passwords anyone who knows a user name and can reach the installation signs in. Only sensible if the tool is not reachable from outside anyway.</value>
+  </data>
+  <data name="PolicyMinimumLengthLabel" xml:space="preserve">
+    <value>Minimum length</value>
+  </data>
+  <data name="PolicyMinimumLengthHelper" xml:space="preserve">
+    <value>Characters a new password needs at least.</value>
+  </data>
+  <data name="PolicyRequireDigitLabel" xml:space="preserve">
+    <value>Require at least one digit</value>
+  </data>
+  <data name="PolicyRequireSpecialLabel" xml:space="preserve">
+    <value>Require at least one special character</value>
+  </data>
+  <data name="PolicyHint" xml:space="preserve">
+    <value>The policy applies when new passwords are set — existing ones stay valid unchanged.</value>
+  </data>
+  <data name="PolicySave" xml:space="preserve">
+    <value>Save policy</value>
+  </data>
+  <data name="PolicySaved" xml:space="preserve">
+    <value>The password policy has been saved.</value>
+  </data>
+  <data name="RolesTitle" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+  <data name="NewRole" xml:space="preserve">
+    <value>New role</value>
+  </data>
+  <data name="NoRolesHint" xml:space="preserve">
+    <value>No roles yet. A role bundles the permissions (“author”, “artist”, “read only”) and is assigned to users in the edit dialog.</value>
+  </data>
+  <data name="RoleMembers" xml:space="preserve">
+    <value>{0} account(s)</value>
+  </data>
+  <data name="RoleAllRights" xml:space="preserve">
+    <value>All rights</value>
+  </data>
+  <data name="RoleChipOverridden" xml:space="preserve">
+    <value>{0} (overridden)</value>
+  </data>
+  <data name="EditRoleTooltip" xml:space="preserve">
+    <value>Edit role</value>
+  </data>
+  <data name="EditRoleAria" xml:space="preserve">
+    <value>Edit role {0}</value>
+  </data>
+  <data name="EditRoleTitle" xml:space="preserve">
+    <value>Edit role “{0}”</value>
+  </data>
+  <data name="DeleteRoleTooltip" xml:space="preserve">
+    <value>Delete role</value>
+  </data>
+  <data name="DeleteRoleAria" xml:space="preserve">
+    <value>Delete role {0}</value>
+  </data>
+  <data name="DeleteRoleConfirmTitle" xml:space="preserve">
+    <value>Delete role?</value>
+  </data>
+  <data name="DeleteRoleConfirmMessage" xml:space="preserve">
+    <value>The role “{0}” will be deleted. Its permissions are stamped onto the {1} assigned accounts that do not override them first — nobody gains rights by this.</value>
+  </data>
+  <data name="RoleDeletedMessage" xml:space="preserve">
+    <value>Role “{0}” deleted.</value>
+  </data>
+</root>

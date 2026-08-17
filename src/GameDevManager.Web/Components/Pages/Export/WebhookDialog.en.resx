@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="UrlLabel" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="UrlHelper" xml:space="preserve">
+    <value>Complete http or https URL. Called via POST with a JSON payload.</value>
+  </data>
+  <data name="SecretLabel" xml:space="preserve">
+    <value>Secret (optional)</value>
+  </data>
+  <data name="SecretHelper" xml:space="preserve">
+    <value>If set, every message carries the header “X-GDM-Signature” as HMAC-SHA256 — the recipient can use it to verify that the message really comes from here.</value>
+  </data>
+  <data name="ModulesLabel" xml:space="preserve">
+    <value>Only these modules</value>
+  </data>
+  <data name="ModulesHelper" xml:space="preserve">
+    <value>Without a selection it is called on every change.</value>
+  </data>
+  <data name="AllModules" xml:space="preserve">
+    <value>all modules</value>
+  </data>
+  <data name="EnabledLabel" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+</root>

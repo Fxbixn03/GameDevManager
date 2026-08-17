@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>State view</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>State view</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>An assumed game state — and everything it opens and closes.</value>
+  </data>
+  <data name="ToGraph" xml:space="preserve">
+    <value>To the graph</value>
+  </data>
+  <data name="ToProgression" xml:space="preserve">
+    <value>To the progression</value>
+  </data>
+  <data name="NoConditionsHint" xml:space="preserve">
+    <value>No conditions are attached to content in this project yet. Conditions are created in the editing forms — on NPCs, quests, dialogues, trade offers and more.</value>
+  </data>
+  <data name="ClosedOnlyLabel" xml:space="preserve">
+    <value>Show only what is closed</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} of {1} open</value>
+  </data>
+  <data name="Slot_availability" xml:space="preserve">
+    <value>Availability</value>
+  </data>
+  <data name="Slot_shop" xml:space="preserve">
+    <value>Shop and offers</value>
+  </data>
+  <data name="Slot_completion" xml:space="preserve">
+    <value>Completion of quests and objectives</value>
+  </data>
+  <data name="Slot_unlock" xml:space="preserve">
+    <value>Unlocks</value>
+  </data>
+  <data name="Slot_spawn" xml:space="preserve">
+    <value>Spawns</value>
+  </data>
+</root>

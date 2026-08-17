@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Loot types – GameDevManager</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Loot types</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Entries and roll mode sit on the table itself — everything else is defined by the fields of the type.</value>
+  </data>
+  <data name="ToLootTables" xml:space="preserve">
+    <value>To the loot tables</value>
+  </data>
+  <data name="NewType" xml:space="preserve">
+    <value>New type</value>
+  </data>
+  <data name="EntityNoun" xml:space="preserve">
+    <value>loot table</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No loot types yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Types let you add what the table itself does not know — a level requirement or a luck modifier.</value>
+  </data>
+  <data name="BreadcrumbTypes" xml:space="preserve">
+    <value>Types</value>
+  </data>
+</root>

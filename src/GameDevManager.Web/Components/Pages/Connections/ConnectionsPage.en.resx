@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Connections – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>NPCs and their relations as a network — the colored ring shows the faction.</value>
+  </data>
+  <data name="ShowUnconnected" xml:space="preserve">
+    <value>Show unconnected as well</value>
+  </data>
+  <data name="ToNpcs" xml:space="preserve">
+    <value>To the NPCs</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Nothing to show yet</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>The graph is built from the relations of the NPCs and their faction memberships. Create the first relation in the NPC form — it appears here by itself.</value>
+  </data>
+  <data name="Factionless" xml:space="preserve">
+    <value>No faction</value>
+  </data>
+  <data name="StanceFriendly" xml:space="preserve">
+    <value>Friendly</value>
+  </data>
+  <data name="StanceNeutral" xml:space="preserve">
+    <value>Neutral</value>
+  </data>
+  <data name="StanceHostile" xml:space="preserve">
+    <value>Hostile</value>
+  </data>
+  <data name="GraphAria" xml:space="preserve">
+    <value>Connection graph of the NPCs</value>
+  </data>
+  <data name="EdgeTitle" xml:space="preserve">
+    <value>{0} {1} {2} — {3}</value>
+  </data>
+</root>

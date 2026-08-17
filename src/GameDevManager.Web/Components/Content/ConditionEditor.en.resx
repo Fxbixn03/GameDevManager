@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DefaultEmptyHint" xml:space="preserve">
+    <value>Without a condition it is always available.</value>
+  </data>
+  <data name="LogicLabel" xml:space="preserve">
+    <value>Combination</value>
+  </data>
+  <data name="LogicAll" xml:space="preserve">
+    <value>All must apply</value>
+  </data>
+  <data name="LogicAny" xml:space="preserve">
+    <value>At least one must apply</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="TargetLabel" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="TargetHelperEmpty" xml:space="preserve">
+    <value>There is nothing for this in the module “{0}” yet.</value>
+  </data>
+  <data name="OperatorLabel" xml:space="preserve">
+    <value>Comparison</value>
+  </data>
+  <data name="NumberLabel" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="BooleanTrue" xml:space="preserve">
+    <value>applies</value>
+  </data>
+  <data name="BooleanFalse" xml:space="preserve">
+    <value>does not apply</value>
+  </data>
+  <data name="TextLabelFlag" xml:space="preserve">
+    <value>Flag name</value>
+  </data>
+  <data name="TextLabelQuestState" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="TextLabelDefault" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="RemoveCondition" xml:space="preserve">
+    <value>Remove condition</value>
+  </data>
+  <data name="AddCondition" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="SaveConditions" xml:space="preserve">
+    <value>Save conditions</value>
+  </data>
+  <data name="NotSavedYet" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="RemovedMessage" xml:space="preserve">
+    <value>Conditions removed.</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>Conditions saved.</value>
+  </data>
+  <data name="TargetModuleLabel" xml:space="preserve">
+    <value>Target module</value>
+  </data>
+</root>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>API keys</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>API keys</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Keys for the HTTP API — with one an editor plugin pulls the current state directly instead of going through the export ZIP.</value>
+  </data>
+  <data name="AdminOnly" xml:space="preserve">
+    <value>API keys are managed by whoever manages users.</value>
+  </data>
+  <data name="NewKey" xml:space="preserve">
+    <value>Create key</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NameHelper" xml:space="preserve">
+    <value>What it belongs to — “Unity plugin”, “build server”.</value>
+  </data>
+  <data name="ProjectLabel" xml:space="preserve">
+    <value>This project only</value>
+  </data>
+  <data name="ProjectHelper" xml:space="preserve">
+    <value>Without a selection the key applies to all projects.</value>
+  </data>
+  <data name="ExpiresLabel" xml:space="preserve">
+    <value>Expires on</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CreatedTitle" xml:space="preserve">
+    <value>The key has been created — it is shown in clear text only now:</value>
+  </data>
+  <data name="CreatedHint" xml:space="preserve">
+    <value>Only its hash is stored. Whoever loses it creates a new one.</value>
+  </data>
+  <data name="CreatedMessage" xml:space="preserve">
+    <value>The key has been created.</value>
+  </data>
+  <data name="Empty" xml:space="preserve">
+    <value>No key created yet.</value>
+  </data>
+  <data name="ColumnName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ColumnPrefix" xml:space="preserve">
+    <value>Identifier</value>
+  </data>
+  <data name="ColumnScope" xml:space="preserve">
+    <value>Applies to</value>
+  </data>
+  <data name="ColumnLastUsed" xml:space="preserve">
+    <value>Last used</value>
+  </data>
+  <data name="ColumnState" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="AllProjects" xml:space="preserve">
+    <value>all projects</value>
+  </data>
+  <data name="NeverUsed" xml:space="preserve">
+    <value>never</value>
+  </data>
+  <data name="StateActive" xml:space="preserve">
+    <value>valid</value>
+  </data>
+  <data name="StateDisabled" xml:space="preserve">
+    <value>blocked</value>
+  </data>
+  <data name="StateExpired" xml:space="preserve">
+    <value>expired</value>
+  </data>
+  <data name="Enable" xml:space="preserve">
+    <value>Release</value>
+  </data>
+  <data name="Disable" xml:space="preserve">
+    <value>Block</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>The key has been deleted.</value>
+  </data>
+  <data name="DeleteTitle" xml:space="preserve">
+    <value>Delete key?</value>
+  </data>
+  <data name="DeleteMessage" xml:space="preserve">
+    <value>Delete “{0}” for good? Whatever uses it will no longer get in.</value>
+  </data>
+  <data name="UsageHeading" xml:space="preserve">
+    <value>Usage</value>
+  </data>
+  <data name="UsageIntro" xml:space="preserve">
+    <value>The key goes along as a header. The API answers with the same JSON rules as the export; writing needs a key with write access.</value>
+  </data>
+  <data name="UsageExample" xml:space="preserve">
+    <value>GET /api/v1/projects
+GET /api/v1/modules
+GET /api/v1/projects/{projectId}/modules/items
+GET /api/v1/projects/{projectId}/modules/items?language=en
+GET /api/v1/projects/{projectId}/modules/items/{entryId}
+
+Header: X-API-Key: gdm_…
+    or: Authorization: Bearer gdm_…</value>
+  </data>
+  <data name="CanWriteLabel" xml:space="preserve">
+    <value>May also write</value>
+  </data>
+  <data name="CanWriteHint" xml:space="preserve">
+    <value>Writes happen in your name — so the change log records who acted. Deleting is not possible through the API.</value>
+  </data>
+</root>

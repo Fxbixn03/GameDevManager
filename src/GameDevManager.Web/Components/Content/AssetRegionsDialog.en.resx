@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Regions</value>
+  </data>
+  <data name="NoDimensionsHint" xml:space="preserve">
+    <value>The dimensions of this file could not be read — there is no preview and no grid. Regions can still be added by hand.</value>
+  </data>
+  <data name="GridSection" xml:space="preserve">
+    <value>Create a grid</value>
+  </data>
+  <data name="GridHint" xml:space="preserve">
+    <value>Lays an even grid over the image and replaces the list below with it. Cells reaching beyond the image edge are not created.</value>
+  </data>
+  <data name="CellWidth" xml:space="preserve">
+    <value>Cell width</value>
+  </data>
+  <data name="CellHeight" xml:space="preserve">
+    <value>Cell height</value>
+  </data>
+  <data name="OffsetX" xml:space="preserve">
+    <value>Margin left</value>
+  </data>
+  <data name="OffsetY" xml:space="preserve">
+    <value>Margin top</value>
+  </data>
+  <data name="SpacingX" xml:space="preserve">
+    <value>Spacing X</value>
+  </data>
+  <data name="SpacingY" xml:space="preserve">
+    <value>Spacing Y</value>
+  </data>
+  <data name="BuildGrid" xml:space="preserve">
+    <value>Build grid</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>No regions yet. A grid creates them in one go; single ones can be added below.</value>
+  </data>
+  <data name="ColumnName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ColumnWidth" xml:space="preserve">
+    <value>Width</value>
+  </data>
+  <data name="ColumnHeight" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="AddRegion" xml:space="preserve">
+    <value>Add region</value>
+  </data>
+  <data name="NewRegionName" xml:space="preserve">
+    <value>Region {0}</value>
+  </data>
+  <data name="RemoveAria" xml:space="preserve">
+    <value>Remove region</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+</root>

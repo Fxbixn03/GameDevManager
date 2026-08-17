@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SectionSprites" xml:space="preserve">
+    <value>Sprites</value>
+  </data>
+  <data name="LibraryButton" xml:space="preserve">
+    <value>Library</value>
+  </data>
+  <data name="UploadText" xml:space="preserve">
+    <value>Sprite</value>
+  </data>
+  <data name="DisabledHint" xml:space="preserve">
+    <value>Sprites hang on the entity’s GUID — they can be uploaded once it has been saved.</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>No sprite yet. The first upload automatically becomes the icon the modules show in their lists.</value>
+  </data>
+  <data name="PrimaryChip" xml:space="preserve">
+    <value>Icon</value>
+  </data>
+  <data name="AlreadyPrimary" xml:space="preserve">
+    <value>Already the icon</value>
+  </data>
+  <data name="SetPrimary" xml:space="preserve">
+    <value>Use as icon</value>
+  </data>
+  <data name="MoveForwardTooltip" xml:space="preserve">
+    <value>Move forward</value>
+  </data>
+  <data name="MoveBackwardTooltip" xml:space="preserve">
+    <value>Move back</value>
+  </data>
+  <data name="ReplaceTooltip" xml:space="preserve">
+    <value>Replace the file — the GUID stays, every reference holds</value>
+  </data>
+  <data name="ReplacedMessage" xml:space="preserve">
+    <value>File replaced by “{0}”.</value>
+  </data>
+  <data name="EditTooltip" xml:space="preserve">
+    <value>Edit details</value>
+  </data>
+  <data name="DeleteTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteAria" xml:space="preserve">
+    <value>Delete sprite</value>
+  </data>
+  <data name="EditDialogTitle" xml:space="preserve">
+    <value>Edit asset</value>
+  </data>
+  <data name="DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete sprite</value>
+  </data>
+  <data name="DeleteConfirmMessage" xml:space="preserve">
+    <value>“{0}” will be deleted together with its file. This cannot be undone.</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeletedMessage" xml:space="preserve">
+    <value>Sprite deleted.</value>
+  </data>
+</root>

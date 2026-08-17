@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DisplayNameLabel" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="DisplayNameHelper" xml:space="preserve">
+    <value>This name will appear on every entry of the change log.</value>
+  </data>
+  <data name="UserNameLabel" xml:space="preserve">
+    <value>User name</value>
+  </data>
+  <data name="UserNameHelper" xml:space="preserve">
+    <value>Unique across the installation and cannot be changed afterwards.</value>
+  </data>
+  <data name="PasswordLabel" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="PasswordHelper" xml:space="preserve">
+    <value>At least {0} characters.</value>
+  </data>
+  <data name="NewPasswordLabel" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="NewPasswordHelper" xml:space="preserve">
+    <value>Leave empty to keep the current one.</value>
+  </data>
+  <data name="AdministratorLabel" xml:space="preserve">
+    <value>May manage users</value>
+  </data>
+  <data name="AdministratorHelper" xml:space="preserve">
+    <value>Without this right the user cannot create or change accounts; everything else is governed by the permissions below.</value>
+  </data>
+  <data name="RoleLabel" xml:space="preserve">
+    <value>Role</value>
+  </data>
+  <data name="RoleHelper" xml:space="preserve">
+    <value>The role sets the permissions. Without a role the switches below apply.</value>
+  </data>
+  <data name="NoRole" xml:space="preserve">
+    <value>No role</value>
+  </data>
+  <data name="OverrideRoleLabel" xml:space="preserve">
+    <value>Set permissions differently from the role</value>
+  </data>
+  <data name="RoleSummary" xml:space="preserve">
+    <value>The role allows — write: {0} · export: {1} · import: {2} · modules: {3}</value>
+  </data>
+  <data name="RoleSummaryAllModules" xml:space="preserve">
+    <value>all</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>no</value>
+  </data>
+  <data name="PermissionsTitle" xml:space="preserve">
+    <value>Permissions</value>
+  </data>
+  <data name="AdministratorHasAll" xml:space="preserve">
+    <value>Administrators always have every permission — there is nothing to restrict here.</value>
+  </data>
+  <data name="CanWriteLabel" xml:space="preserve">
+    <value>May change content</value>
+  </data>
+  <data name="CanWriteHelper" xml:space="preserve">
+    <value>Without this right the account is a reader: it can see everything but save or delete nothing.</value>
+  </data>
+  <data name="CanExportLabel" xml:space="preserve">
+    <value>May export</value>
+  </data>
+  <data name="CanImportLabel" xml:space="preserve">
+    <value>May import</value>
+  </data>
+  <data name="ImportNeedsWriteHint" xml:space="preserve">
+    <value>An import writes the whole content — without the write permission it stays blocked anyway.</value>
+  </data>
+  <data name="RestrictModulesLabel" xml:space="preserve">
+    <value>Restrict modules</value>
+  </data>
+  <data name="ModulesLabel" xml:space="preserve">
+    <value>Available modules</value>
+  </data>
+  <data name="ModulesHelper" xml:space="preserve">
+    <value>Only these modules appear in the bar, the search and the pages. No selection counts as “all”.</value>
+  </data>
+  <data name="AllModulesHint" xml:space="preserve">
+    <value>All modules are available.</value>
+  </data>
+  <data name="PermissionsTakeEffectHint" xml:space="preserve">
+    <value>Changed permissions apply from the user’s next sign-in.</value>
+  </data>
+  <data name="DisabledLabel" xml:space="preserve">
+    <value>Blocked</value>
+  </data>
+  <data name="DisabledHelper" xml:space="preserve">
+    <value>Sign-in is refused; the account and its log entries remain.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SavedMessage" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="ExternalIdLabel" xml:space="preserve">
+    <value>Identifier at {0}</value>
+  </data>
+  <data name="ExternalIdHelper" xml:space="preserve">
+    <value>Links this account to an external sign-in. The sign-in page shows the identifier when someone signs in externally without an account here.</value>
+  </data>
+</root>

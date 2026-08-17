@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Trait_empathy" xml:space="preserve">
+    <value>Empathy</value>
+  </data>
+  <data name="Trait_impulsiveness" xml:space="preserve">
+    <value>Impulsiveness</value>
+  </data>
+  <data name="Trait_loyalty" xml:space="preserve">
+    <value>Loyalty</value>
+  </data>
+  <data name="Trait_courage" xml:space="preserve">
+    <value>Courage</value>
+  </data>
+  <data name="Trait_honesty" xml:space="preserve">
+    <value>Honesty</value>
+  </data>
+  <data name="Trait_dominance" xml:space="preserve">
+    <value>Dominance</value>
+  </data>
+  <data name="Trait_patience" xml:space="preserve">
+    <value>Patience</value>
+  </data>
+  <data name="Trait_distrust" xml:space="preserve">
+    <value>Distrust</value>
+  </data>
+  <data name="Trait_riskTaking" xml:space="preserve">
+    <value>Risk-taking</value>
+  </data>
+  <data name="Trait_compassion" xml:space="preserve">
+    <value>Compassion</value>
+  </data>
+  <data name="SegmentTooltip" xml:space="preserve">
+    <value>Set {0} to {1}</value>
+  </data>
+</root>

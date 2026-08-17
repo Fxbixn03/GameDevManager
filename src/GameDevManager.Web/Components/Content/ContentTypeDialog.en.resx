@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TitleNew" xml:space="preserve">
+    <value>New type</value>
+  </data>
+  <data name="TitleEdit" xml:space="preserve">
+    <value>Edit type</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NameHelper" xml:space="preserve">
+    <value>For example “weapon”, “armor” or “consumable”.</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description (optional)</value>
+  </data>
+  <data name="ParentLabel" xml:space="preserve">
+    <value>Subtype of (optional)</value>
+  </data>
+  <data name="ParentHelper" xml:space="preserve">
+    <value>The fields of the parent type then apply as well — “weapon” with the subtypes melee, ranged, magic.</value>
+  </data>
+  <data name="IconLabel" xml:space="preserve">
+    <value>Icon (optional)</value>
+  </data>
+  <data name="SortOrderLabel" xml:space="preserve">
+    <value>Sort order</value>
+  </data>
+  <data name="SortOrderHelper" xml:space="preserve">
+    <value>Smaller numbers appear higher up in lists.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="NameRequired" xml:space="preserve">
+    <value>Please enter a name.</value>
+  </data>
+  <data name="IconGeneral" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="IconWeapon" xml:space="preserve">
+    <value>Weapon</value>
+  </data>
+  <data name="IconArmor" xml:space="preserve">
+    <value>Armor</value>
+  </data>
+  <data name="IconPotion" xml:space="preserve">
+    <value>Potion</value>
+  </data>
+  <data name="IconFood" xml:space="preserve">
+    <value>Food</value>
+  </data>
+  <data name="IconResource" xml:space="preserve">
+    <value>Resource</value>
+  </data>
+  <data name="IconTool" xml:space="preserve">
+    <value>Tool</value>
+  </data>
+  <data name="IconJewelry" xml:space="preserve">
+    <value>Jewelry</value>
+  </data>
+  <data name="IconKey" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="IconBook" xml:space="preserve">
+    <value>Book</value>
+  </data>
+  <data name="IconCurrency" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="IconMagic" xml:space="preserve">
+    <value>Magic</value>
+  </data>
+  <data name="IconAmmunition" xml:space="preserve">
+    <value>Ammunition</value>
+  </data>
+  <data name="IconContainer" xml:space="preserve">
+    <value>Container</value>
+  </data>
+  <data name="IconQuest" xml:space="preserve">
+    <value>Quest</value>
+  </data>
+</root>
