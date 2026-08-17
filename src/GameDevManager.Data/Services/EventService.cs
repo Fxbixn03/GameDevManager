@@ -78,7 +78,7 @@ public class EventService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, gameEvent.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, gameEvent.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<GameEvent>(db, gameEvent.Id, ct)
         };
     }
 
@@ -124,7 +124,7 @@ public class EventService(
         var removedSpawnIds = new List<Guid>();
         SyncSpawns(db, stored, gameEvent, removedSpawnIds);
 
-        await EntityCleanup.DeleteForEntitiesAsync(db, removedSpawnIds, ct);
+        await EntityCleanup.DeleteForSubObjectsAsync(db, removedSpawnIds, ct);
 
         // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier
         // gesetzt und nicht in jedem Zweig der Fallunterscheidung darüber.
@@ -221,7 +221,7 @@ public class EventService(
             .ToListAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.GameEvents, eventId, ct);
-        await EntityCleanup.DeleteForEntitiesAsync(db, [eventId, .. spawnIds], ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.GameEvents, eventId, spawnIds, ct);
 
         // Die Spawns fallen über den Fremdschlüssel mit.
         await db.GameEvents

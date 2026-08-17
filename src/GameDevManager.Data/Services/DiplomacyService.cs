@@ -97,7 +97,7 @@ public class DiplomacyService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, relation.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, relation.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<DiplomaticRelation>(db, relation.Id, ct)
         };
     }
 
@@ -183,7 +183,7 @@ public class DiplomacyService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.DiplomaticRelations, relationId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, relationId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.DiplomaticRelations, relationId, null, ct);
 
         await db.DiplomaticRelations
             .Where(r => r.Id == relationId)

@@ -110,7 +110,7 @@ public class QuestService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, quest.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, quest.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Quest>(db, quest.Id, ct)
         };
     }
 
@@ -165,7 +165,7 @@ public class QuestService(
 
         // Ziele tragen ihre Abschlussbedingung unter der eigenen GUID — ein entferntes Ziel
         // ließe sie sonst als Waise stehen.
-        await EntityCleanup.DeleteForEntitiesAsync(db, removedObjectiveIds, ct);
+        await EntityCleanup.DeleteForSubObjectsAsync(db, removedObjectiveIds, ct);
 
         // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier
         // gesetzt und nicht in jedem Zweig der Fallunterscheidung darüber.
@@ -235,7 +235,7 @@ public class QuestService(
             .ToListAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Quests, questId, ct);
-        await EntityCleanup.DeleteForEntitiesAsync(db, [questId, .. objectiveIds], ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Quests, questId, objectiveIds, ct);
 
         // Die Ziele selbst fallen über den Fremdschlüssel mit.
         await db.Quests

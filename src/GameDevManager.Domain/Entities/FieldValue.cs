@@ -47,6 +47,22 @@ public class FieldValue
     /// <summary>Wert für <see cref="ContentFieldType.Select"/>: die gewählte <see cref="FieldOption"/>.</summary>
     public Guid? OptionId { get; set; }
 
+    /// <summary>
+    /// Von welcher Entität dieser Wert stammt, wenn er nicht am Besitzer selbst steht, sondern
+    /// über <see cref="ContentEntity.BasedOnId"/> von einem Vorbild geerbt ist.
+    /// <para>
+    /// <b>Nicht persistiert</b> — eine geerbte Zeile gibt es in der Datenbank nicht, sie
+    /// entsteht beim Auflösen. Der Export schreibt sie trotzdem: Die Engine soll die
+    /// Vererbungskette nicht selbst auflösen müssen, und die Herkunft daneben sagt, warum ein
+    /// Wert dort steht, an dem die Maske nichts zeigt. Der Import überspringt sie umgekehrt —
+    /// sonst wäre die Vererbung nach einem Umzug materialisiert und damit aufgelöst.
+    /// </para>
+    /// </summary>
+    public Guid? InheritedFromEntityId { get; set; }
+
+    /// <summary>Der Wert steht nicht am Besitzer, sondern kommt von seinem Vorbild.</summary>
+    public bool IsInherited => InheritedFromEntityId is not null;
+
     /// <summary>Es ist nichts hinterlegt — solche Werte werden beim Speichern nicht angelegt.</summary>
     public bool IsEmpty =>
         string.IsNullOrWhiteSpace(TextValue)

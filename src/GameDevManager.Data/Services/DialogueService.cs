@@ -100,7 +100,7 @@ public class DialogueService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, dialogue.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, dialogue.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Dialogue>(db, dialogue.Id, ct)
         };
     }
 
@@ -148,7 +148,7 @@ public class DialogueService(
         var removedOwners = SyncLines(db, stored, dialogue);
 
         // Antwortmöglichkeiten haben eigene GUIDs und können später eigene Bedingungen tragen.
-        await EntityCleanup.DeleteForEntitiesAsync(db, removedOwners, ct);
+        await EntityCleanup.DeleteForSubObjectsAsync(db, removedOwners, ct);
 
         // An einer entfernten Zeile hängen die Aufnahmen ihrer Vertonung. EntityCleanup deckt
         // sie nicht ab — Assets laufen bewusst getrennt, weil dabei Dateien verschwinden.
@@ -428,7 +428,7 @@ public class DialogueService(
             .ToListAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Dialogues, dialogueId, ct);
-        await EntityCleanup.DeleteForEntitiesAsync(db, [dialogueId, .. lineIds, .. choiceIds], ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Dialogues, dialogueId, [.. lineIds, .. choiceIds], ct);
 
         // Beteiligte, Zeilen und Antworten fallen über die Fremdschlüssel mit.
         await db.Dialogues

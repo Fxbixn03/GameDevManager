@@ -139,6 +139,12 @@ else
                     <MudDivider Class="my-3" />
                     <EntityStatusSelect Entity="_rarity" OnChanged="@(() => Touch(() => { }))" />
 
+                    @* Das Vorbild einer Variante — die Spalte hängt wie der Stand an
+                       ContentEntity und gilt damit in allen Inhaltsmodulen. *@
+                    <EntityBaseSelect Entity="_rarity"
+                                      ModuleKey="@Module.Id"
+                                      OnChanged="@(() => Touch(() => { }))" />
+
                     @if (!_isNew)
                     {
                         <MudDivider Class="my-3" />

@@ -70,6 +70,10 @@ public class ExportService(
     /// deren Wert semikolongetrennt in <c>content/field-values.json</c> steht. Version 13:
     /// Inhalte tragen einen <c>status</c> (Entwurf, in Arbeit, im Review, fertig); das Manifest
     /// nennt unter <c>minimumStatus</c> den Mindeststand, auf den ein Export eingeschränkt war.
+    /// Version 21: Inhalte tragen <c>basedOnId</c> — das Vorbild einer Variante; ihre Werte in
+    /// <c>content/field-values.json</c> stehen <b>aufgelöst</b> darin, damit die Engine die
+    /// Kette nicht selbst verfolgen muss, und ein geerbter Wert nennt in
+    /// <c>inheritedFromEntityId</c>, woher er stammt. Der Import überspringt genau diese Zeilen.
     /// Version 20: Assets tragen <c>languageCode</c> und <c>voiceActor</c> — eine Aufnahme
     /// hängt als Asset an der GUID einer Dialogzeile, und diese zwei Angaben sagen, in welcher
     /// Sprache sie eingesprochen wurde und von wem.
@@ -86,7 +90,7 @@ public class ExportService(
     /// ihr Skizzenbild hängt als Asset an ihrer GUID und steht damit ohne neue Spalte im
     /// Archiv.
     /// </remarks>
-    public const int FormatVersion = 20;
+    public const int FormatVersion = 21;
 
     /// <summary>
     /// Schreibt den kompletten Projektstand als ZIP nach <paramref name="output"/>.
@@ -311,6 +315,46 @@ public class ExportService(
             individualFields = [.. individualFields.Where(f => entityIds.Contains(f.OwnerEntityId!.Value))];
             fieldValues = [.. fieldValues.Where(v => entityIds.Contains(v.OwnerEntityId))];
             conditionSets = [.. conditionSets.Where(set => entityIds.Contains(set.OwnerId))];
+        }
+
+        // ------------------------------------------------------------------ Varianten
+        // Der Export schreibt **aufgelöste** Werte: Eine Variante bekommt die Werte ihres
+        // Vorbilds als eigene Zeilen mit, damit die Engine die Kette nicht selbst auflösen
+        // muss. Woher ein Wert stammt, steht als „inheritedFromEntityId“ daneben — der Import
+        // erkennt geerbte Zeilen daran und überspringt sie, sonst wäre die Vererbung nach
+        // einem Umzug materialisiert und damit aufgelöst.
+        //
+        // Vor der Formel-Rechnung, weil ein berechnetes Feld auch über geerbte Werte rechnen
+        // können muss.
+        // PlayerCharacter und SkillTree stehen bewusst nicht darin: Sie sind keine
+        // ContentEntity und tragen deshalb auch kein Vorbild.
+        var allEntities = contentLists.SelectMany(list => list).ToList();
+
+        var basedOn = allEntities
+            .Where(entity => entity.BasedOnId is not null)
+            .ToDictionary(entity => entity.Id, entity => entity.BasedOnId);
+
+        if (basedOn.Count > 0)
+        {
+            var byOwnerId = fieldValues.ToLookup(value => value.OwnerEntityId);
+            var inherited = new List<FieldValue>();
+
+            foreach (var entity in allEntities.Where(entity => entity.BasedOnId is not null))
+            {
+                var resolved = EntityInheritance.ResolveInheritedOnly(
+                    entity.Id, entity.ModuleKey, basedOn, byOwnerId);
+
+                // Nur, was die Entität nicht selbst setzt — der nähere Wert gewinnt.
+                var own = byOwnerId[entity.Id].Select(value => value.FieldDefinitionId).ToHashSet();
+
+                inherited.AddRange(resolved.Values.Where(value => !own.Contains(value.FieldDefinitionId)));
+            }
+
+            fieldValues =
+            [
+                .. fieldValues.Concat(inherited)
+                    .OrderBy(v => v.OwnerModuleKey).ThenBy(v => v.OwnerEntityId).ThenBy(v => v.FieldDefinitionId)
+            ];
         }
 
         // ------------------------------------------------------------ Berechnete Felder

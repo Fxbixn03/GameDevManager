@@ -91,7 +91,7 @@ public class FactionService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, faction.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, faction.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Faction>(db, faction.Id, ct)
         };
     }
 
@@ -136,7 +136,7 @@ public class FactionService(
         SyncMembers(db, stored, faction, removedMemberIds);
 
         // Falls an entfernten Mitgliedschaften etwas über deren GUID hängt, fällt es nicht von selbst mit.
-        await EntityCleanup.DeleteForEntitiesAsync(db, removedMemberIds, ct);
+        await EntityCleanup.DeleteForSubObjectsAsync(db, removedMemberIds, ct);
 
         // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier
         // gesetzt und nicht in jedem Zweig der Fallunterscheidung darüber.
@@ -226,7 +226,7 @@ public class FactionService(
             .ToListAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Factions, factionId, ct);
-        await EntityCleanup.DeleteForEntitiesAsync(db, [factionId, .. memberIds], ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Factions, factionId, memberIds, ct);
 
         // Die Mitgliedschaften fallen über den Fremdschlüssel mit.
         await db.Factions

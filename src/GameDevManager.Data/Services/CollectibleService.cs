@@ -72,7 +72,7 @@ public class CollectibleService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, collectible.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, collectible.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Collectible>(db, collectible.Id, ct)
         };
     }
 
@@ -135,7 +135,7 @@ public class CollectibleService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Collectibles, collectibleId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, collectibleId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Collectibles, collectibleId, null, ct);
 
         await db.Collectibles
             .Where(c => c.Id == collectibleId)

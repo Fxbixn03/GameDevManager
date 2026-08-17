@@ -141,7 +141,7 @@ public class LootService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, table.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, table.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<LootTable>(db, table.Id, ct)
         };
     }
 
@@ -286,7 +286,7 @@ public class LootService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.LootTables, tableId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, tableId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.LootTables, tableId, null, ct);
 
         // Ohne das zeigten die NPCs auf eine Tabelle, die es nicht mehr gibt.
         await db.Npcs

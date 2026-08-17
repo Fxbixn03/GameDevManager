@@ -301,7 +301,11 @@ public class ImportService(
         db.ExportProfiles.AddRange(exportProfiles.Profiles);
         db.ContentTypes.AddRange(typesAndFields.ContentTypes);
         db.FieldDefinitions.AddRange(typesAndFields.IndividualFields);
-        db.FieldValues.AddRange(fieldValues.Values);
+        // Geerbte Werte stehen im Archiv, damit die Engine die Vererbungskette nicht selbst
+        // auflösen muss — als Zeile angelegt hätten sie die Vererbung aber materialisiert und
+        // damit aufgelöst: Die Variante folgte ihrem Vorbild ab dem Umzug nicht mehr. Sie
+        // entstehen beim Lesen ohnehin neu.
+        db.FieldValues.AddRange(fieldValues.Values.Where(value => !value.IsInherited));
         db.ConditionSets.AddRange(conditions.ConditionSets);
         db.AssetTags.AddRange(assetsFile.AssetTags);
         db.Assets.AddRange(assetsFile.Assets);

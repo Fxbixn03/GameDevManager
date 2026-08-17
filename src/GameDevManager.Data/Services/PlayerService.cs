@@ -156,7 +156,8 @@ public class PlayerService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.PlayerCharacters, characterId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, characterId, ct);
+        // Eine Spielerfigur ist keine ContentEntity und damit nie Vorbild einer Variante.
+        await EntityCleanup.DeleteForSubObjectsAsync(db, [characterId], ct);
 
         await db.PlayerCharacters
             .Where(p => p.Id == characterId)
@@ -299,7 +300,7 @@ public class PlayerService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, skill.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, skill.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Skill>(db, skill.Id, ct)
         };
     }
 
@@ -421,7 +422,7 @@ public class PlayerService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Skills, skillId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, skillId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Skills, skillId, null, ct);
 
         // Kinder verlieren ihre Voraussetzung, statt auf einen gelöschten Skill zu zeigen.
         await db.Skills

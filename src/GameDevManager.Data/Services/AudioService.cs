@@ -84,7 +84,7 @@ public class AudioService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, sound.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, sound.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<SoundEffect>(db, sound.Id, ct)
         };
     }
 
@@ -144,7 +144,7 @@ public class AudioService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.SoundEffects, soundId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, soundId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.SoundEffects, soundId, null, ct);
 
         await db.SoundEffects
             .Where(s => s.Id == soundId)

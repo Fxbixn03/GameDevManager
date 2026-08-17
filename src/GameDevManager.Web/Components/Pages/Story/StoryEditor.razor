@@ -396,6 +396,12 @@ else
                     <MudDivider Class="my-3" />
                     <EntityStatusSelect Entity="_context.Entity" OnChanged="MarkDirty" />
 
+                    @* Das Vorbild einer Variante — die Spalte hängt wie der Stand an
+                       ContentEntity und gilt damit in allen Inhaltsmodulen. *@
+                    <EntityBaseSelect Entity="_context.Entity"
+                                      ModuleKey="@Module.Id"
+                                      OnChanged="MarkDirty" />
+
                     <MudDivider Class="my-3" />
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@L["TimelinePosition"]</MudText>
                     <MudText Typo="Typo.body2">@(_context.Entity.SortOrder + 1)</MudText>

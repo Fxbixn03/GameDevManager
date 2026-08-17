@@ -1,0 +1,86 @@
+@inject IStringLocalizer<VariantFieldInput> L
+
+@*
+    Ein Feld in der Maske einer Variante (F5). Ist der Wert vom Vorbild geerbt, steht er
+    gesperrt da — mit einem Knopf, der ihn eigen macht; ein eigener Wert lässt sich mit dem
+    Gegenstück wieder abgeben.
+
+    Warum gesperrt und nicht einfach überschreibbar: Ein geerbter Wert gehört einer anderen
+    Entität. Ohne die Sperre wäre nach dem ersten Tastendruck nicht mehr zu sehen, ob man
+    gerade das Vorbild oder die Variante ändert — und gespeichert würde ohnehin nur, was der
+    Variante gehört.
+*@
+
+<div>
+    @* inert statt eines Disabled-Parameters an DynamicFieldInput: Der müsste durch fünfzehn
+       Zweige gereicht werden, und jeder neue Feldtyp müsste daran denken. inert sperrt
+       Eingabe und Tastaturfokus für den ganzen Block auf einmal. *@
+    <div class="@(Value.IsInherited ? "gdm-inherited-field" : null)" inert="@Value.IsInherited">
+        <DynamicFieldInput Definition="Definition"
+                           Value="Value"
+                           ReferenceOptions="ReferenceOptions"
+                           Formulas="Formulas"
+                           OnValueChanged="OnValueChanged" />
+    </div>
+
+    @if (Value.IsInherited)
+    {
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mt-1">
+            <MudIcon Icon="@Icons.Material.Filled.SubdirectoryArrowRight" Size="Size.Small" Color="Color.Secondary" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["InheritedCaption", BaseName]</MudText>
+            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="OverrideAsync">
+                @L["Override"]
+            </MudButton>
+        </MudStack>
+    }
+    else if (HasBase && !Value.IsEmpty)
+    {
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mt-1">
+            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="RevertAsync">
+                @L["Revert"]
+            </MudButton>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["RevertHint"]</MudText>
+        </MudStack>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required FieldDefinition Definition { get; set; }
+
+    [Parameter, EditorRequired]
+    public required FieldValue Value { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<EntitySummary> ReferenceOptions { get; set; } = [];
+
+    [Parameter]
+    public ContentFormulaContext? Formulas { get; set; }
+
+    /// <summary>Die Entität ist eine Variante — nur dann gibt es überhaupt etwas zu erben.</summary>
+    [Parameter]
+    public bool HasBase { get; set; }
+
+    /// <summary>Name des Vorbilds, für die Beschriftung. Leer, solange er nicht bekannt ist.</summary>
+    [Parameter]
+    public string? BaseName { get; set; }
+
+    [Parameter]
+    public EventCallback OnValueChanged { get; set; }
+
+    private async Task OverrideAsync()
+    {
+        // Der geerbte Wert bleibt als Ausgangspunkt stehen — er ist fast immer der, den man
+        // gleich anpassen will. Ab hier gehört er der Variante.
+        Value.InheritedFromEntityId = null;
+        await OnValueChanged.InvokeAsync();
+    }
+
+    private async Task RevertAsync()
+    {
+        // Leeren genügt: Ein leerer Wert hinterlässt keine Zeile, und ohne Zeile gilt beim
+        // nächsten Laden wieder der des Vorbilds. Es braucht dafür keinen zweiten Zustand.
+        Value.Clear();
+        await OnValueChanged.InvokeAsync();
+    }
+}

@@ -72,7 +72,7 @@ public class CurrencyService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, currency.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, currency.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Currency>(db, currency.Id, ct)
         };
     }
 
@@ -148,7 +148,7 @@ public class CurrencyService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Currencies, currencyId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, currencyId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Currencies, currencyId, null, ct);
 
         await db.Currencies
             .Where(c => c.Id == currencyId)

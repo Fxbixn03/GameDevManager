@@ -76,7 +76,7 @@ public class ItemService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, item.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, item.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Item>(db, item.Id, ct)
         };
     }
 
@@ -145,7 +145,7 @@ public class ItemService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Items, itemId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, itemId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Items, itemId, null, ct);
 
         await db.Items
             .Where(i => i.Id == itemId)

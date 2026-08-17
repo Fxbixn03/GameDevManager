@@ -117,7 +117,7 @@ public class MapService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, map.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, map.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<GameMap>(db, map.Id, ct)
         };
     }
 
@@ -330,7 +330,7 @@ public class MapService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Maps, mapId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, mapId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Maps, mapId, null, ct);
 
         // Sonst zeigten Verknüpfungen anderer Karten auf eine Karte, die es nicht mehr gibt.
         await db.MapMarkers

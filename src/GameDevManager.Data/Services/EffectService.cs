@@ -89,7 +89,7 @@ public class EffectService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, effect.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, effect.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<GameEffect>(db, effect.Id, ct)
         };
     }
 
@@ -133,7 +133,7 @@ public class EffectService(
         var removedAssignmentIds = new List<Guid>();
         SyncAssignments(db, stored, effect, removedAssignmentIds);
 
-        await EntityCleanup.DeleteForEntitiesAsync(db, removedAssignmentIds, ct);
+        await EntityCleanup.DeleteForSubObjectsAsync(db, removedAssignmentIds, ct);
 
         // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier
         // gesetzt und nicht in jedem Zweig der Fallunterscheidung darüber.
@@ -218,7 +218,7 @@ public class EffectService(
             .ToListAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.GameEffects, effectId, ct);
-        await EntityCleanup.DeleteForEntitiesAsync(db, [effectId, .. assignmentIds], ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.GameEffects, effectId, assignmentIds, ct);
 
         // Die Zuweisungen fallen über den Fremdschlüssel mit.
         await db.GameEffects

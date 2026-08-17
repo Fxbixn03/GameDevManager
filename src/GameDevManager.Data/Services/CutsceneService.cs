@@ -76,7 +76,7 @@ public class CutsceneService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, cutscene.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, cutscene.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Cutscene>(db, cutscene.Id, ct)
         };
     }
 
@@ -127,7 +127,7 @@ public class CutsceneService(
         var removedShotIds = new List<Guid>();
         SyncShots(db, stored, cutscene, removedShotIds);
 
-        await EntityCleanup.DeleteForEntitiesAsync(db, removedShotIds, ct);
+        await EntityCleanup.DeleteForSubObjectsAsync(db, removedShotIds, ct);
 
         // Das Skizzenbild hängt an der GUID der Einstellung — mit ihr muss es verschwinden.
         foreach (var removed in removedShotIds)
@@ -213,7 +213,7 @@ public class CutsceneService(
         }
 
         await ChangeLog.RecordDeletionAsync(db, db.Cutscenes, cutsceneId, ct);
-        await EntityCleanup.DeleteForEntitiesAsync(db, [cutsceneId, .. shotIds], ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Cutscenes, cutsceneId, shotIds, ct);
 
         // Das Storyboard fällt über den Fremdschlüssel mit.
         await db.Cutscenes

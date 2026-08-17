@@ -288,6 +288,12 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             entity.Property(v => v.OwnerModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
             entity.Ignore(v => v.IsEmpty);
 
+            // Ein geerbter Wert steht in keiner Zeile — er entsteht beim Auflösen der
+            // Vererbungskette. Im Export steht er trotzdem, deshalb hier nur ignoriert und
+            // nicht aus dem JSON entfernt.
+            entity.Ignore(v => v.InheritedFromEntityId);
+            entity.Ignore(v => v.IsInherited);
+
             entity.HasOne(v => v.FieldDefinition)
                 .WithMany()
                 .HasForeignKey(v => v.FieldDefinitionId)
@@ -1193,6 +1199,13 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             // Jede Modul-Liste filtert danach, das Dashboard zählt darüber, und der Export
             // kann darauf einschränken — immer innerhalb eines Projekts.
             entity.HasIndex(e => new { e.GameProjectId, e.Status });
+
+            // Das Vorbild einer Variante. Bewusst ohne Fremdschlüssel, obwohl es in derselben
+            // Tabelle liegt: Er liefe im Kreis auf sich selbst zurück, und seine Löschregeln
+            // wären über die vier Provider nicht einheitlich zu bekommen. Der Index trägt die
+            // Frage „welche Varianten hängen an dieser Entität?“, die beim Löschen und in der
+            // Referenzansicht gestellt wird.
+            entity.HasIndex(e => e.BasedOnId);
         });
     }
 

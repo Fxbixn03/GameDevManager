@@ -537,6 +537,14 @@ html {
     padding-top: 0.25rem;
 }
 
+/* ------------------------------------------------------------------ Geerbte Feldwerte */
+/* Eine Variante zeigt die Werte ihres Vorbilds gesperrt an. Die Ausgrauung ist die einzige
+   Auskunft darüber, dass hier nichts zu holen ist — inert sperrt zwar die Bedienung, sagt
+   aber nichts. */
+.gdm-inherited-field {
+    opacity: 0.6;
+}
+
 /* --------------------------------------------------------------- Ausschnitte am Asset */
 /* Bild und Rechteck-Overlay teilen sich denselben Kasten; die viewBox des SVG trägt die
    Pixelmaße des Bildes, damit die Ausschnitte ohne Umrechnung an ihrer Stelle sitzen. */

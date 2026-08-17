@@ -1,0 +1,82 @@
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IStringLocalizer<EntityBaseSelect> L
+
+@*
+    Das Vorbild einer Variante (F5): „Eisenschwert +1“ erbt jeden Feldwert des „Eisenschwerts“,
+    den es nicht selbst setzt.
+
+    Steht wie der Bearbeitungsstand im Referenz-Panel jeder Maske — die Spalte hängt an
+    ContentEntity und gilt damit in allen Inhaltsmodulen auf einmal.
+*@
+
+<MudAutocomplete T="EntitySummary"
+                 Value="Selected"
+                 ValueChanged="ChangeAsync"
+                 SearchFunc="SearchAsync"
+                 ToStringFunc="@(entity => entity?.Name ?? string.Empty)"
+                 Label="@L["Label"]"
+                 Variant="Variant.Outlined"
+                 Margin="Margin.Dense"
+                 Dense="true"
+                 Clearable="true"
+                 ResetValueOnEmptyText="true"
+                 CoerceValue="false"
+                 MaxItems="50"
+                 Disabled="@Disabled"
+                 HelperText="@HelperText" />
+
+@code {
+    /// <summary>
+    /// Die Entität, deren Vorbild gesetzt wird — die nicht-generische Basis, wie beim
+    /// Bearbeitungsstand: So braucht die Komponente keinen Typparameter und damit auch nicht
+    /// den Umweg über einen eigenen Marker für den Localizer.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public required ContentEntity Entity { get; set; }
+
+    /// <summary>Modul der Entität — die Auswahl kommt aus demselben, ein Vorbild von anderswo gibt es nicht.</summary>
+    [Parameter, EditorRequired]
+    public required string ModuleKey { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Meldet der Maske, dass es etwas zu speichern gibt.</summary>
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private List<EntitySummary> _candidates = [];
+
+    private EntitySummary? Selected =>
+        _candidates.FirstOrDefault(entity => entity.Id == Entity.BasedOnId);
+
+    private string HelperText =>
+        Entity.BasedOnId is null ? L["HelperEmpty"] : L["HelperSet"];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+        var all = await References.GetEntitiesAsync(projectId, ModuleKey);
+
+        // Sich selbst nicht — und die eigenen Varianten auch nicht: Beides ergäbe einen Ring,
+        // den die Datenschicht ohnehin abweist. Ihn gar nicht erst anzubieten ist die
+        // freundlichere Antwort.
+        _candidates = [.. all.Where(entity => entity.Id != Entity.Id)];
+    }
+
+    private Task<IEnumerable<EntitySummary>> SearchAsync(string? search, CancellationToken ct)
+    {
+        IEnumerable<EntitySummary> matches = string.IsNullOrWhiteSpace(search)
+            ? _candidates
+            : _candidates.Where(entity => entity.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(matches);
+    }
+
+    private async Task ChangeAsync(EntitySummary? entity)
+    {
+        Entity.BasedOnId = entity?.Id;
+        await OnChanged.InvokeAsync();
+    }
+}

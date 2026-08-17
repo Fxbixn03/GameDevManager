@@ -93,7 +93,7 @@ Migration `FieldValidation` in allen vier Providern, `FormatVersion` auf **11**.
 `ContentFields.ValidateRequired` und in der Massenbearbeitung; ein kaputtes Muster wird schon
 beim Speichern des Feldes abgewiesen.
 
-### F5 — Varianten: eine Entität erbt von einer anderen
+### F5 — Varianten: eine Entität erbt von einer anderen ✅ umgesetzt
 
 > **Als** Nutzer **möchte ich** ein Item als Variante eines anderen anlegen („Eisenschwert +1" erbt
 > alles vom „Eisenschwert" und überschreibt nur den Schaden), **damit** ich Bestandsreihen pflegen
@@ -108,6 +108,23 @@ muss die Auflösung kennen, deshalb sollte der Export **aufgelöste** Werte schr
 Herkunft als Zusatzangabe daneben.
 
 *Aufwand: L · Migration: ja · Format: +1*
+
+**Umgesetzt.** `ContentEntity.BasedOnId` (Migration `EntityVariants` in allen vier Providern —
+eine Spalte in allen 22 Inhaltstabellen, weil sie an der Basis hängt), `EntityInheritance` als
+reine Rechenklasse, `FormatVersion` auf **21**. Sechs Entscheidungen: Geerbt werden
+**Feldwerte und sonst nichts** — Name, Beschreibung, Stand und Sprite bleiben eigen. Aufgelöst
+wird in `ContentFields.LoadValuesAsync<TEntity>`, das dafür einen **Typparameter** bekam: Die
+Kette liegt in der Modul-Tabelle, und der Compiler zwingt so jede der zwanzig Aufrufstellen,
+sich einmal dazu zu äußern. Geprüft und fortgeschrieben wird in `StageValuesAsync` — der einen
+Stelle, durch die jeder Dienst läuft, wie bei der Schreibkonflikt-Erkennung; „gleiches Modul und
+Projekt“ prüft sich dabei von allein, weil `db.Set<TEntity>()` ein Vorbild von anderswo gar nicht
+findet. **Geerbte Werte werden nie als Zeile gespeichert**, sonst wäre die Vererbung nach dem
+ersten Speichern materialisiert; „wieder erben“ ist deshalb schlicht „leeren“. Beim **Löschen des
+Vorbilds** übernimmt die Variante dessen Werte als eigene und rückt in der Kette eine Stufe vor —
+ein Löschklick darf nicht den halben Bestand ändern; dafür heißt die typfreie
+`EntityCleanup`-Methode jetzt `DeleteForSubObjectsAsync`, damit niemand die Auflösung umgeht. Und
+der **Export schreibt aufgelöste Werte** mit `inheritedFromEntityId` daneben, der **Import
+überspringt genau die** — sonst wäre die Vererbung nach einem Umzug aufgelöst.
 
 ### F6 — Spawn-Regeln als eigene Struktur ✅ umgesetzt
 

@@ -40,10 +40,12 @@
                 <MudStack Spacing="4">
                     @foreach (var field in Ungrouped)
                     {
-                        <DynamicFieldInput Definition="field"
+                        <VariantFieldInput Definition="field"
                                            Value="Context.ValueFor(field)"
                                            ReferenceOptions="OptionsFor(field)"
                                            Formulas="_formulas"
+                                           HasBase="@(Context.Entity.BasedOnId is not null)"
+                                           BaseName="@BaseName"
                                            OnValueChanged="RecomputeAsync" />
                     }
                 </MudStack>
@@ -60,10 +62,12 @@
                             <MudStack Spacing="4">
                                 @foreach (var field in group.Fields)
                                 {
-                                    <DynamicFieldInput Definition="field"
+                                    <VariantFieldInput Definition="field"
                                                        Value="Context.ValueFor(field)"
                                                        ReferenceOptions="OptionsFor(field)"
                                                        Formulas="_formulas"
+                                                       HasBase="@(Context.Entity.BasedOnId is not null)"
+                                                       BaseName="@BaseName"
                                                        OnValueChanged="RecomputeAsync" />
                                 }
                             </MudStack>
@@ -103,10 +107,12 @@
             {
                 <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
                     <div style="flex:1 1 auto; min-width:0;">
-                        <DynamicFieldInput Definition="field"
+                        <VariantFieldInput Definition="field"
                                            Value="Context.ValueFor(field)"
                                            ReferenceOptions="OptionsFor(field)"
                                            Formulas="_formulas"
+                                           HasBase="@(Context.Entity.BasedOnId is not null)"
+                                           BaseName="@BaseName"
                                            OnValueChanged="RecomputeAsync" />
                     </div>
                     <MudTooltip Text="@L["EditFieldTooltip"]">
@@ -182,10 +188,37 @@
 
     private readonly Dictionary<string, IReadOnlyList<EntitySummary>> _referenceOptions = [];
 
+    /// <summary>
+    /// Name des Vorbilds, wenn diese Entität eine Variante ist — nur zur Beschriftung der
+    /// geerbten Felder. Aufgelöst über dieselbe Liste, aus der auch die Referenzfelder
+    /// wählen; eine eigene Abfrage dafür wäre eine zu viel.
+    /// </summary>
+    private string? _baseName;
+
+    private string? BaseName => _baseName;
+
     protected override void OnParametersSet() =>
         _formulas.Recompute(Context.ApplicableFields, Context.Values);
 
-    protected override async Task OnParametersSetAsync() => await LoadReferenceOptionsAsync();
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadReferenceOptionsAsync();
+        await LoadBaseNameAsync();
+    }
+
+    private async Task LoadBaseNameAsync()
+    {
+        if (Context.Entity.BasedOnId is not { } baseId)
+        {
+            _baseName = null;
+            return;
+        }
+
+        var projectId = await Project.GetCurrentIdAsync();
+        var siblings = await References.GetEntitiesAsync(projectId, ModuleKey);
+
+        _baseName = siblings.FirstOrDefault(entity => entity.Id == baseId)?.Name;
+    }
 
     /// <summary>
     /// Lädt die auswählbaren Entitäten für alle sichtbaren Referenzfelder. Je Zielmodul nur

@@ -158,7 +158,7 @@ public class StoryService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, entry.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, entry.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<StoryEntry>(db, entry.Id, ct)
         };
     }
 
@@ -217,7 +217,7 @@ public class StoryService(
         SyncParticipants(db, stored, entry, removedParticipantIds);
         SyncLinks(db, stored, entry);
 
-        await EntityCleanup.DeleteForEntitiesAsync(db, removedParticipantIds, ct);
+        await EntityCleanup.DeleteForSubObjectsAsync(db, removedParticipantIds, ct);
 
         // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier
         // gesetzt und nicht in jedem Zweig der Fallunterscheidung darüber.
@@ -361,7 +361,7 @@ public class StoryService(
             .ToListAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.StoryEntries, entryId, ct);
-        await EntityCleanup.DeleteForEntitiesAsync(db, [entryId, .. participantIds], ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.StoryEntries, entryId, participantIds, ct);
 
         // Verknüpfungen anderer Abschnitte hierher hängen ohne Fremdschlüssel daran und
         // blieben sonst als Waisen zurück.

@@ -105,6 +105,15 @@
   <data name="AssetRegionGridEmpty" xml:space="preserve">
     <value>Mit diesen Maßen passt keine einzige Zelle in das Bild.</value>
   </data>
+  <data name="VariantSelfReference" xml:space="preserve">
+    <value>Eine Entität kann keine Variante ihrer selbst sein.</value>
+  </data>
+  <data name="VariantBaseMissing" xml:space="preserve">
+    <value>Das gewählte Vorbild gibt es in diesem Modul und Projekt nicht.</value>
+  </data>
+  <data name="VariantCycle" xml:space="preserve">
+    <value>Das ergäbe einen Ring: Das Vorbild führt über seine eigene Kette wieder hierher zurück.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>

@@ -166,6 +166,15 @@
   <data name="VoiceOverUnknownSpeaker" xml:space="preserve">
     <value>Unknown speaker</value>
   </data>
+  <data name="VariantSelfReference" xml:space="preserve">
+    <value>An entity cannot be a variant of itself.</value>
+  </data>
+  <data name="VariantBaseMissing" xml:space="preserve">
+    <value>The chosen base does not exist in this module and project.</value>
+  </data>
+  <data name="VariantCycle" xml:space="preserve">
+    <value>That would form a cycle: the base leads back here through its own chain.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

@@ -54,6 +54,25 @@ public abstract class ContentEntity : IChangeLogged
     public string? Description { get; set; }
 
     /// <summary>
+    /// Das Vorbild dieser Entität — „Eisenschwert +1“ ist eine Variante von „Eisenschwert“ und
+    /// übernimmt jeden Feldwert, den es nicht selbst setzt. <c>null</c> heißt „eigenständig“.
+    /// <para>
+    /// Eine GUID <b>ohne Fremdschlüssel</b> wie alles Modulübergreifende — obwohl das Vorbild
+    /// hier immer im selben Modul und damit in derselben Tabelle liegt: Ein Fremdschlüssel auf
+    /// dieselbe Tabelle liefe im Kreis, und seine Löschregeln wären über die vier Provider
+    /// nicht einheitlich zu bekommen. Dieselbe Überlegung wie bei
+    /// <see cref="DialogueChoice.NextLineId"/>.
+    /// </para>
+    /// <para>
+    /// Geerbt werden <b>Feldwerte</b> und sonst nichts. Name, Beschreibung und Bearbeitungsstand
+    /// bleiben eigen — eine Variante, die den Namen ihres Vorbilds trüge, wäre in keiner Liste
+    /// wiederzufinden; und ein Sprite erbt sie nicht, weil eine Variante fast immer anders
+    /// aussieht.
+    /// </para>
+    /// </summary>
+    public Guid? BasedOnId { get; set; }
+
+    /// <summary>
     /// Bearbeitungsstand — Entwurf, in Arbeit, im Review, fertig. Gilt in allen Inhaltsmodulen
     /// auf einmal, weil die Spalte an dieser Basis hängt.
     /// </summary>

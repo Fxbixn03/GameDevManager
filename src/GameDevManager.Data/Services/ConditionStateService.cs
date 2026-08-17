@@ -127,7 +127,7 @@ public class ConditionStateService(
     /// <summary>
     /// Die bekannten Teilobjekte mit eigener GUID, an denen Bedingungen hängen. Eine
     /// Aufzählung statt einer Abstraktion: Es sind genau die Kind-Sammlungen, deren Dienste
-    /// beim Löschen <c>EntityCleanup.DeleteForEntitiesAsync</c> aufrufen — kommt eine neue
+    /// beim Löschen <c>EntityCleanup.DeleteForSubObjectsAsync</c> aufrufen — kommt eine neue
     /// dazu, gehört sie auch hier hinein.
     /// </summary>
     private static async Task<Dictionary<Guid, SubObjectInfo>> ResolveSubObjectsAsync(

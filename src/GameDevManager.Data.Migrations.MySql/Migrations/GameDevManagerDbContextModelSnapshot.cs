@@ -25,6 +25,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -53,6 +56,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -429,6 +434,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -454,6 +462,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -472,6 +482,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -497,6 +510,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -843,6 +858,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -878,6 +896,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BasedOnId");
+
                     b.HasIndex("ContentTypeId");
 
                     b.HasIndex("GameProjectId");
@@ -893,6 +913,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("BasedOnId")
                         .HasColumnType("char(36)");
 
                     b.Property<Guid?>("ContentTypeId")
@@ -926,6 +949,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1007,6 +1032,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -1038,6 +1066,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1138,6 +1168,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -1172,6 +1205,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1367,6 +1402,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -1392,6 +1430,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1581,6 +1621,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -1607,6 +1650,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BasedOnId");
+
                     b.HasIndex("ContentTypeId");
 
                     b.HasIndex("GameProjectId");
@@ -1622,6 +1667,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("BasedOnId")
                         .HasColumnType("char(36)");
 
                     b.Property<double>("Chance")
@@ -1656,6 +1704,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BasedOnId");
+
                     b.HasIndex("ContentTypeId");
 
                     b.HasIndex("GameProjectId");
@@ -1673,6 +1723,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("BasedOnId")
                         .HasColumnType("char(36)");
 
                     b.Property<Guid?>("ContentTypeId")
@@ -1700,6 +1753,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1741,6 +1796,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -1766,6 +1824,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1928,6 +1988,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -1956,6 +2019,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2080,6 +2145,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("CharacterClassId")
                         .HasColumnType("char(36)");
 
@@ -2135,6 +2203,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("CharacterClassId");
 
@@ -2255,6 +2325,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -2292,6 +2365,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2345,6 +2420,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("Color")
                         .HasMaxLength(9)
                         .HasColumnType("varchar(9)");
@@ -2378,6 +2456,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BasedOnId");
+
                     b.HasIndex("ContentTypeId");
 
                     b.HasIndex("GameProjectId");
@@ -2393,6 +2473,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("BasedOnId")
                         .HasColumnType("char(36)");
 
                     b.Property<Guid?>("ContentTypeId")
@@ -2420,6 +2503,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2492,6 +2577,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -2532,6 +2620,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2581,6 +2671,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("char(36)");
 
@@ -2606,6 +2699,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2662,6 +2757,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("Body")
                         .HasColumnType("longtext");
 
@@ -2715,6 +2813,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2995,6 +3095,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("Color")
                         .HasMaxLength(9)
                         .HasColumnType("varchar(9)");
@@ -3030,6 +3133,8 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 

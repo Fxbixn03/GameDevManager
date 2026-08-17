@@ -28,6 +28,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -56,6 +59,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -432,6 +437,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -457,6 +465,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -475,6 +485,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -500,6 +513,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -846,6 +861,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -881,6 +899,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BasedOnId");
+
                     b.HasIndex("ContentTypeId");
 
                     b.HasIndex("GameProjectId");
@@ -896,6 +916,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BasedOnId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ContentTypeId")
@@ -929,6 +952,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1010,6 +1035,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1041,6 +1069,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1141,6 +1171,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1175,6 +1208,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1370,6 +1405,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1395,6 +1433,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1584,6 +1624,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1610,6 +1653,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BasedOnId");
+
                     b.HasIndex("ContentTypeId");
 
                     b.HasIndex("GameProjectId");
@@ -1625,6 +1670,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BasedOnId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("Chance")
@@ -1659,6 +1707,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BasedOnId");
+
                     b.HasIndex("ContentTypeId");
 
                     b.HasIndex("GameProjectId");
@@ -1676,6 +1726,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BasedOnId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ContentTypeId")
@@ -1703,6 +1756,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1744,6 +1799,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1769,6 +1827,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -1931,6 +1991,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1959,6 +2022,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2083,6 +2148,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("CharacterClassId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2138,6 +2206,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("CharacterClassId");
 
@@ -2258,6 +2328,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2295,6 +2368,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2348,6 +2423,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Color")
                         .HasMaxLength(9)
                         .HasColumnType("nvarchar(9)");
@@ -2381,6 +2459,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BasedOnId");
+
                     b.HasIndex("ContentTypeId");
 
                     b.HasIndex("GameProjectId");
@@ -2396,6 +2476,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BasedOnId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ContentTypeId")
@@ -2423,6 +2506,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2495,6 +2580,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2535,6 +2623,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2584,6 +2674,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ContentTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2609,6 +2702,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2665,6 +2760,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Body")
                         .HasColumnType("nvarchar(max)");
 
@@ -2718,6 +2816,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 
@@ -2998,6 +3098,9 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BasedOnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Color")
                         .HasMaxLength(9)
                         .HasColumnType("nvarchar(9)");
@@ -3033,6 +3136,8 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasedOnId");
 
                     b.HasIndex("ContentTypeId");
 

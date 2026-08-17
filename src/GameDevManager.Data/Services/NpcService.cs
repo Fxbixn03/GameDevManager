@@ -157,7 +157,7 @@ public class NpcService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, npc.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, npc.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Npc>(db, npc.Id, ct)
         };
     }
 
@@ -218,7 +218,7 @@ public class NpcService(
 
         // Bedingungen entfernter Posten und Spawn-Regeln hängen an deren GUID und fallen
         // nicht von selbst mit.
-        await EntityCleanup.DeleteForEntitiesAsync(db, removedOfferIds, ct);
+        await EntityCleanup.DeleteForSubObjectsAsync(db, removedOfferIds, ct);
 
         // Der Bearbeitungsstand hängt an der Basis aller Inhalte und wird deshalb hier
         // gesetzt und nicht in jedem Zweig der Fallunterscheidung darüber.
@@ -550,7 +550,7 @@ public class NpcService(
             .ToListAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Npcs, npcId, ct);
-        await EntityCleanup.DeleteForEntitiesAsync(db, [npcId, .. offerIds, .. spawnRuleIds], ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Npcs, npcId, [.. offerIds, .. spawnRuleIds], ct);
 
         // Beziehungen, die bei anderen NPCs gespeichert sind und auf diesen zeigen, hängen
         // ohne Fremdschlüssel daran und blieben sonst als Waisen zurück.

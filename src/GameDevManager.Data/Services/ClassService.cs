@@ -95,7 +95,7 @@ public class ClassService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, characterClass.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, characterClass.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<CharacterClass>(db, characterClass.Id, ct)
         };
     }
 
@@ -158,7 +158,7 @@ public class ClassService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.CharacterClasses, classId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, classId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.CharacterClasses, classId, null, ct);
 
         // Keine Fremdschlüssel über die Modulgrenze — die Verweise müssen von Hand gelöst werden.
         await db.Npcs

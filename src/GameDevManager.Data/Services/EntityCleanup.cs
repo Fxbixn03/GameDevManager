@@ -1,3 +1,4 @@
+using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameDevManager.Data.Services;
@@ -15,16 +16,102 @@ namespace GameDevManager.Data.Services;
 /// </summary>
 public static class EntityCleanup
 {
-    /// <summary>Entfernt alles, was an der GUID dieser Entität hängt.</summary>
-    public static Task DeleteForEntityAsync(
-        GameDevManagerDbContext db, Guid entityId, CancellationToken ct) =>
-        DeleteForEntitiesAsync(db, [entityId], ct);
+    /// <summary>
+    /// Entfernt alles, was an der GUID einer <b>Entität</b> hängt, und löst zuvor die
+    /// Varianten auf, die sie als Vorbild haben.
+    /// <para>
+    /// Diese Überladung nimmt das <c>DbSet</c> und nicht nur die GUID: Das Vorbild einer
+    /// Variante steht in der Tabelle des Moduls, und die kennt nur der Typ. Sie ist der Weg
+    /// zum Löschen einer Entität — die GUID-Fassung heißt bewusst
+    /// <see cref="DeleteForSubObjectsAsync"/> und ist für Teilobjekte da, damit niemand die
+    /// Variantenauflösung versehentlich umgeht.
+    /// </para>
+    /// </summary>
+    public static async Task DeleteForEntityAsync<TEntity>(
+        GameDevManagerDbContext db, DbSet<TEntity> set, Guid entityId,
+        IReadOnlyCollection<Guid>? subObjectIds, CancellationToken ct)
+        where TEntity : ContentEntity
+    {
+        await DissolveVariantsAsync(db, set, entityId, ct);
+
+        IReadOnlyCollection<Guid> owners = subObjectIds is null or { Count: 0 }
+            ? [entityId]
+            : [entityId, .. subObjectIds];
+
+        await DeleteForSubObjectsAsync(db, owners, ct);
+    }
 
     /// <summary>
-    /// Dasselbe für mehrere GUIDs auf einmal. Nötig für Entitäten mit Teilobjekten, die eigene
-    /// GUIDs haben und eigene Bedingungen tragen können — etwa die Posten eines Händlers.
+    /// Löst die Varianten auf, deren Vorbild gleich verschwindet: Sie <b>übernehmen dessen
+    /// Werte als eigene</b> und rücken in der Kette eine Stufe vor.
+    /// <para>
+    /// Die Alternative wäre, den Verweis einfach zu leeren — dann verlöre die Variante still
+    /// jeden geerbten Wert, und ein Löschklick am Vorbild änderte den halben Bestand. So bleibt
+    /// der Stand exakt erhalten: Was die Variante selbst setzt, bleibt ihres; was sie geerbt
+    /// hat, wird ihres; was von weiter oben kam, erbt sie weiterhin.
+    /// </para>
     /// </summary>
-    public static async Task DeleteForEntitiesAsync(
+    private static async Task DissolveVariantsAsync<TEntity>(
+        GameDevManagerDbContext db, DbSet<TEntity> set, Guid entityId, CancellationToken ct)
+        where TEntity : ContentEntity
+    {
+        var variants = await set
+            .Where(entity => entity.BasedOnId == entityId)
+            .ToListAsync(ct);
+
+        if (variants.Count == 0)
+        {
+            return;
+        }
+
+        var doomed = await set.AsNoTracking().FirstOrDefaultAsync(entity => entity.Id == entityId, ct);
+
+        var doomedValues = await db.FieldValues
+            .AsNoTracking()
+            .Where(value => value.OwnerEntityId == entityId)
+            .ToListAsync(ct);
+
+        foreach (var variant in variants)
+        {
+            // Eine Stufe vor: Was das Vorbild selbst geerbt hat, erbt die Variante weiter.
+            variant.BasedOnId = doomed?.BasedOnId;
+
+            if (doomedValues.Count == 0)
+            {
+                continue;
+            }
+
+            var own = await db.FieldValues
+                .Where(value => value.OwnerEntityId == variant.Id)
+                .Select(value => value.FieldDefinitionId)
+                .ToListAsync(ct);
+
+            foreach (var inherited in doomedValues.Where(v => !own.Contains(v.FieldDefinitionId)))
+            {
+                var copy = new FieldValue
+                {
+                    FieldDefinitionId = inherited.FieldDefinitionId,
+                    OwnerEntityId = variant.Id,
+                    OwnerModuleKey = variant.ModuleKey
+                };
+
+                ContentFields.CopyValues(inherited, copy);
+                db.FieldValues.Add(copy);
+            }
+        }
+
+        // Sofort und nicht erst mit dem Löschen: Die Werte des Vorbilds fallen gleich darauf
+        // über DeleteForSubObjectsAsync weg, und dann wäre nichts mehr zu kopieren.
+        await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// Entfernt alles, was an GUIDs hängt, die <b>keine ContentEntity</b> sind: Teilobjekte
+    /// (Händler-Posten, Dialogzeilen, Quest-Ziele, Spawn-Regeln) und die wenigen Besitzer
+    /// außerhalb der Basisklasse (<see cref="PlayerCharacter"/>, <see cref="SkillTree"/>).
+    /// Sie alle können kein Vorbild einer Variante sein — deshalb braucht es hier keinen Typ.
+    /// </summary>
+    public static async Task DeleteForSubObjectsAsync(
         GameDevManagerDbContext db, IReadOnlyCollection<Guid> entityIds, CancellationToken ct)
     {
         if (entityIds.Count == 0)

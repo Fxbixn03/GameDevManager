@@ -96,7 +96,7 @@ public class WorldService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, state.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, state.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<WorldState>(db, state.Id, ct)
         };
     }
 
@@ -215,7 +215,7 @@ public class WorldService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.WorldStates, stateId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, stateId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.WorldStates, stateId, null, ct);
 
         await db.WorldStates
             .Where(w => w.Id == stateId)

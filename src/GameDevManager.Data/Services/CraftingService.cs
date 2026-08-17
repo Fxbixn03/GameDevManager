@@ -177,7 +177,7 @@ public class CraftingService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, recipe.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, recipe.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Recipe>(db, recipe.Id, ct)
         };
     }
 
@@ -328,7 +328,7 @@ public class CraftingService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Recipes, recipeId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, recipeId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Recipes, recipeId, null, ct);
 
         // Ziel-Items und Zutaten fallen über den Fremdschlüssel mit.
         await db.Recipes

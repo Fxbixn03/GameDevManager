@@ -73,7 +73,7 @@ public class AchievementService(
             IsNew = false,
             AvailableTypes = types,
             IndividualFields = await ContentFields.LoadIndividualFieldsAsync(db, achievement.Id, ct),
-            Values = await ContentFields.LoadValuesAsync(db, achievement.Id, ct)
+            Values = await ContentFields.LoadValuesAsync<Achievement>(db, achievement.Id, ct)
         };
     }
 
@@ -137,7 +137,7 @@ public class AchievementService(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         await ChangeLog.RecordDeletionAsync(db, db.Achievements, achievementId, ct);
-        await EntityCleanup.DeleteForEntityAsync(db, achievementId, ct);
+        await EntityCleanup.DeleteForEntityAsync(db, db.Achievements, achievementId, null, ct);
 
         await db.Achievements
             .Where(a => a.Id == achievementId)

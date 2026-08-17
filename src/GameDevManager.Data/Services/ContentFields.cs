@@ -35,16 +35,54 @@ public static class ContentFields
         return [.. fields.OrderBy(f => f.SortOrder).ThenBy(f => f.Name)];
     }
 
-    /// <summary>Die erfassten Werte einer Entität, nach Felddefinition abgelegt.</summary>
-    public static async Task<Dictionary<Guid, FieldValue>> LoadValuesAsync(
+    /// <summary>
+    /// Die <b>wirksamen</b> Werte einer Entität, nach Felddefinition abgelegt: die eigenen und —
+    /// wenn die Entität eine Variante ist (<see cref="ContentEntity.BasedOnId"/>) — die ihres
+    /// Vorbilds für jedes Feld, das sie nicht selbst setzt. Geerbte Werte tragen ihre Herkunft
+    /// in <see cref="FieldValue.InheritedFromEntityId"/>.
+    /// <para>
+    /// Der Typparameter kam mit den Varianten dazu und ist Absicht: Die Kette der Vorbilder
+    /// liegt in der Tabelle des Moduls, und die kennt nur <c>TEntity</c>. Er zwingt außerdem
+    /// jede Aufrufstelle, sich einmal dazu zu äußern — ein neues Modul kann die Vererbung
+    /// dadurch nicht stillschweigend übergehen.
+    /// </para>
+    /// </summary>
+    public static async Task<Dictionary<Guid, FieldValue>> LoadValuesAsync<TEntity>(
         GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
+        where TEntity : ContentEntity
     {
-        var values = await db.FieldValues
+        var own = await db.FieldValues
             .AsNoTracking()
             .Where(v => v.OwnerEntityId == entityId)
             .ToListAsync(ct);
 
-        return values.ToDictionary(v => v.FieldDefinitionId);
+        // Ganz geladen und nicht projiziert: ModuleKey ist eine Konstante der konkreten Klasse
+        // und keine Spalte — in einer LINQ-Projektion hätte EF sie nicht übersetzen können.
+        var entity = await db.Set<TEntity>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == entityId, ct);
+
+        // Der häufige Fall: keine Variante, nichts zu erben — und keine zweite Abfrage.
+        if (entity?.BasedOnId is null)
+        {
+            return own.ToDictionary(v => v.FieldDefinitionId);
+        }
+
+        var basedOn = await db.Set<TEntity>()
+            .AsNoTracking()
+            .Where(e => e.GameProjectId == entity.GameProjectId && e.BasedOnId != null)
+            .ToDictionaryAsync(e => e.Id, e => e.BasedOnId, ct);
+
+        var chain = EntityInheritance.ChainOf(entityId, basedOn);
+
+        var ancestorValues = await db.FieldValues
+            .AsNoTracking()
+            .Where(v => chain.Contains(v.OwnerEntityId))
+            .ToListAsync(ct);
+
+        var lookup = own.Concat(ancestorValues).ToLookup(v => v.OwnerEntityId);
+
+        return EntityInheritance.Resolve(entityId, entity.ModuleKey, basedOn, lookup);
     }
 
     /// <summary>
@@ -175,6 +213,7 @@ public static class ContentFields
         where TEntity : ContentEntity
     {
         await EnsureNotChangedElsewhereAsync(db, context, messages, ct);
+        await StageBaseAsync(db, context, messages, ct);
 
         var entity = context.Entity;
         var applicable = context.ApplicableFields.ToDictionary(f => f.Id);
@@ -192,7 +231,11 @@ public static class ContentFields
             }
 
             var edited = Canonicalize(field, context.ValueFor(field));
-            if (edited.IsEmpty)
+
+            // Ein geerbter Wert gehört nicht dieser Entität. Steht hier trotzdem eine Zeile,
+            // hat der Nutzer sie zurückgenommen („wieder erben“) — sie fällt weg, und ab dem
+            // nächsten Laden gilt wieder der des Vorbilds.
+            if (edited.IsEmpty || edited.IsInherited)
             {
                 db.FieldValues.Remove(existing);
                 continue;
@@ -211,7 +254,11 @@ public static class ContentFields
             }
 
             var edited = Canonicalize(field, context.ValueFor(field));
-            if (edited.IsEmpty)
+
+            // Geerbte Werte werden nicht angelegt: Eine Zeile daraus zu machen materialisierte
+            // die Vererbung und löste sie damit auf — ab da folgte die Variante ihrem Vorbild
+            // nicht mehr. Wer den Wert eigen haben will, überschreibt ihn in der Maske.
+            if (edited.IsEmpty || edited.IsInherited)
             {
                 continue;
             }
@@ -226,6 +273,70 @@ public static class ContentFields
 
             CopyValues(edited, created);
             db.FieldValues.Add(created);
+        }
+    }
+
+    /// <summary>
+    /// Prüft das Vorbild einer Variante (<see cref="ContentEntity.BasedOnId"/>) und schreibt es
+    /// auf den gespeicherten Datensatz fort.
+    /// <para>
+    /// Bewusst hier und nicht als je eine Zeile in den gut zwanzig Modul-Diensten — dieselbe
+    /// Überlegung wie bei <see cref="EnsureNotChangedElsewhereAsync"/> und
+    /// <see cref="EntityCleanup"/>: Ein zusätzlicher Aufruf je Dienst wäre der, den ein neues
+    /// Modul vergisst, und dort fiele die Variante still unter den Tisch.
+    /// </para>
+    /// <para>
+    /// Drei Verbote, dieselben wie bei den Unterarten: nicht sich selbst, kein Ring, und nur
+    /// ein Vorbild aus demselben Modul und Projekt. Letzteres prüft sich von allein mit —
+    /// jedes Modul hat seine eigene Tabelle, also findet <c>db.Set&lt;TEntity&gt;()</c> ein
+    /// Vorbild aus einem anderen Modul gar nicht erst.
+    /// </para>
+    /// </summary>
+    private static async Task StageBaseAsync<TEntity>(
+        GameDevManagerDbContext db, ContentEditContext<TEntity> context,
+        IStringLocalizer<DataMessages> messages, CancellationToken ct)
+        where TEntity : ContentEntity
+    {
+        var entity = context.Entity;
+
+        if (entity.BasedOnId is { } basedOnId)
+        {
+            if (basedOnId == entity.Id)
+            {
+                throw new ContentValidationException(messages["VariantSelfReference"]);
+            }
+
+            var exists = await db.Set<TEntity>()
+                .AnyAsync(e => e.Id == basedOnId && e.GameProjectId == entity.GameProjectId, ct);
+
+            if (!exists)
+            {
+                throw new ContentValidationException(messages["VariantBaseMissing"]);
+            }
+
+            var basedOn = await db.Set<TEntity>()
+                .AsNoTracking()
+                .Where(e => e.GameProjectId == entity.GameProjectId && e.BasedOnId != null)
+                .ToDictionaryAsync(e => e.Id, e => e.BasedOnId, ct);
+
+            // Der eigene Stand zählt so, wie er gleich sein wird — sonst meldete die Prüfung
+            // einen Ring, der beim Speichern gerade erst entsteht, nicht.
+            basedOn[entity.Id] = basedOnId;
+
+            if (EntityInheritance.FindCycle(entity.Id, basedOnId, basedOn) is not null)
+            {
+                throw new ContentValidationException(messages["VariantCycle"]);
+            }
+        }
+
+        // Der Datensatz, den der Modul-Dienst gerade angelegt oder geladen hat. Über den
+        // Änderungsverfolger und nicht über eine Abfrage: Er ist längst da, und ein zweites
+        // Laden gäbe eine zweite Instanz derselben Zeile.
+        var stored = db.Set<TEntity>().Local.FirstOrDefault(e => e.Id == entity.Id);
+
+        if (stored is not null)
+        {
+            stored.BasedOnId = entity.BasedOnId;
         }
     }
 
