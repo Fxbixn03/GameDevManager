@@ -67,6 +67,15 @@ public sealed class ChangeLogInterceptor(IChangeAuthorProvider authors) : SaveCh
             pending.Entity.UserName = author.UserName;
         }
 
+        // Papierkorb-Einträge nach derselben Regel: Sie entstehen in EntityCleanup, das den
+        // angemeldeten Benutzer nicht kennt.
+        foreach (var pending in db.ChangeTracker.Entries<RecycleBinEntry>()
+                     .Where(entry => entry.State == EntityState.Added
+                         && string.IsNullOrEmpty(entry.Entity.DeletedBy)))
+        {
+            pending.Entity.DeletedBy = author.UserName;
+        }
+
         if (db.SuppressChangeLog)
         {
             return;

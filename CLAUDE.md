@@ -418,6 +418,18 @@ Vier Dinge, die man beim Ändern kennen muss:
 
 **Schreibkonflikt-Erkennung.** `ContentFields.EnsureNotChangedElsewhereAsync` vergleicht den Zeitstempel, den die Maske mitbringt, gegen den in der Datenbank und wirft eine `ContentConcurrencyException` — abgeleitet von `ContentValidationException`, damit jede Maske sie ohne Änderung anzeigt. Kein `rowversion`: Den gibt es nur im SQL Server, PostgreSQL hätte `xmin`, MySQL und SQLite gar nichts; für vier Provider mit derselben Spalte bleibt der Zeitstempel, den jede `ContentEntity` ohnehin trägt. Die Prüfung sitzt in `StageValuesAsync` — der einen Stelle, durch die jeder Modul-Dienst unmittelbar vor dem Speichern läuft. Dass sie funktioniert, hängt daran, dass die Dienste nach dem Speichern den neuen Zeitstempel in die Maske **zurückschreiben**; sonst meldete der zweite Klick einen Konflikt mit einem selbst. Eine inzwischen gelöschte Zeile ist ausdrücklich **kein** Konflikt — Speichern legt sie wieder an.
 
+### Papierkorb
+
+`RecycleBinEntry` + `RecycleBinService`, Migration `RecycleBin` in allen vier Providern; Seite `/modules/changelog/papierkorb`, verlinkt vom Änderungsprotokoll. Sieben Dinge:
+
+- **Kein Soft-Delete-Schalter an `ContentEntity`.** Der zöge eine Filterbedingung durch jede Abfrage des gesamten Bestands — Listen, Suche, Referenzansicht, Export, Health Checks — und wäre die Sorte Änderung, die man an einer Stelle vergisst. Stattdessen dieselbe Strecke wie beim Duplizieren, nur rückwärts: serialisieren (`EntityDuplication.CaptureAsync`), aufbewahren, mit den **originalen** GUIDs zurücklesen (`Restore`).
+- **Erfasst wird in `EntityCleanup.DeleteForEntityAsync`** — der einen Stelle, durch die jeder Löschpfad läuft und die seit den Varianten das `DbSet` ohnehin in der Hand hat. **Vor** dem Auflösen der Varianten: Danach stünden deren übernommene Werte doppelt im Baum.
+- **Sprites kommen nicht mit zurück.** Beim Löschen verschwinden auch die Dateien, und die ließen sich aus einer Datenbankzeile nicht wiederherstellen — dafür gibt es die Exportstände. Die Seite sagt das ausdrücklich, statt es den Nutzer beim ersten Mal herausfinden zu lassen.
+- **Eine belegte GUID blockt das Zurückholen** und wird als Chip angezeigt, nicht erst beim Klick gemeldet: Steht unter der GUID wieder etwas (ein eingespielter Exportstand), überschriebe die Wiederherstellung es.
+- **Der Eintrag fällt mit dem Zurückholen weg** — er beschreibt einen Zustand, den es nicht mehr gibt, und ein zweites Wiederherstellen liefe in den Schlüsselkonflikt.
+- **Werkzeug-Daten** wie das Änderungsprotokoll: nicht im Export, überstehen den ersetzenden Import. `DeletedBy` bleibt beim Anlegen leer und wird vom `ChangeLogInterceptor` nachgetragen — den angemeldeten Benutzer kennt nur er.
+- **Aufbewahrung als Konfiguration** (`RecycleBin:MaxAgeDays`, Vorgabe **30**; `RecycleBin:MaxPerProject`, Vorgabe aus; `RecycleBin:Enabled`), aufgeräumt vom bestehenden `ChangeLogMaintenance` — ein zweiter Hintergrunddienst für dieselbe Frage wäre einer zu viel. Anders als bei den Exportständen bleibt kein Eintrag pflichtweise stehen: 30 Tage sind großzügig für einen Fehlklick, der binnen Stunden auffällt.
+
 ### Duplizieren
 
 Kopiert wird auf zwei Ebenen, und beide benutzen denselben Kniff: **serialisieren, GUIDs tauschen, zurücklesen** ([GuidRemap.cs](src/GameDevManager.Data/Services/GuidRemap.cs)). Weil Entitäten laut Konzept ausnahmslos über GUIDs aufeinander verweisen, trifft ein Austausch über den gesamten JSON-Text jede Referenz — auch die Fremdschlüssel der Kind-Sammlungen, die Besitzer-GUIDs der Feldwerte und die Ziele der Bedingungen. Ein Verzeichnis der Spalten, in denen GUIDs vorkommen, müsste bei jedem neuen Modul nachgeführt werden.

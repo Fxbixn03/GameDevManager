@@ -498,7 +498,7 @@ einzige neue Spalte (Migration `ActivityFeedMarker`), Seite `/aktivitaet` und di
 Appbar. Erwähnungen kommen über „@Name“ aus den Anmerkungen (F21), Zuweisungen aus den
 Kanban-Karten (F22).
 
-### F24 — Papierkorb
+### F24 — Papierkorb ✅ umgesetzt
 
 > **Als** Nutzer **möchte ich** eine versehentlich gelöschte Entität zurückholen, **damit** ein
 > Fehlklick nicht heißt, den letzten Exportstand einzuspielen und alles seitdem zu verlieren.
@@ -513,6 +513,21 @@ wie bei den Exportständen: Höchstalter und Obergrenze als Konfiguration, aufge
 `ChangeLogMaintenance`-Hintergrunddienst.
 
 *Aufwand: L · Migration: ja · Format: unverändert*
+
+**Umgesetzt** genau so: `RecycleBinEntry` mit dem JSON-Baum, Migration `RecycleBin` in allen
+vier Providern, aufgeräumt vom bestehenden `ChangeLogMaintenance` (ein zweiter Hintergrunddienst
+für dieselbe Frage wäre einer zu viel). Fünf Dinge dahinter: **Erfasst wird in
+`EntityCleanup.DeleteForEntityAsync`** — der einen Stelle, durch die jeder Löschpfad läuft und
+die seit F5 das `DbSet` ohnehin in der Hand hat; ein Aufruf je Modul-Dienst wäre der, den ein
+neues Modul vergisst. **Vor dem Auflösen der Varianten**, sonst stünden deren übernommene Werte
+doppelt im Baum. **Sprites kommen nicht mit zurück**: Beim Löschen verschwinden auch die
+Dateien, und die ließen sich aus einer Datenbankzeile nicht wiederherstellen — dafür gibt es die
+Exportstände; die Seite sagt das ausdrücklich. Eine **belegte GUID blockt** das Zurückholen
+(sichtbar als Chip, nicht erst beim Klick) — sonst überschriebe eine Wiederherstellung den
+Datensatz, der inzwischen dort steht. Und der Eintrag **fällt mit dem Zurückholen weg**: Er
+beschreibt einen Zustand, den es nicht mehr gibt. Aufbewahrung als Konfiguration
+(`RecycleBin:MaxAgeDays`, Vorgabe **30**; `RecycleBin:MaxPerProject`, Vorgabe aus;
+`RecycleBin:Enabled`), die Seite steht unter `/modules/changelog/papierkorb`.
 
 ### F25 — „Wird gerade bearbeitet von …" ✅ umgesetzt
 

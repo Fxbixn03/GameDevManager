@@ -32,6 +32,7 @@ public static class EntityCleanup
         IReadOnlyCollection<Guid>? subObjectIds, CancellationToken ct)
         where TEntity : ContentEntity
     {
+        await CaptureForRecycleBinAsync(db, set, entityId, ct);
         await DissolveVariantsAsync(db, set, entityId, ct);
 
         IReadOnlyCollection<Guid> owners = subObjectIds is null or { Count: 0 }
@@ -39,6 +40,57 @@ public static class EntityCleanup
             : [entityId, .. subObjectIds];
 
         await DeleteForSubObjectsAsync(db, owners, ct);
+    }
+
+    /// <summary>
+    /// Legt den Papierkorb-Eintrag an, bevor irgendetwas verschwindet.
+    /// <para>
+    /// Hier und nicht in den gut zwanzig Modul-Diensten: Diese Methode hat das <c>DbSet</c>
+    /// ohnehin schon in der Hand, und ein Aufruf je Dienst wäre der, den ein neues Modul
+    /// vergisst — dieselbe Überlegung, aus der es <see cref="EntityCleanup"/> überhaupt gibt.
+    /// </para>
+    /// <para>
+    /// <b>Vor</b> dem Auflösen der Varianten: Danach stünden deren übernommene Werte doppelt im
+    /// Baum, einmal beim Vorbild und einmal bei der Variante. Und vor dem Löschen ohnehin —
+    /// hinterher gäbe es nichts mehr zu erfassen.
+    /// </para>
+    /// </summary>
+    private static async Task CaptureForRecycleBinAsync<TEntity>(
+        GameDevManagerDbContext db, DbSet<TEntity> set, Guid entityId, CancellationToken ct)
+        where TEntity : ContentEntity
+    {
+        if (!db.RecycleBinEnabled)
+        {
+            return;
+        }
+
+        IQueryable<TEntity> query = set.AsNoTracking();
+
+        foreach (var navigation in db.Model.FindEntityType(typeof(TEntity))!
+                     .GetNavigations()
+                     .Where(navigation => navigation.IsCollection))
+        {
+            query = query.Include(navigation.Name);
+        }
+
+        var doomed = await query.FirstOrDefaultAsync(entity => entity.Id == entityId, ct);
+
+        if (doomed is null)
+        {
+            return;
+        }
+
+        db.RecycleBinEntries.Add(new RecycleBinEntry
+        {
+            GameProjectId = doomed.GameProjectId,
+            ModuleKey = doomed.ModuleKey,
+            EntityId = doomed.Id,
+            EntityName = doomed.Name,
+            Payload = await EntityDuplication.CaptureAsync(db, doomed, ct)
+            // DeletedBy bleibt leer — der ChangeLogInterceptor trägt den Benutzer nach.
+        });
+
+        await db.SaveChangesAsync(ct);
     }
 
     /// <summary>

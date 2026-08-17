@@ -67,6 +67,9 @@
   <data name="SubtitleCount" xml:space="preserve">
     <value>{0} Einträge</value>
   </data>
+  <data name="ToRecycleBin" xml:space="preserve">
+    <value>Papierkorb</value>
+  </data>
   <data name="ModuleFilter" xml:space="preserve">
     <value>Modul</value>
   </data>

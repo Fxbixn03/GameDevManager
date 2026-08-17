@@ -3,8 +3,9 @@ using GameDevManager.Data.Services;
 namespace GameDevManager.Web.Services;
 
 /// <summary>
-/// Der Wartungslauf, der das Änderungsprotokoll auf die eingestellte Aufbewahrung kürzt
-/// (<see cref="ChangeLogRetentionOptions"/>) — einmal beim Start und danach in festem Abstand.
+/// Der Wartungslauf, der das Änderungsprotokoll und den Papierkorb auf die eingestellte
+/// Aufbewahrung kürzt (<see cref="ChangeLogRetentionOptions"/>,
+/// <see cref="RecycleBinOptions"/>) — einmal beim Start und danach in festem Abstand.
 /// <para>
 /// Ein Hintergrunddienst und nicht ein Anhängsel des Speicherns: Das Protokoll wächst bei
 /// jeder Änderung, und bei jeder Änderung aufzuräumen hieße, den häufigsten Vorgang des Tools
@@ -21,11 +22,12 @@ namespace GameDevManager.Web.Services;
 public sealed class ChangeLogMaintenance(
     IServiceScopeFactory scopes,
     ChangeLogRetentionOptions retention,
+    RecycleBinOptions recycleBin,
     ILogger<ChangeLogMaintenance> log) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (!retention.HasRetentionRule)
+        if (!retention.HasRetentionRule && !recycleBin.HasRetentionRule)
         {
             // Ohne Grenzen gibt es nichts zu tun — dann läuft auch kein Zeitgeber mit.
             return;
@@ -62,6 +64,17 @@ public sealed class ChangeLogMaintenance(
                 log.LogInformation(
                     "Änderungsprotokoll aufgeräumt: {Removed} Einträge entfernt.", removed);
             }
+
+            // Der Papierkorb im selben Lauf: Er wächst aus demselben Grund von allein, und ein
+            // zweiter Hintergrunddienst für dieselbe Frage wäre einer zu viel.
+            var binned = await scope.ServiceProvider
+                .GetRequiredService<RecycleBinService>()
+                .PruneAllProjectsAsync(ct);
+
+            if (binned > 0)
+            {
+                log.LogInformation("Papierkorb aufgeräumt: {Removed} Einträge entfernt.", binned);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -71,7 +84,7 @@ public sealed class ChangeLogMaintenance(
         {
             // Eine noch nicht migrierte oder gerade nicht erreichbare Datenbank darf den
             // Hintergrunddienst nicht beenden — beim nächsten Durchlauf steht sie vielleicht.
-            log.LogWarning(ex, "Das Änderungsprotokoll konnte nicht aufgeräumt werden.");
+            log.LogWarning(ex, "Änderungsprotokoll und Papierkorb konnten nicht aufgeräumt werden.");
         }
     }
 }

@@ -175,6 +175,15 @@
   <data name="VariantCycle" xml:space="preserve">
     <value>That would form a cycle: the base leads back here through its own chain.</value>
   </data>
+  <data name="RecycleBinEntryGone" xml:space="preserve">
+    <value>This recycle bin entry no longer exists.</value>
+  </data>
+  <data name="RecycleBinModuleUnknown" xml:space="preserve">
+    <value>The module “{0}” is unknown — the entry cannot be restored.</value>
+  </data>
+  <data name="RecycleBinIdTaken" xml:space="preserve">
+    <value>Another record already occupies the GUID of “{0}”. Restoring would overwrite it.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

@@ -105,6 +105,23 @@ public interface IModuleEntitySource
         GameDevManagerDbContext db, Guid entityId, string name, CancellationToken ct);
 
     /// <summary>
+    /// Schreibt eine Entität samt allem, was an ihren GUIDs hängt, in einen JSON-Text — die
+    /// Vorlage für den Papierkorb. <c>null</c>, wenn es die Entität nicht (mehr) gibt.
+    /// <para>
+    /// Dieselbe Strecke wie <see cref="DuplicateAsync"/>, nur ohne den GUID-Tausch: Zurück soll
+    /// genau dieser Datensatz kommen und nicht ein zweiter.
+    /// </para>
+    /// </summary>
+    Task<RecycledEntity?> CaptureAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct);
+
+    /// <summary>
+    /// Liest einen aufbewahrten Baum zurück und hängt ihn an den Kontext an — gespeichert wird
+    /// vom Aufrufer. Die GUIDs bleiben die originalen, damit jeder Verweis wieder trägt.
+    /// </summary>
+    void Restore(GameDevManagerDbContext db, string payload);
+
+    /// <summary>
     /// Stellen, an denen dieses Modul über eigene Spalten auf eine fremde Entität verweist —
     /// also nicht über Feldwerte. Rezept-Zutaten sind der erste Fall; Händler-Angebote und
     /// Loot-Einträge kommen so dazu. Module ohne solche Verweise geben nichts zurück.
@@ -370,6 +387,33 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
     public virtual Task<List<EntityReferenceHit>> FindReferencesAsync(
         GameDevManagerDbContext db, Guid entityId, CancellationToken ct) =>
         Task.FromResult(new List<EntityReferenceHit>());
+
+    /// <summary>
+    /// Erfasst den vollständigen Baum für den Papierkorb. Die Kind-Sammlungen kommen wie beim
+    /// Duplizieren aus dem EF-Modell — ein neu hinzugekommenes Kind ist von selbst dabei.
+    /// </summary>
+    public async Task<RecycledEntity?> CaptureAsync(
+        GameDevManagerDbContext db, Guid entityId, CancellationToken ct)
+    {
+        IQueryable<TEntity> query = Set(db).AsNoTracking();
+
+        foreach (var navigation in db.Model.FindEntityType(typeof(TEntity))!
+                     .GetNavigations()
+                     .Where(navigation => navigation.IsCollection))
+        {
+            query = query.Include(navigation.Name);
+        }
+
+        var original = await query.FirstOrDefaultAsync(entity => entity.Id == entityId, ct);
+
+        return original is null
+            ? null
+            : new RecycledEntity(original.Name, await EntityDuplication.CaptureAsync(db, original, ct));
+    }
+
+    /// <inheritdoc />
+    public void Restore(GameDevManagerDbContext db, string payload) =>
+        EntityDuplication.Restore<TEntity>(db, payload);
 
     /// <summary>
     /// Standardfall: Das Modul trägt seine Texte in Name, Beschreibung und benutzerdefinierten

@@ -114,6 +114,15 @@
   <data name="VariantCycle" xml:space="preserve">
     <value>Das ergäbe einen Ring: Das Vorbild führt über seine eigene Kette wieder hierher zurück.</value>
   </data>
+  <data name="RecycleBinEntryGone" xml:space="preserve">
+    <value>Diesen Papierkorb-Eintrag gibt es nicht mehr.</value>
+  </data>
+  <data name="RecycleBinModuleUnknown" xml:space="preserve">
+    <value>Das Modul „{0}“ ist nicht bekannt — der Eintrag lässt sich nicht wiederherstellen.</value>
+  </data>
+  <data name="RecycleBinIdTaken" xml:space="preserve">
+    <value>Unter der GUID von „{0}“ steht bereits wieder ein Datensatz. Wiederherstellen würde ihn überschreiben.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>

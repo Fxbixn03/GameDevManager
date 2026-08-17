@@ -21,7 +21,17 @@
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
-<ModuleHeader Module="Module" Subtitle="@Subtitle" />
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        @* Der Papierkorb beantwortet dieselbe Frage aus der anderen Richtung: Das Protokoll
+           sagt, wer was gelöscht hat — der Papierkorb holt es zurück. *@
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.DeleteOutline"
+                   Href="/modules/changelog/papierkorb">
+            @L["ToRecycleBin"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
 
 <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
     <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">

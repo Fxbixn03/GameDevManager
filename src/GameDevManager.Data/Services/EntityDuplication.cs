@@ -99,9 +99,102 @@ internal static class EntityDuplication
         db.ConditionSets.AddRange(copied.Conditions);
     }
 
+    // ------------------------------------------------------------------------ Papierkorb
+
+    /// <summary>
+    /// Schreibt eine Entität samt allem, was an ihren GUIDs hängt, in <b>einen</b> JSON-Text —
+    /// die Vorlage für den Papierkorb. Dieselbe Strecke wie beim Kopieren, nur ohne den
+    /// GUID-Tausch: Wiederhergestellt werden soll genau dieser Datensatz und nicht ein zweiter.
+    /// </summary>
+    internal static async Task<string> CaptureAsync<TEntity>(
+        GameDevManagerDbContext db, TEntity original, CancellationToken ct)
+        where TEntity : ContentEntity
+    {
+        // Über den JSON-Text und nicht über die geladenen Objekte: So stehen genau die GUIDs
+        // darin, an denen die Anhängsel hängen — auch die der Teilobjekte.
+        var json = JsonSerializer.Serialize(original, ExportFormat.JsonOptions);
+
+        var owners = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        GuidRemap.Collect(JsonNode.Parse(json), owners);
+
+        var ownerIds = owners.Keys.Select(Guid.Parse).ToList();
+
+        var capsule = new Capsule
+        {
+            Entity = original,
+            Fields = await db.FieldDefinitions
+                .AsNoTracking()
+                .Include(f => f.Options)
+                .Where(f => f.OwnerEntityId != null && ownerIds.Contains(f.OwnerEntityId.Value))
+                .ToListAsync(ct),
+            Values = await db.FieldValues
+                .AsNoTracking()
+                .Where(v => ownerIds.Contains(v.OwnerEntityId))
+                .ToListAsync(ct),
+            Conditions = await db.ConditionSets
+                .AsNoTracking()
+                .Include(s => s.Conditions)
+                .Where(s => ownerIds.Contains(s.OwnerId))
+                .ToListAsync(ct)
+        };
+
+        return JsonSerializer.Serialize(capsule, ExportFormat.JsonOptions);
+    }
+
+    /// <summary>
+    /// Liest einen aufbewahrten Baum zurück — mit den <b>originalen</b> GUIDs, damit jeder
+    /// Verweis, der auf die gelöschte Entität zeigte, wieder trägt. Hängt alles an den Kontext
+    /// an; gespeichert wird vom Aufrufer.
+    /// </summary>
+    internal static TEntity Restore<TEntity>(GameDevManagerDbContext db, string payload)
+        where TEntity : ContentEntity
+    {
+        var capsule = JsonSerializer.Deserialize<Capsule<TEntity>>(payload, ExportFormat.JsonOptions)
+            ?? throw new InvalidOperationException(
+                $"Der aufbewahrte Stand von {typeof(TEntity).Name} ließ sich nicht lesen.");
+
+        db.Set<TEntity>().Add(capsule.Entity);
+        db.FieldDefinitions.AddRange(capsule.Fields);
+        db.ConditionSets.AddRange(capsule.Conditions);
+
+        // Geerbte Werte standen nie in einer Zeile — sie kommen beim Lesen von selbst wieder,
+        // und als Zeile angelegt lösten sie die Vererbung auf. Dieselbe Regel wie beim Import.
+        db.FieldValues.AddRange(capsule.Values.Where(value => !value.IsInherited));
+
+        return capsule.Entity;
+    }
+
     /// <summary>Träger für die Runde durch JSON — dieselben Regeln wie beim Export.</summary>
     private sealed class Attachments
     {
+        public List<FieldDefinition> Fields { get; set; } = [];
+
+        public List<FieldValue> Values { get; set; } = [];
+
+        public List<ConditionSet> Conditions { get; set; } = [];
+    }
+
+    /// <summary>
+    /// Der aufbewahrte Baum: die Entität und alles, was ohne Fremdschlüssel an ihren GUIDs
+    /// hängt. Assets stehen bewusst nicht darin — beim Löschen verschwindet auch die Datei, und
+    /// die ließe sich aus einer Datenbankzeile nicht wiederherstellen.
+    /// </summary>
+    private class Capsule
+    {
+        public required object Entity { get; set; }
+
+        public List<FieldDefinition> Fields { get; set; } = [];
+
+        public List<FieldValue> Values { get; set; } = [];
+
+        public List<ConditionSet> Conditions { get; set; } = [];
+    }
+
+    /// <summary>Dieselbe Kapsel beim Lesen, mit dem konkreten Typ der Entität.</summary>
+    private sealed class Capsule<TEntity> where TEntity : ContentEntity
+    {
+        public required TEntity Entity { get; set; }
+
         public List<FieldDefinition> Fields { get; set; } = [];
 
         public List<FieldValue> Values { get; set; } = [];

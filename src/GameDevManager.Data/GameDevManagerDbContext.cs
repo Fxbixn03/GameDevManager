@@ -1,9 +1,16 @@
+using GameDevManager.Data.Services;
 using GameDevManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameDevManager.Data;
 
-public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> options)
+/// <param name="recycleBin">
+/// Die Papierkorb-Einstellung der Installation. Optional, weil der Kontext an einer Stelle auch
+/// ohne Container entsteht (die Migrationsprüfung beim Start) — dort gilt die Vorgabe.
+/// </param>
+public class GameDevManagerDbContext(
+    DbContextOptions<GameDevManagerDbContext> options,
+    RecycleBinOptions? recycleBin = null)
     : DbContext(options)
 {
     public DbSet<GameProject> GameProjects => Set<GameProject>();
@@ -180,6 +187,9 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
     /// <summary>Das Änderungsprotokoll: wer hat wann was getan.</summary>
     public DbSet<ChangeLogEntry> ChangeLogEntries => Set<ChangeLogEntry>();
 
+    /// <summary>Gelöschte Entitäten als JSON-Baum — Werkzeug-Daten wie das Änderungsprotokoll.</summary>
+    public DbSet<RecycleBinEntry> RecycleBinEntries => Set<RecycleBinEntry>();
+
     /// <summary>
     /// Schaltet das Änderungsprotokoll für diesen Kontext ab. Gesetzt von Import und
     /// Projekt-Duplizierung: Beide schreiben den gesamten Bestand eines Projekts auf einmal,
@@ -187,6 +197,18 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
     /// stattdessen einen einzigen Eintrag über den Vorgang.
     /// </summary>
     public bool SuppressChangeLog { get; set; }
+
+    /// <summary>
+    /// Ob gelöschte Entitäten im Papierkorb landen. Kommt aus <c>RecycleBin:Enabled</c>; wer
+    /// ihn abschaltet, bekommt das Verhalten von vorher — gelöscht ist gelöscht.
+    /// <para>
+    /// Ein Schalter am Kontext und kein Parameter durch alle Löschpfade — dieselbe Bauart wie
+    /// <see cref="SuppressChangeLog"/> und aus demselben Grund. Der Wipe eines Projekts braucht
+    /// ihn nicht: Er löscht über eigene <c>ExecuteDelete</c>-Pfade und läuft an
+    /// <see cref="Services.EntityCleanup"/> ohnehin vorbei.
+    /// </para>
+    /// </summary>
+    public bool RecycleBinEnabled { get; set; } = recycleBin?.Enabled ?? true;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -304,6 +326,28 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
 
             // Trägt die Referenzansicht („Find All References"): wer zeigt auf diese GUID?
             entity.HasIndex(v => v.ReferenceValue);
+        });
+
+        modelBuilder.Entity<RecycleBinEntry>(entity =>
+        {
+            entity.Property(e => e.ModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Property(e => e.EntityName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.DeletedBy).HasMaxLength(100).IsRequired();
+
+            // Ohne Längenbegrenzung: Der Baum eines NPCs mit vierzig Posten sprengt jede Zahl,
+            // die man hier hinschreiben könnte.
+            entity.Property(e => e.Payload).IsRequired();
+
+            entity.HasOne(e => e.GameProject)
+                .WithMany()
+                .HasForeignKey(e => e.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Die Liste zeigt das Jüngste zuerst, je Projekt.
+            entity.HasIndex(e => new { e.GameProjectId, e.DeletedAtUtc });
+
+            // Beim Wiederherstellen wird über die ursprüngliche GUID gesucht.
+            entity.HasIndex(e => e.EntityId);
         });
 
         modelBuilder.Entity<Asset>(entity =>

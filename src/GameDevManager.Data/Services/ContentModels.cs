@@ -30,6 +30,12 @@ public sealed record EntitySummary(Guid Id, string ModuleKey, string Name, strin
 public sealed record RecentEntry(SearchHit Hit, DateTime UpdatedAtUtc);
 
 /// <summary>
+/// Eine für den Papierkorb erfasste Entität: ihr Name zum Zeitpunkt des Löschens und der
+/// vollständige Baum als JSON.
+/// </summary>
+public sealed record RecycledEntity(string Name, string Payload);
+
+/// <summary>
 /// Eine Fundstelle der Referenzansicht: eine Entität, die über ein Feld auf die gesuchte
 /// GUID verweist.
 /// </summary>

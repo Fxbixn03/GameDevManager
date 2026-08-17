@@ -36,6 +36,11 @@ public static class DatabaseServiceExtensions
             configuration.GetSection(ChangeLogRetentionOptions.SectionName).Get<ChangeLogRetentionOptions>()
             ?? new ChangeLogRetentionOptions());
 
+        // Wie lange der Papierkorb zurückreicht — dieselbe Linie, dieselbe Stelle.
+        services.AddSingleton(
+            configuration.GetSection(RecycleBinOptions.SectionName).Get<RecycleBinOptions>()
+            ?? new RecycleBinOptions());
+
         // Die Factory ist bewusst scoped und nicht — wie sonst üblich — Singleton: Der
         // ChangeLogInterceptor muss wissen, wer gerade angemeldet ist, und das steht je
         // Verbindung fest. Contexts entstehen weiterhin je Aufruf; nur die Factory selbst
@@ -75,7 +80,9 @@ public static class DatabaseServiceExtensions
         // Ohne Konfiguration die Vorgabe — der Zustand in den Tests; im Betrieb steht sie
         // bereits aus dem Abschnitt „ChangeLog“ registriert da.
         services.TryAddSingleton(new ChangeLogRetentionOptions());
+        services.TryAddSingleton(new RecycleBinOptions());
         services.AddScoped<ChangeLogService>();
+        services.AddScoped<RecycleBinService>();
         services.AddScoped<UserService>();
         // Die Passwortrichtlinie kommt im Betrieb aus der Web-Schicht (Konfiguration plus
         // Einstellungsseite); ohne Ersatz gilt die Vorgabe — dasselbe Muster wie der Urheber.
