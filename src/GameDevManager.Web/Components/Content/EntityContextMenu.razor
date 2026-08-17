@@ -14,10 +14,10 @@
     ein eigenes Menü nicht ersetzen. Weil ein Rechtsklick auf eine Kachel damit auch das
     „Link in neuem Tab öffnen“ des Browsers verliert, steht es hier als eigener Eintrag.
 
-    Der Aktivator bildet keinen eigenen Kasten (display: contents, siehe app.css) — sonst
-    wäre er das Feld im Kachelraster und die Kachel darin nicht mehr so hoch wie ihre
-    Nachbarn. Das Ereignis wird angehalten, damit es nicht zusätzlich beim Aktivator von
-    MudBlazor ankommt und das eben geöffnete Menü wieder zuklappt.
+    Die Hülle des Menüs ist das Feld im Kachelraster und trägt dafür eine eigene Regel in
+    app.css — sie darf gerade nicht verschwinden, weil MudMenu neben dem Aktivator immer ein
+    leeres Popover-div rendert. Das Ereignis wird angehalten, damit es nicht zusätzlich beim
+    Aktivator von MudBlazor ankommt und das eben geöffnete Menü wieder zuklappt.
 *@
 
 <MudMenu PositionAtCursor="true"

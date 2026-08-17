@@ -628,14 +628,31 @@ html {
     }
 }
 
-/* Rechtsklick-Menü über einer Kachel (EntityContextMenu): Weder die Hülle des Menüs noch
-   das Ziel-Div dürfen einen eigenen Kasten bilden — im Kachelraster wäre sonst die Hülle
-   das Rasterfeld und die Kachel darin nicht mehr so hoch wie ihre Nachbarn. Ereignisse
-   steigen unverändert auf, und das Menü selbst liegt ohnehin absolut über der Seite.
-   Den Aktivator dazwischen stellt MudBlazor selbst schon auf display: contents. */
-.mud-menu.gdm-context-menu,
+/* Rechtsklick-Menü über einer Kachel (EntityContextMenu, Kanban-Karten): Die Hülle ist das
+   Rasterfeld — sie muss sich also verhalten wie die Kachel, die ohne Menü an ihrer Stelle
+   stünde: volle Breite, volle Zeilenhöhe.
+
+   Sie darf dafür ausdrücklich *nicht* auf display: contents stehen. MudMenu rendert neben
+   dem Aktivator immer ein leeres <div class="mud-popover-cascading-value"> — auch bei
+   geschlossenem Menü. Ohne eigenen Kasten der Hülle wird dieses div zum zweiten Rasterfeld
+   je Kachel, und die Liste steht mit einer leeren Lücke hinter jedem Eintrag da.
+
+   Als Flex-Zeile fällt es dagegen von selbst auf null Breite zusammen (leer, ohne
+   flex-grow), und die Kachel daneben nimmt über flex: 1 den ganzen Platz ein. align-self
+   überschreibt das align-self: center, das MudBlazor an .mud-menu setzt. */
+.mud-menu.gdm-context-menu {
+    display: flex;
+    align-self: stretch;
+}
+
+.gdm-context-target,
+.gdm-context-target > * {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
 .gdm-context-target {
-    display: contents;
+    display: flex;
 }
 
 /* ---------------------------------------------------------------- Dashboard */
