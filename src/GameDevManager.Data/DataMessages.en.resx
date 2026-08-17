@@ -720,7 +720,9 @@ This ZIP is not tailored to a specific engine — unpack it wherever your game o
 
 Unpack the ZIP into the root directory of your Unity project: the content lands under `Assets/StreamingAssets/GameDevManager/` and ships with the build unchanged. At runtime you reach it through `Application.streamingAssetsPath`.
 
-For reading it, the package `com.unity.nuget.newtonsoft-json` (Newtonsoft Json.NET) is recommended, because Unity's `JsonUtility` handles neither nested lists nor GUIDs as strings comfortably.</value>
+For reading it, the package `com.unity.nuget.newtonsoft-json` (Newtonsoft Json.NET) is recommended, because Unity's `JsonUtility` handles neither nested lists nor GUIDs as strings comfortably.
+
+Under `package/unity/` you will find a small editor package: copy the folder to `Packages/com.gamedevmanager.content/` or `Assets/GameDevManager/`. It provides the `[GdmReference("items")]` attribute for string fields — the inspector then shows a dropdown instead of thirty-two hex digits — and a window under “Window → GameDevManager → Inhalte” for looking things up.</value>
   </data>
   <data name="Export_ReadmeUnreal" xml:space="preserve">
     <value>## Usage in Unreal Engine
@@ -730,7 +732,9 @@ Unpack the ZIP into the root directory of your Unreal project: the content lands
   <data name="Export_ReadmeGodot" xml:space="preserve">
     <value>## Usage in Godot
 
-Unpack the ZIP into the root directory of your Godot project: the content lands under `res://gamedevmanager/`. At runtime you load it with `FileAccess.get_file_as_string()` and `JSON.parse_string()`.</value>
+Unpack the ZIP into the root directory of your Godot project: the content lands under `res://gamedevmanager/`. At runtime you load it with `FileAccess.get_file_as_string()` and `JSON.parse_string()`.
+
+Under `package/godot/` you will find an addon: copy `addons/gamedevmanager/` into your project and enable it under “Project → Project Settings → Plugins”. It provides `GdmContent.load_module("items")` and a panel in the bottom editor dock for looking up and copying a GUID.</value>
   </data>
   <data name="Export_SnapshotMissing" xml:space="preserve">
     <value>The export snapshot was not found.</value>

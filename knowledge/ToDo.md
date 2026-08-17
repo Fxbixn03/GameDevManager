@@ -958,7 +958,7 @@ Entität geht als **JSON-Knoten** durch das Paket, nicht als eingebetteter Text:
 sie beim Serialisieren escaped, und die Wortgrenze im GUID-Muster von `GuidRemap` fände die
 GUID dahinter nicht mehr — der Tausch für die Kopie liefe still ins Leere.
 
-### F43 — Engine-Pakete: Unity-Package und Godot-Addon
+### F43 — Engine-Pakete: Unity-Package und Godot-Addon ✅ umgesetzt
 
 > **Als** Unity-Entwickler **möchte ich** ein Paket in mein Projekt ziehen, das die exportierten
 > Daten einliest und mir im Editor ein Auswahlfenster zeigt, **damit** ich GUIDs nicht abtippe.
@@ -970,6 +970,19 @@ Auswahlfenster) und ein Godot-Addon in GDScript. Zusammen mit der lesenden API s
 Fenster fragt `/api/v1/…` und braucht keinen Export.
 
 *Aufwand: L · Migration: nein · Format: unverändert*
+
+**Umgesetzt.** `EnginePackageWriter` legt beim Export in eine Engine zusätzlich unter
+`package/` das Engine-seitige Paket ab: für Unity `GdmContent` (Importer), das Attribut
+`[GdmReference("items")]` samt Property-Drawer und ein Fenster unter „Window → GameDevManager“;
+für Godot ein Addon mit `plugin.cfg`, `GdmContent.load_module()` und einem Fenster im unteren
+Editor-Bereich. Drei Entscheidungen: **Erzeugt und nicht mitgeliefert** — dieselbe Überlegung wie
+beim Beispielprojekt: Ein fertiges Paket veraltete bei jeder `FormatVersion` still; erzeugt trägt
+es die Version des Exports, neben dem es liegt. Bewusst **klein**: ein Importer, ein Attribut mit
+Zeichner, ein Auswahlfenster — alles darüber hinaus hinge an den Konventionen eines bestimmten
+Projekts und wäre am nächsten schon falsch. Und **für Unreal gibt es keines**: Dort ist die
+DataTable-CSV der eingebaute Weg, ein Plugin daneben wäre ein zweiter. Die Live-Variante über
+die API bleibt offen — sie braucht einen Schlüssel im Editor, und das ist eine eigene
+Entscheidung.
 
 ---
 

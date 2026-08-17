@@ -650,7 +650,14 @@ public class ExportService(
                 _ => TargetEngine.Godot
             };
 
-            foreach (var file in await engineWriter.BuildAsync(db, projectId, engine, ct))
+            var engineFiles = await engineWriter.BuildAsync(db, projectId, engine, ct);
+
+            // Dazu das Engine-seitige Paket: der Importer, das Referenz-Attribut und das
+            // Auswahlfenster. Erzeugt und nicht mitgeliefert — ein fertiges Paket veraltete
+            // bei jeder FormatVersion still, dieselbe Überlegung wie beim Beispielprojekt.
+            engineFiles.AddRange(EnginePackageWriter.Build(engine, project.Name, FormatVersion));
+
+            foreach (var file in engineFiles)
             {
                 var entry = archive.CreateEntry(prefix + file.Path, CompressionLevel.Optimal);
                 await using var entryStream = entry.Open();

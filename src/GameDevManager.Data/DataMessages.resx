@@ -674,7 +674,9 @@ Dieses ZIP ist nicht auf eine bestimmte Engine zugeschnitten — entpacke es dor
 
 Entpacke das ZIP in das Wurzelverzeichnis deines Unity-Projekts: Die Inhalte landen unter `Assets/StreamingAssets/GameDevManager/` und werden von Unity unverändert mit ausgeliefert. Zur Laufzeit erreichst du sie über `Application.streamingAssetsPath`.
 
-Zum Einlesen empfiehlt sich das Paket `com.unity.nuget.newtonsoft-json` (Newtonsoft Json.NET), weil Unitys `JsonUtility` weder verschachtelte Listen noch GUIDs als Strings bequem verarbeitet.</value>
+Zum Einlesen empfiehlt sich das Paket `com.unity.nuget.newtonsoft-json` (Newtonsoft Json.NET), weil Unitys `JsonUtility` weder verschachtelte Listen noch GUIDs als Strings bequem verarbeitet.
+
+Unter `package/unity/` liegt ein kleines Editor-Paket: Kopiere den Ordner nach `Packages/com.gamedevmanager.content/` oder `Assets/GameDevManager/`. Es bringt das Attribut `[GdmReference("items")]` für string-Felder mit — der Inspector zeigt dann ein Auswahlfeld statt zweiunddreißig Hexziffern — und ein Fenster unter „Window → GameDevManager → Inhalte“ zum Nachschlagen.</value>
   </data>
   <data name="Export_ReadmeUnreal" xml:space="preserve">
     <value>## Verwendung in Unreal Engine
@@ -684,7 +686,9 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Unreal-Projekts: Die Inhalte la
   <data name="Export_ReadmeGodot" xml:space="preserve">
     <value>## Verwendung in Godot
 
-Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte landen unter `res://gamedevmanager/`. Zur Laufzeit lädst du sie mit `FileAccess.get_file_as_string()` und `JSON.parse_string()`.</value>
+Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte landen unter `res://gamedevmanager/`. Zur Laufzeit lädst du sie mit `FileAccess.get_file_as_string()` und `JSON.parse_string()`.
+
+Unter `package/godot/` liegt ein Addon: Kopiere `addons/gamedevmanager/` in dein Projekt und schalte es unter „Projekt → Projekteinstellungen → Plugins“ ein. Es bringt `GdmContent.load_module("items")` mit und ein Fenster im unteren Editor-Bereich zum Nachschlagen und Kopieren einer GUID.</value>
   </data>
   <data name="Export_SnapshotMissing" xml:space="preserve">
     <value>Der Exportstand wurde nicht gefunden.</value>
