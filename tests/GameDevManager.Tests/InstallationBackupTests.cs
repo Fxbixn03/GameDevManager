@@ -63,8 +63,9 @@ public class InstallationBackupTests
         Assert.NotNull(archive.GetEntry("installation/data.json"));
 
         // Je Projekt das normale Export-ZIP — erprobt, versioniert und diffbar.
-        var project = Assert.Single(archive.Entries.Where(entry =>
-            entry.FullName.StartsWith("projects/") && entry.FullName.EndsWith(".zip")));
+        var project = Assert.Single(
+            archive.Entries,
+            entry => entry.FullName.StartsWith("projects/") && entry.FullName.EndsWith(".zip"));
 
         Assert.Equal($"projects/{test.ProjectId:D}.zip", project.FullName);
 

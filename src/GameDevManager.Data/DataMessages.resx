@@ -162,6 +162,12 @@
   <data name="Backup_UnknownProjectFile" xml:space="preserve">
     <value>Die Datei „{0}“ trägt keine erkennbare Projekt-GUID und wurde übergangen.</value>
   </data>
+  <data name="UserGone" xml:space="preserve">
+    <value>Dieses Konto existiert nicht mehr.</value>
+  </data>
+  <data name="TwoFactorCodeInvalid" xml:space="preserve">
+    <value>Der Code stimmt nicht. Prüfen Sie die Uhrzeit Ihres Geräts oder verwenden Sie einen Wiederherstellungscode.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>

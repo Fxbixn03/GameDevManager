@@ -174,6 +174,17 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.Property<Guid?>("RoleId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("TotpConfirmedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TotpRecoveryCodes")
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TotpSecret")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(100)

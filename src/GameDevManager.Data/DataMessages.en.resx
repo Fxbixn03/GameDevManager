@@ -223,6 +223,12 @@
   <data name="Backup_UnknownProjectFile" xml:space="preserve">
     <value>The file “{0}” carries no recognizable project GUID and was skipped.</value>
   </data>
+  <data name="UserGone" xml:space="preserve">
+    <value>This account no longer exists.</value>
+  </data>
+  <data name="TwoFactorCodeInvalid" xml:space="preserve">
+    <value>The code is not correct. Check your device clock or use a recovery code.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

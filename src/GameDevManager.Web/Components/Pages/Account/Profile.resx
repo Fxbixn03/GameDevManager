@@ -121,4 +121,52 @@
   <data name="PasswordsDisabledInfo" xml:space="preserve">
     <value>Passwörter sind per Richtlinie deaktiviert — angemeldet wird nur mit dem Anmeldenamen. Ein Verwalter kann das in der Benutzerverwaltung ändern.</value>
   </data>
+  <data name="SectionTwoFactor" xml:space="preserve">
+    <value>Zwei-Faktor-Anmeldung</value>
+  </data>
+  <data name="TwoFactorHint" xml:space="preserve">
+    <value>Ein zweiter Faktor sorgt dafür, dass ein geratenes Passwort allein nicht reicht. Sie brauchen eine Authenticator-App auf dem Telefon.</value>
+  </data>
+  <data name="TwoFactorActive" xml:space="preserve">
+    <value>Der zweite Faktor ist eingerichtet.</value>
+  </data>
+  <data name="Enable" xml:space="preserve">
+    <value>Einrichten</value>
+  </data>
+  <data name="Disable" xml:space="preserve">
+    <value>Abschalten</value>
+  </data>
+  <data name="DisableHint" xml:space="preserve">
+    <value>Zum Abschalten brauchen Sie einen gültigen Code — sonst genügte ein übernommener Browser-Tab.</value>
+  </data>
+  <data name="SetupStep1" xml:space="preserve">
+    <value>1. Tragen Sie dieses Geheimnis in Ihre Authenticator-App ein.</value>
+  </data>
+  <data name="SetupStep2" xml:space="preserve">
+    <value>2. Bestätigen Sie mit dem Code, den die App anzeigt.</value>
+  </data>
+  <data name="SecretLabel" xml:space="preserve">
+    <value>Geheimnis</value>
+  </data>
+  <data name="UriLabel" xml:space="preserve">
+    <value>otpauth-Adresse</value>
+  </data>
+  <data name="UriHelper" xml:space="preserve">
+    <value>Manche Apps nehmen statt des Geheimnisses diese Adresse entgegen.</value>
+  </data>
+  <data name="CodeLabel" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>Bestätigen</value>
+  </data>
+  <data name="TwoFactorEnabled" xml:space="preserve">
+    <value>Der zweite Faktor ist jetzt aktiv.</value>
+  </data>
+  <data name="TwoFactorDisabled" xml:space="preserve">
+    <value>Der zweite Faktor wurde abgeschaltet.</value>
+  </data>
+  <data name="RecoveryHint" xml:space="preserve">
+    <value>Bewahren Sie diese Wiederherstellungscodes auf. Jeder gilt genau einmal und ersetzt den Code aus der App, wenn das Gerät weg ist. Sie werden nicht noch einmal angezeigt.</value>
+  </data>
 </root>

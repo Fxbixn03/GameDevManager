@@ -174,6 +174,17 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                     b.Property<Guid?>("RoleId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("TotpConfirmedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TotpRecoveryCodes")
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)");
+
+                    b.Property<string>("TotpSecret")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(100)

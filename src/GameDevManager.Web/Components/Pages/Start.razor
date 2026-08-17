@@ -133,6 +133,17 @@
                                    class="gdm-auth-input" autocomplete="current-password" />
                     }
 
+                    @* Der zweite Faktor erscheint erst, wenn der erste Versuch ihn verlangt
+                       hat: Ein Codefeld an einer Anmeldung ohne zweiten Faktor wäre ein Feld,
+                       das niemand füllen kann. *@
+                    @if (Input.NeedsCode)
+                    {
+                        <label class="gdm-auth-label" for="code">@L["CodeLabel"]</label>
+                        <InputText id="code" @bind-Value="Input.Code" class="gdm-auth-input"
+                                   autocomplete="one-time-code" inputmode="numeric" />
+                        <div class="gdm-auth-hint">@L["CodeHint"]</div>
+                    }
+
                     <label class="gdm-auth-remember">
                         <InputCheckbox id="rememberMe" @bind-Value="Input.RememberMe" />
                         @L["RememberMe"]
@@ -289,13 +300,36 @@
 
     private async Task SignInAsync()
     {
-        var user = await Users.AuthenticateAsync(Input.UserName ?? string.Empty, Input.Password ?? string.Empty);
+        var name = Input.UserName ?? string.Empty;
+        var password = Input.Password ?? string.Empty;
 
-        if (user is null)
+        // Erster Schritt: Name und Passwort. Der Zeitstempel des letzten Logins geht dabei
+        // noch nicht hoch — ein halber Versuch ist keiner.
+        var candidate = await Users.VerifyPasswordAsync(name, password);
+
+        if (candidate is null)
         {
             // Bewusst eine Meldung für beide Fälle: Ein „diesen Benutzer gibt es nicht“ wäre
             // eine Auskunft darüber, welche Konten bestehen.
             _error = Policy.Current.PasswordsDisabled ? L["FailedUserNameOnly"] : L["Failed"];
+            Input.NeedsCode = false;
+            return;
+        }
+
+        if (candidate.HasTwoFactor && string.IsNullOrWhiteSpace(Input.Code))
+        {
+            // Nachfragen statt abweisen: Das Passwort stimmt, es fehlt nur der zweite Faktor.
+            Input.NeedsCode = true;
+            _error = null;
+            return;
+        }
+
+        var user = await Users.AuthenticateWithCodeAsync(name, password, Input.Code ?? string.Empty);
+
+        if (user is null)
+        {
+            _error = L["FailedCode"];
+            Input.NeedsCode = true;
             return;
         }
 
@@ -331,5 +365,15 @@
         // Vorgabe „aus“: Ein nicht angehakter Haken kommt beim Postback gar nicht an und
         // ließe eine Vorgabe „an“ nie wieder abwählen.
         public bool RememberMe { get; set; }
+
+        /// <summary>Der Code des zweiten Faktors — oder ein Wiederherstellungscode.</summary>
+        public string? Code { get; set; }
+
+        /// <summary>
+        /// Ob das Codefeld gezeigt wird. Steht im Formularmodell und nicht als Feld der Seite,
+        /// weil die Seite statisch gerendert wird: Zwischen den beiden Schritten liegt ein
+        /// Postback, und nur das Modell überlebt ihn.
+        /// </summary>
+        public bool NeedsCode { get; set; }
     }
 }

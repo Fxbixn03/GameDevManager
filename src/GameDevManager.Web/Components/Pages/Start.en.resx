@@ -82,6 +82,15 @@
   <data name="SignIn" xml:space="preserve">
     <value>Sign in</value>
   </data>
+  <data name="CodeLabel" xml:space="preserve">
+    <value>Authenticator code</value>
+  </data>
+  <data name="CodeHint" xml:space="preserve">
+    <value>Six digits — or one of your recovery codes.</value>
+  </data>
+  <data name="FailedCode" xml:space="preserve">
+    <value>The code is not correct. Check your device clock or use a recovery code.</value>
+  </data>
   <data name="RememberMe" xml:space="preserve">
     <value>Stay signed in</value>
   </data>

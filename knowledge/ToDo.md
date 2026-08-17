@@ -1011,7 +1011,7 @@ Anmelden angelegt wird — Vorgabe: niemand, ein Verwalter muss das Konto vorber
 
 *Aufwand: M · Migration: ja · Format: unverändert*
 
-### F47 — Zwei-Faktor-Anmeldung
+### F47 — Zwei-Faktor-Anmeldung ✅ umgesetzt
 
 > **Als** Betreiber, dessen Instanz aus dem Internet erreichbar ist, **möchte ich** einen zweiten
 > Faktor verlangen können, **damit** ein geratenes Passwort nicht reicht.
@@ -1023,6 +1023,19 @@ an `AppUser`, erzwungen im statisch gerenderten Anmeldeformular (das ist der Gru
 Passwortrichtlinie, also über die Konfiguration.
 
 *Aufwand: M · Migration: ja · Format: unverändert*
+
+**Umgesetzt.** `Totp` als eigene Rechenklasse (RFC 6238, HMAC-SHA1, sechs Stellen, ein
+Schritt Toleranz), drei Spalten am `AppUser` (Migration `TwoFactor` in allen vier Providern),
+eingerichtet unter „Konto“, erzwungen im statisch gerenderten Anmeldeformular. Fünf
+Entscheidungen: **Je Konto und nicht über die Konfiguration** — anders als hier vermutet: Ein
+installationsweiter Zwang sperrte beim Einschalten alle aus, die ihn noch nicht eingerichtet
+haben; wer ihn will, schaltet ihn für sein Konto ein. Er **gilt erst nach der Bestätigung** mit
+einem Code aus der App, sonst sperrte sich aus, wer das Geheimnis erzeugt, aber nie übernimmt.
+Das **Geheimnis steht im Klartext**, weil das Tool damit rechnen muss (wie beim
+Webhook-Geheimnis); die **Wiederherstellungscodes als Hashes**, weil sie nur geprüft werden —
+und ein benutzter fällt aus der Liste, ein Code, der zweimal gilt, ist keiner. **Abschalten
+verlangt einen gültigen Code**: Sonst genügte ein übernommener Browser-Tab. Kein QR-Code —
+der brauchte eine Bildbibliothek, und jede App nimmt auch das abgetippte Geheimnis.
 
 ### F48 — Betriebs-Kennzahlen ✅ umgesetzt
 

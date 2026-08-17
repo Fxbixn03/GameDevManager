@@ -28,7 +28,8 @@ public sealed record UserRow(
     DateTime CreatedAtUtc,
     DateTime? LastLoginAtUtc,
     UserRoleRow? Role = null,
-    bool OverridesRole = false)
+    bool OverridesRole = false,
+    bool HasTwoFactor = false)
 {
     /// <summary>
     /// Die aufgelösten Rechte dieser Zeile — Verwalter bekommen immer alles, sonst ist die
@@ -88,7 +89,11 @@ public class UserService(
                     : new UserRoleRow(
                         user.Role.Id, user.Role.Name, user.Role.CanWrite, user.Role.CanExport,
                         user.Role.CanImport, user.Role.AllowedModuleKeys, 0),
-                user.OverridesRole))
+                user.OverridesRole,
+                // Der zweite Faktor gilt erst als eingerichtet, wenn er bestätigt wurde —
+                // die berechnete Eigenschaft ist ignoriert und in einer Projektion nicht zu
+                // übersetzen, deshalb hier ausgeschrieben.
+                user.TotpConfirmedAtUtc != null && user.TotpSecret != null))
             .ToListAsync(ct);
     }
 
@@ -116,7 +121,11 @@ public class UserService(
                     : new UserRoleRow(
                         user.Role.Id, user.Role.Name, user.Role.CanWrite, user.Role.CanExport,
                         user.Role.CanImport, user.Role.AllowedModuleKeys, 0),
-                user.OverridesRole))
+                user.OverridesRole,
+                // Der zweite Faktor gilt erst als eingerichtet, wenn er bestätigt wurde —
+                // die berechnete Eigenschaft ist ignoriert und in einer Projektion nicht zu
+                // übersetzen, deshalb hier ausgeschrieben.
+                user.TotpConfirmedAtUtc != null && user.TotpSecret != null))
             .FirstOrDefaultAsync(ct);
     }
 
@@ -415,8 +424,11 @@ public class UserService(
         user.LastLoginAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
 
-        return new UserRow(
-            user.Id, user.UserName, user.DisplayName, user.IsAdministrator, user.IsDisabled,
+        return Describe(user);
+    }
+
+    private static UserRow Describe(AppUser user) =>
+        new(user.Id, user.UserName, user.DisplayName, user.IsAdministrator, user.IsDisabled,
             user.CanWrite, user.CanExport, user.CanImport, user.AllowedModuleKeys,
             user.CreatedAtUtc, user.LastLoginAtUtc,
             user.Role is null
@@ -424,7 +436,198 @@ public class UserService(
                 : new UserRoleRow(
                     user.Role.Id, user.Role.Name, user.Role.CanWrite, user.Role.CanExport,
                     user.Role.CanImport, user.Role.AllowedModuleKeys),
-            user.OverridesRole);
+            user.OverridesRole,
+            user.HasTwoFactor);
+
+    // ------------------------------------------------------------------- Zweiter Faktor
+
+    /// <summary>
+    /// Prüft Name und Passwort, ohne anzumelden — der erste Schritt, wenn ein zweiter Faktor
+    /// eingerichtet ist. Liefert zusätzlich, ob überhaupt einer verlangt wird.
+    /// <para>
+    /// Getrennt von <see cref="AuthenticateAsync"/>, damit der Zeitstempel des letzten Logins
+    /// erst nach dem <b>vollständigen</b> Anmelden hochgeht: Ein halber Versuch ist keiner.
+    /// </para>
+    /// </summary>
+    public async Task<UserRow?> VerifyPasswordAsync(
+        string userName, string password, CancellationToken ct = default)
+    {
+        var user = await FindForSignInAsync(userName, password, ct);
+
+        return user is null ? null : Describe(user);
+    }
+
+    /// <summary>
+    /// Der zweite Schritt: Name, Passwort <b>und</b> Code. Erst hier gilt die Anmeldung als
+    /// erfolgt. Der Code darf auch ein Wiederherstellungscode sein — er wird dabei verbraucht.
+    /// </summary>
+    public async Task<UserRow?> AuthenticateWithCodeAsync(
+        string userName, string password, string code, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var user = await FindForSignInAsync(userName, password, ct, db);
+
+        if (user is null)
+        {
+            return null;
+        }
+
+        // Ohne eingerichteten zweiten Faktor gibt es nichts zu prüfen — dieser Weg ist dann
+        // derselbe wie der gewöhnliche.
+        if (user.HasTwoFactor && !Totp.Verify(user.TotpSecret, code) && !UseRecoveryCode(user, code))
+        {
+            return null;
+        }
+
+        user.LastLoginAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+
+        return Describe(user);
+    }
+
+    /// <summary>
+    /// Sucht das Konto und prüft das Passwort — der gemeinsame Kern beider Anmeldewege. Ohne
+    /// eigenen Kontext arbeitet er nur lesend.
+    /// </summary>
+    private async Task<AppUser?> FindForSignInAsync(
+        string userName, string password, CancellationToken ct, GameDevManagerDbContext? existing = null)
+    {
+        var policy = passwordPolicy.Current;
+
+        var name = Normalize(userName);
+
+        if (name is null || (!policy.PasswordsDisabled && string.IsNullOrEmpty(password)))
+        {
+            return null;
+        }
+
+        var db = existing ?? await factory.CreateDbContextAsync(ct);
+
+        try
+        {
+            var lowered = name.ToLowerInvariant();
+
+            var user = await db.AppUsers
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserName.ToLower() == lowered, ct);
+
+            if (user is null || user.IsDisabled)
+            {
+                return null;
+            }
+
+            return !policy.PasswordsDisabled && !PasswordHasher.Verify(password, user.PasswordHash)
+                ? null
+                : user;
+        }
+        finally
+        {
+            if (existing is null)
+            {
+                await db.DisposeAsync();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Nimmt einen Wiederherstellungscode ab, wenn er stimmt — und <b>verbraucht</b> ihn: Ein
+    /// Code, der zweimal gilt, ist keiner. Gespeichert wird erst vom Aufrufer.
+    /// </summary>
+    private static bool UseRecoveryCode(AppUser user, string code)
+    {
+        if (string.IsNullOrWhiteSpace(user.TotpRecoveryCodes) || string.IsNullOrWhiteSpace(code))
+        {
+            return false;
+        }
+
+        var remaining = user.TotpRecoveryCodes
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+
+        var match = remaining.FirstOrDefault(hash => PasswordHasher.Verify(code.Trim(), hash));
+
+        if (match is null)
+        {
+            return false;
+        }
+
+        remaining.Remove(match);
+        user.TotpRecoveryCodes = remaining.Count == 0 ? null : string.Join(';', remaining);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Legt ein neues Geheimnis an und gibt es samt <c>otpauth</c>-Adresse zurück. Bestätigt
+    /// ist es damit noch nicht — sonst sperrte sich aus, wer es nie in seine App übernimmt.
+    /// </summary>
+    public async Task<(string Secret, string Uri)> StartTwoFactorAsync(
+        Guid userId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var user = await db.AppUsers.FirstOrDefaultAsync(u => u.Id == userId, ct)
+            ?? throw new ContentValidationException(messages["UserGone"]);
+
+        user.TotpSecret = Totp.CreateSecret();
+        user.TotpConfirmedAtUtc = null;
+
+        await db.SaveChangesAsync(ct);
+
+        return (user.TotpSecret, Totp.BuildUri("GameDevManager", user.UserName, user.TotpSecret));
+    }
+
+    /// <summary>
+    /// Bestätigt den zweiten Faktor mit einem Code aus der App und liefert die
+    /// Wiederherstellungscodes — <b>einmalig im Klartext</b>, gespeichert werden nur Hashes.
+    /// </summary>
+    public async Task<List<string>> ConfirmTwoFactorAsync(
+        Guid userId, string code, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var user = await db.AppUsers.FirstOrDefaultAsync(u => u.Id == userId, ct)
+            ?? throw new ContentValidationException(messages["UserGone"]);
+
+        if (!Totp.Verify(user.TotpSecret, code))
+        {
+            throw new ContentValidationException(messages["TwoFactorCodeInvalid"]);
+        }
+
+        var codes = Enumerable.Range(0, 10)
+            .Select(_ => Guid.NewGuid().ToString("N")[..10])
+            .ToList();
+
+        user.TotpConfirmedAtUtc = DateTime.UtcNow;
+        user.TotpRecoveryCodes = string.Join(';', codes.Select(PasswordHasher.Hash));
+
+        await db.SaveChangesAsync(ct);
+
+        return codes;
+    }
+
+    /// <summary>
+    /// Schaltet den zweiten Faktor ab. Verlangt einen gültigen Code — sonst genügte ein
+    /// übernommener Browser-Tab, um ihn loszuwerden.
+    /// </summary>
+    public async Task DisableTwoFactorAsync(Guid userId, string code, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var user = await db.AppUsers.FirstOrDefaultAsync(u => u.Id == userId, ct)
+            ?? throw new ContentValidationException(messages["UserGone"]);
+
+        if (user.HasTwoFactor && !Totp.Verify(user.TotpSecret, code) && !UseRecoveryCode(user, code))
+        {
+            throw new ContentValidationException(messages["TwoFactorCodeInvalid"]);
+        }
+
+        user.TotpSecret = null;
+        user.TotpConfirmedAtUtc = null;
+        user.TotpRecoveryCodes = null;
+
+        await db.SaveChangesAsync(ct);
     }
 
     /// <summary>Ob außer diesem Benutzer kein einsatzfähiger Verwalter mehr übrig bliebe.</summary>

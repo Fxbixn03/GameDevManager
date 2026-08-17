@@ -95,6 +95,98 @@ else
                 }
             </MudPaper>
         </MudItem>
+        @* --------------------------------------------------------- Zweiter Faktor *@
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionTwoFactor"]</MudText>
+
+                @if (_user.HasTwoFactor && _setupSecret is null)
+                {
+                    <MudAlert Severity="Severity.Success" Dense="true" Class="mb-3">@L["TwoFactorActive"]</MudAlert>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">@L["DisableHint"]</MudText>
+
+                    <MudTextField @bind-Value="_code"
+                                  T="string"
+                                  Label="@L["CodeLabel"]"
+                                  Variant="Variant.Outlined"
+                                  Immediate="true" />
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Error"
+                               Class="mt-3"
+                               Disabled="@string.IsNullOrWhiteSpace(_code)"
+                               OnClick="DisableTwoFactorAsync">
+                        @L["Disable"]
+                    </MudButton>
+                }
+                else if (_setupSecret is null)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">@L["TwoFactorHint"]</MudText>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Security"
+                               OnClick="StartTwoFactorAsync">
+                        @L["Enable"]
+                    </MudButton>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Class="mb-2">@L["SetupStep1"]</MudText>
+
+                    @* Das Geheimnis im Klartext statt als QR-Code: Ein QR-Code brauchte eine
+                       Bildbibliothek, und jede Authenticator-App nimmt auch die Eingabe von
+                       Hand — dieselbe Abwägung wie beim ImageDimensionReader. *@
+                    <MudTextField Value="@_setupSecret"
+                                  T="string"
+                                  Label="@L["SecretLabel"]"
+                                  Variant="Variant.Outlined"
+                                  ReadOnly="true"
+                                  Class="gdm-mono mb-2" />
+
+                    <MudTextField Value="@_setupUri"
+                                  T="string"
+                                  Label="@L["UriLabel"]"
+                                  HelperText="@L["UriHelper"]"
+                                  Variant="Variant.Outlined"
+                                  ReadOnly="true"
+                                  Lines="2"
+                                  Class="gdm-mono mb-4" />
+
+                    <MudText Typo="Typo.body2" Class="mb-2">@L["SetupStep2"]</MudText>
+
+                    <MudTextField @bind-Value="_code"
+                                  T="string"
+                                  Label="@L["CodeLabel"]"
+                                  Variant="Variant.Outlined"
+                                  Immediate="true" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Class="mt-3"
+                               Disabled="@string.IsNullOrWhiteSpace(_code)"
+                               OnClick="ConfirmTwoFactorAsync">
+                        @L["Confirm"]
+                    </MudButton>
+                }
+
+                @if (_recoveryCodes.Count > 0)
+                {
+                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-4">
+                        @L["RecoveryHint"]
+                    </MudAlert>
+
+                    <MudPaper Elevation="0" Outlined="true" Class="pa-3 mt-2 gdm-mono">
+                        @* Die Laufvariable heißt nicht „code“: @code ist in Razor die
+                           Direktive für den Codeblock. *@
+                        @foreach (var recovery in _recoveryCodes)
+                        {
+                            <MudText Typo="Typo.body2">@recovery</MudText>
+                        }
+                    </MudPaper>
+                }
+            </MudPaper>
+        </MudItem>
     </MudGrid>
 }
 
@@ -104,6 +196,11 @@ else
     private string? _currentPassword;
     private string? _newPassword;
     private string? _confirmPassword;
+
+    private string? _setupSecret;
+    private string? _setupUri;
+    private string? _code;
+    private List<string> _recoveryCodes = [];
 
     private string Subtitle => _user is null ? L["Loading"] : L["SubtitleName", _user.UserName];
 
@@ -115,6 +212,68 @@ else
         {
             _user = await Users.GetUserAsync(id);
             _displayName = _user?.DisplayName;
+        }
+    }
+
+    // ------------------------------------------------------------- Zweiter Faktor
+
+    private async Task StartTwoFactorAsync()
+    {
+        if (_user is null)
+        {
+            return;
+        }
+
+        (_setupSecret, _setupUri) = await Users.StartTwoFactorAsync(_user.Id);
+        _code = null;
+        _recoveryCodes = [];
+    }
+
+    private async Task ConfirmTwoFactorAsync()
+    {
+        if (_user is null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Die Codes stehen genau einmal im Klartext da — gespeichert werden nur Hashes.
+            _recoveryCodes = await Users.ConfirmTwoFactorAsync(_user.Id, _code ?? string.Empty);
+
+            _setupSecret = null;
+            _setupUri = null;
+            _code = null;
+            _user = await Users.GetUserAsync(_user.Id);
+
+            Snackbar.Add(L["TwoFactorEnabled"], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DisableTwoFactorAsync()
+    {
+        if (_user is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Users.DisableTwoFactorAsync(_user.Id, _code ?? string.Empty);
+
+            _code = null;
+            _recoveryCodes = [];
+            _user = await Users.GetUserAsync(_user.Id);
+
+            Snackbar.Add(L["TwoFactorDisabled"], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
         }
     }
 

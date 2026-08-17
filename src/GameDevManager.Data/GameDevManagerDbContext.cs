@@ -1076,6 +1076,10 @@ public class GameDevManagerDbContext(
             entity.Property(u => u.UserName).HasMaxLength(100).IsRequired();
             entity.Property(u => u.DisplayName).HasMaxLength(200).IsRequired();
             entity.Property(u => u.PasswordHash).HasMaxLength(400).IsRequired();
+            entity.Property(u => u.TotpSecret).HasMaxLength(100);
+            // Zehn Codes à ~400 Zeichen Hash plus Trennzeichen.
+            entity.Property(u => u.TotpRecoveryCodes).HasMaxLength(5000);
+            entity.Ignore(u => u.HasTwoFactor);
 
             // Berechtigungen. Der Datenbank-Standard steht ausdrücklich auf „erlaubt“, damit
             // Konten aus der Zeit vor diesen Spalten bei der Migration nichts verlieren —

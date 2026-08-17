@@ -28,6 +28,33 @@ public class AppUser
     public required string PasswordHash { get; set; }
 
     /// <summary>
+    /// Das TOTP-Geheimnis als Base32, wenn der zweite Faktor eingerichtet ist.
+    /// <para>
+    /// Im <b>Klartext</b> und nicht als Hash — anders als beim Passwort muss das Tool damit
+    /// rechnen, um den Code zu prüfen; dieselbe Überlegung wie beim Webhook-Geheimnis. Wer die
+    /// Datenbank lesen kann, kann ohnehin den ganzen Bestand lesen; der zweite Faktor schützt
+    /// gegen ein geratenes Passwort, nicht gegen einen offenen Datenbankzugang.
+    /// </para>
+    /// </summary>
+    public string? TotpSecret { get; set; }
+
+    /// <summary>
+    /// Wann der zweite Faktor bestätigt wurde. Erst dann gilt er — sonst sperrte sich aus, wer
+    /// das Geheimnis erzeugt, aber nie in seine App übernommen hat.
+    /// </summary>
+    public DateTime? TotpConfirmedAtUtc { get; set; }
+
+    /// <summary>
+    /// Die Wiederherstellungscodes, als Hashes und semikolongetrennt — für den Fall, dass das
+    /// Gerät weg ist. Als <b>Hashes</b>, weil sie wie ein Passwort nur geprüft werden müssen;
+    /// ein benutzter Code wird aus der Liste entfernt.
+    /// </summary>
+    public string? TotpRecoveryCodes { get; set; }
+
+    /// <summary>Der zweite Faktor ist eingerichtet und bestätigt.</summary>
+    public bool HasTwoFactor => TotpConfirmedAtUtc is not null && !string.IsNullOrEmpty(TotpSecret);
+
+    /// <summary>
     /// Darf Benutzer anlegen, umbenennen und entfernen. Der erste Benutzer bekommt das Recht
     /// bei der Ersteinrichtung; ohne wenigstens einen Verwalter käme man nicht mehr an die
     /// Benutzerverwaltung heran.

@@ -36,6 +36,15 @@
   <data name="SignIn" xml:space="preserve">
     <value>Anmelden</value>
   </data>
+  <data name="CodeLabel" xml:space="preserve">
+    <value>Code der Authenticator-App</value>
+  </data>
+  <data name="CodeHint" xml:space="preserve">
+    <value>Sechs Ziffern — oder einer Ihrer Wiederherstellungscodes.</value>
+  </data>
+  <data name="FailedCode" xml:space="preserve">
+    <value>Der Code stimmt nicht. Prüfen Sie die Uhrzeit Ihres Geräts oder verwenden Sie einen Wiederherstellungscode.</value>
+  </data>
   <data name="RememberMe" xml:space="preserve">
     <value>Angemeldet bleiben</value>
   </data>

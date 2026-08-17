@@ -171,6 +171,17 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                     b.Property<Guid?>("RoleId")
                         .HasColumnType("char(36)");
 
+                    b.Property<DateTime?>("TotpConfirmedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("TotpRecoveryCodes")
+                        .HasMaxLength(5000)
+                        .HasColumnType("varchar(5000)");
+
+                    b.Property<string>("TotpSecret")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(100)
