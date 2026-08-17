@@ -57,7 +57,9 @@
       "Read(//c/Users/FabianStangl/.nuget/packages/mudblazor/**)",
       "PowerShell(dotnet test 2>&1)",
       "PowerShell(git add CLAUDE.md knowledge/ToDo.md src/GameDevManager.Data/Services/ConditionStateService.cs src/GameDevManager.Data/DatabaseServiceExtensions.cs src/GameDevManager.Data/DataMessages.resx src/GameDevManager.Data/DataMessages.en.resx src/GameDevManager.Web/Components/Content/GameStateAssumptionPanel.razor src/GameDevManager.Web/Components/Content/GameStateAssumptionPanel.resx src/GameDevManager.Web/Components/Pages/Dialogues/DialoguePlay.razor src/GameDevManager.Web/Components/Pages/TechTree tests/GameDevManager.Tests/ConditionStateTests.cs)",
-      "PowerShell(git commit -m \"Zustands-Sicht fuer Bedingungen erg�nzt\")"
+      "PowerShell(git commit -m \"Zustands-Sicht fuer Bedingungen erg�nzt\")",
+      "PowerShell(git add CLAUDE.md knowledge/ToDo.md src/GameDevManager.Data/Services/DesignDocumentService.cs src/GameDevManager.Data/DatabaseServiceExtensions.cs src/GameDevManager.Data/DataMessages.resx src/GameDevManager.Data/DataMessages.en.resx src/GameDevManager.Web/Program.cs src/GameDevManager.Web/Components/Pages/Export/ExportPage.razor src/GameDevManager.Web/Components/Pages/Export/ExportPage.resx tests/GameDevManager.Tests/DesignDocumentTests.cs)",
+      "PowerShell(git commit -m \"Design-Dokument als HTML-Export erg�nzt\")"
     ],
     "deny": [
       "Bash(rm:*)",
