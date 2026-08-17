@@ -31,6 +31,23 @@ public sealed record UserPermissions(
             ? Full
             : new UserPermissions(false, canWrite, canExport, canImport, ParseModuleKeys(allowedModuleKeys));
 
+    /// <summary>
+    /// Dasselbe mit Rolle: Sie ist die Vorgabe, und das Konto darf abweichen
+    /// (<paramref name="overridesRole"/>). Verwalter bekommen weiterhin alles — eine Rolle
+    /// kann das Verwalterrecht weder geben noch nehmen.
+    /// </summary>
+    public static UserPermissions For(
+        bool isAdministrator,
+        bool canWrite,
+        bool canExport,
+        bool canImport,
+        string? allowedModuleKeys,
+        UserRoleRow? role,
+        bool overridesRole) =>
+        role is null || overridesRole
+            ? For(isAdministrator, canWrite, canExport, canImport, allowedModuleKeys)
+            : For(isAdministrator, role.CanWrite, role.CanExport, role.CanImport, role.AllowedModuleKeys);
+
     public bool CanAccessModule(string moduleKey) =>
         AllowedModules is null || AllowedModules.Contains(moduleKey);
 

@@ -160,4 +160,46 @@
   <data name="PolicySaved" xml:space="preserve">
     <value>Die Passwortrichtlinie wurde gespeichert.</value>
   </data>
+  <data name="RolesTitle" xml:space="preserve">
+    <value>Rollen</value>
+  </data>
+  <data name="NewRole" xml:space="preserve">
+    <value>Neue Rolle</value>
+  </data>
+  <data name="NoRolesHint" xml:space="preserve">
+    <value>Noch keine Rollen. Eine Rolle bündelt die Rechte („Autor“, „Grafiker“, „Nur lesen“) und wird Benutzern im Bearbeiten-Dialog zugewiesen.</value>
+  </data>
+  <data name="RoleMembers" xml:space="preserve">
+    <value>{0} Konto/Konten</value>
+  </data>
+  <data name="RoleAllRights" xml:space="preserve">
+    <value>Alle Rechte</value>
+  </data>
+  <data name="RoleChipOverridden" xml:space="preserve">
+    <value>{0} (abweichend)</value>
+  </data>
+  <data name="EditRoleTooltip" xml:space="preserve">
+    <value>Rolle bearbeiten</value>
+  </data>
+  <data name="EditRoleAria" xml:space="preserve">
+    <value>Rolle {0} bearbeiten</value>
+  </data>
+  <data name="EditRoleTitle" xml:space="preserve">
+    <value>Rolle „{0}“ bearbeiten</value>
+  </data>
+  <data name="DeleteRoleTooltip" xml:space="preserve">
+    <value>Rolle löschen</value>
+  </data>
+  <data name="DeleteRoleAria" xml:space="preserve">
+    <value>Rolle {0} löschen</value>
+  </data>
+  <data name="DeleteRoleConfirmTitle" xml:space="preserve">
+    <value>Rolle löschen?</value>
+  </data>
+  <data name="DeleteRoleConfirmMessage" xml:space="preserve">
+    <value>Die Rolle „{0}“ wird gelöscht. Ihre Rechte werden vorher auf die {1} zugeordneten Konten übernommen, die nicht abweichen — niemand bekommt dadurch mehr Rechte.</value>
+  </data>
+  <data name="RoleDeletedMessage" xml:space="preserve">
+    <value>Rolle „{0}“ gelöscht.</value>
+  </data>
 </root>

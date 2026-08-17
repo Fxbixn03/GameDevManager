@@ -4,6 +4,16 @@ using Microsoft.Extensions.Localization;
 
 namespace GameDevManager.Data.Services;
 
+/// <summary>Eine Rolle, wie die Benutzerverwaltung sie zeigt und der Dialog sie anbietet.</summary>
+public sealed record UserRoleRow(
+    Guid Id,
+    string Name,
+    bool CanWrite,
+    bool CanExport,
+    bool CanImport,
+    string? AllowedModuleKeys,
+    int MemberCount = 0);
+
 /// <summary>Eine Zeile der Benutzerverwaltung — ohne den Hash, der nirgends hin muss.</summary>
 public sealed record UserRow(
     Guid Id,
@@ -16,11 +26,17 @@ public sealed record UserRow(
     bool CanImport,
     string? AllowedModuleKeys,
     DateTime CreatedAtUtc,
-    DateTime? LastLoginAtUtc)
+    DateTime? LastLoginAtUtc,
+    UserRoleRow? Role = null,
+    bool OverridesRole = false)
 {
-    /// <summary>Die aufgelösten Rechte dieser Zeile — Verwalter bekommen immer alles.</summary>
+    /// <summary>
+    /// Die aufgelösten Rechte dieser Zeile — Verwalter bekommen immer alles, sonst ist die
+    /// Rolle die Vorgabe und die Konto-Spalten gelten nur ohne Rolle oder mit Abweichung.
+    /// </summary>
     public UserPermissions Permissions =>
-        UserPermissions.For(IsAdministrator, CanWrite, CanExport, CanImport, AllowedModuleKeys);
+        UserPermissions.For(
+            IsAdministrator, CanWrite, CanExport, CanImport, AllowedModuleKeys, Role, OverridesRole);
 }
 
 /// <summary>
@@ -66,7 +82,13 @@ public class UserService(
                 user.CanImport,
                 user.AllowedModuleKeys,
                 user.CreatedAtUtc,
-                user.LastLoginAtUtc))
+                user.LastLoginAtUtc,
+                user.Role == null
+                    ? null
+                    : new UserRoleRow(
+                        user.Role.Id, user.Role.Name, user.Role.CanWrite, user.Role.CanExport,
+                        user.Role.CanImport, user.Role.AllowedModuleKeys, 0),
+                user.OverridesRole))
             .ToListAsync(ct);
     }
 
@@ -88,7 +110,13 @@ public class UserService(
                 user.CanImport,
                 user.AllowedModuleKeys,
                 user.CreatedAtUtc,
-                user.LastLoginAtUtc))
+                user.LastLoginAtUtc,
+                user.Role == null
+                    ? null
+                    : new UserRoleRow(
+                        user.Role.Id, user.Role.Name, user.Role.CanWrite, user.Role.CanExport,
+                        user.Role.CanImport, user.Role.AllowedModuleKeys, 0),
+                user.OverridesRole))
             .FirstOrDefaultAsync(ct);
     }
 
@@ -101,6 +129,7 @@ public class UserService(
         string userName, string displayName, string password, bool isAdministrator,
         bool canWrite = true, bool canExport = true, bool canImport = true,
         string? allowedModuleKeys = null,
+        Guid? roleId = null, bool overridesRole = false,
         CancellationToken ct = default)
     {
         await guard.EnsureAdministratorAsync(ct);
@@ -118,6 +147,8 @@ public class UserService(
             throw new ContentValidationException(messages["UserNameExists", name]);
         }
 
+        await EnsureRoleExistsAsync(db, roleId, ct);
+
         var isFirst = !await db.AppUsers.AnyAsync(ct);
 
         var created = new AppUser
@@ -133,7 +164,10 @@ public class UserService(
             CanExport = canExport,
             CanImport = canImport,
             AllowedModuleKeys = UserPermissions.FormatModuleKeys(
-                UserPermissions.ParseModuleKeys(allowedModuleKeys))
+                UserPermissions.ParseModuleKeys(allowedModuleKeys)),
+            RoleId = roleId,
+            // Eine Abweichung ohne Rolle wäre keine — sie hieße nur, was ohnehin gilt.
+            OverridesRole = roleId is not null && overridesRole
         };
 
         db.AppUsers.Add(created);
@@ -151,6 +185,7 @@ public class UserService(
         Guid userId, string displayName, bool isAdministrator, bool isDisabled,
         bool canWrite = true, bool canExport = true, bool canImport = true,
         string? allowedModuleKeys = null,
+        Guid? roleId = null, bool overridesRole = false,
         CancellationToken ct = default)
     {
         await guard.EnsureAdministratorAsync(ct);
@@ -168,6 +203,8 @@ public class UserService(
             throw new ContentValidationException(messages["UserLastAdministrator"]);
         }
 
+        await EnsureRoleExistsAsync(db, roleId, ct);
+
         user.DisplayName = Normalize(displayName) ?? user.UserName;
         user.IsAdministrator = isAdministrator;
         user.IsDisabled = isDisabled;
@@ -176,8 +213,110 @@ public class UserService(
         user.CanImport = canImport;
         user.AllowedModuleKeys = UserPermissions.FormatModuleKeys(
             UserPermissions.ParseModuleKeys(allowedModuleKeys));
+        user.RoleId = roleId;
+        user.OverridesRole = roleId is not null && overridesRole;
 
         await db.SaveChangesAsync(ct);
+    }
+
+    // ----------------------------------------------------------------------- Rollen
+
+    /// <summary>Alle Rollen samt Mitgliederzahl — für Verwaltung und Auswahl im Dialog.</summary>
+    public async Task<List<UserRoleRow>> GetRolesAsync(CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        return await db.UserRoles
+            .AsNoTracking()
+            .OrderBy(role => role.Name)
+            .Select(role => new UserRoleRow(
+                role.Id,
+                role.Name,
+                role.CanWrite,
+                role.CanExport,
+                role.CanImport,
+                role.AllowedModuleKeys,
+                db.AppUsers.Count(user => user.RoleId == role.Id)))
+            .ToListAsync(ct);
+    }
+
+    /// <summary>Legt eine Rolle an oder ändert sie — geänderte Rechte gelten ab der nächsten Anmeldung.</summary>
+    public async Task<Guid> SaveRoleAsync(UserRole role, CancellationToken ct = default)
+    {
+        await guard.EnsureAdministratorAsync(ct);
+
+        var name = Normalize(role.Name)
+            ?? throw new ContentValidationException(messages["UserRoleNameRequired"]);
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var lowered = name.ToLowerInvariant();
+        if (await db.UserRoles.AnyAsync(other => other.Id != role.Id && other.Name.ToLower() == lowered, ct))
+        {
+            throw new ContentValidationException(messages["UserRoleNameExists", name]);
+        }
+
+        var stored = await db.UserRoles.FirstOrDefaultAsync(other => other.Id == role.Id, ct);
+
+        if (stored is null)
+        {
+            stored = new UserRole { Id = role.Id, Name = name };
+            db.UserRoles.Add(stored);
+        }
+
+        stored.Name = name;
+        stored.CanWrite = role.CanWrite;
+        stored.CanExport = role.CanExport;
+        stored.CanImport = role.CanImport;
+        stored.AllowedModuleKeys = UserPermissions.FormatModuleKeys(
+            UserPermissions.ParseModuleKeys(role.AllowedModuleKeys));
+
+        await db.SaveChangesAsync(ct);
+        return stored.Id;
+    }
+
+    /// <summary>
+    /// Löscht eine Rolle. Ihre Rechte werden vorher auf alle Konten gestempelt, die nicht
+    /// abweichen — sonst fielen die auf ihre alten Konto-Spalten zurück und bekämen still
+    /// mehr, als die Rolle erlaubte.
+    /// </summary>
+    public async Task DeleteRoleAsync(Guid roleId, CancellationToken ct = default)
+    {
+        await guard.EnsureAdministratorAsync(ct);
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var role = await db.UserRoles.FirstOrDefaultAsync(other => other.Id == roleId, ct);
+        if (role is null)
+        {
+            return;
+        }
+
+        foreach (var member in await db.AppUsers.Where(user => user.RoleId == roleId).ToListAsync(ct))
+        {
+            if (!member.OverridesRole)
+            {
+                member.CanWrite = role.CanWrite;
+                member.CanExport = role.CanExport;
+                member.CanImport = role.CanImport;
+                member.AllowedModuleKeys = role.AllowedModuleKeys;
+            }
+
+            member.RoleId = null;
+            member.OverridesRole = false;
+        }
+
+        db.UserRoles.Remove(role);
+        await db.SaveChangesAsync(ct);
+    }
+
+    private async Task EnsureRoleExistsAsync(
+        GameDevManagerDbContext db, Guid? roleId, CancellationToken ct)
+    {
+        if (roleId is { } id && !await db.UserRoles.AnyAsync(role => role.Id == id, ct))
+        {
+            throw new ContentValidationException(messages["UserRoleNotFound"]);
+        }
     }
 
     public async Task SetPasswordAsync(Guid userId, string password, CancellationToken ct = default)
@@ -257,7 +396,11 @@ public class UserService(
         await using var db = await factory.CreateDbContextAsync(ct);
 
         var lowered = name.ToLowerInvariant();
-        var user = await db.AppUsers.FirstOrDefaultAsync(u => u.UserName.ToLower() == lowered, ct);
+
+        // Mit Rolle: Ihre Rechte wandern über diese Zeile als Ansprüche ins Cookie.
+        var user = await db.AppUsers
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.UserName.ToLower() == lowered, ct);
 
         if (user is null || user.IsDisabled)
         {
@@ -275,7 +418,13 @@ public class UserService(
         return new UserRow(
             user.Id, user.UserName, user.DisplayName, user.IsAdministrator, user.IsDisabled,
             user.CanWrite, user.CanExport, user.CanImport, user.AllowedModuleKeys,
-            user.CreatedAtUtc, user.LastLoginAtUtc);
+            user.CreatedAtUtc, user.LastLoginAtUtc,
+            user.Role is null
+                ? null
+                : new UserRoleRow(
+                    user.Role.Id, user.Role.Name, user.Role.CanWrite, user.Role.CanExport,
+                    user.Role.CanImport, user.Role.AllowedModuleKeys),
+            user.OverridesRole);
     }
 
     /// <summary>Ob außer diesem Benutzer kein einsatzfähiger Verwalter mehr übrig bliebe.</summary>

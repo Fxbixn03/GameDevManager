@@ -60,6 +60,35 @@
             }
             else
             {
+                @* Die Rolle ist die Vorgabe; abgewichen wird ausdrücklich — sonst zeigten
+                   die Schalter etwas, das gar nicht gilt. *@
+                @if (Roles.Count > 0)
+                {
+                    <MudSelect T="Guid?"
+                               @bind-Value="_roleId"
+                               Label="@L["RoleLabel"]"
+                               HelperText="@L["RoleHelper"]"
+                               Variant="Variant.Outlined"
+                               Dense="true">
+                        <MudSelectItem T="Guid?" Value="@((Guid?)null)">@L["NoRole"]</MudSelectItem>
+                        @foreach (var role in Roles)
+                        {
+                            <MudSelectItem T="Guid?" Value="@((Guid?)role.Id)">@role.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @if (_roleId is not null)
+                    {
+                        <MudSwitch @bind-Value="_overridesRole" Color="Color.Primary" Label="@L["OverrideRoleLabel"]" />
+                    }
+                }
+
+                @if (_roleId is not null && !_overridesRole)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@RoleSummary</MudText>
+                }
+                else
+                {
                 <MudSwitch @bind-Value="_canWrite" Color="Color.Primary" Label="@L["CanWriteLabel"]" />
                 <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CanWriteHelper"]</MudText>
 
@@ -91,6 +120,7 @@
                 {
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@L["AllModulesHint"]</MudText>
                 }
+                }
             }
 
             <MudText Typo="Typo.caption" Color="Color.Secondary">@L["PermissionsTakeEffectHint"]</MudText>
@@ -112,6 +142,10 @@
     [Parameter]
     public UserRow? User { get; set; }
 
+    /// <summary>Die wählbaren Rollen — leer, wenn noch keine angelegt sind.</summary>
+    [Parameter]
+    public List<UserRoleRow> Roles { get; set; } = [];
+
     private string? _displayName;
     private string? _userName;
     private string? _password;
@@ -122,6 +156,8 @@
     private bool _canImport = true;
     private bool _restrictModules;
     private IReadOnlyCollection<string> _selectedModules = [];
+    private Guid? _roleId;
+    private bool _overridesRole;
     private bool _saving;
 
     private bool IsNew => User is null;
@@ -139,7 +175,33 @@
         var allowed = UserPermissions.ParseModuleKeys(User?.AllowedModuleKeys);
         _restrictModules = allowed is not null;
         _selectedModules = allowed?.ToList() ?? [];
+
+        _roleId = User?.Role?.Id;
+        _overridesRole = User?.OverridesRole ?? false;
     }
+
+    /// <summary>Was die gewählte Rolle erlaubt — damit der Dialog nicht schweigt, was gilt.</summary>
+    private string RoleSummary
+    {
+        get
+        {
+            var role = Roles.FirstOrDefault(entry => entry.Id == _roleId);
+            if (role is null)
+            {
+                return string.Empty;
+            }
+
+            var modules = UserPermissions.ParseModuleKeys(role.AllowedModuleKeys);
+
+            return L["RoleSummary",
+                YesNo(role.CanWrite),
+                YesNo(role.CanExport),
+                YesNo(role.CanImport),
+                modules is null ? L["RoleSummaryAllModules"].Value : modules.Count.ToString()];
+        }
+    }
+
+    private string YesNo(bool value) => value ? L["Yes"] : L["No"];
 
     /// <summary>
     /// Die Modulliste zum Speichern: <c>null</c> heißt alle. Eine Einschränkung ganz ohne
@@ -174,7 +236,9 @@
                     canWrite,
                     canExport,
                     canImport,
-                    allowedModules);
+                    allowedModules,
+                    _roleId,
+                    _overridesRole);
             }
             else
             {
@@ -186,7 +250,9 @@
                     canWrite,
                     canExport,
                     canImport,
-                    allowedModules);
+                    allowedModules,
+                    _roleId,
+                    _overridesRole);
 
                 // Ein leeres Feld lässt das Passwort stehen — nur ein eingetragenes ersetzt es.
                 if (!string.IsNullOrWhiteSpace(_password))

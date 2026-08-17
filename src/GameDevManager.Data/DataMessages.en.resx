@@ -897,6 +897,15 @@ Unpack the ZIP into the root directory of your Godot project: the content lands 
   <data name="NpcRelationTypeInUse" xml:space="preserve">
     <value>This relation type is still used by {0} relation(s) and cannot be deleted.</value>
   </data>
+  <data name="UserRoleNameRequired" xml:space="preserve">
+    <value>A role needs a name.</value>
+  </data>
+  <data name="UserRoleNameExists" xml:space="preserve">
+    <value>A role named “{0}” already exists.</value>
+  </data>
+  <data name="UserRoleNotFound" xml:space="preserve">
+    <value>This role no longer exists.</value>
+  </data>
   <data name="SampleProjectName" xml:space="preserve">
     <value>Sample project</value>
   </data>

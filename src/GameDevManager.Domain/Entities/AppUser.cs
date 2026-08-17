@@ -61,6 +61,22 @@ public class AppUser
     /// </summary>
     public string? AllowedModuleKeys { get; set; }
 
+    /// <summary>
+    /// Die Rolle, aus der die Rechte kommen, solange <see cref="OverridesRole"/> nicht gesetzt
+    /// ist. Echter Fremdschlüssel mit SetNull — eine gelöschte Rolle nimmt das Konto nicht mit;
+    /// ihre Rechte werden vorher auf die Konten gestempelt, damit niemand still mehr bekommt.
+    /// </summary>
+    public Guid? RoleId { get; set; }
+
+    public UserRole? Role { get; set; }
+
+    /// <summary>
+    /// Das Konto weicht von seiner Rolle ab: Es gelten die eigenen Spalten statt der Rolle.
+    /// Ein Schalter statt vier einzelner Nullwerte — abgewichen wird ganz oder gar nicht,
+    /// sonst wäre in der Maske nicht mehr zu sehen, woher ein Recht kommt.
+    /// </summary>
+    public bool OverridesRole { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public DateTime? LastLoginAtUtc { get; set; }

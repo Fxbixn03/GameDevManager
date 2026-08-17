@@ -851,6 +851,15 @@ Entpacke das ZIP in das Wurzelverzeichnis deines Godot-Projekts: Die Inhalte lan
   <data name="NpcRelationTypeInUse" xml:space="preserve">
     <value>Diese Beziehungsart wird noch von {0} Beziehung(en) verwendet und kann nicht gelöscht werden.</value>
   </data>
+  <data name="UserRoleNameRequired" xml:space="preserve">
+    <value>Eine Rolle braucht einen Namen.</value>
+  </data>
+  <data name="UserRoleNameExists" xml:space="preserve">
+    <value>Eine Rolle „{0}“ gibt es bereits.</value>
+  </data>
+  <data name="UserRoleNotFound" xml:space="preserve">
+    <value>Diese Rolle gibt es nicht mehr.</value>
+  </data>
   <data name="SampleProjectName" xml:space="preserve">
     <value>Beispielprojekt</value>
   </data>

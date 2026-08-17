@@ -1,0 +1,113 @@
+@inject UserService Users
+@inject ISnackbar Snackbar
+@inject ModuleLabels Modules
+@inject IStringLocalizer<RoleDialog> L
+
+@*
+    Anlegen und Ändern einer Rolle — dieselben vier Rechte wie am Konto, nur einmal gebündelt.
+    Ein Verwalterrecht gibt es hier bewusst nicht: Eine Rolle „Verwalter“ wäre ein zweiter Weg
+    zur höchsten Stufe, und der bleibt Sache des einzelnen Kontos.
+*@
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="4">
+            <MudTextField @bind-Value="_name"
+                          T="string"
+                          Label="@L["NameLabel"]"
+                          Variant="Variant.Outlined"
+                          Immediate="true" />
+
+            <MudSwitch @bind-Value="_canWrite" Color="Color.Primary" Label="@L["CanWriteLabel"]" />
+            <MudSwitch @bind-Value="_canExport" Color="Color.Primary" Label="@L["CanExportLabel"]" />
+            <MudSwitch @bind-Value="_canImport" Color="Color.Primary" Label="@L["CanImportLabel"]" />
+
+            <MudSwitch @bind-Value="_restrictModules" Color="Color.Primary" Label="@L["RestrictModulesLabel"]" />
+            @if (_restrictModules)
+            {
+                <MudSelect T="string"
+                           MultiSelection="true"
+                           @bind-SelectedValues="_selectedModules"
+                           Label="@L["ModulesLabel"]"
+                           Variant="Variant.Outlined"
+                           Dense="true">
+                    @foreach (var module in ModuleRegistry.All.Where(m => m.Implemented))
+                    {
+                        <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["TakesEffectHint"]</MudText>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(_saving || string.IsNullOrWhiteSpace(_name))"
+                   OnClick="SaveAsync">
+            @L["Save"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance Dialog { get; set; } = default!;
+
+    /// <summary><c>null</c> heißt „neue Rolle“.</summary>
+    [Parameter]
+    public UserRoleRow? Role { get; set; }
+
+    private string? _name;
+    private bool _canWrite = true;
+    private bool _canExport = true;
+    private bool _canImport = true;
+    private bool _restrictModules;
+    private IReadOnlyCollection<string> _selectedModules = [];
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        _name = Role?.Name;
+        _canWrite = Role?.CanWrite ?? true;
+        _canExport = Role?.CanExport ?? true;
+        _canImport = Role?.CanImport ?? true;
+
+        var allowed = UserPermissions.ParseModuleKeys(Role?.AllowedModuleKeys);
+        _restrictModules = allowed is not null;
+        _selectedModules = allowed?.ToList() ?? [];
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+
+        try
+        {
+            await Users.SaveRoleAsync(new UserRole
+            {
+                Id = Role?.Id ?? Guid.NewGuid(),
+                Name = _name ?? string.Empty,
+                CanWrite = _canWrite,
+                CanExport = _canExport,
+                CanImport = _canImport,
+                AllowedModuleKeys = _restrictModules && _selectedModules.Count > 0
+                    ? string.Join(",", _selectedModules)
+                    : null
+            });
+
+            Snackbar.Add(L["SavedMessage", _name ?? string.Empty], Severity.Success);
+            Dialog.Close(DialogResult.Ok(true));
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

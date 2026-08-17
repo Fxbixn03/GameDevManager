@@ -163,6 +163,8 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
     /// <summary>Die Benutzer der Installation. Hängen bewusst an keinem Projekt.</summary>
     public DbSet<AppUser> AppUsers => Set<AppUser>();
 
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+
     /// <summary>Schlüssel für die lesende HTTP-API. Gehören wie die Benutzer der Installation.</summary>
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
 
@@ -957,6 +959,27 @@ public class GameDevManagerDbContext(DbContextOptions<GameDevManagerDbContext> o
             // Der UserService prüft das vorher und meldet es verständlich; dieser Index ist
             // die Absicherung dahinter.
             entity.HasIndex(u => u.UserName).IsUnique();
+
+            // Eine gelöschte Rolle nimmt das Konto nicht mit — der UserService stempelt ihre
+            // Rechte vorher auf die Konten, hier fällt nur der Verweis.
+            entity.HasOne(u => u.Role)
+                .WithMany()
+                .HasForeignKey(u => u.RoleId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(u => u.RoleId);
+        });
+
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.Property(role => role.Name).HasMaxLength(100).IsRequired();
+            entity.Property(role => role.AllowedModuleKeys).HasMaxLength(1000);
+
+            // Wie beim Konto: der Standard steht auf „erlaubt“, und der Name ist
+            // installationsweit eindeutig — Rollen hängen an keinem Projekt.
+            entity.Property(role => role.CanWrite).HasDefaultValue(true);
+            entity.Property(role => role.CanExport).HasDefaultValue(true);
+            entity.Property(role => role.CanImport).HasDefaultValue(true);
+            entity.HasIndex(role => role.Name).IsUnique();
         });
 
         modelBuilder.Entity<ExportProfile>(entity =>

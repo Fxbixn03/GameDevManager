@@ -68,7 +68,13 @@ else
                             @L["Disabled"]
                         </MudChip>
                     }
-                    @if (!user.IsAdministrator)
+                    @if (user.Role is { } role && !user.IsAdministrator)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
+                            @(user.OverridesRole ? L["RoleChipOverridden", role.Name] : role.Name)
+                        </MudChip>
+                    }
+                    @if (!user.IsAdministrator && (user.Role is null || user.OverridesRole))
                     {
                         @if (!user.CanWrite)
                         {
@@ -118,6 +124,52 @@ else
                 </MudStack>
             }
         </MudStack>
+    </MudPaper>
+
+    @* Rollen bündeln die vier Rechte — beim zehnten Konto setzt niemand zum zehnten Mal
+       dieselben Häkchen. Geänderte Rollen gelten wie alle Rechte ab der nächsten Anmeldung. *@
+    <MudPaper Elevation="0" Class="gdm-panel pa-4 mt-6">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["RolesTitle"]</MudText>
+            <MudButton StartIcon="@Icons.Material.Filled.Add"
+                       Size="Size.Small"
+                       OnClick="@(() => EditRoleAsync(null))">
+                @L["NewRole"]
+            </MudButton>
+        </MudStack>
+
+        @if (_roles is not { Count: > 0 })
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoRolesHint"]</MudText>
+        }
+        else
+        {
+            @foreach (var role in _roles)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="gdm-field-row py-2">
+                    <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" Color="Color.Secondary" />
+                    <MudText Typo="Typo.body2" Style="flex:1 1 auto;min-width:0;" Class="gdm-ellipsis">
+                        <b>@role.Name</b>
+                    </MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@RoleRights(role)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                        @L["RoleMembers", role.MemberCount]
+                    </MudText>
+                    <MudTooltip Text="@L["EditRoleTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditRoleAsync(role))"
+                                       aria-label="@L["EditRoleAria", role.Name]" />
+                    </MudTooltip>
+                    <MudTooltip Text="@L["DeleteRoleTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteRoleAsync(role))"
+                                       aria-label="@L["DeleteRoleAria", role.Name]" />
+                    </MudTooltip>
+                </MudStack>
+            }
+        }
     </MudPaper>
 
     @* Die Passwortrichtlinie der Installation — sie gilt für neue Passwörter; bestehende
@@ -170,6 +222,7 @@ else
 
 @code {
     private List<UserRow>? _users;
+    private List<UserRoleRow>? _roles;
     private bool _isAdministrator;
     private Guid? _currentUserId;
 
@@ -204,11 +257,87 @@ else
         Snackbar.Add(L["PolicySaved"], Severity.Success);
     }
 
-    private async Task LoadAsync() => _users = await Users.GetUsersAsync();
+    private async Task LoadAsync()
+    {
+        _users = await Users.GetUsersAsync();
+        _roles = await Users.GetRolesAsync();
+    }
+
+    /// <summary>Kurzfassung der Rollenrechte für die Liste — nur, was eingeschränkt ist.</summary>
+    private string RoleRights(UserRoleRow role)
+    {
+        var parts = new List<string>();
+
+        if (!role.CanWrite)
+        {
+            parts.Add(L["ReadOnly"]);
+        }
+
+        if (!role.CanExport)
+        {
+            parts.Add(L["NoExport"]);
+        }
+
+        if (!role.CanImport)
+        {
+            parts.Add(L["NoImport"]);
+        }
+
+        if (UserPermissions.ParseModuleKeys(role.AllowedModuleKeys) is { } modules)
+        {
+            parts.Add(L["ModuleCount", modules.Count]);
+        }
+
+        return parts.Count == 0 ? L["RoleAllRights"] : string.Join(" · ", parts);
+    }
+
+    private async Task EditRoleAsync(UserRoleRow? role)
+    {
+        var parameters = new DialogParameters<RoleDialog> { { dialog => dialog.Role, role } };
+
+        var reference = await Dialogs.ShowAsync<RoleDialog>(
+            role is null ? L["NewRole"] : L["EditRoleTitle", role.Name].Value,
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true });
+
+        if (await reference.Result is { Canceled: false })
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteRoleAsync(UserRoleRow role)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            L["DeleteRoleConfirmTitle"],
+            L["DeleteRoleConfirmMessage", role.Name, role.MemberCount],
+            yesText: L["DeleteYes"],
+            cancelText: L["DeleteCancel"]);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Users.DeleteRoleAsync(role.Id);
+            Snackbar.Add(L["RoleDeletedMessage", role.Name], Severity.Success);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
 
     private async Task EditAsync(UserRow? user)
     {
-        var parameters = new DialogParameters<UserDialog> { { dialog => dialog.User, user } };
+        var parameters = new DialogParameters<UserDialog>
+        {
+            { dialog => dialog.User, user },
+            { dialog => dialog.Roles, _roles ?? [] }
+        };
 
         var reference = await Dialogs.ShowAsync<UserDialog>(
             user is null ? L["NewUser"] : L["EditTitle", user.DisplayName].Value,

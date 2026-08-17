@@ -810,7 +810,7 @@ vorher ein Sicherheitsnetz, und es reißt nicht.
 
 *Aufwand: M · Migration: nein · Format: eigenes Format*
 
-### F45 — Rollen statt Rechte je Benutzer
+### F45 — Rollen statt Rechte je Benutzer ✅ umgesetzt
 
 > **Als** Verwalter **möchte ich** Rollen anlegen („Autor", „Grafiker", „Nur lesen") und Benutzern
 > zuweisen, **damit** ich beim zehnten Konto nicht zum zehnten Mal dieselben Häkchen setze.
@@ -822,6 +822,15 @@ kommt die Rolle als Vorgabe hinzu, das Konto darf sie überschreiben. Die Rechte
 als Ansprüche ins Cookie und gelten ab der nächsten Anmeldung.
 
 *Aufwand: M · Migration: ja · Format: unverändert*
+
+**Umgesetzt.** `UserRole` plus `AppUser.RoleId` (SetNull) und der Schalter `OverridesRole`,
+Migration `UserRoles` in allen vier Providern. Abgewichen wird **ganz oder gar nicht** (ein
+Schalter statt vier Nullwerte je Recht), aufgelöst wird **live** in der neuen
+`UserPermissions.For`-Überladung — eine geänderte Rolle wirkt damit ab der nächsten Anmeldung,
+ohne jedes Konto anzufassen. Beim **Löschen** einer Rolle stempelt `DeleteRoleAsync` ihre Rechte
+auf die nicht-abweichenden Konten, sonst fielen die auf ihre alten Spalten zurück und bekämen
+still mehr. Ein Verwalterrecht kennt die Rolle bewusst nicht. Verwaltung als Panel in der
+Benutzerverwaltung (`RoleDialog`), Zuweisung im Benutzer-Dialog.
 
 ### F46 — Anmeldung über einen externen Anbieter
 
