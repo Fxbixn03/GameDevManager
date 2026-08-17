@@ -116,6 +116,19 @@ public interface IModuleEntitySource
         GameDevManagerDbContext db, Guid entityId, CancellationToken ct);
 
     /// <summary>
+    /// Der Bestand eines Moduls, eingeschränkt durch einen <see cref="ContentFilter"/> — die
+    /// Grundlage der gespeicherten Ansichten (F27).
+    /// <para>
+    /// Eingeschränkt wird hier nur, was <b>in der Tabelle des Moduls steht</b>: Name, Art,
+    /// Bearbeitungsstand, Vorbild. Feldwerte, Tags und Sprites hängen ohne Fremdschlüssel an
+    /// der GUID; die filtert der <see cref="SavedViewService"/> im Speicher, nachdem die
+    /// Datenbank die Menge eingeengt hat.
+    /// </para>
+    /// </summary>
+    Task<List<ContentRow>> QueryAsync(
+        GameDevManagerDbContext db, Guid projectId, ContentFilter filter, CancellationToken ct);
+
+    /// <summary>
     /// Liest einen aufbewahrten Baum zurück und hängt ihn an den Kontext an — gespeichert wird
     /// vom Aufrufer. Die GUIDs bleiben die originalen, damit jeder Verweis wieder trägt.
     /// </summary>
@@ -414,6 +427,64 @@ public abstract class ModuleEntitySource<TEntity>(IStringLocalizer<DataMessages>
     /// <inheritdoc />
     public void Restore(GameDevManagerDbContext db, string payload) =>
         EntityDuplication.Restore<TEntity>(db, payload);
+
+    /// <inheritdoc />
+    public async Task<List<ContentRow>> QueryAsync(
+        GameDevManagerDbContext db, Guid projectId, ContentFilter filter, CancellationToken ct)
+    {
+        // In lokale Variablen ziehen: Eigenschaften der Klasse und des Filters könnte EF in
+        // manchen Fällen nicht übersetzen.
+        var moduleKey = ModuleKey;
+        var text = filter.Text?.Trim();
+        var typeIds = filter.ExpandedTypeIds.Count > 0
+            ? filter.ExpandedTypeIds
+            : filter.ContentTypeId is { } single ? [single] : new List<Guid>();
+        var statuses = filter.Statuses;
+
+        var query = Set(db)
+            .AsNoTracking()
+            .Where(entity => entity.GameProjectId == projectId);
+
+        if (!string.IsNullOrEmpty(text))
+        {
+            // Über ToLower().Contains() und nicht über EF.Functions.Like: Das übersetzt sich
+            // über alle vier Provider gleich und hängt nicht an der Sortierfolge — dieselbe
+            // Regel wie in der globalen Suche.
+            var needle = text.ToLower();
+
+            query = query.Where(entity =>
+                entity.Name.ToLower().Contains(needle)
+                || (entity.Description != null && entity.Description.ToLower().Contains(needle)));
+        }
+
+        if (typeIds.Count > 0)
+        {
+            query = query.Where(entity => entity.ContentTypeId != null
+                && typeIds.Contains(entity.ContentTypeId.Value));
+        }
+
+        if (statuses.Count > 0)
+        {
+            query = query.Where(entity => statuses.Contains(entity.Status));
+        }
+
+        if (filter.OnlyVariants)
+        {
+            query = query.Where(entity => entity.BasedOnId != null);
+        }
+
+        return await query
+            .OrderBy(entity => entity.Name)
+            .Select(entity => new ContentRow(
+                entity.Id,
+                moduleKey,
+                entity.Name,
+                entity.ContentType!.Name,
+                entity.Status,
+                entity.UpdatedAtUtc,
+                new Dictionary<Guid, FieldValue>()))
+            .ToListAsync(ct);
+    }
 
     /// <summary>
     /// Standardfall: Das Modul trägt seine Texte in Name, Beschreibung und benutzerdefinierten

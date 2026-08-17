@@ -123,6 +123,18 @@
   <data name="RecycleBinIdTaken" xml:space="preserve">
     <value>Unter der GUID von „{0}“ steht bereits wieder ein Datensatz. Wiederherstellen würde ihn überschreiben.</value>
   </data>
+  <data name="SavedViewNameRequired" xml:space="preserve">
+    <value>Die Ansicht braucht einen Namen.</value>
+  </data>
+  <data name="SavedViewNameExists" xml:space="preserve">
+    <value>Es gibt in diesem Modul bereits eine Ansicht namens „{0}“.</value>
+  </data>
+  <data name="SavedViewModuleUnknown" xml:space="preserve">
+    <value>Das Modul „{0}“ ist nicht bekannt.</value>
+  </data>
+  <data name="SavedViewNeedsUser" xml:space="preserve">
+    <value>Ansichten gehören zu einem Konto — bitte zuerst anmelden.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>Das Stichwort braucht einen Namen.</value>
   </data>

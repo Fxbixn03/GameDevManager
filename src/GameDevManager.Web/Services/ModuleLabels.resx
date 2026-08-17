@@ -201,6 +201,12 @@
   <data name="bulkedit_Description" xml:space="preserve">
     <value>Viele Einträge auf einmal ändern: Art zuweisen, Tags vergeben oder einen Feldwert setzen.</value>
   </data>
+  <data name="views_Name" xml:space="preserve">
+    <value>Ansichten</value>
+  </data>
+  <data name="views_Description" xml:space="preserve">
+    <value>Gefilterte Listen über den Bestand eines Moduls — benennbar und wiederfindbar, samt der Spalten, die man sehen will.</value>
+  </data>
   <data name="connections_Name" xml:space="preserve">
     <value>Verbindungen</value>
   </data>

@@ -181,6 +181,9 @@ public class GameDevManagerDbContext(
     /// <summary>Angeheftete Entitäten je Benutzer und Projekt — Werkzeug-Daten, nicht im Export.</summary>
     public DbSet<UserPin> UserPins => Set<UserPin>();
 
+    /// <summary>Benannte Listenansichten je Benutzer und Projekt — Werkzeug-Daten wie die Favoriten.</summary>
+    public DbSet<SavedView> SavedViews => Set<SavedView>();
+
     /// <summary>Anmerkungen an Entitäten — Werkzeug-Daten wie das Änderungsprotokoll.</summary>
     public DbSet<ContentComment> ContentComments => Set<ContentComment>();
 
@@ -326,6 +329,31 @@ public class GameDevManagerDbContext(
 
             // Trägt die Referenzansicht („Find All References"): wer zeigt auf diese GUID?
             entity.HasIndex(v => v.ReferenceValue);
+        });
+
+        modelBuilder.Entity<SavedView>(entity =>
+        {
+            entity.Property(view => view.ModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Property(view => view.Name).HasMaxLength(200).IsRequired();
+            entity.Property(view => view.FilterJson).IsRequired();
+            entity.Property(view => view.ColumnFieldIds).HasMaxLength(4000);
+
+            entity.HasOne(view => view.GameProject)
+                .WithMany()
+                .HasForeignKey(view => view.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Ein gelöschtes Konto nimmt seine Ansichten mit — sie sind seine Arbeitsgewohnheit
+            // und ohne ihn ohne Bedeutung. Dieselbe Regel wie bei den Favoriten.
+            entity.HasOne(view => view.User)
+                .WithMany()
+                .HasForeignKey(view => view.AppUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Je Benutzer, Projekt und Modul ist der Name eindeutig; der Dienst prüft es vorher
+            // und meldet es verständlich, dieser Index ist die Absicherung dahinter.
+            entity.HasIndex(view => new { view.GameProjectId, view.AppUserId, view.ModuleKey, view.Name })
+                .IsUnique();
         });
 
         modelBuilder.Entity<RecycleBinEntry>(entity =>

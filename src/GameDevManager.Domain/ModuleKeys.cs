@@ -89,4 +89,11 @@ public static class ModuleKeys
     /// </para>
     /// </summary>
     public const string BulkEdit = "bulkedit";
+
+    /// <summary>
+    /// Gefilterte Listenansichten über den Bestand eines Moduls, benennbar und wiederfindbar.
+    /// Ein Werkzeug-Modul: Es zeigt, was die Inhaltsmodule ohnehin tragen — die gespeicherte
+    /// Ansicht selbst gehört zum Benutzer, nicht zum Spiel.
+    /// </summary>
+    public const string Views = "views";
 }

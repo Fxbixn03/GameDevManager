@@ -492,6 +492,17 @@ Eingesammelt wird **nur die Eigenschaft `id`**: Was mitkopiert wird, bekommt ein
 
 Für den Download gibt es `/export/csv/{projectId}/{moduleKey}` in `Program.cs` — wie beim ZIP über einen Endpunkt, weil sich über SignalR kein Download anstoßen lässt; die Antwort trägt ein **BOM**, sonst zeigt Excel Umlaute als Buchstabensalat.
 
+### Gespeicherte Ansichten
+
+`ContentFilter` + `SavedView` + `SavedViewService`, Migration `SavedViews` in allen vier Providern; Werkzeug-Modul `ModuleKeys.Views` unter `/modules/views`. Sechs Dinge:
+
+- **Eine Seite statt einer Filterleiste in jeder Modul-Liste** — dieselbe Begründung wie bei der Massenbearbeitung: Die Listen sind je Modul eigen gebaut (Kachelraster, Tabelle, Zeitstreifen), und dieselbe Leiste zwanzigmal nachzubauen hieße, sie zwanzigmal zu pflegen. Über `IModuleEntitySource.QueryAsync` deckt eine Seite alle ab, auch die künftigen.
+- **Gefiltert wird in der Datenbank, soweit es geht** (Name, Art, Bearbeitungsstand, Vorbild) — das macht `QueryAsync` in der Basisklasse. **Im Speicher, wo es sein muss**: Feldwerte, Tags und Sprites hängen ohne Fremdschlüssel an der GUID, und ein Join darauf wäre über alle vier Provider nicht gleich zu bekommen; der Dienst filtert sie, nachdem die Datenbank die Menge eingeengt hat.
+- **Der Vergleichswert einer Feldbedingung steht als Text**, auch für Zahlen: Der Filter geht als JSON in die gespeicherte Ansicht, und ein neuer Feldtyp soll dort keine Migration verlangen — dieselbe Überlegung wie beim Feldtyp „Formel/Kurve“. Umgewandelt wird beim Auswerten, in fester Kultur. Größer/kleiner gibt es nur, wo es eine Ordnung gibt (Zahlen, Daten).
+- **Unterarten werden bei jeder Abfrage neu aufgelöst** (`ExpandedTypeIds`, `[JsonIgnore]`) und nicht mitgespeichert: Wer später eine Unterart anlegt, findet sie in seiner Ansicht wieder, ohne sie neu zu wählen. Wer „Waffe“ filtert, meint fast immer auch „Nahkampf“.
+- **Kein „oder“.** Alle gesetzten Kriterien müssen zutreffen — ein Oder verdoppelte die Bedienoberfläche für einen Fall, den zwei gespeicherte Ansichten genauso lösen.
+- **Die Ansicht gehört dem Benutzer**, nicht dem Projekt: Sie ist eine Arbeitsgewohnheit, keine Aussage über den Spielinhalt. Werkzeug-Daten wie die Favoriten — nicht im Export, sie überstehen den ersetzenden Import, und der Benutzer hängt über einen echten Fremdschlüssel daran. **Ohne Spaltenwahl zeigt die Tabelle nur die Stammdaten**; eine Art mit 25 Feldern wäre sonst breiter als jeder Bildschirm.
+
 ### Massenbearbeitung
 
 `BulkEditService` ändert viele Entitäten auf einmal — Art zuweisen, Tags vergeben/entziehen, einen Feldwert setzen oder leeren. Das Werkzeug-Modul `ModuleKeys.BulkEdit` ist die Oberfläche dazu. Fünf Entscheidungen:

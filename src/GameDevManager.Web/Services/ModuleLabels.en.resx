@@ -247,6 +247,12 @@
   <data name="bulkedit_Description" xml:space="preserve">
     <value>Change many entries at once: assign a type, apply tags or set a field value.</value>
   </data>
+  <data name="views_Name" xml:space="preserve">
+    <value>Views</value>
+  </data>
+  <data name="views_Description" xml:space="preserve">
+    <value>Filtered lists over a module’s content — named and re-findable, along with the columns you want to see.</value>
+  </data>
   <data name="connections_Name" xml:space="preserve">
     <value>Connections</value>
   </data>

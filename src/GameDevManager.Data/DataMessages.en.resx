@@ -184,6 +184,18 @@
   <data name="RecycleBinIdTaken" xml:space="preserve">
     <value>Another record already occupies the GUID of “{0}”. Restoring would overwrite it.</value>
   </data>
+  <data name="SavedViewNameRequired" xml:space="preserve">
+    <value>The view needs a name.</value>
+  </data>
+  <data name="SavedViewNameExists" xml:space="preserve">
+    <value>A view called “{0}” already exists in this module.</value>
+  </data>
+  <data name="SavedViewModuleUnknown" xml:space="preserve">
+    <value>The module “{0}” is unknown.</value>
+  </data>
+  <data name="SavedViewNeedsUser" xml:space="preserve">
+    <value>Views belong to an account — please sign in first.</value>
+  </data>
   <data name="AssetTagNameRequired" xml:space="preserve">
     <value>The keyword needs a name.</value>
   </data>

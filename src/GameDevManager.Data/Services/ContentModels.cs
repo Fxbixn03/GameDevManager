@@ -23,6 +23,20 @@ public sealed class ContentConcurrencyException(string message) : ContentValidat
 public sealed record EntitySummary(Guid Id, string ModuleKey, string Name, string? TypeName);
 
 /// <summary>
+/// Eine Zeile der gefilterten Listenansicht: die Stammdaten plus die Werte der gewählten
+/// Spalten, fertig formatiert. Die Formatierung liegt in der Datenschicht und nicht in der
+/// Maske, damit dieselbe Zeile später auch in einen CSV-Export gehen kann.
+/// </summary>
+public sealed record ContentRow(
+    Guid Id,
+    string ModuleKey,
+    string Name,
+    string? TypeName,
+    ContentStatus Status,
+    DateTime UpdatedAtUtc,
+    IReadOnlyDictionary<Guid, FieldValue> Values);
+
+/// <summary>
 /// Eine zuletzt bearbeitete Entität für das „Weiterarbeiten“ des Dashboards. Der Treffer ist
 /// derselbe wie in Suche und Startscreen — er trägt Name, Modul, Untertitel und Sprite bereits;
 /// hinzu kommt allein der Zeitpunkt, den <see cref="SearchHit"/> bewusst nicht führt.

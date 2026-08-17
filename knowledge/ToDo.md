@@ -437,8 +437,10 @@ ins Spiel zu liefern.
 vier Providern, `FormatVersion` auf **13**. Auswahl in jeder Bearbeitungsmaske
 (`EntityStatusSelect` im Referenz-Panel), Massenbearbeitung über `BulkEditService.SetStatusAsync`,
 Dashboard-Band „Bearbeitungsstand“ und der Export-Filter als **Mindeststand**.
-**Offen bleibt** der Filter in den einzelnen Modul-Listen und in der globalen Suche: Beide
-filtern heute je Modul selbst — das gehört zum einheitlichen Filter-Aufbau aus F27.
+**Nachgezogen mit F27:** Der Filter nach Bearbeitungsstand steht in den gespeicherten
+Ansichten (`/modules/views`) — dort, wo auch nach Art, Feldwert, Tag und Sprite gefiltert wird.
+Die einzelnen Modul-Listen behalten ihre eigenen, schlanken Filter: Eine zweite vollständige
+Filterleiste je Liste wäre zwanzigmal dieselbe Pflege.
 
 ### F21 — Kommentare an Entitäten ✅ umgesetzt
 
@@ -568,7 +570,7 @@ Suche über die Anfangsbuchstaben statt `Contains` — bei „ei schwert" soll d
 (Module öffnen, neu anlegen, Projekte, Einstellungen, Export) plus Entitäten aus demselben
 `SearchService` wie die Appbar; unscharfer Vergleich als `FuzzyMatch` in der Datenschicht.
 
-### F27 — Gespeicherte Suchen und Listenansichten
+### F27 — Gespeicherte Suchen und Listenansichten ✅ umgesetzt
 
 > **Als** Nutzer **möchte ich** einen Filter („alle Waffen ohne Sprite, Schaden über 50, Status
 > Entwurf") benennen und wiederfinden, samt der Spalten, die ich sehen will, **damit** ich ihn nicht
@@ -581,6 +583,23 @@ Filterarten brauchen keine Migration. Voraussetzung ist ein einheitlicher Filter
 `IModuleEntitySource`, den es heute nicht gibt — die Modul-Listen filtern je selbst.
 
 *Aufwand: L · Migration: ja · Format: unverändert*
+
+**Umgesetzt.** `ContentFilter` als einheitliche Filterdefinition, `IModuleEntitySource.QueryAsync`
+als der gemeinsame Weg, `SavedView` mit dem Filter als JSON (Migration `SavedViews` in allen vier
+Providern), Werkzeug-Modul `ModuleKeys.Views` unter `/modules/views`. Fünf Entscheidungen:
+**Eine Seite statt einer Filterleiste in jeder Modul-Liste** — dieselbe Begründung wie bei der
+Massenbearbeitung: Die Listen sind je Modul eigen gebaut, dieselbe Leiste zwanzigmal nachzubauen
+hieße, sie zwanzigmal zu pflegen. Gefiltert wird **in der Datenbank, soweit es geht** (Name, Art,
+Stand, Vorbild) und **im Speicher, wo es sein muss** (Feldwerte, Tags, Sprites) — die hängen ohne
+Fremdschlüssel an der GUID. Der **Vergleichswert steht als Text**, auch für Zahlen: Der Filter
+geht als JSON in die Ansicht, und ein neuer Feldtyp soll dort keine Migration verlangen.
+**Unterarten werden bei jeder Abfrage neu aufgelöst** und nicht mitgespeichert — wer später eine
+Unterart anlegt, findet sie in seiner Ansicht wieder, ohne sie neu zu wählen. Und die Ansicht
+gehört **dem Benutzer**, nicht dem Projekt: Sie ist eine Arbeitsgewohnheit, keine Aussage über
+den Spielinhalt.
+
+Damit ist auch der offene Rest aus **F20** erledigt: Der Statusfilter steht in dieser Ansicht;
+die einzelnen Modul-Listen behalten bewusst ihre eigenen, schlanken Filter.
 
 ### F28 — Favoriten und „zuletzt besucht" ✅ umgesetzt
 
