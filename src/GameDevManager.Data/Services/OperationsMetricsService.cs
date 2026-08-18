@@ -21,7 +21,8 @@ public sealed record OperationsMetrics(
     int AssetCount,
     long AssetBytes,
     int SnapshotCount,
-    double? NewestSnapshotAgeHours);
+    double? NewestSnapshotAgeHours,
+    IReadOnlyList<BackgroundRunInfo> BackgroundRuns);
 
 /// <summary>
 /// Sammelt die Betriebs-Kennzahlen. Reine Auswertung ohne eigenen Datenbestand — dasselbe
@@ -37,7 +38,8 @@ public class OperationsMetricsService(
     IEnumerable<IModuleEntitySource> sources,
     IAssetStorage assetStorage,
     AssetStorageOptions assetOptions,
-    ExportStorageOptions exportOptions)
+    ExportStorageOptions exportOptions,
+    BackgroundRunTracker backgroundRuns)
 {
     /// <summary>
     /// Ob die Datenbank antwortet. Die Frage, die eine Überwachung zuerst stellt — und die
@@ -64,7 +66,9 @@ public class OperationsMetricsService(
 
         if (!reachable)
         {
-            return new OperationsMetrics(false, error, 0, 0, 0, 0, 0, 0, null);
+            // Die Hintergrundläufe stehen trotzdem da — gerade wenn die Datenbank klemmt,
+            // ist ihre Fehlerzahl die interessante Auskunft.
+            return new OperationsMetrics(false, error, 0, 0, 0, 0, 0, 0, null, backgroundRuns.GetAll());
         }
 
         await using var db = await factory.CreateDbContextAsync(ct);
@@ -96,7 +100,8 @@ public class OperationsMetricsService(
             snapshots.Count,
             snapshots.Count == 0
                 ? null
-                : (DateTime.UtcNow - snapshots.Max(File.GetLastWriteTimeUtc)).TotalHours);
+                : (DateTime.UtcNow - snapshots.Max(File.GetLastWriteTimeUtc)).TotalHours,
+            backgroundRuns.GetAll());
     }
 
     /// <summary>
@@ -172,6 +177,38 @@ public class OperationsMetricsService(
         if (metrics.NewestSnapshotAgeHours is { } age)
         {
             Write("gdm_newest_snapshot_age_hours", "Age of the newest export snapshot in hours.", age);
+        }
+
+        // Die Hintergrundläufe als Reihen mit Label — ein Dienst, der noch nie lief, hat
+        // keine Reihe: „nie gelaufen“ darf nicht wie „gerade gelaufen“ aussehen, dieselbe
+        // Überlegung wie beim Alter des Exportstands.
+        if (metrics.BackgroundRuns.Count > 0)
+        {
+            void WriteLabeled(string name, string help, Func<BackgroundRunInfo, double> value)
+            {
+                builder.AppendLine($"# HELP {name} {help}");
+                builder.AppendLine($"# TYPE {name} gauge");
+
+                foreach (var run in metrics.BackgroundRuns)
+                {
+                    builder.AppendLine(string.Create(
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        $"{name}{{service=\"{run.Service}\"}} {value(run)}"));
+                }
+            }
+
+            WriteLabeled("gdm_background_last_run_age_seconds",
+                "Seconds since the service last finished a run.",
+                run => (DateTime.UtcNow - run.LastRunUtc).TotalSeconds);
+            WriteLabeled("gdm_background_last_run_seconds",
+                "Duration of the last run in seconds.",
+                run => run.LastDurationSeconds);
+            WriteLabeled("gdm_background_last_run_failed",
+                "1 if the last run ended with an error, 0 otherwise.",
+                run => run.LastRunFailed ? 1 : 0);
+            WriteLabeled("gdm_background_errors_total",
+                "Failed runs since process start.",
+                run => run.ErrorCount);
         }
 
         return builder.ToString();

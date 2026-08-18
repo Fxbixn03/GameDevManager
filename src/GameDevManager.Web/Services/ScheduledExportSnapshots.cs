@@ -20,6 +20,7 @@ namespace GameDevManager.Web.Services;
 public sealed class ScheduledExportSnapshots(
     IServiceScopeFactory scopes,
     ExportStorageOptions options,
+    BackgroundRunTracker runs,
     ILogger<ScheduledExportSnapshots> log) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -46,6 +47,8 @@ public sealed class ScheduledExportSnapshots(
 
     private async Task RunAsync(CancellationToken ct)
     {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+
         try
         {
             using var scope = scopes.CreateScope();
@@ -57,6 +60,8 @@ public sealed class ScheduledExportSnapshots(
             {
                 log.LogInformation("Geplante Exportstände angelegt: {Created}.", created);
             }
+
+            runs.Record(BackgroundRunTracker.ScheduledSnapshots, watch.Elapsed, success: true);
         }
         catch (OperationCanceledException)
         {
@@ -67,6 +72,7 @@ public sealed class ScheduledExportSnapshots(
             // Eine gerade nicht erreichbare Datenbank oder ein volles Verzeichnis darf den
             // Zeitplan nicht beenden — morgen steht vielleicht beides wieder.
             log.LogWarning(ex, "Die geplanten Exportstände konnten nicht angelegt werden.");
+            runs.Record(BackgroundRunTracker.ScheduledSnapshots, watch.Elapsed, success: false);
         }
     }
 }

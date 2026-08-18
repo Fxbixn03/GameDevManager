@@ -85,10 +85,72 @@ public class OperationsMetricsTests
     [Fact]
     public void Zahlen_stehen_im_Prometheus_Text_in_fester_Kultur()
     {
-        var metrics = new OperationsMetrics(true, null, 1, 2, 3, 4, 5678, 1, 1.5);
+        var metrics = new OperationsMetrics(true, null, 1, 2, 3, 4, 5678, 1, 1.5, []);
 
         // Ein Komma wäre dort kein Dezimaltrenner — dieselbe Regel wie bei den Kurvenausdrücken.
         Assert.Contains("gdm_newest_snapshot_age_hours 1.5", OperationsMetricsService.ToPrometheus(metrics),
             StringComparison.Ordinal);
+    }
+
+    // -------------------------------------------------------------- Hintergrundläufe
+
+    [Fact]
+    public async Task Hintergrundlaeufe_stehen_in_beiden_Formaten()
+    {
+        using var test = new TestDatabase();
+
+        var tracker = test.GetService<BackgroundRunTracker>();
+        tracker.Record(BackgroundRunTracker.ChangeLogMaintenance, TimeSpan.FromSeconds(1.5), success: true);
+        tracker.Record(BackgroundRunTracker.WebhookDispatcher, TimeSpan.FromSeconds(0.2), success: false);
+
+        var metrics = await test.GetService<OperationsMetricsService>().CollectAsync();
+
+        Assert.Equal(2, metrics.BackgroundRuns.Count);
+
+        var maintenance = metrics.BackgroundRuns.Single(
+            run => run.Service == BackgroundRunTracker.ChangeLogMaintenance);
+        Assert.False(maintenance.LastRunFailed);
+        Assert.Equal(0, maintenance.ErrorCount);
+        Assert.Equal(1.5, maintenance.LastDurationSeconds);
+
+        var dispatcher = metrics.BackgroundRuns.Single(
+            run => run.Service == BackgroundRunTracker.WebhookDispatcher);
+        Assert.True(dispatcher.LastRunFailed);
+        Assert.Equal(1, dispatcher.ErrorCount);
+
+        var text = OperationsMetricsService.ToPrometheus(metrics);
+
+        // In fester Kultur, mit dem Dienst als Label.
+        Assert.Contains(
+            "gdm_background_last_run_seconds{service=\"changelog_maintenance\"} 1.5",
+            text, StringComparison.Ordinal);
+        Assert.Contains(
+            "gdm_background_errors_total{service=\"webhook_dispatcher\"} 1",
+            text, StringComparison.Ordinal);
+        Assert.Contains(
+            "gdm_background_last_run_failed{service=\"webhook_dispatcher\"} 1",
+            text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Ein_nie_gelaufener_Dienst_hat_keine_Reihe()
+    {
+        var metrics = new OperationsMetrics(true, null, 1, 0, 1, 0, 0, 0, null, []);
+
+        Assert.DoesNotContain(
+            "gdm_background_", OperationsMetricsService.ToPrometheus(metrics), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Ein_erfolgreicher_Lauf_setzt_die_Fehlerzahl_nicht_zurueck()
+    {
+        var tracker = new BackgroundRunTracker();
+
+        tracker.Record("test", TimeSpan.FromSeconds(1), success: false);
+        tracker.Record("test", TimeSpan.FromSeconds(1), success: true);
+
+        var run = Assert.Single(tracker.GetAll());
+        Assert.False(run.LastRunFailed);
+        Assert.Equal(1, run.ErrorCount);
     }
 }

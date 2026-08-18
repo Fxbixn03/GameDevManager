@@ -120,6 +120,9 @@ public static class DatabaseServiceExtensions
 
         // Wer welche Maske offen hat — reiner Arbeitsspeicher, siehe EditingPresence.
         services.AddSingleton<EditingPresence>();
+
+        // Dauer und Ergebnis der Hintergrundläufe — reiner Arbeitsspeicher, für /api/v1/metrics.
+        services.AddSingleton<BackgroundRunTracker>();
         services.AddScoped<WorldService>();
         services.AddScoped<LootService>();
         services.AddScoped<UserPinService>();

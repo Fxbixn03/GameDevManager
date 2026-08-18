@@ -23,6 +23,7 @@ public sealed class ChangeLogMaintenance(
     IServiceScopeFactory scopes,
     ChangeLogRetentionOptions retention,
     RecycleBinOptions recycleBin,
+    BackgroundRunTracker runs,
     ILogger<ChangeLogMaintenance> log) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -52,6 +53,8 @@ public sealed class ChangeLogMaintenance(
 
     private async Task SweepAsync(CancellationToken ct)
     {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+
         try
         {
             using var scope = scopes.CreateScope();
@@ -75,6 +78,8 @@ public sealed class ChangeLogMaintenance(
             {
                 log.LogInformation("Papierkorb aufgeräumt: {Removed} Einträge entfernt.", binned);
             }
+
+            runs.Record(BackgroundRunTracker.ChangeLogMaintenance, watch.Elapsed, success: true);
         }
         catch (OperationCanceledException)
         {
@@ -85,6 +90,7 @@ public sealed class ChangeLogMaintenance(
             // Eine noch nicht migrierte oder gerade nicht erreichbare Datenbank darf den
             // Hintergrunddienst nicht beenden — beim nächsten Durchlauf steht sie vielleicht.
             log.LogWarning(ex, "Änderungsprotokoll und Papierkorb konnten nicht aufgeräumt werden.");
+            runs.Record(BackgroundRunTracker.ChangeLogMaintenance, watch.Elapsed, success: false);
         }
     }
 }

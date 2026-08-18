@@ -24,6 +24,7 @@ public sealed class WebhookDispatcher(
     IServiceScopeFactory scopes,
     WebhookQueue queue,
     IHttpClientFactory clients,
+    BackgroundRunTracker runs,
     ILogger<WebhookDispatcher> log) : BackgroundService
 {
     /// <summary>
@@ -75,6 +76,8 @@ public sealed class WebhookDispatcher(
 
     private async Task TickAsync(CancellationToken ct)
     {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+
         try
         {
             await RefreshSubscribersAsync(ct);
@@ -83,6 +86,8 @@ public sealed class WebhookDispatcher(
 
             if (pending.Count == 0 || _subscribers.Count == 0)
             {
+                // Ein leerer Takt ist kein Lauf — er soll die Kennzahl „letzte Zustellung“
+                // nicht alle fünf Sekunden überschreiben.
                 return;
             }
 
@@ -98,6 +103,8 @@ public sealed class WebhookDispatcher(
                     await DeliverAsync(hook, relevant, ct);
                 }
             }
+
+            runs.Record(BackgroundRunTracker.WebhookDispatcher, watch.Elapsed, success: true);
         }
         catch (OperationCanceledException)
         {
@@ -108,6 +115,7 @@ public sealed class WebhookDispatcher(
             // Eine noch nicht migrierte oder gerade nicht erreichbare Datenbank darf den
             // Hintergrunddienst nicht beenden.
             log.LogWarning(ex, "Die Webhooks konnten nicht zugestellt werden.");
+            runs.Record(BackgroundRunTracker.WebhookDispatcher, watch.Elapsed, success: false);
         }
     }
 
