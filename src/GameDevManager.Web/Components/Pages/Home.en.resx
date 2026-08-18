@@ -220,6 +220,48 @@
   <data name="ToBoards" xml:space="preserve">
     <value>To the boards</value>
   </data>
+  <data name="Band_reviews" xml:space="preserve">
+    <value>My reviews</value>
+  </data>
+  <data name="ReviewsHeading" xml:space="preserve">
+    <value>My reviews</value>
+  </data>
+  <data name="ReviewsEmpty" xml:space="preserve">
+    <value>Nothing is waiting for you. Reviews are requested in the edit masks via “Send for review”.</value>
+  </data>
+  <data name="ReviewRequestedBy" xml:space="preserve">
+    <value>by {0}</value>
+  </data>
+  <data name="ReviewApproveTooltip" xml:space="preserve">
+    <value>Approve — the status moves to “Done”</value>
+  </data>
+  <data name="ReviewApproveAria" xml:space="preserve">
+    <value>Approve review</value>
+  </data>
+  <data name="ReviewRejectTooltip" xml:space="preserve">
+    <value>Reject — the status goes back to “In progress”</value>
+  </data>
+  <data name="ReviewRejectAria" xml:space="preserve">
+    <value>Reject review</value>
+  </data>
+  <data name="ReviewRejectTitle" xml:space="preserve">
+    <value>Reject “{0}”</value>
+  </data>
+  <data name="ReviewRejectNoteLabel" xml:space="preserve">
+    <value>Note (required) — what needs to be done?</value>
+  </data>
+  <data name="ReviewRejectConfirm" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+  <data name="ReviewRejectCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ReviewApprovedMessage" xml:space="preserve">
+    <value>“{0}” has been approved.</value>
+  </data>
+  <data name="ReviewRejectedMessage" xml:space="preserve">
+    <value>“{0}” has been rejected — the content is back to “In progress”.</value>
+  </data>
   <data name="Band_comments" xml:space="preserve">
     <value>Comments</value>
   </data>

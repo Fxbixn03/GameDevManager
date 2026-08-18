@@ -15,4 +15,37 @@
   <data name="Label" xml:space="preserve">
     <value>Editing status</value>
   </data>
+  <data name="RequestButton" xml:space="preserve">
+    <value>Send for review</value>
+  </data>
+  <data name="PendingWith" xml:space="preserve">
+    <value>Waiting for review by {0}.</value>
+  </data>
+  <data name="PendingUnassigned" xml:space="preserve">
+    <value>— account deleted —</value>
+  </data>
+  <data name="RejectedBy" xml:space="preserve">
+    <value>Rejected by {0}: {1}</value>
+  </data>
+  <data name="ApprovedBy" xml:space="preserve">
+    <value>Approved by {0}.</value>
+  </data>
+  <data name="DialogTitle" xml:space="preserve">
+    <value>Send for review</value>
+  </data>
+  <data name="AssigneeLabel" xml:space="preserve">
+    <value>Recipient</value>
+  </data>
+  <data name="NoteLabel" xml:space="preserve">
+    <value>Note (optional) — what should the recipient look at?</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>Send for review</value>
+  </data>
+  <data name="RequestedMessage" xml:space="preserve">
+    <value>Sent for review — the status is now “in review”.</value>
+  </data>
 </root>

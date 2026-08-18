@@ -15,4 +15,37 @@
   <data name="Label" xml:space="preserve">
     <value>Bearbeitungsstand</value>
   </data>
+  <data name="RequestButton" xml:space="preserve">
+    <value>Zur Abnahme geben</value>
+  </data>
+  <data name="PendingWith" xml:space="preserve">
+    <value>Wartet auf Abnahme bei {0}.</value>
+  </data>
+  <data name="PendingUnassigned" xml:space="preserve">
+    <value>— Konto gelöscht —</value>
+  </data>
+  <data name="RejectedBy" xml:space="preserve">
+    <value>Abgelehnt von {0}: {1}</value>
+  </data>
+  <data name="ApprovedBy" xml:space="preserve">
+    <value>Freigegeben von {0}.</value>
+  </data>
+  <data name="DialogTitle" xml:space="preserve">
+    <value>Zur Abnahme geben</value>
+  </data>
+  <data name="AssigneeLabel" xml:space="preserve">
+    <value>Empfänger</value>
+  </data>
+  <data name="NoteLabel" xml:space="preserve">
+    <value>Notiz (optional) — worauf soll der Empfänger achten?</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>Zur Abnahme geben</value>
+  </data>
+  <data name="RequestedMessage" xml:space="preserve">
+    <value>Zur Abnahme gegeben — der Stand steht auf „im Review“.</value>
+  </data>
 </root>

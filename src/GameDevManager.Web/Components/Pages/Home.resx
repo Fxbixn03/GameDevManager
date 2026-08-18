@@ -190,6 +190,48 @@
   <data name="ToBoards" xml:space="preserve">
     <value>Zu den Boards</value>
   </data>
+  <data name="Band_reviews" xml:space="preserve">
+    <value>Meine Abnahmen</value>
+  </data>
+  <data name="ReviewsHeading" xml:space="preserve">
+    <value>Meine Abnahmen</value>
+  </data>
+  <data name="ReviewsEmpty" xml:space="preserve">
+    <value>Nichts wartet auf dich. Abnahmen entstehen in den Bearbeitungsmasken über „Zur Abnahme geben“.</value>
+  </data>
+  <data name="ReviewRequestedBy" xml:space="preserve">
+    <value>von {0}</value>
+  </data>
+  <data name="ReviewApproveTooltip" xml:space="preserve">
+    <value>Freigeben — der Stand geht auf „Fertig“</value>
+  </data>
+  <data name="ReviewApproveAria" xml:space="preserve">
+    <value>Abnahme freigeben</value>
+  </data>
+  <data name="ReviewRejectTooltip" xml:space="preserve">
+    <value>Ablehnen — der Stand geht zurück auf „In Arbeit“</value>
+  </data>
+  <data name="ReviewRejectAria" xml:space="preserve">
+    <value>Abnahme ablehnen</value>
+  </data>
+  <data name="ReviewRejectTitle" xml:space="preserve">
+    <value>„{0}“ ablehnen</value>
+  </data>
+  <data name="ReviewRejectNoteLabel" xml:space="preserve">
+    <value>Anmerkung (Pflicht) — was ist zu tun?</value>
+  </data>
+  <data name="ReviewRejectConfirm" xml:space="preserve">
+    <value>Ablehnen</value>
+  </data>
+  <data name="ReviewRejectCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="ReviewApprovedMessage" xml:space="preserve">
+    <value>„{0}“ ist freigegeben.</value>
+  </data>
+  <data name="ReviewRejectedMessage" xml:space="preserve">
+    <value>„{0}“ ist abgelehnt — der Inhalt steht wieder auf „In Arbeit“.</value>
+  </data>
   <data name="Band_comments" xml:space="preserve">
     <value>Anmerkungen</value>
   </data>

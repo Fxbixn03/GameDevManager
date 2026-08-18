@@ -1,4 +1,8 @@
 @inject ContentStatusLabels Statuses
+@inject ReviewService Reviews
+@inject KanbanService Kanban
+@inject ProjectContext Project
+@inject ISnackbar Snackbar
 @inject IStringLocalizer<EntityStatusSelect> L
 
 @*
@@ -8,6 +12,10 @@
 
     Sie steht im Referenz-Panel neben GUID und Zeitstempeln: Der Stand ist keine Eigenschaft
     des Spielinhalts, sondern eine Aussage über die Arbeit daran.
+
+    Der Review-Workflow wohnt hier und nicht in jeder Maske einzeln: „Zur Abnahme geben“
+    gehört zum Stand — die Komponente steht ohnehin in jedem Referenz-Panel, eine eigene
+    Komponente müsste in rund dreißig Masken nachgetragen werden.
 *@
 
 <MudSelect T="ContentStatus"
@@ -30,6 +38,72 @@
     }
 </MudSelect>
 
+@if (_latest is { IsOpen: true })
+{
+    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1">
+        @L["PendingWith", _latest.AssignedUser?.DisplayName ?? L["PendingUnassigned"]]
+    </MudText>
+}
+else
+{
+    @* Die jüngste Entscheidung, solange sie die aktuelle Geschichte ist — nach einer
+       Ablehnung ist die Anmerkung genau das, was der Autor braucht. *@
+    @if (_latest is { Decision: ReviewDecision.Rejected })
+    {
+        <MudText Typo="Typo.caption" Color="Color.Error" Class="d-block mt-1">
+            @L["RejectedBy", _latest.DecidedBy ?? string.Empty, _latest.DecisionNote ?? string.Empty]
+        </MudText>
+    }
+    else if (_latest is { Decision: ReviewDecision.Approved })
+    {
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1">
+            @L["ApprovedBy", _latest.DecidedBy ?? string.Empty]
+        </MudText>
+    }
+
+    <MudButton Size="Size.Small"
+               Variant="Variant.Text"
+               StartIcon="@Icons.Material.Filled.FactCheck"
+               Class="mt-1"
+               OnClick="OpenDialogAsync">
+        @L["RequestButton"]
+    </MudButton>
+}
+
+<MudDialog @bind-Visible="_dialogOpen"
+           Options="@(new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true })">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@L["DialogTitle"]</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudSelect T="Guid?"
+                   @bind-Value="_assigneeId"
+                   Label="@L["AssigneeLabel"]"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense">
+            @foreach (var assignee in _assignees)
+            {
+                <MudSelectItem T="Guid?" Value="@((Guid?)assignee.Id)">@assignee.DisplayName</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudTextField @bind-Value="_note"
+                      Label="@L["NoteLabel"]"
+                      Variant="Variant.Outlined"
+                      Lines="3"
+                      Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _dialogOpen = false)">@L["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Disabled="@(_assigneeId is null)"
+                   OnClick="RequestAsync">
+            @L["Confirm"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
     /// <summary>
     /// Die Entität, deren Stand gesetzt wird — bewusst die nicht-generische Basis: Der Stand
@@ -43,9 +117,48 @@
     [Parameter]
     public EventCallback OnChanged { get; set; }
 
+    private ReviewRequest? _latest;
+    private bool _dialogOpen;
+    private Guid? _assigneeId;
+    private string? _note;
+    private List<TaskAssignee> _assignees = [];
+
+    protected override async Task OnInitializedAsync() =>
+        _latest = await Reviews.GetLatestForEntityAsync(Entity.Id);
+
     private async Task ChangeAsync(ContentStatus status)
     {
         Entity.Status = status;
         await OnChanged.InvokeAsync();
+    }
+
+    private async Task OpenDialogAsync()
+    {
+        // Dieselbe Liste wie bei den Kanban-Karten: Wer eine Abnahme verteilt, muss dafür
+        // keine Benutzer verwalten dürfen.
+        _assignees = await Kanban.GetAssigneesAsync();
+        _assigneeId = null;
+        _note = null;
+        _dialogOpen = true;
+    }
+
+    private async Task RequestAsync()
+    {
+        try
+        {
+            // Der Dienst setzt den Stand in der Datenbank; die Maske übernimmt beides, damit
+            // ihr nächstes Speichern keinen Schreibkonflikt mit diesem Aufruf meldet.
+            Entity.UpdatedAtUtc = await Reviews.RequestAsync(
+                Entity.GameProjectId, Entity.ModuleKey, Entity.Id, _assigneeId, _note);
+            Entity.Status = ContentStatus.InReview;
+
+            _dialogOpen = false;
+            _latest = await Reviews.GetLatestForEntityAsync(Entity.Id);
+            Snackbar.Add(L["RequestedMessage"], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }

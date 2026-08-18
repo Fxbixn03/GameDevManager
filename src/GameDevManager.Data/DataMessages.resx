@@ -39,6 +39,24 @@
   <data name="ChangeLog_SeriesCreated" xml:space="preserve">
     <value>Serie angelegt: {0} Entwürfe in „{1}“ („{2}“ bis „{3}“).</value>
   </data>
+  <data name="ReviewModuleUnknown" xml:space="preserve">
+    <value>Zu diesem Modul gibt es keine Abnahmen.</value>
+  </data>
+  <data name="ReviewAlreadyOpen" xml:space="preserve">
+    <value>Für diesen Inhalt läuft bereits eine Abnahme.</value>
+  </data>
+  <data name="ReviewEntityMissing" xml:space="preserve">
+    <value>Der Inhalt ist noch nicht gespeichert oder wurde gelöscht — zur Abnahme geben lässt sich nur Gespeichertes.</value>
+  </data>
+  <data name="ReviewAssigneeUnknown" xml:space="preserve">
+    <value>Das gewählte Konto gibt es nicht oder es ist gesperrt.</value>
+  </data>
+  <data name="ReviewRejectionNeedsNote" xml:space="preserve">
+    <value>Eine Ablehnung braucht eine Anmerkung — sonst bleibt unklar, was zu tun ist.</value>
+  </data>
+  <data name="ReviewAlreadyDecided" xml:space="preserve">
+    <value>Diese Abnahme ist bereits entschieden oder wurde zurückgezogen.</value>
+  </data>
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>Das Pflichtfeld „{0}“ ist nicht gefüllt.</value>
   </data>

@@ -240,6 +240,7 @@ public class DashboardTests
                 DashboardBands.Database,
                 DashboardBands.Pinned,
                 DashboardBands.Tasks,
+                DashboardBands.Reviews,
                 DashboardBands.Comments,
                 DashboardBands.Status
             ],

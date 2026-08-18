@@ -202,6 +202,9 @@ public class GameDevManagerDbContext(
     /// <summary>Stummgeschaltete Health-Check-Funde — Werkzeug-Daten wie das Änderungsprotokoll.</summary>
     public DbSet<HealthCheckMute> HealthCheckMutes => Set<HealthCheckMute>();
 
+    /// <summary>Abnahme-Anfragen des Review-Workflows — Werkzeug-Daten wie die Anmerkungen.</summary>
+    public DbSet<ReviewRequest> ReviewRequests => Set<ReviewRequest>();
+
     /// <summary>
     /// Schaltet das Änderungsprotokoll für diesen Kontext ab. Gesetzt von Import und
     /// Projekt-Duplizierung: Beide schreiben den gesamten Bestand eines Projekts auf einmal,
@@ -429,6 +432,32 @@ public class GameDevManagerDbContext(
 
             // Ein Fund ist höchstens einmal stumm — der zweite Klick wäre sonst eine zweite Zeile.
             entity.HasIndex(e => new { e.GameProjectId, e.CheckKey, e.EntityId }).IsUnique();
+        });
+
+        modelBuilder.Entity<ReviewRequest>(entity =>
+        {
+            entity.Property(e => e.OwnerModuleKey).HasMaxLength(ModuleKeyLength).IsRequired();
+            entity.Property(e => e.RequestedBy).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.DecidedBy).HasMaxLength(200);
+            entity.Property(e => e.Note).HasMaxLength(2000);
+            entity.Property(e => e.DecisionNote).HasMaxLength(2000);
+            entity.Ignore(e => e.IsOpen);
+
+            entity.HasOne(e => e.GameProject)
+                .WithMany()
+                .HasForeignKey(e => e.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Ein gelöschtes Konto nimmt seine offenen Abnahmen nicht mit — wie bei den
+            // Kanban-Karten bleibt die Anfrage stehen, nur ohne Empfänger.
+            entity.HasOne(e => e.AssignedUser)
+                .WithMany()
+                .HasForeignKey(e => e.AssignedUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Die Maske fragt „was steht an dieser Entität an?“, das Band „was wartet auf mich?“.
+            entity.HasIndex(e => e.OwnerEntityId);
+            entity.HasIndex(e => new { e.GameProjectId, e.AssignedUserId, e.Decision });
         });
 
         modelBuilder.Entity<Asset>(entity =>

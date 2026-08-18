@@ -197,6 +197,12 @@ public static class EntityCleanup
             .Where(comment => entityIds.Contains(comment.OwnerEntityId))
             .ExecuteDeleteAsync(ct);
 
+        // Abnahme-Anfragen nach derselben Überlegung: Eine Abnahme für etwas Gelöschtes
+        // ließe sich weder freigeben noch ablehnen.
+        await db.ReviewRequests
+            .Where(request => entityIds.Contains(request.OwnerEntityId))
+            .ExecuteDeleteAsync(ct);
+
         await ConditionService.DeleteForOwnersAsync(db, entityIds, ct);
     }
 }

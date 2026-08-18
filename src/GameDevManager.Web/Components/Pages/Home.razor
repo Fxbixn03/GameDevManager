@@ -7,6 +7,8 @@
 @inject UserPinService Pins
 @inject KanbanService Kanban
 @inject ContentCommentService Comments
+@inject ReviewService Reviews
+@inject ISnackbar Snackbar
 @inject ModuleState ModuleState
 @inject ProjectContext Project
 @inject DashboardService Dashboard
@@ -234,6 +236,54 @@ else
                     </MudPaper>
                 }
 
+                @* ----------------------------------------------------- Meine Abnahmen *@
+                else if (band.BandKey == DashboardBands.Reviews)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel">
+                        <div class="gdm-panel-head pa-3 d-flex align-center justify-space-between">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ReviewsHeading"]</MudText>
+                        </div>
+
+                        @if (_myReviews is not { Count: > 0 })
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-3">@L["ReviewsEmpty"]</MudText>
+                        }
+                        else
+                        {
+                            @foreach (var review in _myReviews)
+                            {
+                                <div class="gdm-health-row">
+                                    <MudIcon Icon="@Icons.Material.Filled.FactCheck" Size="Size.Small" Color="Color.Warning" />
+                                    <MudLink Href="@($"{ModuleRegistry.Get(review.OwnerModuleKey).Route}/{review.OwnerEntityId}")"
+                                             Underline="Underline.None" Color="Color.Inherit"
+                                             Class="gdm-ellipsis" Style="flex:1;min-width:0;">
+                                        <MudText Typo="Typo.body2" Class="gdm-ellipsis">@review.EntityName</MudText>
+                                    </MudLink>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-ellipsis">
+                                        @L["ReviewRequestedBy", review.RequestedBy]
+                                    </MudText>
+                                    @* Entscheiden direkt aus dem Band — der Weg in die Maske
+                                       bleibt der Link daneben. *@
+                                    <MudTooltip Text="@L["ReviewApproveTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Check"
+                                                       Size="Size.Small"
+                                                       Color="Color.Success"
+                                                       aria-label="@L["ReviewApproveAria"]"
+                                                       OnClick="@(() => ApproveReviewAsync(review))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="@L["ReviewRejectTooltip"]">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                       Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       aria-label="@L["ReviewRejectAria"]"
+                                                       OnClick="@(() => OpenRejectDialog(review))" />
+                                    </MudTooltip>
+                                </div>
+                            }
+                        }
+                    </MudPaper>
+                }
+
                 @* ------------------------------------------------------- Anmerkungen *@
                 else if (band.BandKey == DashboardBands.Comments)
                 {
@@ -380,6 +430,32 @@ else
     }
 }
 
+@* Die Pflicht-Anmerkung einer Ablehnung: Ein „nein“ ohne Begründung ließe den Autor raten,
+   was zu tun ist. Ein Dialog für das ganze Band — es lehnt immer nur einer auf einmal ab. *@
+<MudDialog @bind-Visible="_rejectOpen"
+           Options="@(new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true })">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@L["ReviewRejectTitle", _rejecting?.EntityName ?? string.Empty]</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_rejectNote"
+                      Label="@L["ReviewRejectNoteLabel"]"
+                      Variant="Variant.Outlined"
+                      Lines="3"
+                      Immediate="true"
+                      AutoFocus="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _rejectOpen = false)">@L["ReviewRejectCancel"]</MudButton>
+        <MudButton Color="Color.Error"
+                   Variant="Variant.Filled"
+                   Disabled="@string.IsNullOrWhiteSpace(_rejectNote)"
+                   OnClick="ConfirmRejectAsync">
+            @L["ReviewRejectConfirm"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
     /// <summary>Wie viele zuletzt bearbeitete Entitäten das Band zeigt.</summary>
     private const int RecentCount = 8;
@@ -394,6 +470,10 @@ else
     private List<PinnedEntry>? _pinned;
 
     private List<KanbanCardLink>? _myTasks;
+    private List<OpenReview>? _myReviews;
+    private OpenReview? _rejecting;
+    private string _rejectNote = string.Empty;
+    private bool _rejectOpen;
 
     private List<OpenComment>? _openComments;
     private DateTime? _lastExportUtc;
@@ -439,6 +519,7 @@ else
             _statusCounts = await Overview.GetStatusCountsAsync(_projectId);
             _pinned = await Pins.GetPinnedAsync(_projectId);
             _myTasks = await Kanban.GetMyOpenCardsAsync(_projectId, 8);
+            _myReviews = await Reviews.GetMyOpenAsync(_projectId, 8);
             _openComments = await Comments.GetOpenAsync(_projectId, 8);
 
             // Zuletzt: erst damit gilt die Seite als geladen.
@@ -694,12 +775,56 @@ else
         DashboardBands.Recent => Icons.Material.Filled.History,
         DashboardBands.Pinned => Icons.Material.Filled.Star,
         DashboardBands.Tasks => Icons.Material.Filled.TaskAlt,
+        DashboardBands.Reviews => Icons.Material.Filled.FactCheck,
         DashboardBands.Comments => Icons.Material.Filled.Comment,
         DashboardBands.Health => Icons.Material.Filled.HealthAndSafety,
         DashboardBands.Status => Icons.Material.Filled.Rule,
         DashboardBands.Inventory => Icons.Material.Filled.GridView,
         _ => Icons.Material.Filled.Storage
     };
+
+    // ------------------------------------------------------------------- Abnahmen
+
+    private async Task ApproveReviewAsync(OpenReview review)
+    {
+        try
+        {
+            await Reviews.DecideAsync(review.RequestId, approve: true, note: null);
+            Snackbar.Add(L["ReviewApprovedMessage", review.EntityName], Severity.Success);
+            _myReviews = await Reviews.GetMyOpenAsync(_projectId, 8);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private void OpenRejectDialog(OpenReview review)
+    {
+        _rejecting = review;
+        _rejectNote = string.Empty;
+        _rejectOpen = true;
+    }
+
+    private async Task ConfirmRejectAsync()
+    {
+        if (_rejecting is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Reviews.DecideAsync(_rejecting.RequestId, approve: false, note: _rejectNote);
+            Snackbar.Add(L["ReviewRejectedMessage", _rejecting.EntityName], Severity.Success);
+            _rejectOpen = false;
+            _myReviews = await Reviews.GetMyOpenAsync(_projectId, 8);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
 
     private void OnModulesChanged() => InvokeAsync(StateHasChanged);
 

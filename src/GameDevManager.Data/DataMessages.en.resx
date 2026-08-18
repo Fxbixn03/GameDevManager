@@ -85,6 +85,24 @@
   <data name="ChangeLog_SeriesCreated" xml:space="preserve">
     <value>Series created: {0} drafts in “{1}” (“{2}” to “{3}”).</value>
   </data>
+  <data name="ReviewModuleUnknown" xml:space="preserve">
+    <value>There are no reviews for this module.</value>
+  </data>
+  <data name="ReviewAlreadyOpen" xml:space="preserve">
+    <value>A review is already running for this content.</value>
+  </data>
+  <data name="ReviewEntityMissing" xml:space="preserve">
+    <value>The content is not saved yet or has been deleted — only saved content can be sent for review.</value>
+  </data>
+  <data name="ReviewAssigneeUnknown" xml:space="preserve">
+    <value>The chosen account does not exist or is locked.</value>
+  </data>
+  <data name="ReviewRejectionNeedsNote" xml:space="preserve">
+    <value>A rejection needs a note — otherwise it stays unclear what to do.</value>
+  </data>
+  <data name="ReviewAlreadyDecided" xml:space="preserve">
+    <value>This review has already been decided or was withdrawn.</value>
+  </data>
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>The required field “{0}” is empty.</value>
   </data>
