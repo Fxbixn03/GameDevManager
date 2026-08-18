@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Wer ist dran – GameDevManager</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Wer ist dran</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Wer gerade welche Maske offen hat — eine Momentaufnahme; ohne Lebenszeichen verfällt ein Eintrag nach drei Minuten.</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Gerade arbeitet niemand sonst</value>
+  </data>
+  <data name="EmptyHint" xml:space="preserve">
+    <value>Sobald jemand anderes eine Bearbeitungsmaske öffnet, steht es hier.</value>
+  </data>
+  <data name="WorksOn" xml:space="preserve">
+    <value>arbeitet an</value>
+  </data>
+  <data name="Since" xml:space="preserve">
+    <value>seit {0} Uhr</value>
+  </data>
+</root>

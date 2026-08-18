@@ -262,6 +262,21 @@
   <data name="ReviewRejectedMessage" xml:space="preserve">
     <value>“{0}” has been rejected — the content is back to “In progress”.</value>
   </data>
+  <data name="Band_presence" xml:space="preserve">
+    <value>Who is on it</value>
+  </data>
+  <data name="PresenceHeading" xml:space="preserve">
+    <value>Who is on it</value>
+  </data>
+  <data name="PresenceEmpty" xml:space="preserve">
+    <value>Nobody else has a mask open right now.</value>
+  </data>
+  <data name="PresenceLine" xml:space="preserve">
+    <value>{0} is working on “{1}”</value>
+  </data>
+  <data name="ToPresence" xml:space="preserve">
+    <value>To the overview</value>
+  </data>
   <data name="Band_comments" xml:space="preserve">
     <value>Comments</value>
   </data>

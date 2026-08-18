@@ -2,8 +2,11 @@ using System.Collections.Concurrent;
 
 namespace GameDevManager.Data.Services;
 
-/// <summary>Wer eine Entität gerade offen hat — und seit wann sein Lebenszeichen zählt.</summary>
-public sealed record EditingSession(string UserName, DateTime LastSeenUtc);
+/// <summary>Wer eine Entität gerade offen hat — seit wann, und wann das letzte Lebenszeichen kam.</summary>
+public sealed record EditingSession(string UserName, DateTime StartedAtUtc, DateTime LastSeenUtc);
+
+/// <summary>Eine Zeile der Präsenz-Übersicht: wer sitzt seit wann an welcher Entität.</summary>
+public sealed record PresenceSnapshot(Guid EntityId, string UserName, DateTime StartedAtUtc);
 
 /// <summary>
 /// „Wird gerade bearbeitet von …“ — wer welche Entität offen hat.
@@ -42,7 +45,14 @@ public sealed class EditingPresence(TimeProvider? time = null)
     public void Announce(Guid entityId, Guid sessionId, string userName)
     {
         var sessions = _open.GetOrAdd(entityId, _ => new ConcurrentDictionary<Guid, EditingSession>());
-        sessions[sessionId] = new EditingSession(userName, _time.GetUtcNow().UtcDateTime);
+        var now = _time.GetUtcNow().UtcDateTime;
+
+        // Der Beginn bleibt stehen — ein Lebenszeichen frischt nur „zuletzt gesehen“ auf,
+        // sonst hieße „seit wann“ in der Übersicht immer „seit eben“.
+        sessions.AddOrUpdate(
+            sessionId,
+            _ => new EditingSession(userName, now, now),
+            (_, existing) => existing with { UserName = userName, LastSeenUtc = now });
     }
 
     /// <summary>Meldet eine Maske ab. Die letzte Sitzung nimmt den Eintrag der Entität mit.</summary>
@@ -103,6 +113,45 @@ public sealed class EditingPresence(TimeProvider? time = null)
                 .GroupBy(session => session.UserName, StringComparer.OrdinalIgnoreCase)
                 .Select(group => group.MaxBy(session => session.LastSeenUtc)!)
                 .OrderBy(session => session.UserName, StringComparer.CurrentCultureIgnoreCase)
+        ];
+    }
+
+    /// <summary>
+    /// Alle lebendigen Einträge auf einmal — die Grundlage der Präsenz-Übersicht („wer
+    /// arbeitet gerade woran?“). Je Benutzer und Entität eine Zeile, auch bei zwei Fenstern;
+    /// „seit wann“ ist der früheste Beginn. Verfallenes wird dabei aufgeräumt, wie in
+    /// <see cref="Others"/> — kein Eintrag überlebt den Verfall.
+    /// </summary>
+    public IReadOnlyList<PresenceSnapshot> Snapshot()
+    {
+        var cutoff = _time.GetUtcNow().UtcDateTime - Timeout;
+        var rows = new List<PresenceSnapshot>();
+
+        foreach (var (entityId, sessions) in _open)
+        {
+            foreach (var (id, session) in sessions)
+            {
+                if (session.LastSeenUtc < cutoff)
+                {
+                    sessions.TryRemove(id, out _);
+                    continue;
+                }
+
+                rows.Add(new PresenceSnapshot(entityId, session.UserName, session.StartedAtUtc));
+            }
+
+            if (sessions.IsEmpty)
+            {
+                _open.TryRemove(entityId, out _);
+            }
+        }
+
+        return
+        [
+            .. rows
+                .GroupBy(row => (row.EntityId, Name: row.UserName.ToLowerInvariant()))
+                .Select(group => group.MinBy(row => row.StartedAtUtc)!)
+                .OrderBy(row => row.StartedAtUtc)
         ];
     }
 }

@@ -8,6 +8,7 @@
 @inject KanbanService Kanban
 @inject ContentCommentService Comments
 @inject ReviewService Reviews
+@inject PresenceOverviewService Presence
 @inject ISnackbar Snackbar
 @inject ModuleState ModuleState
 @inject ProjectContext Project
@@ -284,6 +285,39 @@ else
                     </MudPaper>
                 }
 
+                @* ------------------------------------------------------- Wer ist dran *@
+                else if (band.BandKey == DashboardBands.Presence)
+                {
+                    <MudPaper Elevation="0" Class="gdm-panel">
+                        <div class="gdm-panel-head pa-3 d-flex align-center justify-space-between">
+                            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["PresenceHeading"]</MudText>
+                            <MudLink Href="/praesenz" Typo="Typo.caption">@L["ToPresence"]</MudLink>
+                        </div>
+
+                        @if (_presence is not { Count: > 0 })
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-3">@L["PresenceEmpty"]</MudText>
+                        }
+                        else
+                        {
+                            @foreach (var entry in _presence)
+                            {
+                                <MudLink Href="@($"{ModuleRegistry.Get(entry.ModuleKey).Route}/{entry.EntityId}")"
+                                         Underline="Underline.None" Color="Color.Inherit"
+                                         Class="gdm-health-row">
+                                    <MudIcon Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" Color="Color.Primary" />
+                                    <MudText Typo="Typo.body2" Class="gdm-ellipsis">
+                                        @L["PresenceLine", entry.UserName, entry.EntityName]
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @RelativeTime(entry.StartedAtUtc)
+                                    </MudText>
+                                </MudLink>
+                            }
+                        }
+                    </MudPaper>
+                }
+
                 @* ------------------------------------------------------- Anmerkungen *@
                 else if (band.BandKey == DashboardBands.Comments)
                 {
@@ -471,6 +505,7 @@ else
 
     private List<KanbanCardLink>? _myTasks;
     private List<OpenReview>? _myReviews;
+    private List<PresenceEntry>? _presence;
     private OpenReview? _rejecting;
     private string _rejectNote = string.Empty;
     private bool _rejectOpen;
@@ -520,6 +555,7 @@ else
             _pinned = await Pins.GetPinnedAsync(_projectId);
             _myTasks = await Kanban.GetMyOpenCardsAsync(_projectId, 8);
             _myReviews = await Reviews.GetMyOpenAsync(_projectId, 8);
+            _presence = await Presence.GetAsync();
             _openComments = await Comments.GetOpenAsync(_projectId, 8);
 
             // Zuletzt: erst damit gilt die Seite als geladen.
@@ -776,6 +812,7 @@ else
         DashboardBands.Pinned => Icons.Material.Filled.Star,
         DashboardBands.Tasks => Icons.Material.Filled.TaskAlt,
         DashboardBands.Reviews => Icons.Material.Filled.FactCheck,
+        DashboardBands.Presence => Icons.Material.Filled.EditNote,
         DashboardBands.Comments => Icons.Material.Filled.Comment,
         DashboardBands.Health => Icons.Material.Filled.HealthAndSafety,
         DashboardBands.Status => Icons.Material.Filled.Rule,

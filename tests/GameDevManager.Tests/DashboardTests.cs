@@ -241,6 +241,7 @@ public class DashboardTests
                 DashboardBands.Pinned,
                 DashboardBands.Tasks,
                 DashboardBands.Reviews,
+                DashboardBands.Presence,
                 DashboardBands.Comments,
                 DashboardBands.Status
             ],

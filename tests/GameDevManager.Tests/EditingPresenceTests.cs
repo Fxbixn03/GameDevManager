@@ -111,4 +111,42 @@ public class EditingPresenceTests
 
         Assert.Empty(presence.Others(Guid.NewGuid(), mine));
     }
+
+    // ------------------------------------------------------------ Präsenz-Übersicht
+
+    [Fact]
+    public void Die_Uebersicht_behaelt_den_Beginn_ueber_Lebenszeichen_hinweg()
+    {
+        var time = new StoppedClock();
+        var presence = new EditingPresence(time);
+        var session = Guid.NewGuid();
+        var started = time.GetUtcNow().UtcDateTime;
+
+        presence.Announce(Entity, session, "Brida");
+
+        time.Advance(TimeSpan.FromMinutes(2));
+        presence.Announce(Entity, session, "Brida");
+
+        // „Seit wann“ ist der Beginn, nicht das letzte Lebenszeichen.
+        Assert.Equal(started, Assert.Single(presence.Snapshot()).StartedAtUtc);
+    }
+
+    [Fact]
+    public void Die_Uebersicht_dedupliziert_Fenster_und_laesst_Verfallenes_fallen()
+    {
+        var time = new StoppedClock();
+        var presence = new EditingPresence(time);
+        var second = Guid.NewGuid();
+
+        presence.Announce(Entity, Guid.NewGuid(), "Brida");
+        presence.Announce(Entity, Guid.NewGuid(), "Brida");
+        presence.Announce(second, Guid.NewGuid(), "Alrik");
+
+        // Zwei Fenster derselben Person an derselben Entität sind eine Zeile.
+        Assert.Equal(2, presence.Snapshot().Count);
+
+        // Kein Eintrag überlebt den Verfall.
+        time.Advance(EditingPresence.Timeout + TimeSpan.FromSeconds(1));
+        Assert.Empty(presence.Snapshot());
+    }
 }

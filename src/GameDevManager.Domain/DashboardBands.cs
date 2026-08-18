@@ -33,6 +33,9 @@ public static class DashboardBands
     /// <summary>Die offenen Abnahmen, die dem angemeldeten Benutzer zugewiesen sind.</summary>
     public const string Reviews = "reviews";
 
+    /// <summary>Wer gerade woran arbeitet — die Team-Sicht auf die Präsenz.</summary>
+    public const string Presence = "presence";
+
     /// <summary>Offene Anmerkungen an Entitäten des Projekts.</summary>
     public const string Comments = "comments";
 
@@ -44,7 +47,7 @@ public static class DashboardBands
 
     /// <summary>Voreingestellte Reihenfolge: von dringlich nach nachschlagend.</summary>
     public static readonly IReadOnlyList<string> All =
-        [Project, Pinned, Tasks, Reviews, Comments, Recent, Health, Status, Inventory, Database];
+        [Project, Pinned, Tasks, Reviews, Presence, Comments, Recent, Health, Status, Inventory, Database];
 
     /// <summary>
     /// Bänder, die ohne eigene Zeile <b>nicht</b> erscheinen. Bisher nur die Datenbank: Provider

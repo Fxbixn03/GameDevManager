@@ -1,0 +1,77 @@
+@page "/praesenz"
+@inject PresenceOverviewService Presence
+@inject ModuleLabels Modules
+@inject IStringLocalizer<PresencePage> L
+
+@*
+    „Wer arbeitet gerade woran?“ — die Team-Sicht auf die EditingPresence. Reiner
+    Arbeitsspeicher: Die Liste ist eine Momentaufnahme, kein Eintrag überlebt den
+    Drei-Minuten-Verfall der Präsenz, und die eigenen Sitzungen erscheinen nicht — wie im
+    Banner der Masken. Aktualisiert wird auf Knopfdruck: Eine Auskunftsseite, die von
+    selbst pollte, hielte jede offene Verbindung im Takt beschäftigt.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+    <div>
+        <MudText Typo="Typo.h4">@L["Heading"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Subtitle"]</MudText>
+    </div>
+    <MudButton Variant="Variant.Outlined"
+               StartIcon="@Icons.Material.Filled.Refresh"
+               OnClick="LoadAsync">
+        @L["Refresh"]
+    </MudButton>
+</MudStack>
+
+@if (_entries is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_entries.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.EditNote" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["EmptyTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["EmptyHint"]</MudText>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="0" Class="gdm-panel">
+        @foreach (var entry in _entries)
+        {
+            <div class="pa-3 gdm-field-row">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                    <MudIcon Icon="@Icons.Material.Filled.EditNote" Color="Color.Primary" />
+
+                    <div style="flex:1; min-width:0;">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudText Typo="Typo.subtitle2">@entry.UserName</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["WorksOn"]</MudText>
+                            <MudLink Href="@($"{ModuleRegistry.Get(entry.ModuleKey).Route}/{entry.EntityId}")"
+                                     Typo="Typo.body2">
+                                @entry.EntityName
+                            </MudLink>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                @Modules.NameOrKey(entry.ModuleKey)
+                            </MudChip>
+                        </MudStack>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @L["Since", entry.StartedAtUtc.ToLocalTime().ToString("t")]
+                        </MudText>
+                    </div>
+                </MudStack>
+            </div>
+        }
+    </MudPaper>
+}
+
+@code {
+    private List<PresenceEntry>? _entries;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync() => _entries = await Presence.GetAsync();
+}

@@ -232,6 +232,21 @@
   <data name="ReviewRejectedMessage" xml:space="preserve">
     <value>„{0}“ ist abgelehnt — der Inhalt steht wieder auf „In Arbeit“.</value>
   </data>
+  <data name="Band_presence" xml:space="preserve">
+    <value>Wer ist dran</value>
+  </data>
+  <data name="PresenceHeading" xml:space="preserve">
+    <value>Wer ist dran</value>
+  </data>
+  <data name="PresenceEmpty" xml:space="preserve">
+    <value>Gerade hat niemand sonst eine Maske offen.</value>
+  </data>
+  <data name="PresenceLine" xml:space="preserve">
+    <value>{0} arbeitet an „{1}“</value>
+  </data>
+  <data name="ToPresence" xml:space="preserve">
+    <value>Zur Übersicht</value>
+  </data>
   <data name="Band_comments" xml:space="preserve">
     <value>Anmerkungen</value>
   </data>
