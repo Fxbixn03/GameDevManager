@@ -454,6 +454,51 @@ app.MapGet("/export/translations/{projectId:guid}/{languageCode}", async (
         fileDownloadName: $"uebersetzungen-{languageCode}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
 }).RequireAuthorization();
 
+// Die Aufnahmeliste fürs Tonstudio: die offenen Zeilen einer Sprache als CSV oder als
+// druckbares HTML (?format=html) — dieselbe Linie wie das Design-Dokument: vollständig
+// abgeleitet, das PDF liefert der Browser-Druck. Der Health Check „fehlende Aufnahmen“
+// bleibt die Quelle der Wahrheit.
+app.MapGet("/export/aufnahmen/{projectId:guid}/{languageCode}", async (
+    Guid projectId, string languageCode, string? format,
+    RecordingListService recordings,
+    IDbContextFactory<GameDevManagerDbContext> dbFactory, HttpContext http, CancellationToken ct) =>
+{
+    if (!http.User.Permissions().CanExport)
+    {
+        return Results.Forbid();
+    }
+
+    var script = await recordings.GetScriptAsync(projectId, languageCode, ct);
+    var stamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+
+    if (string.Equals(format, "html", StringComparison.OrdinalIgnoreCase))
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(ct);
+
+        var projectName = await db.GameProjects
+            .Where(p => p.Id == projectId)
+            .Select(p => p.Name)
+            .FirstOrDefaultAsync(ct) ?? projectId.ToString();
+        var languageName = await db.ContentLanguages
+            .Where(l => l.GameProjectId == projectId && l.Code == languageCode)
+            .Select(l => l.Name)
+            .FirstOrDefaultAsync(ct) ?? languageCode;
+
+        return Results.File(
+            System.Text.Encoding.UTF8.GetBytes(recordings.BuildHtml(projectName, languageName, script)),
+            "text/html; charset=utf-8",
+            fileDownloadName: $"aufnahmeliste-{languageCode}-{stamp}.html");
+    }
+
+    // Mit BOM, aus demselben Grund wie beim Modul-CSV.
+    byte[] csv = [0xEF, 0xBB, 0xBF, .. System.Text.Encoding.UTF8.GetBytes(RecordingListService.BuildCsv(script))];
+
+    return Results.File(
+        csv,
+        "text/csv; charset=utf-8",
+        fileDownloadName: $"aufnahmeliste-{languageCode}-{stamp}.csv");
+}).RequireAuthorization();
+
 app.MapGet("/export/csv/{projectId:guid}/{moduleKey}", async (
     Guid projectId, string moduleKey, CsvContentService csv, HttpContext http, CancellationToken ct) =>
 {

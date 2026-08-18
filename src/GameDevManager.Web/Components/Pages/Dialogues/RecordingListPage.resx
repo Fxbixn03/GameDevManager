@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Aufnahmeliste – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Das Studio-Paket der Vertonung: offene Zeilen als Skript hinaus, benannte Aufnahmen als ZIP zurück.</value>
+  </data>
+  <data name="ToDialogues" xml:space="preserve">
+    <value>Zu den Dialogen</value>
+  </data>
+  <data name="NoLanguagesTitle" xml:space="preserve">
+    <value>Noch keine Sprachen im Projekt</value>
+  </data>
+  <data name="NoLanguagesHint" xml:space="preserve">
+    <value>Die Aufnahmeliste folgt dem Health Check „fehlende Aufnahmen“ — und der findet ohne Sprachen nichts. Erst unter Lokalisierung eine Sprache anlegen.</value>
+  </data>
+  <data name="ScriptHeading" xml:space="preserve">
+    <value>Skript</value>
+  </data>
+  <data name="LanguageLabel" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="OpenCount" xml:space="preserve">
+    <value>{0} offene Zeilen — dieselben, die der Health Check meldet.</value>
+  </data>
+  <data name="DownloadCsv" xml:space="preserve">
+    <value>Skript als CSV</value>
+  </data>
+  <data name="DownloadHtml" xml:space="preserve">
+    <value>Druckfassung (HTML)</value>
+  </data>
+  <data name="FileNameHint" xml:space="preserve">
+    <value>Die Dateinamen-Vorgabe je Zeile lautet „guid.sprachcode.wav“ — die Endung darf abweichen, die GUID trägt den Rückweg.</value>
+  </data>
+  <data name="ReturnHeading" xml:space="preserve">
+    <value>Rückweg</value>
+  </data>
+  <data name="ReturnHint" xml:space="preserve">
+    <value>Ein ZIP mit den benannten Aufnahmen hochladen. Zugeordnet wird über den vorgegebenen Dateinamen; eine vorhandene Aufnahme derselben Sprache wird ersetzt. Alles Unklare wird gemeldet statt geraten.</value>
+  </data>
+  <data name="UploadButton" xml:space="preserve">
+    <value>ZIP hochladen</value>
+  </data>
+  <data name="ResultAssigned" xml:space="preserve">
+    <value>{0} Aufnahmen zugeordnet.</value>
+  </data>
+  <data name="NotAZip" xml:space="preserve">
+    <value>Die Datei ist kein lesbares ZIP-Archiv.</value>
+  </data>
+</root>

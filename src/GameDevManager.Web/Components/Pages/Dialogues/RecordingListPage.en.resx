@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Recording list – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>The studio package for voice-over: open lines out as a script, named recordings back as a ZIP.</value>
+  </data>
+  <data name="ToDialogues" xml:space="preserve">
+    <value>To the dialogues</value>
+  </data>
+  <data name="NoLanguagesTitle" xml:space="preserve">
+    <value>No languages in the project yet</value>
+  </data>
+  <data name="NoLanguagesHint" xml:space="preserve">
+    <value>The recording list follows the health check “missing recordings” — and without languages it finds nothing. Create a language under localization first.</value>
+  </data>
+  <data name="ScriptHeading" xml:space="preserve">
+    <value>Script</value>
+  </data>
+  <data name="LanguageLabel" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="OpenCount" xml:space="preserve">
+    <value>{0} open lines — the same ones the health check reports.</value>
+  </data>
+  <data name="DownloadCsv" xml:space="preserve">
+    <value>Script as CSV</value>
+  </data>
+  <data name="DownloadHtml" xml:space="preserve">
+    <value>Print version (HTML)</value>
+  </data>
+  <data name="FileNameHint" xml:space="preserve">
+    <value>The file name pattern per line is “guid.languagecode.wav” — the extension may differ, the GUID carries the way back.</value>
+  </data>
+  <data name="ReturnHeading" xml:space="preserve">
+    <value>Way back</value>
+  </data>
+  <data name="ReturnHint" xml:space="preserve">
+    <value>Upload a ZIP with the named recordings. Files are matched by the given file name; an existing recording of the same language is replaced. Anything unclear is reported instead of guessed.</value>
+  </data>
+  <data name="UploadButton" xml:space="preserve">
+    <value>Upload ZIP</value>
+  </data>
+  <data name="ResultAssigned" xml:space="preserve">
+    <value>{0} recordings assigned.</value>
+  </data>
+  <data name="NotAZip" xml:space="preserve">
+    <value>The file is not a readable ZIP archive.</value>
+  </data>
+</root>

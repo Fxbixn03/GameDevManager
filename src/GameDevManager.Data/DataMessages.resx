@@ -78,6 +78,30 @@
   <data name="Mail_ReviewRejected" xml:space="preserve">
     <value>Deine Abnahme wurde abgelehnt — von {0}: {1}</value>
   </data>
+  <data name="RecordingScriptTitle" xml:space="preserve">
+    <value>Aufnahmeliste „{0}“ — {1}</value>
+  </data>
+  <data name="RecordingScriptSpeaker" xml:space="preserve">
+    <value>Sprecherrolle</value>
+  </data>
+  <data name="RecordingScriptText" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="RecordingScriptContext" xml:space="preserve">
+    <value>Kontext (Zeile davor)</value>
+  </data>
+  <data name="RecordingScriptFile" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="RecordingZipBadName" xml:space="preserve">
+    <value>„{0}“: Der Name passt nicht zur Vorgabe „guid.sprachcode.endung“ — übersprungen.</value>
+  </data>
+  <data name="RecordingZipUnknownLanguage" xml:space="preserve">
+    <value>„{0}“: Die Sprache „{1}“ gibt es in diesem Projekt nicht — übersprungen.</value>
+  </data>
+  <data name="RecordingZipUnknownLine" xml:space="preserve">
+    <value>„{0}“: Zu dieser GUID gibt es keine Dialogzeile im Projekt — übersprungen.</value>
+  </data>
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>Das Pflichtfeld „{0}“ ist nicht gefüllt.</value>
   </data>

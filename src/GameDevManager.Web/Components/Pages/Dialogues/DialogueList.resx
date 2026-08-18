@@ -18,6 +18,9 @@
   <data name="TypesButton" xml:space="preserve">
     <value>Dialog-Arten</value>
   </data>
+  <data name="RecordingsButton" xml:space="preserve">
+    <value>Aufnahmeliste</value>
+  </data>
   <data name="NewDialogue" xml:space="preserve">
     <value>Neuer Dialog</value>
   </data>

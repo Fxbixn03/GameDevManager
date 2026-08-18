@@ -15,6 +15,9 @@
   <data name="PageTitle" xml:space="preserve">
     <value>Dialogues – GameDevManager</value>
   </data>
+  <data name="RecordingsButton" xml:space="preserve">
+    <value>Recording list</value>
+  </data>
   <data name="TypesButton" xml:space="preserve">
     <value>Dialogue types</value>
   </data>

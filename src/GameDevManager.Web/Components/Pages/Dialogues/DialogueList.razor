@@ -10,6 +10,12 @@
 
 <ModuleHeader Module="Module" Subtitle="@Subtitle">
     <Actions>
+        @* Das Studio-Paket der Vertonung: Skript hinaus, benannte Aufnahmen zurück. *@
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Mic"
+                   Href="/modules/dialogs/aufnahmen">
+            @L["RecordingsButton"]
+        </MudButton>
         <MudButton Variant="Variant.Outlined"
                    StartIcon="@Icons.Material.Filled.Style"
                    Href="/modules/dialogs/arten">

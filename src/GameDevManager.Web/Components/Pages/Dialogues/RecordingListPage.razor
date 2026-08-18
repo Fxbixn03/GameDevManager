@@ -1,0 +1,214 @@
+@page "/modules/dialogs/aufnahmen"
+@inject RecordingListService Recordings
+@inject LocalizationService Localization
+@inject ProjectContext Project
+@inject NavigationManager Navigation
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<RecordingListPage> L
+
+@*
+    Die Aufnahmeliste fürs Tonstudio: alle offenen Zeilen einer Sprache als Skript (CSV und
+    druckbares HTML) — je Zeile Sprecherrolle, Text, Kontext und die Dateinamen-Vorgabe.
+    Der Rückweg ist ein ZIP mit genau diesen Namen; was sich nicht eindeutig zuordnen lässt,
+    wird als Konflikt gemeldet statt geraten. Was „offen“ ist, sagt der Health Check
+    „fehlende Aufnahmen“ — er bleibt die Quelle der Wahrheit.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@L["Subtitle"]">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Chat"
+                   Href="/modules/dialogs">
+            @L["ToDialogues"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_languages is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_languages.Count == 0)
+{
+    <div class="gdm-empty">
+        <MudIcon Icon="@Icons.Material.Filled.Mic" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+        <MudText Typo="Typo.h6">@L["NoLanguagesTitle"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoLanguagesHint"]</MudText>
+    </div>
+}
+else
+{
+    <MudGrid Spacing="3">
+        @* ------------------------------------------------------------- Das Skript *@
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ScriptHeading"]</MudText>
+
+                <MudSelect T="string"
+                           Value="_languageCode"
+                           ValueChanged="SelectLanguageAsync"
+                           Label="@L["LanguageLabel"]"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Class="mt-2">
+                    @foreach (var language in _languages)
+                    {
+                        <MudSelectItem T="string" Value="@language.Code">@language.Name</MudSelectItem>
+                    }
+                </MudSelect>
+
+                @if (_languageCode is not null)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-3">
+                        @L["OpenCount", _openCount]
+                    </MudText>
+
+                    <MudStack Row="true" Spacing="2" Class="mt-3" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.TableView"
+                                   Disabled="@(_openCount == 0)"
+                                   OnClick="@(() => Download(null))">
+                            @L["DownloadCsv"]
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Filled.Print"
+                                   Disabled="@(_openCount == 0)"
+                                   OnClick="@(() => Download("html"))">
+                            @L["DownloadHtml"]
+                        </MudButton>
+                    </MudStack>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-3">
+                        @L["FileNameHint"]
+                    </MudText>
+                }
+            </MudPaper>
+        </MudItem>
+
+        @* -------------------------------------------------------------- Der Rückweg *@
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["ReturnHeading"]</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-3">
+                    @L["ReturnHint"]
+                </MudText>
+
+                <MudFileUpload T="IBrowserFile" FilesChanged="UploadAsync" Accept=".zip">
+                    <ActivatorContent>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.DriveFolderUpload"
+                                   Disabled="@(_uploading || !_permissions.CanWrite)">
+                            @L["UploadButton"]
+                        </MudButton>
+                    </ActivatorContent>
+                </MudFileUpload>
+
+                @if (_uploading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-3" />
+                }
+
+                @if (_result is not null)
+                {
+                    <MudAlert Severity="@(_result.Conflicts.Count == 0 ? Severity.Success : Severity.Warning)"
+                              Class="mt-3">
+                        @L["ResultAssigned", _result.Assigned]
+                    </MudAlert>
+
+                    @foreach (var conflict in _result.Conflicts)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Warning" Class="py-1">@conflict</MudText>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Dialogs);
+
+    /// <summary>Obergrenze fürs ZIP — hundert Aufnahmen in Studioqualität passen hinein.</summary>
+    private const long MaxZipBytes = 512L * 1024 * 1024;
+
+    private UserPermissions _permissions = UserPermissions.Full;
+
+    private Guid _projectId;
+    private List<ContentLanguage>? _languages;
+    private string? _languageCode;
+    private int _openCount;
+
+    private bool _uploading;
+    private RecordingImportResult? _result;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+        _projectId = await Project.GetCurrentIdAsync();
+        _languages = await Localization.GetLanguagesAsync(_projectId);
+
+        if (_languages.Count > 0)
+        {
+            await SelectLanguageAsync(_languages[0].Code);
+        }
+    }
+
+    private async Task SelectLanguageAsync(string? code)
+    {
+        _languageCode = code;
+        _openCount = code is null
+            ? 0
+            : (await Recordings.GetScriptAsync(_projectId, code)).Count;
+    }
+
+    // Wie beim Export-ZIP: Über SignalR lässt sich kein Download anstoßen — der Endpunkt
+    // liefert, die Seite baut nur die Adresse.
+    private void Download(string? format) =>
+        Navigation.NavigateTo(
+            $"/export/aufnahmen/{_projectId}/{_languageCode}{(format is null ? string.Empty : $"?format={format}")}",
+            forceLoad: true);
+
+    private async Task UploadAsync(IBrowserFile? file)
+    {
+        if (file is null)
+        {
+            return;
+        }
+
+        _uploading = true;
+        _result = null;
+
+        try
+        {
+            // ZipArchive braucht wahlfreien Zugriff — der Browser-Strom hat keinen.
+            using var buffer = new MemoryStream();
+            await using (var content = file.OpenReadStream(MaxZipBytes))
+            {
+                await content.CopyToAsync(buffer);
+            }
+            buffer.Position = 0;
+
+            _result = await Recordings.ImportZipAsync(_projectId, buffer);
+
+            // Die Zuordnung ändert, was offen ist.
+            await SelectLanguageAsync(_languageCode);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (InvalidDataException)
+        {
+            Snackbar.Add(L["NotAZip"], Severity.Error);
+        }
+        finally
+        {
+            _uploading = false;
+        }
+    }
+}

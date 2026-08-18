@@ -124,6 +124,30 @@
   <data name="Mail_ReviewRejected" xml:space="preserve">
     <value>Your review request was rejected — by {0}: {1}</value>
   </data>
+  <data name="RecordingScriptTitle" xml:space="preserve">
+    <value>Recording list “{0}” — {1}</value>
+  </data>
+  <data name="RecordingScriptSpeaker" xml:space="preserve">
+    <value>Speaker role</value>
+  </data>
+  <data name="RecordingScriptText" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="RecordingScriptContext" xml:space="preserve">
+    <value>Context (previous line)</value>
+  </data>
+  <data name="RecordingScriptFile" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="RecordingZipBadName" xml:space="preserve">
+    <value>“{0}”: The name does not match the pattern “guid.languagecode.extension” — skipped.</value>
+  </data>
+  <data name="RecordingZipUnknownLanguage" xml:space="preserve">
+    <value>“{0}”: The language “{1}” does not exist in this project — skipped.</value>
+  </data>
+  <data name="RecordingZipUnknownLine" xml:space="preserve">
+    <value>“{0}”: No dialogue line in the project has this GUID — skipped.</value>
+  </data>
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>The required field “{0}” is empty.</value>
   </data>

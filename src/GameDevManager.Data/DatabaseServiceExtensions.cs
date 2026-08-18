@@ -147,6 +147,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<ConditionService>();
         services.AddScoped<DialogueService>();
         services.AddScoped<VoiceOverService>();
+        services.AddScoped<RecordingListService>();
         services.AddScoped<ReferenceService>();
         services.AddScoped<AssetService>();
         services.AddScoped<SearchService>();
