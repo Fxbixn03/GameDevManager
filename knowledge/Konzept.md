@@ -2,7 +2,8 @@
 
 Dieses Dokument ist die **fachliche Quelle der Wahrheit**: Was das Tool leisten soll und nach
 welchen Regeln. Es beschreibt keine Technik — wie es gebaut ist, steht in
-[CLAUDE.md](../CLAUDE.md); was darüber hinaus noch kommen könnte, in [ToDo.md](ToDo.md).
+[CLAUDE.md](../CLAUDE.md); was darüber hinaus noch kommen könnte, steht als Epics und
+Feature-Issues im GitHub-Repo (Labels `epic` und `feature`).
 
 Alles, was hier steht, ist umgesetzt. Das Dokument ist im Präsens geschrieben, weil eine
 Anforderung, die erfüllt ist, eine Festlegung ist — und Festlegungen gelten weiter. Absichten,
