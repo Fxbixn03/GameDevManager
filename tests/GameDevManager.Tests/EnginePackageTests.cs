@@ -42,6 +42,13 @@ public class EnginePackageTests
         Assert.Contains("package/godot/addons/gamedevmanager/gdm_content.gd", paths);
         Assert.Contains("package/godot/addons/gamedevmanager/gdm_panel.gd", paths);
         Assert.Contains("package/godot/addons/gamedevmanager/gdm_panel.tscn", paths);
+
+        // Die Szenen-Anbindung: Einträge ziehen sich als kleine Drop-Szene in den Baum,
+        // der Knoten trägt GUID und Modul als Metadaten.
+        var panel = files.Single(file => file.Path.EndsWith("gdm_panel.gd"));
+        Assert.Contains("set_drag_forwarding", panel.Content);
+        Assert.Contains("gdm_id", panel.Content);
+        Assert.Contains("gdm_module", panel.Content);
     }
 
     [Fact]
@@ -56,10 +63,17 @@ public class EnginePackageTests
     }
 
     [Fact]
-    public void Unreal_bekommt_kein_Paket()
+    public void Unreal_bekommt_ein_Import_Skript_aber_kein_Plugin()
     {
-        // Dort ist die DataTable-CSV der eingebaute Weg, und ein Plugin daneben wäre ein zweiter.
-        Assert.Empty(EnginePackageWriter.Build(TargetEngine.Unreal, "Beispiel", 22));
+        // Die DataTable-CSV bleibt der eingebaute Weg — das Skript bündelt ihn nur (alle
+        // Tabellen in einem Lauf, wiederholt ersetzen statt duplizieren) und ergänzt damit
+        // die „kein Plugin“-Linie, statt sie zu ersetzen.
+        var files = EnginePackageWriter.Build(TargetEngine.Unreal, "Beispiel", 22);
+
+        var script = Assert.Single(files);
+        Assert.Equal("package/unreal/import_gdm_tables.py", script.Path);
+        Assert.Contains("replace_existing = True", script.Content);
+        Assert.Contains("Beispiel", script.Content);
     }
 
     [Fact]

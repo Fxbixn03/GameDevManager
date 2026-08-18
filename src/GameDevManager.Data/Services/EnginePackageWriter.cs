@@ -25,16 +25,112 @@ public static class EnginePackageWriter
     public const string Folder = "package/";
 
     /// <summary>
-    /// Die Dateien des Pakets für eine Engine. Für Unreal gibt es keines: Dort ist die
-    /// DataTable-CSV der eingebaute Weg, und ein Plugin daneben wäre ein zweiter.
+    /// Die Dateien des Pakets für eine Engine. Für Unreal gibt es bewusst <b>kein Plugin</b> —
+    /// die DataTable-CSV ist dort der eingebaute Weg. Was es gibt, ist ein Python-Skript,
+    /// das genau diesen eingebauten Weg bündelt: alle CSVs eines Exports in einem Lauf
+    /// anlegen bzw. aktualisieren. Das <b>ergänzt</b> die „kein Plugin“-Linie, es ersetzt
+    /// sie nicht — ein Skript bringt keine zweite Laufzeit-Abhängigkeit ins Projekt.
     /// </summary>
     public static List<EngineFile> Build(TargetEngine engine, string projectName, int formatVersion) =>
         engine switch
         {
             TargetEngine.Unity => BuildUnity(projectName, formatVersion),
             TargetEngine.Godot => BuildGodot(projectName, formatVersion),
+            TargetEngine.Unreal => BuildUnreal(projectName, formatVersion),
             _ => []
         };
+
+    // ------------------------------------------------------------------------------ Unreal
+
+    private static List<EngineFile> BuildUnreal(string projectName, int formatVersion) =>
+    [
+        new($"{Folder}unreal/import_gdm_tables.py", $$""""
+            """Importiert alle DataTable-CSVs dieses GameDevManager-Exports in einem Lauf.
+
+            Erzeugt für „{{projectName}}“, Exportformat {{formatVersion}}. Kein Plugin — das
+            Skript bündelt nur den eingebauten CSV-Import von Unreal (Automated Import mit
+            replace_existing): Ein wiederholter Lauf aktualisiert die Tabellen, statt sie zu
+            duplizieren.
+
+            Aufruf im Unreal-Editor (Python-Plugin aktivieren):
+                Tools → Execute Python Script → diese Datei wählen
+            oder über die Konsole:
+                py "<Pfad>/import_gdm_tables.py"
+
+            Voraussetzung je Tabelle ist ein Row-Struct — CSVs ohne Zuordnung werden mit
+            Hinweis übersprungen statt geraten. Zugeordnet wird über ROW_STRUCTS unten;
+            ohne Eintrag gilt die Konvention /Game/GameDevManager/Structs/F<CsvName>.
+            """
+
+            import os
+            import unreal
+
+            # Wohin die Tabellen kommen — alles unter einem Ordner, nichts daneben.
+            DESTINATION = "/Game/GameDevManager/Tables"
+
+            # CSV-Name (ohne Endung) → Pfad des Row-Structs. Leere Vorgabe heißt Konvention.
+            ROW_STRUCTS = {
+                # "npc": "/Game/MeinSpiel/Structs/FNpcRow",
+            }
+
+
+            def _struct_for(name):
+                path = ROW_STRUCTS.get(name, "/Game/GameDevManager/Structs/F%s" % name.capitalize())
+                struct = unreal.EditorAssetLibrary.load_asset(path)
+
+                if struct is None:
+                    unreal.log_warning(
+                        "GDM: Kein Row-Struct für '%s' unter %s — übersprungen. "
+                        "Struct anlegen oder ROW_STRUCTS im Skript ergänzen." % (name, path))
+
+                return struct
+
+
+            def run():
+                # Die CSVs liegen neben diesem Skript unter engine/ — dorthin schreibt der
+                # Export seine DataTable-Dateien.
+                root = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "engine"))
+
+                if not os.path.isdir(root):
+                    unreal.log_error("GDM: Ordner %s fehlt — liegt das Skript noch im Export?" % root)
+                    return
+
+                tools = unreal.AssetToolsHelpers.get_asset_tools()
+                imported = 0
+
+                for file_name in sorted(os.listdir(root)):
+                    if not file_name.lower().endswith(".csv"):
+                        continue
+
+                    name = os.path.splitext(file_name)[0]
+                    struct = _struct_for(name)
+
+                    if struct is None:
+                        continue
+
+                    factory = unreal.CSVImportFactory()
+                    factory.automated_import_settings.import_row_struct = struct
+
+                    task = unreal.AssetImportTask()
+                    task.filename = os.path.join(root, file_name)
+                    task.destination_path = DESTINATION
+                    task.destination_name = name
+                    task.factory = factory
+                    task.automated = True
+                    # Der Kern des wiederholten Laufs: ersetzen statt duplizieren.
+                    task.replace_existing = True
+                    task.save = True
+
+                    tools.import_asset_tasks([task])
+                    imported += 1
+
+                unreal.log("GDM: %d Tabellen importiert bzw. aktualisiert." % imported)
+
+
+            if __name__ == "__main__":
+                run()
+            """")
+    ];
 
     // ------------------------------------------------------------------------------- Unity
 
@@ -842,12 +938,20 @@ public static class EnginePackageWriter
             @tool
             extends Control
 
-            ## Das Fenster im unteren Editor-Bereich: Inhalte eines Moduls nachschlagen und
-            ## eine GUID in die Zwischenablage legen.
+            ## Das Fenster im unteren Editor-Bereich: Inhalte eines Moduls nachschlagen, eine
+            ## GUID in die Zwischenablage legen — und Einträge in den Szenenbaum ziehen.
+            ##
+            ## Das Ziehen läuft über den einen Weg, den der Szenenbaum von Haus aus annimmt:
+            ## eine Szenen-Datei. Beim Anfassen eines Eintrags entsteht unter
+            ## res://gamedevmanager/.drop/ eine kleine .tscn — ein nackter Node, dessen
+            ## Metadaten gdm_module und gdm_id die Entität nennen. Bewusst kein Prefab und
+            ## keine Projekt-Konvention: Was aus dem Knoten wird, entscheidet das Spiel.
 
             const MODULES := [
                 "items", "npcs", "quests", "dialogs", "loot", "crafting", "maps", "effects"
             ]
+
+            const DROP_DIR := "res://gamedevmanager/.drop"
 
             @onready var _module: OptionButton = $VBox/Head/Module
             @onready var _search: LineEdit = $VBox/Head/Search
@@ -863,6 +967,10 @@ public static class EnginePackageWriter
                 _module.item_selected.connect(func(_index: int) -> void: _refresh())
                 _search.text_changed.connect(func(_text: String) -> void: _refresh())
                 _list.item_activated.connect(_copy)
+
+                # Das Ziehen übernimmt das Panel für die Liste — die Liste selbst kennt
+                # nur Zeilen, das Panel kennt die Entität dahinter.
+                _list.set_drag_forwarding(_drag_entry, Callable(), Callable())
 
                 _refresh()
 
@@ -886,6 +994,42 @@ public static class EnginePackageWriter
             func _copy(index: int) -> void:
                 if index >= 0 and index < _ids.size():
                     DisplayServer.clipboard_set(_ids[index])
+
+
+            ## Baut die Drop-Szene für den angefassten Eintrag und meldet sie als Datei-Zug —
+            ## der Szenenbaum hängt sie als Kind unter den Knoten, über dem sie fällt.
+            func _drag_entry(at_position: Vector2) -> Variant:
+                var index := _list.get_item_at_position(at_position, true)
+
+                if index < 0 or index >= _ids.size():
+                    return null
+
+                var id: String = _ids[index]
+                var display_name: String = _list.get_item_text(index)
+
+                var node := Node.new()
+                node.name = display_name.validate_node_name()
+                node.set_meta("gdm_module", MODULES[_module.selected])
+                node.set_meta("gdm_id", id)
+
+                var scene := PackedScene.new()
+                scene.pack(node)
+                node.free()
+
+                DirAccess.make_dir_recursive_absolute(DROP_DIR)
+
+                # Je Entität eine Datei, überschrieben statt gezählt: Der Ordner ist ein
+                # Durchgangslager, kein Bestand.
+                var path := "%s/%s.tscn" % [DROP_DIR, id]
+
+                if ResourceSaver.save(scene, path) != OK:
+                    return null
+
+                var preview := Label.new()
+                preview.text = display_name
+                set_drag_preview(preview)
+
+                return {"type": "files", "files": [path]}
             """),
 
         new($"{Folder}godot/addons/gamedevmanager/gdm_panel.tscn", """
