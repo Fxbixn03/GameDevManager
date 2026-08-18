@@ -99,6 +99,9 @@
   <data name="MoneyPrintersTitle" xml:space="preserve">
     <value>Gelddruckmaschinen</value>
   </data>
+  <data name="ToEconomy" xml:space="preserve">
+    <value>Ökonomie</value>
+  </data>
   <data name="UnpricedItemsTitle" xml:space="preserve">
     <value>Items ohne Preis</value>
   </data>

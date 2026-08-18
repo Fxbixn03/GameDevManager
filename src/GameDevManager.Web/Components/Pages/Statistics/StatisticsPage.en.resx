@@ -99,6 +99,9 @@
   <data name="MoneyPrintersTitle" xml:space="preserve">
     <value>Money printers</value>
   </data>
+  <data name="ToEconomy" xml:space="preserve">
+    <value>Economy</value>
+  </data>
   <data name="UnpricedItemsTitle" xml:space="preserve">
     <value>Unpriced items</value>
   </data>

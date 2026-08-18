@@ -259,6 +259,8 @@ NPCs verweisen über `Npc.LootTableId` auf eine Tabelle. Beim Löschen einer Tab
 
 Daneben macht `FindUnpricedItemsAsync` die **Preislücke** sichtbar: alle Items, die bei keinem Händler einen Preis tragen — genau die Lücke, die den Gelddruckmaschinen-Fund zur Vermutung macht. Ein Preis auf einer Seite des Handels (Verkauf **oder** Ankauf) genügt; ein Posten ganz ohne Preis bepreist nichts. Als Health Check `unpricedItems` im Zustandsband (Sprungziel Items) und als Abschnitt der Statistik-Seite, auf 25 Zeilen gekappt. Das Beispielprojekt bepreist deshalb auch Barren und Griff.
 
+Das **Ökonomie-Dashboard** (`/modules/statistics/oekonomie`, verlinkt aus der Statistik-Kopfzeile) zeigt das Gesamtbild: je Währung Posten, bepreiste Items, Spanne der Verkaufspreise mit **Median** (bei schiefen Verteilungen die bessere Mitte — dieselbe Überlegung wie beim Loot-Simulator) samt Umrechnung in die Grundeinheit über den Kurs, dazu die Händler als Sprungziele; **Quellen und Senken** als Item-Zahlen (`GetFlowsAsync` — gezählt werden Items, nicht Vorkommen); darunter Gelddruckmaschinen und Preislücken mit denselben Sprungzielen wie auf der Statistik-Seite. Reine Auswertung, kein eigener Datenbestand.
+
 ### Quests und ihre Ziele
 
 `QuestObjective` zerlegt eine Quest in ihre Schritte („Sprich mit Alrik“, „Sammle 5 Kräuter“, „Kehre zurück“) — eine Kind-Sammlung nach dem Muster von `RecipeIngredient` und `CutsceneShot`, mit Text, Reihenfolge und `IsOptional`. Vier Dinge dahinter:

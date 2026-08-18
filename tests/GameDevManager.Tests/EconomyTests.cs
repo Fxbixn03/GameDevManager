@@ -62,6 +62,77 @@ public class EconomyTests
     }
 
     [Fact]
+    public async Task Waehrungsuebersicht_liefert_Preisspanne_Median_und_Haendler()
+    {
+        using var test = new TestDatabase();
+        await SeedAsync(test, ingredientSellPrice: 3, outputBuyPrice: 5, exchangeRate: 2);
+
+        // Ein zweiter Posten in derselben Währung macht die Spanne interessant.
+        await using (var db = test.CreateContext())
+        {
+            var sword = new Item { GameProjectId = test.ProjectId, Name = "Schwert" };
+            var trader = await db.Npcs.FirstAsync();
+            var currency = await db.Currencies.FirstAsync();
+
+            db.Items.Add(sword);
+            db.TraderOffers.Add(new TraderOffer
+            {
+                NpcId = trader.Id,
+                ItemId = sword.Id,
+                CurrencyId = currency.Id,
+                SellPrice = 9
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var overview = Assert.Single(
+            await test.GetService<EconomyService>().GetCurrencyOverviewAsync(test.ProjectId));
+
+        Assert.Equal("Gold", overview.Name);
+        Assert.Equal(2, overview.ExchangeRate);
+        Assert.Equal(3, overview.OfferCount);
+        Assert.Equal(3, overview.PricedItemCount);
+        Assert.Equal(3, overview.MinSellPrice);
+        Assert.Equal(6, overview.MedianSellPrice);
+        Assert.Equal(9, overview.MaxSellPrice);
+
+        var trader2 = Assert.Single(overview.Traders);
+        Assert.Equal("Händler", trader2.Name);
+        Assert.Equal(3, trader2.OfferCount);
+    }
+
+    [Fact]
+    public async Task Quellen_und_Senken_zaehlen_Items_und_nicht_Vorkommen()
+    {
+        using var test = new TestDatabase();
+        await SeedAsync(test, ingredientSellPrice: 3, outputBuyPrice: 5);
+
+        // Der Barren fällt zusätzlich in zwei Loot-Tabellen — er zählt trotzdem als eine Quelle.
+        await using (var db = test.CreateContext())
+        {
+            var bar = await db.Items.FirstAsync(item => item.Name == "Barren");
+
+            foreach (var name in new[] { "Truhe", "Boss" })
+            {
+                var table = new LootTable { GameProjectId = test.ProjectId, Name = name };
+                table.Entries.Add(new LootEntry { LootTableId = table.Id, ItemId = bar.Id });
+                db.LootTables.Add(table);
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        var flows = await test.GetService<EconomyService>().GetFlowsAsync(test.ProjectId);
+
+        Assert.Equal(2, flows.TotalItems);
+        Assert.Equal(1, flows.LootSourceItems);      // Barren
+        Assert.Equal(1, flows.TraderSourceItems);    // Erz (SellPrice)
+        Assert.Equal(1, flows.RecipeSourceItems);    // Barren (Rezept-Ziel)
+        Assert.Equal(1, flows.TraderSinkItems);      // Barren (BuyPrice)
+        Assert.Equal(1, flows.RecipeSinkItems);      // Erz (Zutat)
+    }
+
+    [Fact]
     public async Task Items_ohne_Haendlerpreis_stehen_in_der_Preisluecken_Liste()
     {
         using var test = new TestDatabase();

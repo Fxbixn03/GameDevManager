@@ -1,0 +1,223 @@
+@page "/modules/statistics/oekonomie"
+@inject EconomyService Economy
+@inject ProjectContext Project
+@inject IStringLocalizer<EconomyPage> L
+
+@*
+    Das Ökonomie-Dashboard: das Gesamtbild der Spielwirtschaft, das die einzelnen Health
+    Checks (Gelddruckmaschinen, Preislücken) nur ausschnittweise zeigen. Reine Auswertung
+    über vorhandene Bestände — Währungen, Händler-Posten, Loot, Rezepte; kein eigener
+    Datenbestand. Alle Funde sind Sprungziele, wie bei den Health Checks: Der Weg zur
+    Behebung führt in die Maske, in der man sie behebt.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@L["Subtitle"]">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.QueryStats"
+                   Href="/modules/statistics">
+            @L["ToStatistics"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_currencies is null || _flows is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    @* ------------------------------------------------------------- Je Währung *@
+    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">@L["CurrenciesHeading"]</MudText>
+
+    @if (_currencies.Count == 0)
+    {
+        <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-6">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoCurrencies"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid Spacing="2" Class="mb-6">
+            @foreach (var currency in _currencies)
+            {
+                <MudItem xs="12" md="6" lg="4">
+                    <MudPaper Elevation="0" Class="gdm-panel pa-4" Style="height:100%;">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                            <MudText Typo="Typo.subtitle1"><b>@currency.Name</b></MudText>
+                            @if (!string.IsNullOrWhiteSpace(currency.Symbol))
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@currency.Symbol</MudChip>
+                            }
+                            <MudSpacer />
+                            @* Der Kurs macht Preise über Währungen hinweg vergleichbar —
+                               dieselbe Grundeinheit wie in der Gelddruckmaschinen-Prüfung. *@
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                                @L["ExchangeRate", currency.ExchangeRate.ToString("0.###")]
+                            </MudText>
+                        </MudStack>
+
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">
+                            @L["OfferSummary", currency.OfferCount, currency.PricedItemCount]
+                        </MudText>
+
+                        @if (currency.MinSellPrice is { } min && currency.MaxSellPrice is { } max)
+                        {
+                            <MudText Typo="Typo.body2" Class="gdm-mono mb-1">
+                                @L["PriceRange", Format(min), Format(currency.MedianSellPrice!.Value), Format(max)]
+                            </MudText>
+                            @if (Math.Abs(currency.ExchangeRate - 1) > 0.0001)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono d-block mb-1">
+                                    @L["PriceRangeBase", Format(min * currency.ExchangeRate), Format(max * currency.ExchangeRate)]
+                                </MudText>
+                            }
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">@L["NoSellPrices"]</MudText>
+                        }
+
+                        @if (currency.Traders.Count > 0)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2 mb-1">
+                                @L["TradersHeading"]
+                            </MudText>
+                            @foreach (var trader in currency.Traders)
+                            {
+                                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="py-1">
+                                    <MudLink Href="@($"/modules/npcs/{trader.NpcId}")" Typo="Typo.body2">@trader.Name</MudLink>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                                        @L["TraderOffers", trader.OfferCount]
+                                    </MudText>
+                                </MudStack>
+                            }
+                        }
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+    @* --------------------------------------------------------- Quellen und Senken *@
+    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">@L["FlowsHeading"]</MudText>
+    <MudGrid Spacing="2" Class="mb-6">
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4" Style="height:100%;">
+                <MudText Typo="Typo.subtitle2" Class="mb-2">@L["SourcesTitle"]</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
+                    @L["SourcesHint", _flows.TotalItems]
+                </MudText>
+                @FlowRow("/modules/loot", L["SourceLoot"], _flows.LootSourceItems, _flows.TotalItems)
+                @FlowRow("/modules/npcs", L["SourceTraders"], _flows.TraderSourceItems, _flows.TotalItems)
+                @FlowRow("/modules/crafting", L["SourceRecipes"], _flows.RecipeSourceItems, _flows.TotalItems)
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4" Style="height:100%;">
+                <MudText Typo="Typo.subtitle2" Class="mb-2">@L["SinksTitle"]</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
+                    @L["SinksHint"]
+                </MudText>
+                @FlowRow("/modules/npcs", L["SinkTraders"], _flows.TraderSinkItems, _flows.TotalItems)
+                @FlowRow("/modules/crafting", L["SinkRecipes"], _flows.RecipeSinkItems, _flows.TotalItems)
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @* ------------------------------------------------------- Gelddruckmaschinen *@
+    <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-2">@L["ChecksHeading"]</MudText>
+    <MudStack Spacing="3">
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_moneyPrinters.Count)" Color="@StatusColor(_moneyPrinters.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>@L["MoneyPrintersTitle"]</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_moneyPrinters.Count)</MudText>
+            </MudStack>
+            @foreach (var printer in _moneyPrinters)
+            {
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="py-1">
+                    <MudLink Href="@($"/modules/crafting/{printer.RecipeId}")">@printer.RecipeName</MudLink>
+                    <MudText Typo="Typo.body2" Class="gdm-mono" Color="Color.Warning">
+                        @L["MoneyPrinterProfit", printer.Profit.ToString("0.##")]
+                    </MudText>
+                    @if (!printer.IsCertain)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Secondary">
+                            @L["MoneyPrinterUncertain", printer.MissingPrices]
+                        </MudChip>
+                    }
+                </MudStack>
+            }
+        </MudPaper>
+
+        @* ------------------------------------------------------- Items ohne Preis *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_unpricedItems.Count)" Color="@StatusColor(_unpricedItems.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>@L["UnpricedItemsTitle"]</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_unpricedItems.Count)</MudText>
+            </MudStack>
+            @foreach (var item in _unpricedItems.Take(25))
+            {
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="py-1">
+                    <MudLink Href="@($"/modules/items/{item.ItemId}")" Typo="Typo.body2">@item.Name</MudLink>
+                    @if (item.TypeName is not null)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.TypeName</MudText>
+                    }
+                </MudStack>
+            }
+            @if (_unpricedItems.Count > 25)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">
+                    @L["UnpricedItemsMore", _unpricedItems.Count - 25]
+                </MudText>
+            }
+        </MudPaper>
+    </MudStack>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Statistics);
+
+    private List<CurrencyEconomy>? _currencies;
+    private EconomyFlows? _flows;
+    private List<MoneyPrinter> _moneyPrinters = [];
+    private List<UnpricedItem> _unpricedItems = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+
+        _moneyPrinters = await Economy.FindMoneyPrintersAsync(projectId);
+        _unpricedItems = await Economy.FindUnpricedItemsAsync(projectId);
+        _flows = await Economy.GetFlowsAsync(projectId);
+
+        // Zuletzt, weil die Anzeige darauf wartet — so erscheint alles gemeinsam.
+        _currencies = await Economy.GetCurrencyOverviewAsync(projectId);
+    }
+
+    private static string Format(double value) => value.ToString("0.##");
+
+    private static string StatusIcon(int findings) =>
+        findings == 0 ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.ReportProblem;
+
+    private static Color StatusColor(int findings) =>
+        findings == 0 ? Color.Success : Color.Warning;
+
+    private string FundLabel(int findings) =>
+        findings == 0 ? L["NoFindings"] : L["FindingsCount", findings];
+
+    /// <summary>Eine Zeile der Quellen/Senken: Beschriftung, Zahl und Sprungziel.</summary>
+    private static RenderFragment FlowRow(string href, string label, int count, int total) => __builder =>
+    {
+        <MudLink Href="@href" Underline="Underline.None" Color="Color.Inherit" Class="d-flex align-center gap-2 py-1">
+            <MudText Typo="Typo.body2" Style="flex:1;">@label</MudText>
+            <MudText Typo="Typo.body2" Class="gdm-mono">@count</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">/ @total</MudText>
+        </MudLink>
+    };
+}

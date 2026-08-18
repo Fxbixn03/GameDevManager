@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Economy – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>The big picture of the game economy: prices per currency, sources and sinks, open gaps.</value>
+  </data>
+  <data name="ToStatistics" xml:space="preserve">
+    <value>To statistics</value>
+  </data>
+  <data name="CurrenciesHeading" xml:space="preserve">
+    <value>Per currency</value>
+  </data>
+  <data name="NoCurrencies" xml:space="preserve">
+    <value>No currency created yet — without a currency there are no prices.</value>
+  </data>
+  <data name="ExchangeRate" xml:space="preserve">
+    <value>Rate ×{0}</value>
+  </data>
+  <data name="OfferSummary" xml:space="preserve">
+    <value>{0} trader offers, {1} priced items</value>
+  </data>
+  <data name="PriceRange" xml:space="preserve">
+    <value>Sell prices: {0} – {2} (median {1})</value>
+  </data>
+  <data name="PriceRangeBase" xml:space="preserve">
+    <value>in base units: {0} – {1}</value>
+  </data>
+  <data name="NoSellPrices" xml:space="preserve">
+    <value>No sell prices in this currency.</value>
+  </data>
+  <data name="TradersHeading" xml:space="preserve">
+    <value>Traders using this currency</value>
+  </data>
+  <data name="TraderOffers" xml:space="preserve">
+    <value>{0} offers</value>
+  </data>
+  <data name="FlowsHeading" xml:space="preserve">
+    <value>Sources and sinks</value>
+  </data>
+  <data name="SourcesTitle" xml:space="preserve">
+    <value>Sources — where items come from</value>
+  </data>
+  <data name="SourcesHint" xml:space="preserve">
+    <value>Counting items, not occurrences — out of {0} items in the project.</value>
+  </data>
+  <data name="SinksTitle" xml:space="preserve">
+    <value>Sinks — where items go</value>
+  </data>
+  <data name="SinksHint" xml:space="preserve">
+    <value>Bought back by traders and consumed as recipe ingredients.</value>
+  </data>
+  <data name="SourceLoot" xml:space="preserve">
+    <value>Drop as loot</value>
+  </data>
+  <data name="SourceTraders" xml:space="preserve">
+    <value>Buyable from traders</value>
+  </data>
+  <data name="SourceRecipes" xml:space="preserve">
+    <value>Craftable via recipes</value>
+  </data>
+  <data name="SinkTraders" xml:space="preserve">
+    <value>Bought back by traders</value>
+  </data>
+  <data name="SinkRecipes" xml:space="preserve">
+    <value>Consumed as ingredient</value>
+  </data>
+  <data name="ChecksHeading" xml:space="preserve">
+    <value>Open gaps</value>
+  </data>
+  <data name="MoneyPrintersTitle" xml:space="preserve">
+    <value>Money printers</value>
+  </data>
+  <data name="MoneyPrinterProfit" xml:space="preserve">
+    <value>+{0} per run</value>
+  </data>
+  <data name="MoneyPrinterUncertain" xml:space="preserve">
+    <value>Guess — {0} prices missing</value>
+  </data>
+  <data name="UnpricedItemsTitle" xml:space="preserve">
+    <value>Unpriced items</value>
+  </data>
+  <data name="UnpricedItemsMore" xml:space="preserve">
+    <value>… and {0} more.</value>
+  </data>
+  <data name="NoFindings" xml:space="preserve">
+    <value>No findings</value>
+  </data>
+  <data name="FindingsCount" xml:space="preserve">
+    <value>{0} findings</value>
+  </data>
+</root>

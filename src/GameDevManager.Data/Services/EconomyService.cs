@@ -31,6 +31,38 @@ public sealed record MoneyPrinter(
 /// <summary>Ein Item, das bei keinem Händler einen Preis hat — die Pflegelücke.</summary>
 public sealed record UnpricedItem(Guid ItemId, string Name, string? TypeName);
 
+/// <summary>Ein Händler als Sprungziel — mit der Zahl seiner Posten in dieser Währung.</summary>
+public sealed record TraderLink(Guid NpcId, string Name, int OfferCount);
+
+/// <summary>
+/// Die Preislage einer Währung für das Ökonomie-Dashboard. Die Preisspanne ist die der
+/// Verkaufspreise (was Spieler zahlen); der Median sagt bei schiefen Verteilungen mehr als
+/// der Mittelwert — dieselbe Überlegung wie bei der Wartezeit des Loot-Simulators.
+/// </summary>
+public sealed record CurrencyEconomy(
+    Guid CurrencyId,
+    string Name,
+    string? Symbol,
+    double ExchangeRate,
+    int OfferCount,
+    int PricedItemCount,
+    double? MinSellPrice,
+    double? MedianSellPrice,
+    double? MaxSellPrice,
+    IReadOnlyList<TraderLink> Traders);
+
+/// <summary>
+/// Quellen und Senken der Wirtschaft, als Item-Zahlen: Woher bekommt ein Spieler Dinge
+/// (Loot, Händler, Rezepte), wohin gehen sie (Ankauf, Rezept-Zutaten)?
+/// </summary>
+public sealed record EconomyFlows(
+    int TotalItems,
+    int LootSourceItems,
+    int TraderSourceItems,
+    int RecipeSourceItems,
+    int TraderSinkItems,
+    int RecipeSinkItems);
+
 /// <summary>
 /// Die Wirtschafts-Prüfung: wo erzeugt ein Spieler Geld aus dem Nichts?
 /// <para>
@@ -51,6 +83,124 @@ public sealed record UnpricedItem(Guid ItemId, string Name, string? TypeName);
 /// </summary>
 public class EconomyService(IDbContextFactory<GameDevManagerDbContext> factory)
 {
+    /// <summary>
+    /// Die Übersicht je Währung: Posten, bepreiste Items, Preisspanne der Verkaufspreise und
+    /// die Händler als Sprungziele. Währungen ohne einen einzigen Posten stehen mit leerer
+    /// Spanne da — auch das ist eine Auskunft.
+    /// </summary>
+    public async Task<List<CurrencyEconomy>> GetCurrencyOverviewAsync(
+        Guid projectId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var currencies = await db.Currencies
+            .AsNoTracking()
+            .Where(currency => currency.GameProjectId == projectId)
+            .OrderBy(currency => currency.Name)
+            .ToListAsync(ct);
+
+        var offers = await db.TraderOffers
+            .AsNoTracking()
+            .Where(offer => offer.Npc!.GameProjectId == projectId && offer.CurrencyId != null)
+            .Select(offer => new
+            {
+                CurrencyId = offer.CurrencyId!.Value,
+                offer.ItemId,
+                offer.SellPrice,
+                offer.BuyPrice,
+                offer.NpcId,
+                TraderName = offer.Npc!.Name
+            })
+            .ToListAsync(ct);
+
+        return
+        [
+            .. currencies.Select(currency =>
+            {
+                var own = offers.Where(offer => offer.CurrencyId == currency.Id).ToList();
+                var sellPrices = own
+                    .Where(offer => offer.SellPrice is not null)
+                    .Select(offer => offer.SellPrice!.Value)
+                    .OrderBy(price => price)
+                    .ToList();
+
+                List<TraderLink> traders =
+                [
+                    .. own
+                        .GroupBy(offer => (offer.NpcId, offer.TraderName))
+                        .Select(group => new TraderLink(group.Key.NpcId, group.Key.TraderName, group.Count()))
+                        .OrderBy(trader => trader.Name, StringComparer.CurrentCultureIgnoreCase)
+                ];
+
+                return new CurrencyEconomy(
+                    currency.Id,
+                    currency.Name,
+                    currency.Symbol,
+                    currency.ExchangeRate,
+                    own.Count,
+                    own.Where(offer => offer.SellPrice is not null || offer.BuyPrice is not null)
+                        .Select(offer => offer.ItemId)
+                        .Distinct()
+                        .Count(),
+                    sellPrices.Count > 0 ? sellPrices[0] : null,
+                    Median(sellPrices),
+                    sellPrices.Count > 0 ? sellPrices[^1] : null,
+                    traders);
+            })
+        ];
+    }
+
+    /// <summary>
+    /// Quellen und Senken als Item-Zahlen. Gezählt werden Items, nicht Vorkommen: Ein Item in
+    /// drei Loot-Tabellen ist eine Quelle, keine drei.
+    /// </summary>
+    public async Task<EconomyFlows> GetFlowsAsync(Guid projectId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var total = await db.Items.CountAsync(item => item.GameProjectId == projectId, ct);
+
+        var lootSources = await db.LootEntries
+            .Where(entry => entry.LootTable!.GameProjectId == projectId)
+            .Select(entry => entry.ItemId)
+            .Distinct()
+            .CountAsync(ct);
+
+        var traderSources = await db.TraderOffers
+            .Where(offer => offer.Npc!.GameProjectId == projectId && offer.SellPrice != null)
+            .Select(offer => offer.ItemId)
+            .Distinct()
+            .CountAsync(ct);
+
+        var recipeSources = await db.RecipeOutputs
+            .Where(output => output.Recipe!.GameProjectId == projectId)
+            .Select(output => output.ItemId)
+            .Distinct()
+            .CountAsync(ct);
+
+        var traderSinks = await db.TraderOffers
+            .Where(offer => offer.Npc!.GameProjectId == projectId && offer.BuyPrice != null)
+            .Select(offer => offer.ItemId)
+            .Distinct()
+            .CountAsync(ct);
+
+        var recipeSinks = await db.RecipeIngredients
+            .Where(ingredient => ingredient.Recipe!.GameProjectId == projectId)
+            .Select(ingredient => ingredient.ItemId)
+            .Distinct()
+            .CountAsync(ct);
+
+        return new EconomyFlows(total, lootSources, traderSources, recipeSources, traderSinks, recipeSinks);
+    }
+
+    /// <summary>Der Median einer aufsteigend sortierten Liste — <c>null</c>, wenn sie leer ist.</summary>
+    private static double? Median(List<double> sorted) => sorted.Count switch
+    {
+        0 => null,
+        var count when count % 2 == 1 => sorted[count / 2],
+        var count => (sorted[count / 2 - 1] + sorted[count / 2]) / 2
+    };
+
     /// <summary>
     /// Alle Items, die bei keinem Händler einen Preis haben — weder Verkauf noch Ankauf.
     /// Genau diese Lücke macht die Gelddruckmaschinen-Prüfung zur Vermutung; hier wird sie
