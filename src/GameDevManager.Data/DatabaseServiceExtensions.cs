@@ -168,6 +168,10 @@ public static class DatabaseServiceExtensions
         // Die Warteschlange ist ein Singleton: Der Interceptor stellt je Verbindung ein, der
         // Zustelldienst leert prozessweit — dieselbe Bauart wie EditingPresence.
         services.TryAddSingleton<WebhookQueue>();
+
+        // Der Live-Sync nach derselben Bauart: Der Interceptor veröffentlicht, der
+        // SSE-Endpunkt liest — je Verbindung ein Kanal, alles im Arbeitsspeicher.
+        services.TryAddSingleton<SyncEventBroadcaster>();
         services.AddScoped<CsvContentService>();
         services.AddScoped<LocalizationService>();
         services.AddScoped<EnginePresetService>();

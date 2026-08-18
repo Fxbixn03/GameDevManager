@@ -22,7 +22,8 @@ namespace GameDevManager.Data.Services;
 /// Benutzernamen dabei leer, damit auch dort nur diese Klasse beantwortet, wer gehandelt hat.
 /// </para>
 /// </summary>
-public sealed class ChangeLogInterceptor(IChangeAuthorProvider authors, WebhookQueue webhooks)
+public sealed class ChangeLogInterceptor(
+    IChangeAuthorProvider authors, WebhookQueue webhooks, SyncEventBroadcaster sync)
     : SaveChangesInterceptor
 {
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
@@ -66,6 +67,17 @@ public sealed class ChangeLogInterceptor(IChangeAuthorProvider authors, WebhookQ
         {
             pending.Entity.UserId = author.UserId;
             pending.Entity.UserName = author.UserName;
+
+            // Der Live-Sync bekommt auch diese Einträge: Löschungen und die Sammeleinträge
+            // von Import und Serie laufen nur hier vorbei — und gerade sie muss ein
+            // verbundener Editor erfahren (Sammeleinträge tragen ModuleKey „changelog“ und
+            // heißen für ihn: Voll-Abgleich).
+            if (sync.HasSubscribers)
+            {
+                sync.Publish(new SyncEvent(
+                    pending.Entity.GameProjectId, pending.Entity.ModuleKey, pending.Entity.EntityId,
+                    pending.Entity.EntityName, pending.Entity.Action.ToString(), pending.Entity.AtUtc));
+            }
         }
 
         // Papierkorb-Einträge nach derselben Regel: Sie entstehen in EntityCleanup, das den
@@ -100,6 +112,14 @@ public sealed class ChangeLogInterceptor(IChangeAuthorProvider authors, WebhookQ
             webhooks.Enqueue(new WebhookEvent(
                 entry!.GameProjectId, entry.ModuleKey, entry.EntityId, entry.EntityName,
                 entry.Action, entry.UserName, entry.AtUtc));
+
+            // Und dieselbe Stelle bedient den Live-Sync — reiner Arbeitsspeicher, kein HTTP.
+            if (sync.HasSubscribers)
+            {
+                sync.Publish(new SyncEvent(
+                    entry.GameProjectId, entry.ModuleKey, entry.EntityId, entry.EntityName,
+                    entry.Action.ToString(), entry.AtUtc));
+            }
         }
     }
 

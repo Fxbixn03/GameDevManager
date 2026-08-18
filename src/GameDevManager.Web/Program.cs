@@ -373,6 +373,85 @@ api.MapGet("/metrics", async (OperationsMetricsService metrics, HttpContext http
 api.MapGet("/modules", (ContentApiService content) =>
     Results.Json(new { modules = content.ModuleKeys }, ContentApiService.JsonOptions));
 
+// Der Live-Sync: Änderungsereignisse als Server-Sent Events — die Serverseite des
+// Unity-Fensters, Protokoll in knowledge/live-sync.md. SSE statt WebSocket, weil die
+// Richtung nur eine ist (das Tool meldet, der Editor lädt nach) und ein GET mit
+// API-Schlüssel durch denselben Filter läuft wie der Rest der Gruppe.
+api.MapGet("/sync/events", async (SyncEventBroadcaster sync, HttpContext http, CancellationToken ct) =>
+{
+    var key = (ApiKey)http.Items["ApiKey"]!;
+
+    http.Response.Headers.ContentType = "text/event-stream";
+    http.Response.Headers.CacheControl = "no-cache";
+
+    async Task WriteAsync(string eventName, object payload)
+    {
+        await http.Response.WriteAsync(
+            $"event: {eventName}\ndata: {System.Text.Json.JsonSerializer.Serialize(payload, ContentApiService.JsonOptions)}\n\n", ct);
+        await http.Response.Body.FlushAsync(ct);
+    }
+
+    // Das hello eröffnet jede Verbindung: Version zum Abgleich — und die Ansage, dass der
+    // Client jetzt voll abgleichen muss. Was zwischen Abbruch und Wiederverbinden geschah,
+    // hat niemand aufgehoben; die Antwort darauf ist immer der Voll-Abgleich.
+    await WriteAsync("hello", new
+    {
+        protocolVersion = SyncProtocol.Version,
+        fullSyncRequired = true,
+        serverTimeUtc = DateTime.UtcNow
+    });
+
+    var (id, reader) = sync.Subscribe();
+
+    try
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            var read = reader.ReadAsync(ct).AsTask();
+
+            // Alle 15 Sekunden ein Kommentar als Lebenszeichen — sonst trennen Proxies
+            // eine Verbindung, auf der gerade niemand etwas ändert.
+            if (await Task.WhenAny(read, Task.Delay(TimeSpan.FromSeconds(15), ct)) != read)
+            {
+                await http.Response.WriteAsync(": ping\n\n", ct);
+                await http.Response.Body.FlushAsync(ct);
+                continue;
+            }
+
+            // Gebündelt wie beim Webhook-Dispatcher, nur mit kürzerem Atemzug: Wer eine
+            // Maske speichert, erzeugt mehrere Einträge — daraus wird eine Nachricht.
+            var events = new List<SyncEvent> { await read };
+            await Task.Delay(TimeSpan.FromMilliseconds(300), ct);
+
+            while (reader.TryRead(out var more))
+            {
+                events.Add(more);
+            }
+
+            // Ein projektgebundener Schlüssel bekommt nur sein Projekt — dieselbe Grenze,
+            // die der Endpoint-Filter für den Rest der Gruppe zieht.
+            var relevant = key.GameProjectId is { } scope
+                ? events.Where(entry => entry.GameProjectId == scope).ToList()
+                : events;
+
+            if (relevant.Count > 0)
+            {
+                await WriteAsync("changes", new { protocolVersion = SyncProtocol.Version, events = relevant });
+            }
+        }
+    }
+    catch (OperationCanceledException)
+    {
+        // Der Editor hat getrennt — kein Fehler; beim Wiederverbinden gilt das hello.
+    }
+    finally
+    {
+        sync.Unsubscribe(id);
+    }
+
+    return Results.Empty;
+});
+
 api.MapGet("/projects/{projectId:guid}/modules/{moduleKey}", async (
     Guid projectId, string moduleKey, string? language, ContentApiService content, CancellationToken ct) =>
 {
