@@ -24,6 +24,21 @@
   <data name="ProjectArchiveActive" xml:space="preserve">
     <value>Das aktive Projekt kann nicht archiviert werden — vorher zu einem anderen Projekt wechseln.</value>
   </data>
+  <data name="SeriesTemplateRequired" xml:space="preserve">
+    <value>Die Serie braucht eine Namensvorlage, aus der ein Name entsteht.</value>
+  </data>
+  <data name="SeriesCountOutOfRange" xml:space="preserve">
+    <value>Die Anzahl muss zwischen 1 und {0} liegen.</value>
+  </data>
+  <data name="SeriesModuleUnknown" xml:space="preserve">
+    <value>In diesem Modul lässt sich keine Serie anlegen.</value>
+  </data>
+  <data name="SeriesTypeUnknown" xml:space="preserve">
+    <value>Die gewählte Art gehört nicht zu diesem Modul.</value>
+  </data>
+  <data name="ChangeLog_SeriesCreated" xml:space="preserve">
+    <value>Serie angelegt: {0} Entwürfe in „{1}“ („{2}“ bis „{3}“).</value>
+  </data>
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>Das Pflichtfeld „{0}“ ist nicht gefüllt.</value>
   </data>

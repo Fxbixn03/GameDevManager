@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Create series – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Many drafts at once: type, count and a name template — that is all it takes.</value>
+  </data>
+  <data name="ToBulkEdit" xml:space="preserve">
+    <value>To bulk editing</value>
+  </data>
+  <data name="ReadOnly" xml:space="preserve">
+    <value>This account is read-only — creating is locked.</value>
+  </data>
+  <data name="SettingsHeading" xml:space="preserve">
+    <value>Series</value>
+  </data>
+  <data name="ModuleLabel" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Type (optional)</value>
+  </data>
+  <data name="TemplateLabel" xml:space="preserve">
+    <value>Name template</value>
+  </data>
+  <data name="TemplateHint" xml:space="preserve">
+    <value>Placeholders: {n} for the number, {n:001} with leading zeros, {roemisch} for Roman numerals, {liste:Iron|Steel|Silver} for word lists. Without a placeholder, {n} is appended.</value>
+  </data>
+  <data name="CountLabel" xml:space="preserve">
+    <value>Count</value>
+  </data>
+  <data name="CreateButton" xml:space="preserve">
+    <value>Create {0} drafts</value>
+  </data>
+  <data name="PreviewHeading" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="PreviewHint" xml:space="preserve">
+    <value>These names will be created — as drafts with the chosen type. The run is a single collective entry in the change log.</value>
+  </data>
+  <data name="PreviewEmpty" xml:space="preserve">
+    <value>Fill in the template first — the preview updates live.</value>
+  </data>
+  <data name="PreviewSkipped" xml:space="preserve">
+    <value>… {0} more …</value>
+  </data>
+  <data name="CreatedMessage" xml:space="preserve">
+    <value>Created {0} drafts in “{1}”.</value>
+  </data>
+</root>

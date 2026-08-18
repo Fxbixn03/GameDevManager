@@ -143,6 +143,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<SearchService>();
         services.AddScoped<CurveService>();
         services.AddScoped<BulkEditService>();
+        services.AddScoped<SeriesService>();
         services.AddScoped<SavedViewService>();
         services.AddScoped<ContentRuleService>();
         services.AddScoped<WebhookService>();

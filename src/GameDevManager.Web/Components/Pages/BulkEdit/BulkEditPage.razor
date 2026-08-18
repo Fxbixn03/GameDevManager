@@ -20,7 +20,16 @@
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
-<ModuleHeader Module="Module" Subtitle="@Subtitle" />
+<ModuleHeader Module="Module" Subtitle="@Subtitle">
+    <Actions>
+        @* Viele Entwürfe auf einmal anlegen — das Gegenstück zum Ändern vieler auf einmal. *@
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.DynamicFeed"
+                   Href="/modules/bulkedit/serie">
+            @L["ToSeries"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
 
 <MudPaper Elevation="0" Class="gdm-panel pa-4 mb-4">
     <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">

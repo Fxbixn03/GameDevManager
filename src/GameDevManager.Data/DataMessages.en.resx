@@ -70,6 +70,21 @@
   <data name="ProjectArchiveActive" xml:space="preserve">
     <value>The active project cannot be archived — switch to another project first.</value>
   </data>
+  <data name="SeriesTemplateRequired" xml:space="preserve">
+    <value>The series needs a name template that produces a name.</value>
+  </data>
+  <data name="SeriesCountOutOfRange" xml:space="preserve">
+    <value>The count has to be between 1 and {0}.</value>
+  </data>
+  <data name="SeriesModuleUnknown" xml:space="preserve">
+    <value>A series cannot be created in this module.</value>
+  </data>
+  <data name="SeriesTypeUnknown" xml:space="preserve">
+    <value>The chosen type does not belong to this module.</value>
+  </data>
+  <data name="ChangeLog_SeriesCreated" xml:space="preserve">
+    <value>Series created: {0} drafts in “{1}” (“{2}” to “{3}”).</value>
+  </data>
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>The required field “{0}” is empty.</value>
   </data>

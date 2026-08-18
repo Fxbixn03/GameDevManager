@@ -1,0 +1,214 @@
+@page "/modules/bulkedit/serie"
+@inject SeriesService Series
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject ModuleLabels Modules
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<SeriesPage> L
+
+@*
+    Die Serien-Anlage: „Lege 20 Eisenwaffen an“ ohne 20 Masken. Art, Anzahl und eine
+    Namensvorlage — daraus entstehen Entwürfe, die Massenbearbeitung und gespeicherte
+    Ansichten sofort greifen. Die Vorschau zeigt vor dem Anlegen, welche Namen entstehen;
+    die Vorlagen-Syntax rechnet NameTemplate in der Domäne, damit sie sich prüfen lässt.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@L["Subtitle"]">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Checklist"
+                   Href="/modules/bulkedit">
+            @L["ToBulkEdit"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (!_permissions.CanWrite)
+{
+    <MudAlert Severity="Severity.Info" Class="mb-4">@L["ReadOnly"]</MudAlert>
+}
+
+<MudGrid Spacing="3">
+    <MudItem xs="12" md="6">
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SettingsHeading"]</MudText>
+
+            <MudSelect T="string"
+                       Value="_moduleKey"
+                       ValueChanged="SelectModuleAsync"
+                       Label="@L["ModuleLabel"]"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Class="mt-3">
+                @foreach (var module in AvailableModules)
+                {
+                    <MudSelectItem T="string" Value="@module.Id">@Modules.Name(module)</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="Guid?"
+                       @bind-Value="_typeId"
+                       Label="@L["TypeLabel"]"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Clearable="true"
+                       Disabled="@(_moduleKey is null)"
+                       Class="mt-3">
+                @foreach (var type in _types)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)type.Id)">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudTextField @bind-Value="_template"
+                          Label="@L["TemplateLabel"]"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          HelperText="@L["TemplateHint"]"
+                          Class="mt-3" />
+
+            <MudNumericField @bind-Value="_count"
+                             Label="@L["CountLabel"]"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Min="1"
+                             Max="@SeriesService.MaxCount"
+                             Class="mt-3" />
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.DynamicFeed"
+                       Disabled="@CannotCreate"
+                       OnClick="CreateAsync"
+                       Class="mt-4">
+                @L["CreateButton", _count]
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudText Typo="Typo.overline" Color="Color.Secondary">@L["PreviewHeading"]</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-2">
+                @L["PreviewHint"]
+            </MudText>
+
+            @if (Preview.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@L["PreviewEmpty"]</MudText>
+            }
+            else
+            {
+                @* Die ersten und die letzten Namen — dazwischen wird ausgelassen: Bei 200
+                   Zeilen interessiert genau, wo die Serie beginnt und wo sie endet. *@
+                @foreach (var name in Preview.Take(HeadCount))
+                {
+                    <MudText Typo="Typo.body2" Class="py-1">@name</MudText>
+                }
+
+                @if (Preview.Count > HeadCount + TailCount)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="py-1">
+                        @L["PreviewSkipped", Preview.Count - HeadCount - TailCount]
+                    </MudText>
+                }
+
+                @if (Preview.Count > HeadCount)
+                {
+                    @foreach (var name in Preview.TakeLast(Math.Min(TailCount, Preview.Count - HeadCount)))
+                    {
+                        <MudText Typo="Typo.body2" Class="py-1">@name</MudText>
+                    }
+                }
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.BulkEdit);
+
+    /// <summary>Wie viele Namen die Vorschau vorn und hinten zeigt.</summary>
+    private const int HeadCount = 5;
+    private const int TailCount = 2;
+
+    private UserPermissions _permissions = UserPermissions.Full;
+
+    private string? _moduleKey;
+    private List<ContentType> _types = [];
+    private Guid? _typeId;
+    private string _template = string.Empty;
+    private int _count = 10;
+    private bool _working;
+
+    /// <summary>Dieselbe Modulliste wie in der Massenbearbeitung — Werkzeug-Module tragen keinen Inhalt.</summary>
+    private List<ModuleDefinition> AvailableModules =>
+    [
+        .. ModuleRegistry.All
+            .Where(module => module.Implemented
+                && module.Group != ModuleGroup.Tools
+                && _permissions.CanAccessModule(module.Id))
+    ];
+
+    /// <summary>
+    /// Die Namen, die entstehen würden — über dieselbe Strecke wie das Anlegen
+    /// (<see cref="SeriesService.EnsureNumbering"/>), damit die Vorschau nie lügt.
+    /// </summary>
+    private List<string> Preview =>
+        string.IsNullOrWhiteSpace(_template) || _count < 1
+            ? []
+            : NameTemplate.Expand(SeriesService.EnsureNumbering(_template.Trim(), _count), Math.Min(_count, SeriesService.MaxCount));
+
+    private bool CannotCreate =>
+        _working
+        || !_permissions.CanWrite
+        || _moduleKey is null
+        || string.IsNullOrWhiteSpace(_template)
+        || _count < 1
+        || _count > SeriesService.MaxCount;
+
+    protected override async Task OnInitializedAsync() =>
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+
+    private async Task SelectModuleAsync(string? moduleKey)
+    {
+        _moduleKey = moduleKey;
+        _typeId = null;
+        _types = [];
+
+        if (moduleKey is not null)
+        {
+            _types = await ContentTypes.GetTypesAsync(await Project.GetCurrentIdAsync(), moduleKey);
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        if (_moduleKey is null)
+        {
+            return;
+        }
+
+        _working = true;
+
+        try
+        {
+            var created = await Series.CreateAsync(
+                await Project.GetCurrentIdAsync(), _moduleKey, _typeId, _template, _count);
+
+            Snackbar.Add(L["CreatedMessage", created.Count, Modules.NameOrKey(_moduleKey)], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+}
