@@ -48,5 +48,8 @@
   <data name="ToState" xml:space="preserve">
     <value>Zustands-Sicht</value>
   </data>
+  <data name="ToSimulation" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
 </root>
 

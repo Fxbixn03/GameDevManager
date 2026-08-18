@@ -45,6 +45,9 @@
   <data name="InheritedHint" xml:space="preserve">
     <value>The level sits on a prerequisite, not on this entry itself.</value>
   </data>
+  <data name="ToSimulation" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
   <data name="ToState" xml:space="preserve">
     <value>State view</value>
   </data>

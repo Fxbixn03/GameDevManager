@@ -163,4 +163,54 @@ public class ProgressionService(
 
         return level;
     }
+
+    // -------------------------------------------------------------------- XP-Quellen
+
+    /// <summary>
+    /// Summe, Anzahl und Durchschnitt eines Zahlenfelds über die Entitäten eines Moduls —
+    /// die XP-Quellen der Progressions-Simulation: Quests summieren (einmaliges XP), Mobs
+    /// mitteln (wiederholbares XP je Kill). Der Weg geht über die Entitäten des Moduls,
+    /// weil Feldwerte keine Projekt-Spalte tragen — dieselbe Überlegung wie überall.
+    /// </summary>
+    public async Task<XpSourceSummary> SumXpFieldAsync(
+        Guid projectId, string moduleKey, Guid fieldId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        // Beide XP-Module haben eigene Tabellen — abgefragt wird gezielt statt über die
+        // Modul-Quellen: Es geht nur um GUIDs, nicht um Suchtreffer.
+        List<Guid> entityIds = moduleKey switch
+        {
+            Domain.ModuleKeys.Quests => await db.Quests
+                .Where(quest => quest.GameProjectId == projectId)
+                .Select(quest => quest.Id)
+                .ToListAsync(ct),
+            Domain.ModuleKeys.Npcs => await db.Npcs
+                .Where(npc => npc.GameProjectId == projectId)
+                .Select(npc => npc.Id)
+                .ToListAsync(ct),
+            _ => []
+        };
+
+        if (entityIds.Count == 0)
+        {
+            return new XpSourceSummary(0, 0, 0);
+        }
+
+        var values = await db.FieldValues
+            .AsNoTracking()
+            .Where(value => value.FieldDefinitionId == fieldId
+                && value.NumberValue != null
+                && entityIds.Contains(value.OwnerEntityId))
+            .Select(value => value.NumberValue!.Value)
+            .ToListAsync(ct);
+
+        return new XpSourceSummary(
+            values.Sum(),
+            values.Count,
+            values.Count > 0 ? values.Average() : 0);
+    }
 }
+
+/// <summary>Ein XP-Feld, über den Bestand gerechnet: Summe (Quests), Durchschnitt (Mobs).</summary>
+public sealed record XpSourceSummary(double Sum, int Count, double Average);

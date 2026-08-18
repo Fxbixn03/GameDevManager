@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Progressions-Simulation – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Wie lange braucht ein Spieler bis Stufe X? Stufen-Kurve, Quest-XP und eine Grind-Rate ergeben die Zeitachse.</value>
+  </data>
+  <data name="ToProgression" xml:space="preserve">
+    <value>Zur Fortschritts-Sicht</value>
+  </data>
+  <data name="SourcesHeading" xml:space="preserve">
+    <value>Quellen</value>
+  </data>
+  <data name="NoCurves" xml:space="preserve">
+    <value>Noch kein gefülltes Kurvenfeld im Projekt — die Stufen-Kurve ist ein Feld vom Typ „Formel/Kurve“, etwa an einem Skilltree oder einer Klasse.</value>
+  </data>
+  <data name="CurveLabel" xml:space="preserve">
+    <value>Stufen-Kurve</value>
+  </data>
+  <data name="CurveHint" xml:space="preserve">
+    <value>Der Wert der Kurve an x ist das XP für den Schritt von Stufe x auf x+1.</value>
+  </data>
+  <data name="QuestFieldLabel" xml:space="preserve">
+    <value>XP-Feld der Quests (optional)</value>
+  </data>
+  <data name="QuestFieldHint" xml:space="preserve">
+    <value>Wird über alle Quests summiert — einmaliges XP, das die ersten Stufen trägt.</value>
+  </data>
+  <data name="MobFieldLabel" xml:space="preserve">
+    <value>XP-Feld der NPCs/Mobs (optional)</value>
+  </data>
+  <data name="MobFieldHint" xml:space="preserve">
+    <value>Wird gemittelt — XP je Kill, mal Kills je Stunde ergibt die Grind-Rate.</value>
+  </data>
+  <data name="KillsPerHourLabel" xml:space="preserve">
+    <value>Kills je Stunde</value>
+  </data>
+  <data name="RunButton" xml:space="preserve">
+    <value>Zeitachse rechnen</value>
+  </data>
+  <data name="TimelineHeading" xml:space="preserve">
+    <value>Zeitachse</value>
+  </data>
+  <data name="TimelineEmpty" xml:space="preserve">
+    <value>Links die Quellen wählen, dann rechnet die Simulation.</value>
+  </data>
+  <data name="CurveEmpty" xml:space="preserve">
+    <value>Die gewählte Kurve gibt in ihrer Spanne keine positiven Werte her — als Stufen-Kurve trägt sie so nichts.</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>Quest-Topf: {0} XP · Grind-Rate: {1} XP je Stunde</value>
+  </data>
+  <data name="NoRateHint" xml:space="preserve">
+    <value>Ohne Mob-XP-Feld gibt es keine Rate — die Zeitspalte bleibt leer, die XP-Spalten stehen trotzdem.</value>
+  </data>
+  <data name="ColumnLevel" xml:space="preserve">
+    <value>Stufe</value>
+  </data>
+  <data name="ColumnStepXp" xml:space="preserve">
+    <value>XP für den Schritt</value>
+  </data>
+  <data name="ColumnGrind" xml:space="preserve">
+    <value>davon Grind</value>
+  </data>
+  <data name="ColumnHours" xml:space="preserve">
+    <value>Stunden</value>
+  </data>
+  <data name="Bottleneck" xml:space="preserve">
+    <value>Engpass</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Bis Stufe {0}: rund {1} Stunden Grind.</value>
+  </data>
+</root>

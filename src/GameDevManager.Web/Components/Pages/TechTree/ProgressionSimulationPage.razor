@@ -1,0 +1,242 @@
+@page "/modules/techtree/simulation"
+@inject ProgressionService Progression
+@inject CurveService Curves
+@inject ContentTypeService ContentTypes
+@inject ProjectContext Project
+@inject IStringLocalizer<ProgressionSimulationPage> L
+
+@*
+    Die Progressions-Simulation: Die Fortschritts-Sicht sagt, ab welcher Stufe etwas kommt —
+    hier steht, wie lange der Weg dorthin dauert. Rein lesende Auswertung, kein eigener
+    Datenbestand: Die Stufen-Kurve ist ein Kurvenfeld des Projekts (ihr Wert an x ist das XP
+    für den Schritt von x auf x+1), das Quest-XP die Summe eines Zahlenfelds der Quests, die
+    Rate kommt aus einem Mob-XP-Feld mal Kills je Stunde. Was welches Feld bedeutet, wählt
+    der Nutzer — wie beim Kampf-Simulator werden keine Feldnamen verdrahtet.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@L["Subtitle"]">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Timeline"
+                   Href="/modules/techtree/fortschritt">
+            @L["ToProgression"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_curves is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid Spacing="3">
+        @* ------------------------------------------------------------ Die Quellen *@
+        <MudItem xs="12" md="5">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["SourcesHeading"]</MudText>
+
+                @if (_curves.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">@L["NoCurves"]</MudText>
+                }
+                else
+                {
+                    <MudSelect T="CurveReference"
+                               @bind-Value="_curve"
+                               Label="@L["CurveLabel"]"
+                               HelperText="@L["CurveHint"]"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Class="mt-2">
+                        @foreach (var curve in _curves)
+                        {
+                            <MudSelectItem T="CurveReference" Value="@curve">
+                                @($"{curve.OwnerName} — {curve.FieldName}")
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudSelect T="Guid?"
+                               @bind-Value="_questFieldId"
+                               Label="@L["QuestFieldLabel"]"
+                               HelperText="@L["QuestFieldHint"]"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Clearable="true"
+                               Class="mt-3">
+                        @foreach (var field in _questFields)
+                        {
+                            <MudSelectItem T="Guid?" Value="@((Guid?)field.Id)">@field.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudSelect T="Guid?"
+                               @bind-Value="_mobFieldId"
+                               Label="@L["MobFieldLabel"]"
+                               HelperText="@L["MobFieldHint"]"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Clearable="true"
+                               Class="mt-3">
+                        @foreach (var field in _mobFields)
+                        {
+                            <MudSelectItem T="Guid?" Value="@((Guid?)field.Id)">@field.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudNumericField @bind-Value="_killsPerHour"
+                                     Label="@L["KillsPerHourLabel"]"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Min="0"
+                                     Class="mt-3" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.PlayArrow"
+                               Disabled="@(_curve is null)"
+                               OnClick="RunAsync"
+                               Class="mt-4">
+                        @L["RunButton"]
+                    </MudButton>
+                }
+            </MudPaper>
+        </MudItem>
+
+        @* ----------------------------------------------------------- Die Zeitachse *@
+        <MudItem xs="12" md="7">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["TimelineHeading"]</MudText>
+
+                @if (_steps is null)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">@L["TimelineEmpty"]</MudText>
+                }
+                else if (_steps.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">@L["CurveEmpty"]</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1 mb-2">
+                        @L["Summary", _questXp.ToString("0.#"), _xpPerHour.ToString("0.#")]
+                    </MudText>
+
+                    @if (_xpPerHour <= 0)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
+                            @L["NoRateHint"]
+                        </MudText>
+                    }
+
+                    <MudSimpleTable Dense="true" Elevation="0" Style="overflow-x:auto;">
+                        <thead>
+                            <tr>
+                                <th>@L["ColumnLevel"]</th>
+                                <th>@L["ColumnStepXp"]</th>
+                                <th>@L["ColumnGrind"]</th>
+                                <th>@L["ColumnHours"]</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var step in _steps)
+                            {
+                                <tr>
+                                    <td class="gdm-mono">@step.Level → @(step.Level + 1)</td>
+                                    <td class="gdm-mono">@step.StepXp.ToString("0.#")</td>
+                                    <td class="gdm-mono">@step.GrindXp.ToString("0.#")</td>
+                                    <td class="gdm-mono">@(step.Hours is { } hours ? hours.ToString("0.##") : "—")</td>
+                                    <td>
+                                        @if (step.IsBottleneck)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Text">
+                                                @L["Bottleneck"]
+                                            </MudChip>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+
+                    @if (TotalHours is { } total)
+                    {
+                        <MudText Typo="Typo.body2" Class="gdm-mono mt-2">
+                            @L["Total", _steps[^1].Level + 1, total.ToString("0.#")]
+                        </MudText>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.TechTree);
+
+    private List<CurveReference>? _curves;
+    private List<FieldDefinition> _questFields = [];
+    private List<FieldDefinition> _mobFields = [];
+
+    private CurveReference? _curve;
+    private Guid? _questFieldId;
+    private Guid? _mobFieldId;
+    private double _killsPerHour = 30;
+
+    private List<ProgressionStep>? _steps;
+    private double _questXp;
+    private double _xpPerHour;
+
+    private double? TotalHours =>
+        _steps is { Count: > 0 } && _steps.All(step => step.Hours is not null)
+            ? _steps.Sum(step => step.Hours!.Value)
+            : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projectId = await Project.GetCurrentIdAsync();
+
+        _curves = await Curves.GetCurvesAsync(projectId);
+        _questFields = await NumberFieldsAsync(projectId, ModuleKeys.Quests);
+        _mobFields = await NumberFieldsAsync(projectId, ModuleKeys.Npcs);
+    }
+
+    /// <summary>Die Zahlenfelder eines Moduls — eigene und geerbte, ohne Dubletten.</summary>
+    private async Task<List<FieldDefinition>> NumberFieldsAsync(Guid projectId, string moduleKey) =>
+    [
+        .. (await ContentTypes.GetTypesAsync(projectId, moduleKey))
+            .SelectMany(type => type.Fields.Concat(type.InheritedFields))
+            .Where(field => field.Type is ContentFieldType.Integer or ContentFieldType.Decimal)
+            .GroupBy(field => field.Id)
+            .Select(group => group.First())
+            .OrderBy(field => field.Name, StringComparer.CurrentCultureIgnoreCase)
+    ];
+
+    private async Task RunAsync()
+    {
+        if (_curve is null || CurveDefinition.Parse(_curve.Stored) is not { } curve)
+        {
+            _steps = [];
+            return;
+        }
+
+        var projectId = await Project.GetCurrentIdAsync();
+
+        // Quests summieren (einmaliges XP), Mobs mitteln (XP je Kill) — mal Kills je Stunde
+        // wird daraus die Rate.
+        _questXp = _questFieldId is { } questField
+            ? (await Progression.SumXpFieldAsync(projectId, ModuleKeys.Quests, questField)).Sum
+            : 0;
+
+        var mobXp = _mobFieldId is { } mobField
+            ? (await Progression.SumXpFieldAsync(projectId, ModuleKeys.Npcs, mobField)).Average
+            : 0;
+
+        _xpPerHour = mobXp * Math.Max(0, _killsPerHour);
+        _steps = ProgressionSimulation.Run(curve, _questXp, _xpPerHour);
+    }
+}

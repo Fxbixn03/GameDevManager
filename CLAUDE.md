@@ -359,6 +359,8 @@ Eine eigene Tabelle hätte dieselbe Aussage ein zweites Mal gespeichert und wär
 
 Bedingungen ohne Zielentität („Spieler hat Stufe 20“) sind Voraussetzungen, aber keine Knoten — sie bleiben draußen. Ein Ziel, das es nicht mehr gibt, fällt samt seiner Kante heraus; dass es fehlt, meldet der Health Check „unerfüllbare Bedingungen“.
 
+**Die Progressions-Simulation** (`ProgressionSimulation` — reine Rechenklasse wie der Kampf-Simulator, Seite `/modules/techtree/simulation`, verlinkt aus der Fortschritts-Sicht) ergänzt die Zeitachse: Wie lange dauert der Weg bis Stufe X? Kein eigener Datenbestand — die **Stufen-Kurve** ist ein Kurvenfeld des Projekts (Wert an `x` = XP für den Schritt `x`→`x+1`, gewählt über die Kurven-Sammlung des Vergleichs), der **Quest-Topf** die Summe eines XP-Zahlenfelds über alle Quests (einmaliges XP, das die ersten Stufen trägt), die **Rate** der Durchschnitt eines Mob-XP-Felds mal Kills je Stunde (`ProgressionService.SumXpFieldAsync` — Quests summiert, Mobs gemittelt; welche Felder das sind, wählt der Nutzer wie beim Kampf-Simulator). **Engpässe** sind Schritte über dem Doppelten des **Medians** (nicht des Mittelwerts — eine steile Endkurve verschöbe sonst die Grenze); ohne Rate bleibt die Zeitspalte leer statt zu raten, Formel-Löcher fallen aus der Achse statt sie zu verwerfen.
+
 ### Formeln und Levelkurven
 
 `ContentFieldType.Curve` ist ein Feld wie jedes andere — der Wert steht als JSON in `FieldValue.TextValue`. Bewusst keine eigene Tabelle: Feldwerte hängen modulübergreifend an einer GUID, und so geht eine Kurve ohne Zutun durch Export, Import, Duplizieren und die Feldvererbung der Unterarten. Nutzbar ist der Typ überall; gedacht ist er für Spieler, Klassen und Effekte.

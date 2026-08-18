@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Progression simulation – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>How long does a player take to reach level X? Level curve, quest XP and a grind rate make the timeline.</value>
+  </data>
+  <data name="ToProgression" xml:space="preserve">
+    <value>To the progression view</value>
+  </data>
+  <data name="SourcesHeading" xml:space="preserve">
+    <value>Sources</value>
+  </data>
+  <data name="NoCurves" xml:space="preserve">
+    <value>No filled curve field in the project yet — the level curve is a field of type “formula/curve”, for example on a skill tree or a class.</value>
+  </data>
+  <data name="CurveLabel" xml:space="preserve">
+    <value>Level curve</value>
+  </data>
+  <data name="CurveHint" xml:space="preserve">
+    <value>The curve value at x is the XP for the step from level x to x+1.</value>
+  </data>
+  <data name="QuestFieldLabel" xml:space="preserve">
+    <value>XP field of the quests (optional)</value>
+  </data>
+  <data name="QuestFieldHint" xml:space="preserve">
+    <value>Summed over all quests — one-time XP that carries the first levels.</value>
+  </data>
+  <data name="MobFieldLabel" xml:space="preserve">
+    <value>XP field of the NPCs/mobs (optional)</value>
+  </data>
+  <data name="MobFieldHint" xml:space="preserve">
+    <value>Averaged — XP per kill, times kills per hour makes the grind rate.</value>
+  </data>
+  <data name="KillsPerHourLabel" xml:space="preserve">
+    <value>Kills per hour</value>
+  </data>
+  <data name="RunButton" xml:space="preserve">
+    <value>Compute timeline</value>
+  </data>
+  <data name="TimelineHeading" xml:space="preserve">
+    <value>Timeline</value>
+  </data>
+  <data name="TimelineEmpty" xml:space="preserve">
+    <value>Choose the sources on the left, then the simulation runs.</value>
+  </data>
+  <data name="CurveEmpty" xml:space="preserve">
+    <value>The chosen curve yields no positive values in its range — as a level curve it carries nothing.</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>Quest pool: {0} XP · grind rate: {1} XP per hour</value>
+  </data>
+  <data name="NoRateHint" xml:space="preserve">
+    <value>Without a mob XP field there is no rate — the time column stays empty, the XP columns still show.</value>
+  </data>
+  <data name="ColumnLevel" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="ColumnStepXp" xml:space="preserve">
+    <value>XP for the step</value>
+  </data>
+  <data name="ColumnGrind" xml:space="preserve">
+    <value>of which grind</value>
+  </data>
+  <data name="ColumnHours" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="Bottleneck" xml:space="preserve">
+    <value>Bottleneck</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>To level {0}: about {1} hours of grinding.</value>
+  </data>
+</root>
