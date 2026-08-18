@@ -78,6 +78,18 @@
   <data name="Mail_ReviewRejected" xml:space="preserve">
     <value>Deine Abnahme wurde abgelehnt — von {0}: {1}</value>
   </data>
+  <data name="TranslateQuotaExceeded" xml:space="preserve">
+    <value>Das Kontingent des Übersetzungsanbieters ist aufgebraucht — mehr gibt es erst im nächsten Abrechnungszeitraum oder mit einem größeren Tarif.</value>
+  </data>
+  <data name="TranslateKeyRejected" xml:space="preserve">
+    <value>Der Übersetzungsanbieter lehnt den API-Schlüssel ab — in den Einstellungen (appsettings.Local.json) prüfen.</value>
+  </data>
+  <data name="TranslateProviderError" xml:space="preserve">
+    <value>Der Übersetzungsanbieter meldet einen Fehler (HTTP {0}).</value>
+  </data>
+  <data name="TranslateProviderUnreachable" xml:space="preserve">
+    <value>Der Übersetzungsanbieter ist nicht erreichbar: {0}</value>
+  </data>
   <data name="RecordingScriptTitle" xml:space="preserve">
     <value>Aufnahmeliste „{0}“ — {1}</value>
   </data>

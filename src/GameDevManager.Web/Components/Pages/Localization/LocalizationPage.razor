@@ -1,5 +1,6 @@
 @page "/modules/localization"
 @inject LocalizationService Localization
+@inject ITranslationSuggester Suggester
 @inject ProjectContext Project
 @inject ModuleLabels Modules
 @inject IUserPermissionsProvider PermissionsProvider
@@ -294,13 +295,55 @@ else
                                         }
                                     </td>
                                     <td>
-                                        <MudTextField T="string"
-                                                      Value="@row.Text"
-                                                      ValueChanged="@((string? text) => SaveRowAsync(row, text))"
-                                                      Variant="Variant.Outlined"
-                                                      Margin="Margin.Dense"
-                                                      Disabled="@(!_permissions.CanWrite)"
-                                                      Placeholder="@L["TranslationPlaceholder"]" />
+                                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                            <MudTextField T="string"
+                                                          Value="@row.Text"
+                                                          ValueChanged="@((string? text) => SaveRowAsync(row, text))"
+                                                          Variant="Variant.Outlined"
+                                                          Margin="Margin.Dense"
+                                                          Disabled="@(!_permissions.CanWrite)"
+                                                          Placeholder="@L["TranslationPlaceholder"]"
+                                                          Style="flex:1;" />
+
+                                            @* Der Vorschlags-Knopf steht nur mit eingerichtetem
+                                               Anbieter da — ein Knopf, der in eine Fehlermeldung
+                                               führt, ist schlechter als keiner. *@
+                                            @if (Suggester.IsConfigured && _permissions.CanWrite)
+                                            {
+                                                <MudTooltip Text="@L["SuggestTooltip", Suggester.ProviderName]">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.AutoAwesome"
+                                                                   Size="Size.Small"
+                                                                   Disabled="@_suggesting.Contains(RowKey(row))"
+                                                                   aria-label="@L["SuggestAria"]"
+                                                                   OnClick="@(() => SuggestAsync(row))" />
+                                                </MudTooltip>
+                                            }
+                                        </MudStack>
+
+                                        @* Ein Vorschlag ist ein Vorschlag: Er steht daneben, bis
+                                           ihn ein Klick übernimmt — gespeichert wird dabei über
+                                           dieselbe Je-Zelle-Speicherung wie beim Tippen. *@
+                                        @if (_suggestions.TryGetValue(RowKey(row), out var suggestion))
+                                        {
+                                            <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Class="mt-1">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary" Style="flex:1;">
+                                                    @suggestion
+                                                </MudText>
+                                                <MudTooltip Text="@L["AcceptSuggestion"]">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Check"
+                                                                   Size="Size.Small"
+                                                                   Color="Color.Success"
+                                                                   aria-label="@L["AcceptSuggestion"]"
+                                                                   OnClick="@(() => AcceptSuggestionAsync(row, suggestion))" />
+                                                </MudTooltip>
+                                                <MudTooltip Text="@L["DismissSuggestion"]">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                                   Size="Size.Small"
+                                                                   aria-label="@L["DismissSuggestion"]"
+                                                                   OnClick="@(() => _suggestions.Remove(RowKey(row)))" />
+                                                </MudTooltip>
+                                            </MudStack>
+                                        }
                                     </td>
                                 </tr>
                             }
@@ -482,6 +525,45 @@ else
     /// Gespeichert wird je Zelle, nicht über einen Speichern-Knopf: Eine Übersetzungssitzung
     /// geht über hunderte Zeilen, und ein vergessener Klick verlöre sie alle.
     /// </summary>
+    // ------------------------------------------------------------------- Vorschläge
+
+    private readonly Dictionary<(Guid, string), string> _suggestions = [];
+    private readonly HashSet<(Guid, string)> _suggesting = [];
+
+    private static (Guid, string) RowKey(TranslationRow row) => (row.OwnerEntityId, row.Slot);
+
+    private async Task SuggestAsync(TranslationRow row)
+    {
+        var key = RowKey(row);
+        _suggesting.Add(key);
+
+        try
+        {
+            var source = _languages?.FirstOrDefault(language => language.IsSource)?.Code;
+            var suggestion = await Suggester.SuggestAsync(row.SourceText, source, _languageCode!);
+
+            if (!string.IsNullOrWhiteSpace(suggestion))
+            {
+                _suggestions[key] = suggestion;
+            }
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _suggesting.Remove(key);
+        }
+    }
+
+    /// <summary>Übernimmt den Vorschlag — über dieselbe Je-Zelle-Speicherung wie beim Tippen.</summary>
+    private async Task AcceptSuggestionAsync(TranslationRow row, string suggestion)
+    {
+        _suggestions.Remove(RowKey(row));
+        await SaveRowAsync(row, suggestion);
+    }
+
     private async Task SaveRowAsync(TranslationRow row, string? text)
     {
         try

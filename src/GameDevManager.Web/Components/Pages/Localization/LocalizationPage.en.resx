@@ -150,6 +150,18 @@
   <data name="StaleHint" xml:space="preserve">
     <value>Translated from: {0}</value>
   </data>
+  <data name="SuggestTooltip" xml:space="preserve">
+    <value>Get suggestion ({0})</value>
+  </data>
+  <data name="SuggestAria" xml:space="preserve">
+    <value>Get translation suggestion</value>
+  </data>
+  <data name="AcceptSuggestion" xml:space="preserve">
+    <value>Accept suggestion</value>
+  </data>
+  <data name="DismissSuggestion" xml:space="preserve">
+    <value>Dismiss suggestion</value>
+  </data>
   <data name="TranslationPlaceholder" xml:space="preserve">
     <value>not translated yet</value>
   </data>

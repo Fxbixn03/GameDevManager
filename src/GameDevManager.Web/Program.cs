@@ -145,6 +145,12 @@ builder.Services.Replace(ServiceDescriptor.Singleton<IPasswordPolicyProvider>(
 // No-Op), verschickt wird hier — und ohne „Mail:Host“ bleibt auch diese Fassung still.
 builder.Services.Replace(ServiceDescriptor.Singleton<IMailSender, SmtpMailSender>());
 
+// Und für die Übersetzungsvorschläge: DeepL als erster Anbieter. Der Schlüssel gehört in
+// die appsettings.Local.json; ohne ihn zeigt das Raster den Vorschlags-Knopf nicht.
+builder.Services.AddSingleton(
+    builder.Configuration.GetSection(DeepLOptions.SectionName).Get<DeepLOptions>() ?? new DeepLOptions());
+builder.Services.Replace(ServiceDescriptor.Singleton<ITranslationSuggester, DeepLTranslationSuggester>());
+
 // Kürzt das Änderungsprotokoll auf die eingestellte Aufbewahrung. Läuft nach dem Start —
 // Hintergrunddienste beginnen erst mit app.Run(), also nach den Migrationen weiter unten.
 builder.Services.AddHostedService<ChangeLogMaintenance>();

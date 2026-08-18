@@ -199,4 +199,16 @@
   <data name="TranslationPlaceholder" xml:space="preserve">
     <value>noch nicht übersetzt</value>
   </data>
+  <data name="SuggestTooltip" xml:space="preserve">
+    <value>Vorschlag holen ({0})</value>
+  </data>
+  <data name="SuggestAria" xml:space="preserve">
+    <value>Übersetzungsvorschlag holen</value>
+  </data>
+  <data name="AcceptSuggestion" xml:space="preserve">
+    <value>Vorschlag übernehmen</value>
+  </data>
+  <data name="DismissSuggestion" xml:space="preserve">
+    <value>Vorschlag verwerfen</value>
+  </data>
 </root>

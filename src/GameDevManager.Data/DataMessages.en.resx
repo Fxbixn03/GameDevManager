@@ -124,6 +124,18 @@
   <data name="Mail_ReviewRejected" xml:space="preserve">
     <value>Your review request was rejected — by {0}: {1}</value>
   </data>
+  <data name="TranslateQuotaExceeded" xml:space="preserve">
+    <value>The translation provider’s quota is used up — more comes with the next billing period or a bigger plan.</value>
+  </data>
+  <data name="TranslateKeyRejected" xml:space="preserve">
+    <value>The translation provider rejects the API key — check the settings (appsettings.Local.json).</value>
+  </data>
+  <data name="TranslateProviderError" xml:space="preserve">
+    <value>The translation provider reports an error (HTTP {0}).</value>
+  </data>
+  <data name="TranslateProviderUnreachable" xml:space="preserve">
+    <value>The translation provider is unreachable: {0}</value>
+  </data>
   <data name="RecordingScriptTitle" xml:space="preserve">
     <value>Recording list “{0}” — {1}</value>
   </data>
