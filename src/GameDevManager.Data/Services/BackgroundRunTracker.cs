@@ -30,6 +30,7 @@ public sealed class BackgroundRunTracker
     public const string ChangeLogMaintenance = "changelog_maintenance";
     public const string ScheduledSnapshots = "scheduled_snapshots";
     public const string WebhookDispatcher = "webhook_dispatcher";
+    public const string MailDigest = "mail_digest";
 
     public void Record(string service, TimeSpan duration, bool success)
     {

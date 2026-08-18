@@ -154,6 +154,10 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(320)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ExternalId")
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
@@ -169,6 +173,15 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
 
                     b.Property<DateTime?>("LastLoginAtUtc")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("NotifyOnAssignment")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("NotifyOnComment")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("NotifyOnReview")
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("OverridesRole")
                         .HasColumnType("INTEGER");
@@ -2019,6 +2032,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("AssignedAtUtc")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid?>("AssignedUserId")
                         .HasColumnType("TEXT");
 
@@ -2802,6 +2818,9 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("RequestedBy")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("RequestedById")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

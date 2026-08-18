@@ -153,6 +153,10 @@ builder.Services.AddHostedService<ChangeLogMaintenance>();
 // letzten Stand etwas geändert hat. Ohne „Exports:ScheduleTime“ tut er nichts.
 builder.Services.AddHostedService<ScheduledExportSnapshots>();
 
+// Verschickt den Mail-Digest gebündelt im eingestellten Takt. Ohne SMTP-Konfiguration
+// („Mail:Host“ + „Mail:From“) tut er nichts.
+builder.Services.AddHostedService<MailDigest>();
+
 // Ruft die Webhooks eines Projekts auf, wenn sich etwas geändert hat. Der Zeitgeber bündelt
 // die Änderungen einer Bearbeitungssitzung zu einem Aufruf; die Zeitgrenze ist knapp, weil ein
 // Empfänger, der nicht antwortet, den Dienst nicht aufhalten darf.

@@ -1147,6 +1147,8 @@ public class GameDevManagerDbContext(
             entity.Property(u => u.PasswordHash).HasMaxLength(400).IsRequired();
             entity.Property(u => u.TotpSecret).HasMaxLength(100);
             entity.Property(u => u.ExternalId).HasMaxLength(200);
+            // 320 ist die längste gültige Mail-Adresse (RFC 5321: 64 + @ + 255).
+            entity.Property(u => u.Email).HasMaxLength(320);
             // Zehn Codes à ~400 Zeichen Hash plus Trennzeichen.
             entity.Property(u => u.TotpRecoveryCodes).HasMaxLength(5000);
             entity.Ignore(u => u.HasTwoFactor);

@@ -45,6 +45,12 @@ public class ReviewRequest
     /// <summary>Wer die Abnahme angefordert hat — als Name, nicht als Verweis.</summary>
     public required string RequestedBy { get; set; }
 
+    /// <summary>
+    /// Dieselbe Person als GUID, ohne Fremdschlüssel — für die Benachrichtigung über das
+    /// Ergebnis. Der Name bleibt die Anzeige; die GUID findet das Postfach.
+    /// </summary>
+    public Guid? RequestedById { get; set; }
+
     /// <summary>Der Empfänger. Echter Fremdschlüssel mit SetNull, wie bei den Kanban-Karten.</summary>
     public Guid? AssignedUserId { get; set; }
 

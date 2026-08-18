@@ -121,6 +121,36 @@
   <data name="PasswordsDisabledInfo" xml:space="preserve">
     <value>Passwörter sind per Richtlinie deaktiviert — angemeldet wird nur mit dem Anmeldenamen. Ein Verwalter kann das in der Benutzerverwaltung ändern.</value>
   </data>
+  <data name="SectionNotifications" xml:space="preserve">
+    <value>Benachrichtigungen</value>
+  </data>
+  <data name="MailNotConfigured" xml:space="preserve">
+    <value>Für diese Installation ist noch kein Mailversand eingerichtet (Mail:Host und Mail:From in den appsettings). Die Einstellungen hier gelten, sobald er steht.</value>
+  </data>
+  <data name="EmailLabel" xml:space="preserve">
+    <value>Mail-Adresse</value>
+  </data>
+  <data name="EmailHelper" xml:space="preserve">
+    <value>Leer heißt: keine Mails. Die Adresse einzutragen ist das Einverständnis.</value>
+  </data>
+  <data name="NotifyAssignmentLabel" xml:space="preserve">
+    <value>Zuweisungen — Aufgaben und Abnahmen, die mir zugeteilt werden</value>
+  </data>
+  <data name="NotifyCommentLabel" xml:space="preserve">
+    <value>Anmerkungen an Inhalten, die ich angelegt habe</value>
+  </data>
+  <data name="NotifyReviewLabel" xml:space="preserve">
+    <value>Ergebnisse meiner Abnahme-Anfragen</value>
+  </data>
+  <data name="SaveNotifications" xml:space="preserve">
+    <value>Benachrichtigungen speichern</value>
+  </data>
+  <data name="NotificationsSaved" xml:space="preserve">
+    <value>Benachrichtigungen gespeichert.</value>
+  </data>
+  <data name="NotificationsHint" xml:space="preserve">
+    <value>Verschickt wird gebündelt im eingestellten Takt (Vorgabe: alle 15 Minuten) — eine Mail je Schwung, kein Sturm je Speichern.</value>
+  </data>
   <data name="SectionTwoFactor" xml:space="preserve">
     <value>Zwei-Faktor-Anmeldung</value>
   </data>

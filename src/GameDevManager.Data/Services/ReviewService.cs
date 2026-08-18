@@ -67,14 +67,15 @@ public class ReviewService(
             throw new ContentValidationException(messages["ReviewAssigneeUnknown"].Value);
         }
 
-        var requestedBy = (await author.GetCurrentAsync(ct)).UserName;
+        var requester = await author.GetCurrentAsync(ct);
 
         db.ReviewRequests.Add(new ReviewRequest
         {
             GameProjectId = projectId,
             OwnerEntityId = entityId,
             OwnerModuleKey = moduleKey,
-            RequestedBy = requestedBy,
+            RequestedBy = requester.UserName,
+            RequestedById = requester.UserId,
             AssignedUserId = assignedUserId,
             Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim()
         });

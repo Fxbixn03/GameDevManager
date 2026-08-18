@@ -3,6 +3,7 @@
 @inject ISnackbar Snackbar
 @inject AuthenticationStateProvider Authentication
 @inject PasswordPolicySelection Policy
+@inject IMailSender Mail
 @inject IStringLocalizer<Profile> L
 
 @*
@@ -95,6 +96,49 @@ else
                 }
             </MudPaper>
         </MudItem>
+        @* ------------------------------------------------------ Benachrichtigungen *@
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary" Class="mb-3">@L["SectionNotifications"]</MudText>
+
+                @if (!Mail.IsConfigured)
+                {
+                    @* Die Einstellungen bleiben trotzdem bedienbar: Sie gelten, sobald ein
+                       Verwalter SMTP einrichtet — niemand muss danach alle Konten abklappern. *@
+                    <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">@L["MailNotConfigured"]</MudAlert>
+                }
+
+                <MudStack Spacing="3">
+                    <MudTextField @bind-Value="_email"
+                                  T="string"
+                                  Label="@L["EmailLabel"]"
+                                  HelperText="@L["EmailHelper"]"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Email"
+                                  Clearable="true" />
+
+                    <MudSwitch @bind-Value="_notifyAssignment"
+                               Color="Color.Primary"
+                               Label="@L["NotifyAssignmentLabel"]" />
+                    <MudSwitch @bind-Value="_notifyComment"
+                               Color="Color.Primary"
+                               Label="@L["NotifyCommentLabel"]" />
+                    <MudSwitch @bind-Value="_notifyReview"
+                               Color="Color.Primary"
+                               Label="@L["NotifyReviewLabel"]" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               OnClick="SaveNotificationsAsync">
+                        @L["SaveNotifications"]
+                    </MudButton>
+
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NotificationsHint"]</MudText>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
         @* --------------------------------------------------------- Zweiter Faktor *@
         <MudItem xs="12" md="6">
             <MudPaper Elevation="0" Class="gdm-panel pa-4">
@@ -202,6 +246,11 @@ else
     private string? _code;
     private List<string> _recoveryCodes = [];
 
+    private string? _email;
+    private bool _notifyAssignment = true;
+    private bool _notifyComment = true;
+    private bool _notifyReview = true;
+
     private string Subtitle => _user is null ? L["Loading"] : L["SubtitleName", _user.UserName];
 
     protected override async Task OnInitializedAsync()
@@ -212,6 +261,32 @@ else
         {
             _user = await Users.GetUserAsync(id);
             _displayName = _user?.DisplayName;
+            _email = _user?.Email;
+            _notifyAssignment = _user?.NotifyOnAssignment ?? true;
+            _notifyComment = _user?.NotifyOnComment ?? true;
+            _notifyReview = _user?.NotifyOnReview ?? true;
+        }
+    }
+
+    // ---------------------------------------------------------- Benachrichtigungen
+
+    private async Task SaveNotificationsAsync()
+    {
+        if (_user is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Users.UpdateOwnMailSettingsAsync(
+                _user.Id, _email, _notifyAssignment, _notifyComment, _notifyReview);
+
+            Snackbar.Add(L["NotificationsSaved"], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
         }
     }
 

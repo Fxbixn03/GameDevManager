@@ -103,6 +103,27 @@
   <data name="ReviewAlreadyDecided" xml:space="preserve">
     <value>This review has already been decided or was withdrawn.</value>
   </data>
+  <data name="UserEmailInvalid" xml:space="preserve">
+    <value>The mail address does not look like an address.</value>
+  </data>
+  <data name="Mail_DigestSubject" xml:space="preserve">
+    <value>GameDevManager: {0} updates</value>
+  </data>
+  <data name="Mail_TaskAssigned" xml:space="preserve">
+    <value>Task assigned: “{0}”</value>
+  </data>
+  <data name="Mail_ReviewAssigned" xml:space="preserve">
+    <value>Review requested by {0}.</value>
+  </data>
+  <data name="Mail_CommentAdded" xml:space="preserve">
+    <value>{0} commented on “{1}”.</value>
+  </data>
+  <data name="Mail_ReviewApproved" xml:space="preserve">
+    <value>Your review request was approved — by {0}.</value>
+  </data>
+  <data name="Mail_ReviewRejected" xml:space="preserve">
+    <value>Your review request was rejected — by {0}: {1}</value>
+  </data>
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>The required field “{0}” is empty.</value>
   </data>

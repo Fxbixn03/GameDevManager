@@ -159,6 +159,10 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
                     b.Property<string>("ExternalId")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
@@ -174,6 +178,15 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
 
                     b.Property<DateTime?>("LastLoginAtUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("NotifyOnAssignment")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("NotifyOnComment")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("NotifyOnReview")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("OverridesRole")
                         .HasColumnType("boolean");
@@ -2024,6 +2037,9 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("AssignedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid?>("AssignedUserId")
                         .HasColumnType("uuid");
 
@@ -2808,6 +2824,9 @@ namespace GameDevManager.Data.Migrations.PostgreSql.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("RequestedById")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 

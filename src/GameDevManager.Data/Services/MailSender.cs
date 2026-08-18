@@ -25,6 +25,12 @@ public sealed class MailOptions
     /// <summary>Die Absenderadresse — ohne sie nimmt kein SMTP-Server die Mail an.</summary>
     public string? From { get; set; }
 
+    /// <summary>
+    /// Der Takt des Digests in Minuten. Gebündelt statt je Ereignis — wer zwanzig Karten
+    /// zuweist, löst eine Mail aus, keinen Sturm.
+    /// </summary>
+    public int DigestMinutes { get; set; } = 15;
+
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(Host) && !string.IsNullOrWhiteSpace(From);
 }

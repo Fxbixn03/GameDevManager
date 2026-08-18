@@ -57,6 +57,27 @@
   <data name="ReviewAlreadyDecided" xml:space="preserve">
     <value>Diese Abnahme ist bereits entschieden oder wurde zurückgezogen.</value>
   </data>
+  <data name="UserEmailInvalid" xml:space="preserve">
+    <value>Die Mail-Adresse sieht nicht nach einer Adresse aus.</value>
+  </data>
+  <data name="Mail_DigestSubject" xml:space="preserve">
+    <value>GameDevManager: {0} Neuigkeiten</value>
+  </data>
+  <data name="Mail_TaskAssigned" xml:space="preserve">
+    <value>Aufgabe zugewiesen: „{0}“</value>
+  </data>
+  <data name="Mail_ReviewAssigned" xml:space="preserve">
+    <value>Abnahme angefragt von {0}.</value>
+  </data>
+  <data name="Mail_CommentAdded" xml:space="preserve">
+    <value>{0} hat „{1}“ kommentiert.</value>
+  </data>
+  <data name="Mail_ReviewApproved" xml:space="preserve">
+    <value>Deine Abnahme wurde freigegeben — von {0}.</value>
+  </data>
+  <data name="Mail_ReviewRejected" xml:space="preserve">
+    <value>Deine Abnahme wurde abgelehnt — von {0}: {1}</value>
+  </data>
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>Das Pflichtfeld „{0}“ ist nicht gefüllt.</value>
   </data>

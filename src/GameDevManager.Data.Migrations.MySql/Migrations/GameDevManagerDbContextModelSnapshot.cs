@@ -156,6 +156,10 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(320)
+                        .HasColumnType("varchar(320)");
+
                     b.Property<string>("ExternalId")
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
@@ -171,6 +175,15 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
 
                     b.Property<DateTime?>("LastLoginAtUtc")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("NotifyOnAssignment")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("NotifyOnComment")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("NotifyOnReview")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("OverridesRole")
                         .HasColumnType("tinyint(1)");
@@ -2021,6 +2034,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<DateTime?>("AssignedAtUtc")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<Guid?>("AssignedUserId")
                         .HasColumnType("char(36)");
 
@@ -2805,6 +2821,9 @@ namespace GameDevManager.Data.Migrations.MySql.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
+
+                    b.Property<Guid?>("RequestedById")
+                        .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 

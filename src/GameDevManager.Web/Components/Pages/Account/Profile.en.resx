@@ -75,6 +75,36 @@
   <data name="PasswordsDisabledInfo" xml:space="preserve">
     <value>Passwords are disabled by policy — sign-in uses the user name alone. An administrator can change this in the user management.</value>
   </data>
+  <data name="SectionNotifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="MailNotConfigured" xml:space="preserve">
+    <value>No mail delivery is set up for this installation yet (Mail:Host and Mail:From in the appsettings). The settings here apply as soon as it is.</value>
+  </data>
+  <data name="EmailLabel" xml:space="preserve">
+    <value>Mail address</value>
+  </data>
+  <data name="EmailHelper" xml:space="preserve">
+    <value>Empty means: no mails. Entering the address is the consent.</value>
+  </data>
+  <data name="NotifyAssignmentLabel" xml:space="preserve">
+    <value>Assignments — tasks and reviews assigned to me</value>
+  </data>
+  <data name="NotifyCommentLabel" xml:space="preserve">
+    <value>Comments on content I created</value>
+  </data>
+  <data name="NotifyReviewLabel" xml:space="preserve">
+    <value>Results of my review requests</value>
+  </data>
+  <data name="SaveNotifications" xml:space="preserve">
+    <value>Save notifications</value>
+  </data>
+  <data name="NotificationsSaved" xml:space="preserve">
+    <value>Notifications saved.</value>
+  </data>
+  <data name="NotificationsHint" xml:space="preserve">
+    <value>Mails are bundled at the configured interval (default: every 15 minutes) — one mail per batch, no storm per save.</value>
+  </data>
   <data name="SectionTwoFactor" xml:space="preserve">
     <value>Two-factor sign-in</value>
   </data>

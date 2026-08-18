@@ -30,7 +30,11 @@ public sealed record UserRow(
     UserRoleRow? Role = null,
     bool OverridesRole = false,
     bool HasTwoFactor = false,
-    string? ExternalId = null)
+    string? ExternalId = null,
+    string? Email = null,
+    bool NotifyOnAssignment = true,
+    bool NotifyOnComment = true,
+    bool NotifyOnReview = true)
 {
     /// <summary>
     /// Die aufgelösten Rechte dieser Zeile — Verwalter bekommen immer alles, sonst ist die
@@ -128,8 +132,47 @@ public class UserService(
                 // die berechnete Eigenschaft ist ignoriert und in einer Projektion nicht zu
                 // übersetzen, deshalb hier ausgeschrieben.
                 user.TotpConfirmedAtUtc != null && user.TotpSecret != null,
-                user.ExternalId))
+                user.ExternalId,
+                user.Email,
+                user.NotifyOnAssignment,
+                user.NotifyOnComment,
+                user.NotifyOnReview))
             .FirstOrDefaultAsync(ct);
+    }
+
+    /// <summary>
+    /// Die Benachrichtigungs-Einstellungen des eigenen Kontos — ohne Verwalterrecht, wie das
+    /// eigene Passwort. Eine leere Adresse heißt „keine Mails“; die Adresse einzutragen ist
+    /// das Einverständnis.
+    /// </summary>
+    public async Task UpdateOwnMailSettingsAsync(
+        Guid userId,
+        string? email,
+        bool notifyOnAssignment,
+        bool notifyOnComment,
+        bool notifyOnReview,
+        CancellationToken ct = default)
+    {
+        var address = Normalize(email);
+
+        // Keine RFC-Prüfung, aber die Form „etwas@etwas“ muss stehen — ein vertippter
+        // Anzeigename im Adressfeld fiele sonst erst auf, wenn nie eine Mail ankommt.
+        if (address is not null && (!address.Contains('@') || address.StartsWith('@') || address.EndsWith('@')))
+        {
+            throw new ContentValidationException(messages["UserEmailInvalid"]);
+        }
+
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var user = await db.AppUsers.FirstOrDefaultAsync(u => u.Id == userId, ct)
+            ?? throw new ContentValidationException(messages["UserNotFound"]);
+
+        user.Email = address;
+        user.NotifyOnAssignment = notifyOnAssignment;
+        user.NotifyOnComment = notifyOnComment;
+        user.NotifyOnReview = notifyOnReview;
+
+        await db.SaveChangesAsync(ct);
     }
 
     /// <summary>

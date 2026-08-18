@@ -67,6 +67,13 @@ public class KanbanCard
     public AppUser? AssignedUser { get; set; }
 
     /// <summary>
+    /// Wann die aktuelle Zuweisung gesetzt wurde — die Karte selbst trägt keinen
+    /// Änderungszeitstempel, und der Mail-Digest muss „neu zugewiesen“ von „schon lange
+    /// deins“ unterscheiden können.
+    /// </summary>
+    public DateTime? AssignedAtUtc { get; set; }
+
+    /// <summary>
     /// Fällig am. Ein reines Datum ohne Uhrzeit — eine Aufgabe ist an einem Tag fällig, nicht
     /// um 14:30; gespeichert als <c>DateTime</c>, weil das über alle vier Provider gleich geht.
     /// </summary>

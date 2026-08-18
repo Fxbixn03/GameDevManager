@@ -128,4 +128,20 @@ public class AppUser
     /// </para>
     /// </summary>
     public DateTime? FeedReadAtUtc { get; set; }
+
+    /// <summary>
+    /// Die Adresse für E-Mail-Benachrichtigungen. <c>null</c> heißt „keine Mails“ — die
+    /// Adresse einzutragen ist zugleich das Einverständnis; ein eigener Hauptschalter wäre
+    /// ein zweiter Weg, dasselbe zu sagen.
+    /// </summary>
+    public string? Email { get; set; }
+
+    /// <summary>Benachrichtigen, wenn eine Aufgabe oder Abnahme zugewiesen wird.</summary>
+    public bool NotifyOnAssignment { get; set; } = true;
+
+    /// <summary>Benachrichtigen, wenn jemand die eigenen Inhalte kommentiert.</summary>
+    public bool NotifyOnComment { get; set; } = true;
+
+    /// <summary>Benachrichtigen, wenn eine eigene Abnahme-Anfrage entschieden wurde.</summary>
+    public bool NotifyOnReview { get; set; } = true;
 }

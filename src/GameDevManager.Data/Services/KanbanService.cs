@@ -294,6 +294,13 @@ public class KanbanService(
             .FirstAsync(ct);
         card.Notes = await mentions.ResolveAsync(projectId, Normalize(edited.Notes), ct);
 
+        // Der Zeitpunkt der Zuweisung wird nur beim Wechsel gestempelt: Der Mail-Digest
+        // meldet „neu zugewiesen“, und jedes Speichern der Karte darf das nicht auffrischen.
+        if (card.AssignedUserId != edited.AssignedUserId)
+        {
+            card.AssignedAtUtc = edited.AssignedUserId is null ? null : DateTime.UtcNow;
+        }
+
         card.AssignedUserId = edited.AssignedUserId;
         card.DueDate = edited.DueDate?.Date;
         card.Color = Normalize(edited.Color);
