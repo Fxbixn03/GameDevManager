@@ -39,7 +39,7 @@ public class SampleProjectService(
     {
         // Projektnamen sind installationsweit eindeutig — beim zweiten Beispiel weicht der
         // Name aus, statt dass der Knopf mit einer Fehlermeldung endet.
-        var taken = (await projects.GetProjectsAsync(ct))
+        var taken = (await projects.GetProjectsAsync(ct: ct))
             .Select(project => project.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 

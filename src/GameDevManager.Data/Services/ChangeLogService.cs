@@ -149,6 +149,16 @@ public class ChangeLogService(
                 .Select(entry => entry.GameProjectId)
                 .Distinct()
                 .ToListAsync(ct);
+
+            // Archivierte Projekte überspringt der Lauf: Ihr Bestand — das Protokoll
+            // eingeschlossen — soll vollständig gehalten werden. Einträge gelöschter
+            // Projekte bleiben dagegen ausdrücklich dabei.
+            var archived = await db.GameProjects
+                .Where(project => project.IsArchived)
+                .Select(project => project.Id)
+                .ToListAsync(ct);
+
+            projects.RemoveAll(archived.Contains);
         }
 
         var removed = 0;

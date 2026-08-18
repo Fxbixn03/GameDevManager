@@ -58,7 +58,7 @@
     {
         Project.Changed += OnProjectChanged;
         _current = await Project.GetCurrentAsync();
-        _projects = await Projects.GetProjectsAsync();
+        _projects = await Projects.GetProjectsAsync(includeArchived: false);
     }
 
     // Beim Öffnen frisch laden — auf der Projektseite kann inzwischen eines dazugekommen sein.
@@ -68,7 +68,7 @@
 
         if (open)
         {
-            _projects = await Projects.GetProjectsAsync();
+            _projects = await Projects.GetProjectsAsync(includeArchived: false);
         }
     }
 
@@ -86,7 +86,7 @@
     private void OnProjectChanged() => _ = InvokeAsync(async () =>
     {
         _current = await Project.GetCurrentAsync();
-        _projects = await Projects.GetProjectsAsync();
+        _projects = await Projects.GetProjectsAsync(includeArchived: false);
         StateHasChanged();
     });
 

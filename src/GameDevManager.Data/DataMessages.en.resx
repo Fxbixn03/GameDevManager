@@ -67,6 +67,9 @@
   <data name="ProjectLastOne" xml:space="preserve">
     <value>The last project cannot be deleted — at least one has to remain.</value>
   </data>
+  <data name="ProjectArchiveActive" xml:space="preserve">
+    <value>The active project cannot be archived — switch to another project first.</value>
+  </data>
   <data name="RequiredFieldEmpty" xml:space="preserve">
     <value>The required field “{0}” is empty.</value>
   </data>

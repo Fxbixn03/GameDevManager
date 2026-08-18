@@ -22,15 +22,58 @@ public class ProjectService(
     PermissionGuard guard,
     IStringLocalizer<DataMessages> messages)
 {
-    public async Task<List<GameProject>> GetProjectsAsync(CancellationToken ct = default)
+    /// <summary>
+    /// Alle Projekte, älteste zuerst. Ohne <paramref name="includeArchived"/> bleiben
+    /// archivierte draußen — der Weg der Projektauswahl; die Verwaltungsseite zeigt beide.
+    /// </summary>
+    public async Task<List<GameProject>> GetProjectsAsync(
+        bool includeArchived = true, CancellationToken ct = default)
     {
         await using var db = await factory.CreateDbContextAsync(ct);
 
         return await db.GameProjects
             .AsNoTracking()
+            .Where(p => includeArchived || !p.IsArchived)
             .OrderBy(p => p.CreatedAtUtc)
             .ThenBy(p => p.Id)
             .ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Archiviert ein Projekt: aus dem Weg, aber nicht weg. Das aktive Projekt lässt sich
+    /// nicht archivieren — die ganze Oberfläche arbeitet darauf, und damit bleibt zugleich
+    /// immer mindestens ein nicht archiviertes Projekt bestehen. Wer der Aufrufer gerade ist,
+    /// weiß nur die Web-Schicht; sie gibt das aktive Projekt deshalb mit.
+    /// </summary>
+    public async Task ArchiveProjectAsync(
+        Guid projectId, Guid activeProjectId, CancellationToken ct = default)
+    {
+        await guard.EnsureCanWriteAsync(ct);
+
+        if (projectId == activeProjectId)
+        {
+            throw new ContentValidationException(messages["ProjectArchiveActive"].Value);
+        }
+
+        await SetArchivedAsync(projectId, archived: true, ct);
+    }
+
+    /// <summary>Stellt ein archiviertes Projekt wieder her — es erscheint überall wieder.</summary>
+    public async Task UnarchiveProjectAsync(Guid projectId, CancellationToken ct = default)
+    {
+        await guard.EnsureCanWriteAsync(ct);
+        await SetArchivedAsync(projectId, archived: false, ct);
+    }
+
+    private async Task SetArchivedAsync(Guid projectId, bool archived, CancellationToken ct)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var project = await db.GameProjects.FirstOrDefaultAsync(p => p.Id == projectId, ct)
+            ?? throw new ContentValidationException(messages["Export_ProjectMissing"].Value);
+
+        project.IsArchived = archived;
+        await db.SaveChangesAsync(ct);
     }
 
     public async Task SaveProjectAsync(GameProject project, CancellationToken ct = default)

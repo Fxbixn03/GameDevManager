@@ -237,8 +237,11 @@ public partial class ExportSnapshotService(
     {
         await using var db = await factory.CreateDbContextAsync(ct);
 
+        // Archivierte Projekte bleiben draußen: An ihnen ändert sich nichts mehr, und ihr
+        // letzter Stand soll nicht Nacht für Nacht neu geprüft werden.
         var projectIds = await db.GameProjects
             .AsNoTracking()
+            .Where(project => !project.IsArchived)
             .Select(project => project.Id)
             .ToListAsync(ct);
 

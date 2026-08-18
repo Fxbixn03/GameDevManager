@@ -99,4 +99,34 @@
   <data name="SampleCreatedMessage" xml:space="preserve">
     <value>Beispielprojekt „{0}“ ist angelegt.</value>
   </data>
+  <data name="ArchiveTooltip" xml:space="preserve">
+    <value>Archivieren — aus dem Weg, aber nicht weg</value>
+  </data>
+  <data name="ArchiveActiveTooltip" xml:space="preserve">
+    <value>Das aktive Projekt kann nicht archiviert werden — zuerst ein anderes aktivieren.</value>
+  </data>
+  <data name="ArchiveAria" xml:space="preserve">
+    <value>Projekt archivieren</value>
+  </data>
+  <data name="ArchivedHeading" xml:space="preserve">
+    <value>Archiv</value>
+  </data>
+  <data name="ArchivedSubtitle" xml:space="preserve">
+    <value>Archivierte Projekte erscheinen nur noch hier: nicht in der Projektauswahl, nicht in den Hintergrundläufen. Ihr Bestand bleibt vollständig erhalten.</value>
+  </data>
+  <data name="ArchivedChip" xml:space="preserve">
+    <value>Archiviert</value>
+  </data>
+  <data name="UnarchiveTooltip" xml:space="preserve">
+    <value>Wiederherstellen — das Projekt erscheint überall wieder</value>
+  </data>
+  <data name="UnarchiveAria" xml:space="preserve">
+    <value>Projekt wiederherstellen</value>
+  </data>
+  <data name="ArchivedMessage" xml:space="preserve">
+    <value>„{0}“ ist archiviert.</value>
+  </data>
+  <data name="UnarchivedMessage" xml:space="preserve">
+    <value>„{0}“ ist wiederhergestellt.</value>
+  </data>
 </root>

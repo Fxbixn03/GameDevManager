@@ -11,5 +11,13 @@ public class GameProject
 
     public string? Description { get; set; }
 
+    /// <summary>
+    /// Ein archiviertes Projekt ist aus dem Weg, aber nicht weg: Es fällt aus Projektauswahl
+    /// und Hintergrundläufen (Zeitplan-Stände, Wartung), behält seinen Bestand aber
+    /// vollständig. Entarchivieren stellt alles wieder her — anders als das Löschen, das
+    /// getrennt bleibt und sein Sicherheitsnetz behält.
+    /// </summary>
+    public bool IsArchived { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 }

@@ -174,6 +174,78 @@ public class ProjectTests
         Assert.Empty(database.GetService<ExportSnapshotService>().List(empty.Id));
     }
 
+    // ------------------------------------------------------------------------- Archivieren
+
+    [Fact]
+    public async Task Archivieren_und_Wiederherstellen_schalten_den_Schalter_um()
+    {
+        using var database = new TestDatabase();
+
+        var projects = database.GetService<ProjectService>();
+        var second = new GameProject { Name = "Abgeschlossenes Spiel" };
+        await projects.SaveProjectAsync(second);
+
+        await projects.ArchiveProjectAsync(second.Id, activeProjectId: database.ProjectId);
+
+        // Ohne Archivierte fällt es aus der Liste — der Weg der Projektauswahl.
+        Assert.DoesNotContain(
+            await projects.GetProjectsAsync(includeArchived: false),
+            project => project.Id == second.Id);
+        Assert.Contains(
+            await projects.GetProjectsAsync(),
+            project => project.Id == second.Id && project.IsArchived);
+
+        await projects.UnarchiveProjectAsync(second.Id);
+
+        Assert.Contains(
+            await projects.GetProjectsAsync(includeArchived: false),
+            project => project.Id == second.Id);
+    }
+
+    [Fact]
+    public async Task Das_aktive_Projekt_laesst_sich_nicht_archivieren()
+    {
+        using var database = new TestDatabase();
+
+        var projects = database.GetService<ProjectService>();
+
+        await Assert.ThrowsAsync<ContentValidationException>(
+            () => projects.ArchiveProjectAsync(database.ProjectId, activeProjectId: database.ProjectId));
+    }
+
+    [Fact]
+    public async Task Der_Zeitplan_Lauf_ueberspringt_archivierte_Projekte()
+    {
+        using var database = new TestDatabase();
+        await SeedAsync(database, database.ProjectId);
+
+        var projects = database.GetService<ProjectService>();
+        var second = new GameProject { Name = "Zweitprojekt" };
+        await projects.SaveProjectAsync(second);
+        await projects.ArchiveProjectAsync(second.Id, activeProjectId: database.ProjectId);
+
+        // Nur das aktive Projekt bekommt seinen Stand — das archivierte bleibt unberührt.
+        Assert.Equal(1, await database.GetService<ExportSnapshotService>()
+            .CreateScheduledAsync(includeAssets: false));
+    }
+
+    [Fact]
+    public async Task Archivieren_laesst_den_Bestand_vollstaendig_stehen()
+    {
+        using var database = new TestDatabase();
+
+        var projects = database.GetService<ProjectService>();
+        var second = new GameProject { Name = "Zweitprojekt" };
+        await projects.SaveProjectAsync(second);
+        await SeedAsync(database, second.Id);
+
+        await projects.ArchiveProjectAsync(second.Id, activeProjectId: database.ProjectId);
+
+        await using var db = database.CreateContext();
+        Assert.Single(await db.Items.Where(i => i.GameProjectId == second.Id).ToListAsync());
+        Assert.Single(await db.Recipes.Where(r => r.GameProjectId == second.Id).ToListAsync());
+    }
+
     [Fact]
     public async Task Ersetzender_Import_bewahrt_den_bisherigen_Stand_vorher_auf()
     {

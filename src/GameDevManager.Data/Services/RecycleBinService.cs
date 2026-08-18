@@ -203,7 +203,12 @@ public class RecycleBinService(
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
-        var projectIds = await db.GameProjects.Select(project => project.Id).ToListAsync(ct);
+        // Archivierte Projekte überspringt der Lauf: Ihr Bestand soll vollständig gehalten
+        // werden — auch der Papierkorb.
+        var projectIds = await db.GameProjects
+            .Where(project => !project.IsArchived)
+            .Select(project => project.Id)
+            .ToListAsync(ct);
 
         var removed = 0;
 

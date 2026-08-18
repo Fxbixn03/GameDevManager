@@ -51,8 +51,10 @@
 }
 else
 {
+    var archived = _projects.Where(p => p.IsArchived).ToList();
+
     <MudPaper Elevation="0" Class="gdm-panel">
-        @foreach (var project in _projects)
+        @foreach (var project in _projects.Where(p => !p.IsArchived))
         {
             var isCurrent = project.Id == _currentId;
             <div class="pa-3 gdm-field-row">
@@ -95,6 +97,13 @@ else
                                        aria-label="@L["DuplicateAria"]"
                                        OnClick="@(() => DuplicateAsync(project))" />
                     </MudTooltip>
+                    <MudTooltip Text="@(isCurrent ? L["ArchiveActiveTooltip"] : L["ArchiveTooltip"])">
+                        <MudIconButton Icon="@Icons.Material.Filled.Archive"
+                                       Size="Size.Small"
+                                       Disabled="@isCurrent"
+                                       aria-label="@L["ArchiveAria"]"
+                                       OnClick="@(() => ArchiveAsync(project))" />
+                    </MudTooltip>
                     <MudTooltip Text="@(isCurrent ? L["DeleteActiveTooltip"] : L["DeleteTooltip"])">
                         <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                        Size="Size.Small"
@@ -106,6 +115,51 @@ else
             </div>
         }
     </MudPaper>
+
+    @* Archivierte Projekte: aus dem Weg, aber nicht weg — sie erscheinen nur noch hier.
+       Entarchivieren stellt alles wieder her; Löschen bleibt getrennt und behält sein
+       Sicherheitsnetz. *@
+    @if (archived.Count > 0)
+    {
+        <MudText Typo="Typo.h6" Class="mt-8 mb-1">@L["ArchivedHeading"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">@L["ArchivedSubtitle"]</MudText>
+
+        <MudPaper Elevation="0" Class="gdm-panel">
+            @foreach (var project in archived)
+            {
+                <div class="pa-3 gdm-field-row">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory2" Color="Color.Default" />
+
+                        <div style="flex:1; min-width:0;">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudText Typo="Typo.subtitle2">@project.Name</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">
+                                    @L["ArchivedChip"]
+                                </MudChip>
+                            </MudStack>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @L["CreatedAt", project.CreatedAtUtc.ToLocalTime().ToString("g")]@(string.IsNullOrWhiteSpace(project.Description) ? null : $" — {project.Description}")
+                            </MudText>
+                        </div>
+
+                        <MudTooltip Text="@L["UnarchiveTooltip"]">
+                            <MudIconButton Icon="@Icons.Material.Filled.Unarchive"
+                                           Size="Size.Small"
+                                           aria-label="@L["UnarchiveAria"]"
+                                           OnClick="@(() => UnarchiveAsync(project))" />
+                        </MudTooltip>
+                        <MudTooltip Text="@L["DeleteTooltip"]">
+                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                           Size="Size.Small"
+                                           aria-label="@L["DeleteAria"]"
+                                           OnClick="@(() => DeleteAsync(project))" />
+                        </MudTooltip>
+                    </MudStack>
+                </div>
+            }
+        </MudPaper>
+    }
 }
 
 @code {
@@ -240,6 +294,34 @@ else
         finally
         {
             _duplicating = false;
+        }
+    }
+
+    private async Task ArchiveAsync(GameProject project)
+    {
+        try
+        {
+            await Projects.ArchiveProjectAsync(project.Id, _currentId);
+            Snackbar.Add(L["ArchivedMessage", project.Name], Severity.Success);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task UnarchiveAsync(GameProject project)
+    {
+        try
+        {
+            await Projects.UnarchiveProjectAsync(project.Id);
+            Snackbar.Add(L["UnarchivedMessage", project.Name], Severity.Success);
+            await LoadAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
         }
     }
 

@@ -37,10 +37,13 @@ public class ProjectContext(
                 .FirstOrDefaultAsync(p => p.Id == id, ct);
         }
 
-        // Nichts gemerkt oder das gemerkte Projekt wurde gelöscht → das älteste.
+        // Nichts gemerkt oder das gemerkte Projekt wurde gelöscht → das älteste. Archivierte
+        // stehen hinten an: Sie sollen nicht von selbst wieder aktiv werden — nur wenn es
+        // sonst gar keines gäbe, ist ein archiviertes besser als keines.
         _current ??= await db.GameProjects
             .AsNoTracking()
-            .OrderBy(p => p.CreatedAtUtc)
+            .OrderBy(p => p.IsArchived)
+            .ThenBy(p => p.CreatedAtUtc)
             .ThenBy(p => p.Id)
             .FirstOrDefaultAsync(ct)
             ?? throw new InvalidOperationException(
