@@ -25,6 +25,10 @@ GameDevManager richtet sich an Indie-Entwickler, die den fachlichen Teil ihres S
 
 Man legt seine Daten strukturiert während Planungsphasen an und kann diese später und im laufe der Entwicklung Versioniert in seine Gameengine importieren und fertige Game Objekte erhalten, welche nur noch benutzt werden müssen.
 
+## Datenbank
+
+Das Tool ist self-hosted und lässt die Datenbank frei wählen (`Database:Provider` in den appsettings): **SQL Server, PostgreSQL, MySQL, SQLite und Oracle** — je Provider mit eigenem Migrations-Projekt, SQLite als Vorgabe für den schnellen Start. Für Oracle ist die kostenlose **Database Free (23ai)** die Referenz; die Anbindung läuft über Oracles offiziellen EF-Core-Provider. MariaDB steht auf der Liste, wartet aber auf eine Pomelo-Fassung für EF Core 10 — der bisherige MySQL-Provider (Oracles `MySql.EntityFrameworkCore`) unterstützt MariaDB offiziell nicht.
+
 ## Geplante Module
 
 | Modul | Beschreibung |

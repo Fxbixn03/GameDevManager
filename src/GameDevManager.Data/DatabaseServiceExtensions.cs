@@ -295,6 +295,8 @@ public static class DatabaseServiceExtensions
                 x => x.MigrationsAssembly("GameDevManager.Data.Migrations.MySql")),
             DatabaseProvider.Sqlite => builder.UseSqlite(connectionString,
                 x => x.MigrationsAssembly("GameDevManager.Data.Migrations.Sqlite")),
+            DatabaseProvider.Oracle => builder.UseOracle(connectionString,
+                x => x.MigrationsAssembly("GameDevManager.Data.Migrations.Oracle")),
             _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, "Unbekannter Datenbank-Provider.")
         };
 }

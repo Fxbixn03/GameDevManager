@@ -141,6 +141,9 @@
   <data name="ProviderPostgreSql" xml:space="preserve">
     <value>PostgreSQL</value>
   </data>
+  <data name="ProviderOracle" xml:space="preserve">
+    <value>Oracle</value>
+  </data>
   <data name="ProviderMySql" xml:space="preserve">
     <value>MySQL</value>
   </data>
