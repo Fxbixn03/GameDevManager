@@ -47,10 +47,25 @@ window.gdmShortcuts = {
             }
 
             // Strg+P: die Kommandopalette. Der Browser-Druckdialog liegt auf derselben
-            // Taste — hier wird er bewusst verdrängt, weil eine Seite dieser Anwendung
-            // gedruckt selten Sinn ergibt und die Palette der häufigere Wunsch ist.
+            // Taste — er wird verdrängt, weil eine Seite dieser Anwendung gedruckt selten
+            // Sinn ergibt und die Palette der häufigere Wunsch ist. Zwei Ausnahmen:
             if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p"
                 && window.gdmShortcuts.ref) {
+                // Seiten mit druckbarem Inhalt tragen data-gdm-printable (dasselbe Muster wie
+                // data-gdm-save) — dort ist Drucken der vorgesehene Weg, und Strg+P gehört
+                // dem Browser.
+                if (document.querySelector("[data-gdm-printable]")) {
+                    return;
+                }
+
+                // Der zweite Strg+P in Folge: Die Palette steht schon — sie schließt sich,
+                // und der Druckdialog des Browsers kommt durch. Wer auf einer beliebigen
+                // Seite wirklich drucken will, drückt die Kombination also zweimal.
+                if (document.querySelector(".gdm-command-palette")) {
+                    window.gdmShortcuts.ref.invokeMethodAsync("HidePalette");
+                    return;
+                }
+
                 e.preventDefault();
                 window.gdmShortcuts.ref.invokeMethodAsync("ShowPalette");
                 return;

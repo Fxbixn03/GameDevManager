@@ -107,6 +107,19 @@
     }
 
     /// <summary>
+    /// Der zweite Strg+P in Folge: schließt die offene Palette, ohne das Ereignis zu
+    /// schlucken — der Druckdialog des Browsers kommt dadurch durch.
+    /// </summary>
+    [JSInvokable]
+    public async Task HidePalette()
+    {
+        if (Palette is not null)
+        {
+            await Palette.CloseAsync();
+        }
+    }
+
+    /// <summary>
     /// Die Übersicht der Tastenkürzel. Ein Dialog und keine eigene Seite: Wer sie braucht, ist
     /// mitten in etwas anderem und will danach dorthin zurück.
     /// </summary>

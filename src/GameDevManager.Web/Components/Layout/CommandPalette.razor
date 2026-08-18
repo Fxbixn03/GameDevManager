@@ -17,7 +17,9 @@
 
 <MudDialog @bind-Visible="_open" Options="_options">
     <DialogContent>
-        <div style="min-width:min(640px, 90vw);">
+        @* Die Klasse ist die Auskunft an gdm-shortcuts.js, dass die Palette offen steht —
+           der zweite Strg+P schließt sie dann und lässt den Browser-Druckdialog durch. *@
+        <div class="gdm-command-palette" style="min-width:min(640px, 90vw);">
             <MudTextField @ref="_input"
                           Value="_query"
                           ValueChanged="@((string text) => SearchAsync(text))"
@@ -86,6 +88,16 @@
         {
             await _input.FocusAsync();
         }
+    }
+
+    /// <summary>
+    /// Der zweite Strg+P in Folge: schließt die Palette wieder, damit der Druckdialog des
+    /// Browsers durchkommt — siehe gdm-shortcuts.js.
+    /// </summary>
+    public async Task CloseAsync()
+    {
+        _open = false;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task SearchAsync(string? text)
