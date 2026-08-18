@@ -124,6 +124,9 @@
   <data name="Mail_ReviewRejected" xml:space="preserve">
     <value>Your review request was rejected — by {0}: {1}</value>
   </data>
+  <data name="Import_DeltaRejected" xml:space="preserve">
+    <value>The archive is a delta export — it only carries changes plus a deletion list and is meant for the engine, not for import. Use a full export snapshot to restore.</value>
+  </data>
   <data name="TranslateQuotaExceeded" xml:space="preserve">
     <value>The translation provider’s quota is used up — more comes with the next billing period or a bigger plan.</value>
   </data>

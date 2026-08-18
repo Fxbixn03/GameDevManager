@@ -486,6 +486,208 @@ public partial class ExportSnapshotService(
         return new SnapshotDiff(files);
     }
 
+    // ------------------------------------------------------------------------ Delta-Export
+
+    /// <summary>
+    /// Schreibt einen <b>Delta-Export</b>: nur, was sich seit einem aufbewahrten Stand
+    /// geändert hat — neue und geänderte Entitäten in den Inhaltsdateien, dazu
+    /// <c>content/deleted.json</c> als Löschliste (je Inhaltsdatei Modul und GUIDs). Die
+    /// Datenbasis ist dieselbe <c>JsonNode.DeepEquals</c>-Strecke wie bei der Diff-Ansicht.
+    /// <para>
+    /// Das <b>Manifest trägt einen <c>delta</c>-Marker</b> (Basis-Stand und Zeitpunkt), und
+    /// der Import weist solche Archive ab — ein Delta ist eine Lieferung an die Engine,
+    /// kein Projektstand; als Voll-Import eingespielt löschte es still den halben Bestand.
+    /// Die <c>FormatVersion</c> bleibt deshalb die des Vollexports: Das Vollformat ist
+    /// unverändert, und der Marker sagt eindeutiger als jede Nummer, was das Archiv ist.
+    /// </para>
+    /// <para>
+    /// Asset-Dateien kommen nur mit, wenn ihre Zeile neu oder geändert ist — ein Delta, das
+    /// alle Sprites noch einmal trägt, wäre keines. Die Zeichenketten-Tabellen unter
+    /// <c>localization/</c> gehen dagegen vollständig mit: Sie sind klein, abgeleitet, und
+    /// eine Engine lädt sie als Ganzes.
+    /// </para>
+    /// </summary>
+    public async Task WriteDeltaAsync(
+        Guid projectId, string baseFileName, Stream output, CancellationToken ct = default)
+    {
+        await guard.EnsureCanExportAsync(ct);
+
+        await using var baseStream = OpenRead(baseFileName)
+            ?? throw new ContentValidationException(messages["Export_SnapshotMissing"].Value);
+
+        // Der aktuelle Stand, flüchtig und mit Assets — welche Dateien mitgehen, entscheidet
+        // sich erst nach dem Vergleich.
+        await using var current = new FileStream(
+            Path.Combine(Path.GetTempPath(), $"gdm-delta-{Guid.NewGuid():N}.zip"),
+            FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920,
+            FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+
+        await export.WriteExportAsync(projectId, ExportTarget.Json, includeAssets: true, current, ct: ct);
+        current.Position = 0;
+
+        using var currentArchive = new ZipArchive(current, ZipArchiveMode.Read, leaveOpen: true);
+        using var baseArchive = new ZipArchive(baseStream, ZipArchiveMode.Read, leaveOpen: true);
+        using var target = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true);
+
+        var currentFiles = ReadContentFiles(currentArchive);
+        var baseFiles = ReadContentFiles(baseArchive);
+
+        var keptAssetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var deletions = new JsonArray();
+
+        foreach (var (fileName, currentRoot) in currentFiles.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+        {
+            var currentEntities = CollectEntities(currentRoot);
+            var baseEntities = CollectEntities(baseFiles.GetValueOrDefault(fileName));
+
+            // Behalten wird, was neu ist oder sich geändert hat — Zeichen für Zeichen, über
+            // dieselbe Frage wie der Diff.
+            var keptIds = currentEntities
+                .Where(pair => !baseEntities.TryGetValue(pair.Key, out var previous)
+                    || !JsonNode.DeepEquals(previous.Node, pair.Value.Node))
+                .Select(pair => pair.Key)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            if (fileName == "assets.json")
+            {
+                keptAssetIds = keptIds;
+            }
+
+            var removedIds = baseEntities.Keys
+                .Where(id => !currentEntities.ContainsKey(id))
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToList();
+
+            if (removedIds.Count > 0)
+            {
+                deletions.Add(new JsonObject
+                {
+                    ["file"] = fileName,
+                    ["module"] = ExportFormat.ContentFileModules.GetValueOrDefault(fileName),
+                    ["ids"] = new JsonArray([.. removedIds.Select(id => (JsonNode)id)])
+                });
+            }
+
+            // Die Datei bleibt in ihrer Form — nur die Entitäten-Listen sind gefiltert;
+            // Elemente ohne id (und Nicht-Listen wie die relationTypes-Struktur) bleiben stehen.
+            var filtered = FilterEntityLists(currentRoot, keptIds);
+
+            var entry = target.CreateEntry($"{ExportFormat.ContentFolder}{fileName}");
+            await using var stream = entry.Open();
+            await using var writer = new StreamWriter(stream);
+            await writer.WriteAsync(filtered.ToJsonString(ExportFormat.JsonOptions));
+        }
+
+        // Die Löschliste — auch leer, damit ein Delta ohne Löschungen nicht nach einer
+        // vergessenen Datei aussieht.
+        {
+            var entry = target.CreateEntry($"{ExportFormat.ContentFolder}deleted.json");
+            await using var stream = entry.Open();
+            await using var writer = new StreamWriter(stream);
+            await writer.WriteAsync(new JsonObject { ["deleted"] = deletions }
+                .ToJsonString(ExportFormat.JsonOptions));
+        }
+
+        // Das Manifest des aktuellen Exports, plus der Delta-Marker.
+        {
+            var manifestEntry = ExportFormat.FindManifest(currentArchive)!;
+            using var manifestStream = manifestEntry.Open();
+            var manifest = (JsonObject)JsonNode.Parse(manifestStream)!;
+
+            manifest["delta"] = new JsonObject
+            {
+                ["baseFileName"] = baseFileName,
+                ["createdAtUtc"] = DateTime.UtcNow.ToString("O")
+            };
+
+            var entry = target.CreateEntry(ExportFormat.ManifestFileName);
+            await using var stream = entry.Open();
+            await using var writer = new StreamWriter(stream);
+            await writer.WriteAsync(manifest.ToJsonString(ExportFormat.JsonOptions));
+        }
+
+        // Asset-Dateien nur für behaltene Zeilen: Der storageKey steht in der (gefilterten)
+        // assets.json, der Pfad im Archiv ist assets/files/<storageKey>.
+        var keptStorageKeys = keptAssetStorageKeys(currentFiles, keptAssetIds);
+
+        foreach (var entry in currentArchive.Entries)
+        {
+            const string prefix = "assets/files/";
+
+            if (!entry.FullName.StartsWith(prefix, StringComparison.Ordinal)
+                || !keptStorageKeys.Contains(entry.FullName[prefix.Length..]))
+            {
+                continue;
+            }
+
+            var copy = target.CreateEntry(entry.FullName);
+            await using var source = entry.Open();
+            await using var destination = copy.Open();
+            await source.CopyToAsync(destination, ct);
+        }
+
+        // Die Zeichenketten-Tabellen vollständig — klein, abgeleitet, als Ganzes geladen.
+        foreach (var entry in currentArchive.Entries)
+        {
+            if (!entry.FullName.StartsWith("localization/", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var copy = target.CreateEntry(entry.FullName);
+            await using var source = entry.Open();
+            await using var destination = copy.Open();
+            await source.CopyToAsync(destination, ct);
+        }
+
+        static HashSet<string> keptAssetStorageKeys(
+            Dictionary<string, JsonNode> files, HashSet<string> keptIds)
+        {
+            var keys = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var (id, (_, node)) in CollectEntities(files.GetValueOrDefault("assets.json")))
+            {
+                if (keptIds.Contains(id) && node["storageKey"]?.GetValue<string>() is { } key)
+                {
+                    keys.Add(key);
+                }
+            }
+
+            return keys;
+        }
+    }
+
+    /// <summary>Filtert die Entitäten-Listen einer Inhaltsdatei auf die behaltenen GUIDs.</summary>
+    private static JsonObject FilterEntityLists(JsonNode root, HashSet<string> keptIds)
+    {
+        var filtered = new JsonObject();
+
+        foreach (var (key, value) in (JsonObject)root)
+        {
+            if (value is not JsonArray array)
+            {
+                filtered[key] = value?.DeepClone();
+                continue;
+            }
+
+            var kept = new JsonArray();
+
+            foreach (var element in array)
+            {
+                var id = (element as JsonObject)?["id"]?.GetValue<string>();
+
+                if (id is null || keptIds.Contains(id))
+                {
+                    kept.Add(element!.DeepClone());
+                }
+            }
+
+            filtered[key] = kept;
+        }
+
+        return filtered;
+    }
+
     private async Task<Stream> OpenSnapshotOrCurrentAsync(
         Guid projectId, string? fileName, CancellationToken ct)
     {

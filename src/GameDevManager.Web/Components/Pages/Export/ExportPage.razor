@@ -281,6 +281,41 @@
                 </MudSimpleTable>
             }
 
+            @* Der Delta-Export: nur, was sich seit einem aufbewahrten Stand geändert hat,
+               plus die Löschliste — die Lieferung an die Engine, kein Projektstand; der
+               Import weist Delta-Archive ab. *@
+            @if (_snapshots.Count > 0)
+            {
+                <MudDivider Class="my-3" />
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["DeltaHeading"]</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
+                    @L["DeltaHint"]
+                </MudText>
+
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                    <MudSelect T="string"
+                               @bind-Value="_deltaBase"
+                               Label="@L["DeltaBaseLabel"]"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Style="min-width:260px;">
+                        @foreach (var snapshot in _snapshots)
+                        {
+                            <MudSelectItem T="string" Value="@snapshot.FileName">
+                                @snapshot.ExportedAtUtc.ToLocalTime().ToString("g")
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Difference"
+                               Disabled="@(_deltaBase is null)"
+                               OnClick="DownloadDelta">
+                        @L["DeltaDownload"]
+                    </MudButton>
+                </MudStack>
+            }
+
             @* Der Abschnitt „nur noch entfernt“: Stände, die das lokale Aufräumen weggeräumt
                hat, deren Spiegelkopie im Sicherungsziel aber steht — der Weg zurück führt
                über den Bucket. Ohne Sicherungsziel gibt es den Abschnitt nicht. *@
@@ -806,6 +841,12 @@
 
     private void DownloadSnapshot(ExportSnapshot snapshot) =>
         Nav.NavigateTo($"/export/snapshots/{snapshot.FileName}", forceLoad: true);
+
+    private string? _deltaBase;
+
+    private void DownloadDelta() =>
+        Nav.NavigateTo(
+            $"/export/delta/{_projectId}?base={Uri.EscapeDataString(_deltaBase!)}", forceLoad: true);
 
     // ---------------------------------------------------------------------- Historie
 

@@ -156,6 +156,18 @@
   <data name="HistoryEmpty" xml:space="preserve">
     <value>Noch keine Stände aufbewahrt.</value>
   </data>
+  <data name="DeltaHeading" xml:space="preserve">
+    <value>Delta-Export</value>
+  </data>
+  <data name="DeltaHint" xml:space="preserve">
+    <value>Nur, was sich seit dem gewählten Stand geändert hat — neue und geänderte Einträge plus eine Löschliste. Für die Engine gedacht; der Import weist Delta-Archive ab.</value>
+  </data>
+  <data name="DeltaBaseLabel" xml:space="preserve">
+    <value>Delta gegen Stand</value>
+  </data>
+  <data name="DeltaDownload" xml:space="preserve">
+    <value>Delta herunterladen</value>
+  </data>
   <data name="RemoteOnlyHeading" xml:space="preserve">
     <value>Nur noch im Sicherungsziel</value>
   </data>

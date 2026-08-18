@@ -78,6 +78,9 @@
   <data name="Mail_ReviewRejected" xml:space="preserve">
     <value>Deine Abnahme wurde abgelehnt — von {0}: {1}</value>
   </data>
+  <data name="Import_DeltaRejected" xml:space="preserve">
+    <value>Das Archiv ist ein Delta-Export — es enthält nur Geändertes plus eine Löschliste und ist für die Engine gedacht, nicht für den Import. Zum Zurückspielen einen vollständigen Exportstand verwenden.</value>
+  </data>
   <data name="TranslateQuotaExceeded" xml:space="preserve">
     <value>Das Kontingent des Übersetzungsanbieters ist aufgebraucht — mehr gibt es erst im nächsten Abrechnungszeitraum oder mit einem größeren Tarif.</value>
   </data>

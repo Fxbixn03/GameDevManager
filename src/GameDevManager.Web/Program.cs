@@ -466,6 +466,35 @@ app.MapGet("/export/translations/{projectId:guid}/{languageCode}", async (
         fileDownloadName: $"uebersetzungen-{languageCode}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
 }).RequireAuthorization();
 
+// Der Delta-Export: nur, was sich seit einem aufbewahrten Stand geändert hat, plus die
+// Löschliste. Ein Endpunkt wie der Voll-Export — über SignalR lässt sich kein Download
+// anstoßen; der Dateiname sagt, wogegen das Delta gerechnet wurde.
+app.MapGet("/export/delta/{projectId:guid}", async (
+    Guid projectId, string @base, ExportSnapshotService snapshots, HttpContext http, CancellationToken ct) =>
+{
+    if (!http.User.Permissions().CanExport)
+    {
+        return Results.Forbid();
+    }
+
+    http.Response.ContentType = "application/zip";
+    http.Response.Headers.ContentDisposition =
+        $"attachment; filename=delta-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{projectId:N}.zip";
+
+    // In eine Temp-Datei statt direkt in den Response: ZipArchive schließt Einträge synchron
+    // ab, und der Response-Stream verbietet synchrone Schreibzugriffe — wie beim Voll-Export.
+    await using var temp = new FileStream(
+        Path.Combine(Path.GetTempPath(), $"gdm-delta-out-{Guid.NewGuid():N}.zip"),
+        FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920,
+        FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+
+    await snapshots.WriteDeltaAsync(projectId, @base, temp, ct);
+    temp.Position = 0;
+    await temp.CopyToAsync(http.Response.Body, ct);
+
+    return Results.Empty;
+}).RequireAuthorization();
+
 // Die Aufnahmeliste fürs Tonstudio: die offenen Zeilen einer Sprache als CSV oder als
 // druckbares HTML (?format=html) — dieselbe Linie wie das Design-Dokument: vollständig
 // abgeleitet, das PDF liefert der Browser-Druck. Der Health Check „fehlende Aufnahmen“

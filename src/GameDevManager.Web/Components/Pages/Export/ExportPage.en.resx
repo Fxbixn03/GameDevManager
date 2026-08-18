@@ -156,6 +156,18 @@
   <data name="HistoryEmpty" xml:space="preserve">
     <value>No snapshots kept yet.</value>
   </data>
+  <data name="DeltaHeading" xml:space="preserve">
+    <value>Delta export</value>
+  </data>
+  <data name="DeltaHint" xml:space="preserve">
+    <value>Only what changed since the chosen snapshot — new and changed entries plus a deletion list. Meant for the engine; the import rejects delta archives.</value>
+  </data>
+  <data name="DeltaBaseLabel" xml:space="preserve">
+    <value>Delta against snapshot</value>
+  </data>
+  <data name="DeltaDownload" xml:space="preserve">
+    <value>Download delta</value>
+  </data>
   <data name="RemoteOnlyHeading" xml:space="preserve">
     <value>Only in the backup target</value>
   </data>

@@ -100,6 +100,14 @@ public class ImportService(
             formatVersion = root.TryGetProperty("formatVersion", out var version) ? version.GetInt32() : 0;
             includesAssetFiles = root.TryGetProperty("includesAssetFiles", out var flag) && flag.GetBoolean();
 
+            // Ein Delta-Archiv ist eine Lieferung an die Engine, kein Projektstand: Es trägt
+            // nur Geändertes plus eine Löschliste — als Voll-Import eingespielt löschte es
+            // still den halben Bestand. Der Marker im Manifest macht das unmissverständlich.
+            if (root.TryGetProperty("delta", out _))
+            {
+                throw new ContentValidationException(messages["Import_DeltaRejected"].Value);
+            }
+
             var hasProject = root.TryGetProperty("project", out var projectElement);
             projectName = hasProject && projectElement.TryGetProperty("name", out var name)
                 ? name.GetString()
