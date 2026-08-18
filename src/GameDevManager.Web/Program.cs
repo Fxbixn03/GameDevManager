@@ -200,7 +200,11 @@ app.MapGet("/assets/{id:guid}", async (Guid id, AssetService assets, HttpContext
     http.Response.Headers.XContentTypeOptions = "nosniff";
     http.Response.Headers.ContentSecurityPolicy = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
 
-    return Results.Stream(file.Value.Content, file.Value.MimeType);
+    // Range-Anfragen werden beantwortet (206 samt Accept-Ranges/Content-Range): Der
+    // Audio-Player des Browsers spult in langen Aufnahmen über genau solche Anfragen.
+    // Die Dateien kommen als FileStream und sind damit spulbar; am Cache-Verhalten und
+    // an nosniff/CSP ändert sich nichts.
+    return Results.Stream(file.Value.Content, file.Value.MimeType, enableRangeProcessing: true);
 }).RequireAuthorization();
 
 // Der Projekt-Export als ZIP-Download. Wie die Assets bewusst ein Endpunkt: über die
