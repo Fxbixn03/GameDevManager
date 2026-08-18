@@ -41,6 +41,13 @@ public static class DatabaseServiceExtensions
             configuration.GetSection(RecycleBinOptions.SectionName).Get<RecycleBinOptions>()
             ?? new RecycleBinOptions());
 
+        // Der Mailversand: Konfiguration wie die Passwortrichtlinie, die Umsetzung stellt
+        // die Web-Schicht — ohne sie (und ohne Konfiguration) bleibt es beim No-Op.
+        services.AddSingleton(
+            configuration.GetSection(MailOptions.SectionName).Get<MailOptions>()
+            ?? new MailOptions());
+        services.TryAddSingleton<IMailSender, NullMailSender>();
+
         // Die Factory ist bewusst scoped und nicht — wie sonst üblich — Singleton: Der
         // ChangeLogInterceptor muss wissen, wer gerade angemeldet ist, und das steht je
         // Verbindung fest. Contexts entstehen weiterhin je Aufruf; nur die Factory selbst
@@ -81,6 +88,8 @@ public static class DatabaseServiceExtensions
         // bereits aus dem Abschnitt „ChangeLog“ registriert da.
         services.TryAddSingleton(new ChangeLogRetentionOptions());
         services.TryAddSingleton(new RecycleBinOptions());
+        services.TryAddSingleton(new MailOptions());
+        services.TryAddSingleton<IMailSender, NullMailSender>();
         services.AddScoped<ChangeLogService>();
         services.AddScoped<RecycleBinService>();
         services.AddScoped<UserService>();

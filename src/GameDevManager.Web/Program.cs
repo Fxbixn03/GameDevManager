@@ -141,6 +141,10 @@ builder.Services.Replace(
 builder.Services.Replace(ServiceDescriptor.Singleton<IPasswordPolicyProvider>(
     provider => provider.GetRequiredService<PasswordPolicySelection>()));
 
+// Dasselbe Muster für den Mailversand: Die Datenschicht kennt nur IMailSender (Vorgabe
+// No-Op), verschickt wird hier — und ohne „Mail:Host“ bleibt auch diese Fassung still.
+builder.Services.Replace(ServiceDescriptor.Singleton<IMailSender, SmtpMailSender>());
+
 // Kürzt das Änderungsprotokoll auf die eingestellte Aufbewahrung. Läuft nach dem Start —
 // Hintergrunddienste beginnen erst mit app.Run(), also nach den Migrationen weiter unten.
 builder.Services.AddHostedService<ChangeLogMaintenance>();
