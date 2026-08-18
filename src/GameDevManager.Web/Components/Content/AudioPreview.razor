@@ -1,0 +1,51 @@
+@inject IJSRuntime JS
+@inject IStringLocalizer<AudioPreview> L
+
+@*
+    Vorhören mit einem Klick: natives <audio> über den bestehenden /assets-Endpunkt (der
+    beantwortet Range-Anfragen, Spulen funktioniert also auch in langen Dateien), darüber
+    eine Wellenform, die gdm-audio.js clientseitig rechnet — der Server rendert nichts.
+
+    Geladen wird erst auf Klick: Eine Bibliothek mit vierzig Aufnahmen soll beim Öffnen
+    nicht vierzig Dateien dekodieren.
+*@
+
+@if (!_open)
+{
+    <MudTooltip Text="@L["PlayTooltip"]">
+        <MudIconButton Icon="@Icons.Material.Filled.PlayCircleOutline"
+                       Size="Size.Small"
+                       aria-label="@L["PlayAria"]"
+                       OnClick="@(() => _open = true)" />
+    </MudTooltip>
+}
+else
+{
+    <div class="gdm-audio">
+        <canvas @ref="_canvas" class="gdm-audio-wave" aria-hidden="true"></canvas>
+        @* preload="metadata": Dauer und Spulleiste sofort, die Daten erst beim Abspielen. *@
+        <audio controls preload="metadata" src="@Url" style="width:100%;"></audio>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid AssetId { get; set; }
+
+    private bool _open;
+    private bool _drawn;
+    private ElementReference _canvas;
+
+    private string Url => $"/assets/{AssetId}";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Erst nach dem Rendern gibt es die Canvas — und nur einmal: Die Datei ändert sich
+        // nie (eine neue bekommt eine neue GUID), also auch die Welle nicht.
+        if (_open && !_drawn)
+        {
+            _drawn = true;
+            await JS.InvokeVoidAsync("gdmAudio.draw", _canvas, Url);
+        }
+    }
+}

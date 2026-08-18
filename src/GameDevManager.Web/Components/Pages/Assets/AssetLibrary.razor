@@ -128,6 +128,11 @@ else
                                         <MudText Typo="Typo.caption" Color="Color.Secondary">
                                             @AssetFormat.Summary(entry.Asset)
                                         </MudText>
+                                        @* Audio direkt in der Bibliothek vorhören statt herunterladen. *@
+                                        @if (entry.Asset.MimeType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <AudioPreview AssetId="entry.Asset.Id" />
+                                        }
                                         @if (entry.OwnerName is not null)
                                         {
                                             <MudText Typo="Typo.caption" Class="gdm-ellipsis" title="@entry.OwnerName">

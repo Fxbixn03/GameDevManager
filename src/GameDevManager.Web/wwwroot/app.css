@@ -521,6 +521,20 @@ html {
     min-width: 0;
 }
 
+/* Der Audio-Player mit Wellenform (AudioPreview). Die Welle zeichnet gdm-audio.js in
+   currentColor — das Akzentgelb kommt also aus dieser Regel, nicht aus dem Skript. */
+.gdm-audio {
+    min-width: 220px;
+    flex: 1 1 auto;
+}
+
+.gdm-audio-wave {
+    display: block;
+    width: 100%;
+    height: 40px;
+    color: var(--mud-palette-primary);
+}
+
 /* Das Sprite, das die Module als Icon zeigen — gelbe Kante wie bei hervorgehobenen Cards. */
 .gdm-sprite-primary {
     border-color: var(--mud-palette-primary);

@@ -108,6 +108,10 @@ else
                                                     <MudLink Href="@($"/assets/{take.AssetId}")" Target="_blank">
                                                         @take.FileName
                                                     </MudLink>
+                                                    @* Vorhören direkt in der Matrix — eine
+                                                       Vertonungssitzung soll nicht je Zeile
+                                                       einen Tab öffnen. *@
+                                                    <AudioPreview AssetId="take.AssetId!.Value" />
                                                 </MudStack>
                                             }
                                             else

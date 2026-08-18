@@ -61,6 +61,12 @@
                                 @L["PrimaryChip"]
                             </MudChip>
                         }
+                        @* Audio lässt sich direkt hier vorhören — Musik und Sounds hängen
+                           als ganz normale Dateien an ihren Entitäten. *@
+                        @if (asset.MimeType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <AudioPreview AssetId="asset.Id" />
+                        }
                     </div>
 
                     <MudStack Row="true" Spacing="0" Justify="Justify.Center" Class="gdm-sprite-actions">
