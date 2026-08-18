@@ -66,8 +66,12 @@ public partial class ExportSnapshotService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     IEnumerable<IModuleEntitySource> sources,
     PermissionGuard guard,
+    ISnapshotMirror mirror,
     IStringLocalizer<DataMessages> messages)
 {
+    /// <summary>Das Sicherungsziel — die Export-Seite fragt darüber nach dem entfernten Abschnitt.</summary>
+    public ISnapshotMirror Mirror => mirror;
+
     /// <summary>Bewahrt den aktuellen Stand des Projekts als neuen Exportstand auf.</summary>
     public async Task<ExportSnapshot> CreateAsync(
         Guid projectId, bool includeAssets, CancellationToken ct = default)
@@ -107,9 +111,20 @@ public partial class ExportSnapshotService(
         var snapshot = ReadSnapshotInfo(path)
             ?? throw new ContentValidationException(messages["Export_SnapshotMissing"].Value);
 
+        // Die Spiegelkopie ins Sicherungsziel — auf allen drei Wegen (von Hand, Zeitplan,
+        // Sicherheitsnetz), weil alle durch diese eine Methode laufen. Beiwerk, nie Blocker:
+        // UploadAsync wirft nicht, ein nicht erreichbares Ziel landet im Log der Umsetzung.
+        if (mirror.IsConfigured)
+        {
+            await using var stored = File.OpenRead(path);
+            await mirror.UploadAsync(projectId, fileName, stored, ct);
+        }
+
         // Aufgeräumt wird hier und nicht in der Oberfläche: Das Sicherheitsnetz legt bei jedem
         // ersetzenden Import und jedem Projektlöschen einen Stand an, und was von allein
-        // wächst, muss auch von allein wieder abnehmen.
+        // wächst, muss auch von allein wieder abnehmen. Gelöscht wird dabei nur lokal — die
+        // Spiegelkopie bleibt stehen: Das Sicherungsziel ist das Langzeitgedächtnis, und die
+        // weggeräumten Stände erscheinen in der Historie als eigener Abschnitt.
         PruneCore(projectId);
 
         return snapshot;

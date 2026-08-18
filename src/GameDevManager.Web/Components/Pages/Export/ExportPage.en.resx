@@ -156,6 +156,12 @@
   <data name="HistoryEmpty" xml:space="preserve">
     <value>No snapshots kept yet.</value>
   </data>
+  <data name="RemoteOnlyHeading" xml:space="preserve">
+    <value>Only in the backup target</value>
+  </data>
+  <data name="RemoteOnlyHint" xml:space="preserve">
+    <value>Local pruning removed these snapshots; their mirror copy lives in the S3 backup target. The way back leads through the bucket — download and import as a ZIP.</value>
+  </data>
   <data name="HistoryDate" xml:space="preserve">
     <value>Time</value>
   </data>

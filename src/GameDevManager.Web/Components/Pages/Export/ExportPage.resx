@@ -156,6 +156,12 @@
   <data name="HistoryEmpty" xml:space="preserve">
     <value>Noch keine Stände aufbewahrt.</value>
   </data>
+  <data name="RemoteOnlyHeading" xml:space="preserve">
+    <value>Nur noch im Sicherungsziel</value>
+  </data>
+  <data name="RemoteOnlyHint" xml:space="preserve">
+    <value>Diese Stände hat das lokale Aufräumen weggeräumt; ihre Spiegelkopie liegt im S3-Sicherungsziel. Der Weg zurück führt über den Bucket — herunterladen und als ZIP importieren.</value>
+  </data>
   <data name="HistoryDate" xml:space="preserve">
     <value>Zeitpunkt</value>
   </data>

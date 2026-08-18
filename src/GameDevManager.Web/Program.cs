@@ -151,6 +151,12 @@ builder.Services.AddSingleton(
     builder.Configuration.GetSection(DeepLOptions.SectionName).Get<DeepLOptions>() ?? new DeepLOptions());
 builder.Services.Replace(ServiceDescriptor.Singleton<ITranslationSuggester, DeepLTranslationSuggester>());
 
+// Und für das Sicherungsziel der Exportstände: S3-kompatibler Speicher. Die Zugangsdaten
+// gehören in die appsettings.Local.json; ohne sie bleibt die Spiegelung aus.
+builder.Services.AddSingleton(
+    builder.Configuration.GetSection(S3Options.SectionName).Get<S3Options>() ?? new S3Options());
+builder.Services.Replace(ServiceDescriptor.Singleton<ISnapshotMirror, S3SnapshotMirror>());
+
 // Kürzt das Änderungsprotokoll auf die eingestellte Aufbewahrung. Läuft nach dem Start —
 // Hintergrunddienste beginnen erst mit app.Run(), also nach den Migrationen weiter unten.
 builder.Services.AddHostedService<ChangeLogMaintenance>();

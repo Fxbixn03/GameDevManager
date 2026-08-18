@@ -280,6 +280,30 @@
                     </tbody>
                 </MudSimpleTable>
             }
+
+            @* Der Abschnitt „nur noch entfernt“: Stände, die das lokale Aufräumen weggeräumt
+               hat, deren Spiegelkopie im Sicherungsziel aber steht — der Weg zurück führt
+               über den Bucket. Ohne Sicherungsziel gibt es den Abschnitt nicht. *@
+            @if (_remoteOnly.Count > 0)
+            {
+                <MudDivider Class="my-3" />
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["RemoteOnlyHeading"]</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
+                    @L["RemoteOnlyHint"]
+                </MudText>
+
+                @foreach (var remote in _remoteOnly)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="py-1">
+                        <MudIcon Icon="@Icons.Material.Filled.CloudDone" Size="Size.Small" Color="Color.Secondary" />
+                        <MudText Typo="Typo.body2" Class="gdm-mono gdm-ellipsis">@remote.FileName</MudText>
+                        <MudSpacer />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
+                            @FormatSize(remote.SizeBytes)
+                        </MudText>
+                    </MudStack>
+                }
+            }
             }
         </MudPaper>
     </MudItem>
@@ -747,6 +771,13 @@
         try
         {
             _health = await Overview.GetHealthAsync(_projectId);
+
+            // Der entfernte Abschnitt der Historie kommt aus demselben Grund erst nach dem
+            // ersten Rendern: Er fragt ein fremdes Sicherungsziel über HTTP.
+            if (_permissions.CanExport)
+            {
+                await LoadRemoteOnlyAsync();
+            }
         }
         catch (Exception ex) when (ex is ContentValidationException or InvalidOperationException)
         {
@@ -777,6 +808,29 @@
         Nav.NavigateTo($"/export/snapshots/{snapshot.FileName}", forceLoad: true);
 
     // ---------------------------------------------------------------------- Historie
+
+    private List<RemoteSnapshot> _remoteOnly = [];
+
+    /// <summary>
+    /// Der Abschnitt „nur noch entfernt“: was das Sicherungsziel hat, die lokale Historie
+    /// aber nicht mehr — die Stände, die das Aufräumen weggeräumt hat. Ein nicht
+    /// erreichbares Ziel liefert eine leere Liste; der Abschnitt fehlt dann schlicht.
+    /// </summary>
+    private async Task LoadRemoteOnlyAsync()
+    {
+        if (!Snapshots.Mirror.IsConfigured)
+        {
+            return;
+        }
+
+        var local = _snapshots.Select(snapshot => snapshot.FileName).ToHashSet(StringComparer.Ordinal);
+
+        _remoteOnly =
+        [
+            .. (await Snapshots.Mirror.ListAsync(_projectId))
+                .Where(remote => !local.Contains(remote.FileName))
+        ];
+    }
 
     private void LoadSnapshots()
     {

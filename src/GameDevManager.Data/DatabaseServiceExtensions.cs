@@ -91,6 +91,7 @@ public static class DatabaseServiceExtensions
         services.TryAddSingleton(new MailOptions());
         services.TryAddSingleton<IMailSender, NullMailSender>();
         services.TryAddSingleton<ITranslationSuggester, NullTranslationSuggester>();
+        services.TryAddSingleton<ISnapshotMirror, NullSnapshotMirror>();
         services.AddScoped<ChangeLogService>();
         services.AddScoped<RecycleBinService>();
         services.AddScoped<UserService>();
