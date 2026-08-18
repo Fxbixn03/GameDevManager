@@ -8,7 +8,9 @@
 @inject EconomyService Economy
 @inject VoiceOverService VoiceOvers
 @inject QuestService Quests
+@inject HealthCheckMuteService Mutes
 @inject ProjectContext Project
+@inject ISnackbar Snackbar
 @inject IStringLocalizer<StatisticsPage> L
 @inject ModuleLabels Modules
 
@@ -94,22 +96,23 @@ else
         @* Items ohne Bezugsquelle *@
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
-                <MudIcon Icon="@StatusIcon(_deadItems.Count)" Color="@StatusColor(_deadItems.Count)" Size="Size.Small" />
+                <MudIcon Icon="@StatusIcon(VisibleDeadItems.Count)" Color="@StatusColor(VisibleDeadItems.Count)" Size="Size.Small" />
                 <MudText Typo="Typo.subtitle1"><b>@L["DeadItemsTitle"]</b></MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_deadItems.Count)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(VisibleDeadItems.Count)</MudText>
                 <MudSpacer />
                 <MudLink Href="/modules/items" Typo="Typo.caption">@L["ToItems"]</MudLink>
             </MudStack>
-            @if (_deadItems.Count > 0)
+            @if (VisibleDeadItems.Count > 0)
             {
                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                     @L["DeadItemsHint"]
                 </MudText>
-                @foreach (var item in _deadItems)
+                @foreach (var item in VisibleDeadItems)
                 {
-                    <MudLink Href="@($"/modules/items/{item.Id}")" Typo="Typo.body2" Class="d-block py-1">
-                        @item.Name
-                    </MudLink>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="py-1">
+                        <MudLink Href="@($"/modules/items/{item.Id}")" Typo="Typo.body2">@item.Name</MudLink>
+                        @MuteButton(HealthCheckKeys.DeadItems, item.Id, item.Name)
+                    </MudStack>
                 }
             }
         </MudPaper>
@@ -117,36 +120,39 @@ else
         @* Quests ohne Abschlussbedingung *@
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
-                <MudIcon Icon="@StatusIcon(_questsWithoutCompletion.Count)" Color="@StatusColor(_questsWithoutCompletion.Count)" Size="Size.Small" />
+                <MudIcon Icon="@StatusIcon(VisibleQuests.Count)" Color="@StatusColor(VisibleQuests.Count)" Size="Size.Small" />
                 <MudText Typo="Typo.subtitle1"><b>@L["QuestsTitle"]</b></MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_questsWithoutCompletion.Count)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(VisibleQuests.Count)</MudText>
                 <MudSpacer />
                 <MudLink Href="/modules/quests" Typo="Typo.caption">@L["ToQuests"]</MudLink>
             </MudStack>
-            @foreach (var quest in _questsWithoutCompletion)
+            @foreach (var quest in VisibleQuests)
             {
-                <MudLink Href="@($"/modules/quests/{quest.Id}")" Typo="Typo.body2" Class="d-block py-1">
-                    @quest.Name
-                </MudLink>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="py-1">
+                    <MudLink Href="@($"/modules/quests/{quest.Id}")" Typo="Typo.body2">@quest.Name</MudLink>
+                    @MuteButton(HealthCheckKeys.QuestsWithoutCompletion, quest.Id, quest.Name)
+                </MudStack>
             }
         </MudPaper>
 
-        @* Dialog-Sackgassen *@
+        @* Dialog-Sackgassen. Stummgeschaltet wird je Dialog — ein Dialog mit drei Sackgassen
+           ist ein „bewusst so“ und nicht drei. *@
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
-                <MudIcon Icon="@StatusIcon(_dialogueProblems.Count)" Color="@StatusColor(_dialogueProblems.Count)" Size="Size.Small" />
+                <MudIcon Icon="@StatusIcon(VisibleDialogueProblems.Count)" Color="@StatusColor(VisibleDialogueProblems.Count)" Size="Size.Small" />
                 <MudText Typo="Typo.subtitle1"><b>@L["DialoguesTitle"]</b></MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_dialogueProblems.Count)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(VisibleDialogueProblems.Count)</MudText>
                 <MudSpacer />
                 <MudLink Href="/modules/dialogs" Typo="Typo.caption">@L["ToDialogues"]</MudLink>
             </MudStack>
-            @foreach (var problem in _dialogueProblems)
+            @foreach (var problem in VisibleDialogueProblems)
             {
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="py-1">
                     <MudLink Href="@($"/modules/dialogs/{problem.DialogueId}")" Typo="Typo.body2">
                         @problem.DialogueName
                     </MudLink>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@problem.Message</MudText>
+                    @MuteButton(HealthCheckKeys.DialogueDeadEnds, problem.DialogueId, problem.DialogueName)
                 </MudStack>
             }
         </MudPaper>
@@ -154,19 +160,20 @@ else
         @* Loot über 100 % *@
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
-                <MudIcon Icon="@StatusIcon(_overfullTables.Count)" Color="@StatusColor(_overfullTables.Count)" Size="Size.Small" />
+                <MudIcon Icon="@StatusIcon(VisibleOverfullTables.Count)" Color="@StatusColor(VisibleOverfullTables.Count)" Size="Size.Small" />
                 <MudText Typo="Typo.subtitle1"><b>@L["LootTitle"]</b></MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_overfullTables.Count)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(VisibleOverfullTables.Count)</MudText>
                 <MudSpacer />
                 <MudLink Href="/modules/loot" Typo="Typo.caption">@L["ToLoot"]</MudLink>
             </MudStack>
-            @foreach (var table in _overfullTables)
+            @foreach (var table in VisibleOverfullTables)
             {
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="py-1">
                     <MudLink Href="@($"/modules/loot/{table.Id}")" Typo="Typo.body2">@table.Name</MudLink>
                     <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono">
                         @table.TotalChance.ToString("0.##") %
                     </MudText>
+                    @MuteButton(HealthCheckKeys.OverfullLoot, table.Id, table.Name)
                 </MudStack>
             }
         </MudPaper>
@@ -174,13 +181,13 @@ else
         @* Verwaiste Sprites *@
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
-                <MudIcon Icon="@StatusIcon(_orphanedAssets.Count)" Color="@StatusColor(_orphanedAssets.Count)" Size="Size.Small" />
+                <MudIcon Icon="@StatusIcon(VisibleOrphans.Count)" Color="@StatusColor(VisibleOrphans.Count)" Size="Size.Small" />
                 <MudText Typo="Typo.subtitle1"><b>@L["OrphansTitle"]</b></MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_orphanedAssets.Count)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(VisibleOrphans.Count)</MudText>
                 <MudSpacer />
                 <MudLink Href="/modules/assets" Typo="Typo.caption">@L["ToAssets"]</MudLink>
             </MudStack>
-            @foreach (var orphan in _orphanedAssets)
+            @foreach (var orphan in VisibleOrphans)
             {
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="py-1">
                     <AssetThumbnail AssetId="orphan.AssetId" Size="Size.Small" Alt="@orphan.FileName" />
@@ -188,6 +195,7 @@ else
                     <MudText Typo="Typo.caption" Color="Color.Secondary">
                         @Modules.NameOrKey(orphan.OwnerModuleKey)
                     </MudText>
+                    @MuteButton(HealthCheckKeys.OrphanedAssets, orphan.AssetId, orphan.FileName)
                 </MudStack>
             }
         </MudPaper>
@@ -232,23 +240,23 @@ else
            verboten — dieselbe Linie wie beim Loot-Check. *@
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
-                <MudIcon Icon="@StatusIcon(_moneyPrinters.Count)" Color="@StatusColor(_moneyPrinters.Count)" Size="Size.Small" />
+                <MudIcon Icon="@StatusIcon(VisibleMoneyPrinters.Count)" Color="@StatusColor(VisibleMoneyPrinters.Count)" Size="Size.Small" />
                 <MudText Typo="Typo.subtitle1"><b>@L["MoneyPrintersTitle"]</b></MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_moneyPrinters.Count)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(VisibleMoneyPrinters.Count)</MudText>
                 <MudSpacer />
                 <MudButton Size="Size.Small" Variant="Variant.Text" Href="/modules/crafting">
                     @L["ToCrafting"]
                 </MudButton>
             </MudStack>
 
-            @if (_moneyPrinters.Count > 0)
+            @if (VisibleMoneyPrinters.Count > 0)
             {
                 <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
                     @L["MoneyPrintersHint"]
                 </MudText>
             }
 
-            @foreach (var printer in _moneyPrinters)
+            @foreach (var printer in VisibleMoneyPrinters)
             {
                 <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="py-1">
                     <MudLink Href="@($"/modules/crafting/{printer.RecipeId}")">@printer.RecipeName</MudLink>
@@ -261,6 +269,7 @@ else
                             @L["MoneyPrinterUncertain", printer.MissingPrices]
                         </MudChip>
                     }
+                    @MuteButton(HealthCheckKeys.MoneyPrinters, printer.RecipeId, printer.RecipeName)
                 </MudStack>
             }
         </MudPaper>
@@ -270,14 +279,14 @@ else
            Absicht sein. *@
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
-                <MudIcon Icon="@StatusIcon(_unpricedItems.Count)" Color="@StatusColor(_unpricedItems.Count)" Size="Size.Small" />
+                <MudIcon Icon="@StatusIcon(VisibleUnpricedItems.Count)" Color="@StatusColor(VisibleUnpricedItems.Count)" Size="Size.Small" />
                 <MudText Typo="Typo.subtitle1"><b>@L["UnpricedItemsTitle"]</b></MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_unpricedItems.Count)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(VisibleUnpricedItems.Count)</MudText>
                 <MudSpacer />
                 <MudLink Href="/modules/items" Typo="Typo.caption">@L["ToItems"]</MudLink>
             </MudStack>
 
-            @if (_unpricedItems.Count > 0)
+            @if (VisibleUnpricedItems.Count > 0)
             {
                 <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
                     @L["UnpricedItemsHint"]
@@ -285,7 +294,7 @@ else
             }
 
             @* Bei hunderten unbepreisten Items ist die vollständige Liste keine Auskunft mehr. *@
-            @foreach (var item in _unpricedItems.Take(25))
+            @foreach (var item in VisibleUnpricedItems.Take(25))
             {
                 <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="py-1">
                     <MudLink Href="@($"/modules/items/{item.ItemId}")" Typo="Typo.body2">@item.Name</MudLink>
@@ -293,13 +302,14 @@ else
                     {
                         <MudText Typo="Typo.caption" Color="Color.Secondary">@item.TypeName</MudText>
                     }
+                    @MuteButton(HealthCheckKeys.UnpricedItems, item.ItemId, item.Name)
                 </MudStack>
             }
 
-            @if (_unpricedItems.Count > 25)
+            @if (VisibleUnpricedItems.Count > 25)
             {
                 <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">
-                    @L["UnpricedItemsMore", _unpricedItems.Count - 25]
+                    @L["UnpricedItemsMore", VisibleUnpricedItems.Count - 25]
                 </MudText>
             }
         </MudPaper>
@@ -335,6 +345,36 @@ else
                 </MudText>
             }
         </MudPaper>
+
+        @* Stummgeschaltete Funde: „bewusst so“. Sie zählen nirgends mit, bleiben hier aber
+           einsehbar — eine Stummschaltung, die man nicht wiederfindet, wäre ein Rätsel. *@
+        @if (_mutedList.Count > 0)
+        {
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.VolumeOff" Color="Color.Secondary" Size="Size.Small" />
+                    <MudText Typo="Typo.subtitle1"><b>@L["MutedTitle"]</b></MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@_mutedList.Count</MudText>
+                </MudStack>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
+                    @L["MutedHint"]
+                </MudText>
+                @foreach (var mute in _mutedList)
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="py-1">
+                        <MudText Typo="Typo.body2">@(mute.EntityName ?? mute.EntityId.ToString())</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@MutedCheckLabel(mute.CheckKey)</MudText>
+                        <MudSpacer />
+                        <MudTooltip Text="@L["UnmuteTooltip"]">
+                            <MudIconButton Icon="@Icons.Material.Filled.VolumeUp"
+                                           Size="Size.Small"
+                                           aria-label="@L["UnmuteAria"]"
+                                           OnClick="@(() => UnmuteAsync(mute))" />
+                        </MudTooltip>
+                    </MudStack>
+                }
+            </MudPaper>
+        }
     </MudStack>
 }
 
@@ -355,9 +395,14 @@ else
     private List<UnpricedItem> _unpricedItems = [];
     private List<VoiceOverGap> _missingRecordings = [];
 
+    private Guid _projectId;
+    private List<HealthCheckMute> _mutedList = [];
+    private HashSet<(string CheckKey, Guid EntityId)> _muted = [];
+
     protected override async Task OnInitializedAsync()
     {
-        var projectId = await Project.GetCurrentIdAsync();
+        _projectId = await Project.GetCurrentIdAsync();
+        var projectId = _projectId;
 
         _npcBreakdown = await Statistics.GetNpcBreakdownAsync(projectId);
         _cycles = await Crafting.FindCyclesAsync(projectId);
@@ -372,9 +417,103 @@ else
         _unpricedItems = await Economy.FindUnpricedItemsAsync(projectId);
         _missingRecordings = await VoiceOvers.FindMissingRecordingsAsync(projectId);
 
+        // Verschwundene Funde nehmen ihre Stummschaltung mit — kein Leichenbestand.
+        await Mutes.PruneStaleAsync(projectId, new Dictionary<string, HashSet<Guid>>
+        {
+            [HealthCheckKeys.DeadItems] = [.. _deadItems.Select(item => item.Id)],
+            [HealthCheckKeys.QuestsWithoutCompletion] = [.. _questsWithoutCompletion.Select(quest => quest.Id)],
+            [HealthCheckKeys.DialogueDeadEnds] = [.. _dialogueProblems.Select(problem => problem.DialogueId)],
+            [HealthCheckKeys.OverfullLoot] = [.. _overfullTables.Select(table => table.Id)],
+            [HealthCheckKeys.OrphanedAssets] = [.. _orphanedAssets.Select(orphan => orphan.AssetId)],
+            [HealthCheckKeys.MoneyPrinters] = [.. _moneyPrinters.Select(printer => printer.RecipeId)],
+            [HealthCheckKeys.UnpricedItems] = [.. _unpricedItems.Select(item => item.ItemId)]
+        });
+        await ReloadMutesAsync();
+
         // Zuletzt, weil die Anzeige darauf wartet — so erscheinen die Checks gemeinsam.
         _counts = await Statistics.GetCountsAsync(projectId);
     }
+
+    // ------------------------------------------------------------- Stummschaltung
+
+    private List<EntitySummary> VisibleDeadItems =>
+        [.. _deadItems.Where(item => !IsMuted(HealthCheckKeys.DeadItems, item.Id))];
+
+    private List<EntitySummary> VisibleQuests =>
+        [.. _questsWithoutCompletion.Where(quest => !IsMuted(HealthCheckKeys.QuestsWithoutCompletion, quest.Id))];
+
+    private List<DialogueProblem> VisibleDialogueProblems =>
+        [.. _dialogueProblems.Where(problem => !IsMuted(HealthCheckKeys.DialogueDeadEnds, problem.DialogueId))];
+
+    private List<LootTableListRow> VisibleOverfullTables =>
+        [.. _overfullTables.Where(table => !IsMuted(HealthCheckKeys.OverfullLoot, table.Id))];
+
+    private List<OrphanedAsset> VisibleOrphans =>
+        [.. _orphanedAssets.Where(orphan => !IsMuted(HealthCheckKeys.OrphanedAssets, orphan.AssetId))];
+
+    private List<MoneyPrinter> VisibleMoneyPrinters =>
+        [.. _moneyPrinters.Where(printer => !IsMuted(HealthCheckKeys.MoneyPrinters, printer.RecipeId))];
+
+    private List<UnpricedItem> VisibleUnpricedItems =>
+        [.. _unpricedItems.Where(item => !IsMuted(HealthCheckKeys.UnpricedItems, item.ItemId))];
+
+    private bool IsMuted(string checkKey, Guid entityId) => _muted.Contains((checkKey, entityId));
+
+    private async Task ReloadMutesAsync()
+    {
+        _mutedList = await Mutes.GetForProjectAsync(_projectId);
+        _muted = [.. _mutedList.Select(mute => (mute.CheckKey, mute.EntityId))];
+    }
+
+    private async Task MuteFindingAsync(string checkKey, Guid entityId, string? entityName)
+    {
+        try
+        {
+            await Mutes.MuteAsync(_projectId, checkKey, entityId, entityName);
+            await ReloadMutesAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task UnmuteAsync(HealthCheckMute mute)
+    {
+        try
+        {
+            await Mutes.UnmuteAsync(_projectId, mute.CheckKey, mute.EntityId);
+            await ReloadMutesAsync();
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    /// <summary>Der Stummschalter an einem Fund — „bewusst so“.</summary>
+    private RenderFragment MuteButton(string checkKey, Guid entityId, string? entityName) => __builder =>
+    {
+        <MudTooltip Text="@L["MuteTooltip"]">
+            <MudIconButton Icon="@Icons.Material.Filled.VolumeOff"
+                           Size="Size.Small"
+                           aria-label="@L["MuteAria"]"
+                           OnClick="@(() => MuteFindingAsync(checkKey, entityId, entityName))" />
+        </MudTooltip>
+    };
+
+    /// <summary>Die Beschriftung der Prüfart in der Liste der Stummschaltungen.</summary>
+    private string MutedCheckLabel(string checkKey) => checkKey switch
+    {
+        HealthCheckKeys.DeadItems => L["DeadItemsTitle"],
+        HealthCheckKeys.QuestsWithoutCompletion => L["QuestsTitle"],
+        HealthCheckKeys.DialogueDeadEnds => L["DialoguesTitle"],
+        HealthCheckKeys.OverfullLoot => L["LootTitle"],
+        HealthCheckKeys.OrphanedAssets => L["OrphansTitle"],
+        HealthCheckKeys.MoneyPrinters => L["MoneyPrintersTitle"],
+        HealthCheckKeys.UnpricedItems => L["UnpricedItemsTitle"],
+        _ => checkKey
+    };
 
     private static string StatusIcon(int findings) =>
         findings == 0 ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.ReportProblem;

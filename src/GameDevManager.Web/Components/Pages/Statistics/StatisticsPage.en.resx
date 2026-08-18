@@ -111,6 +111,24 @@
   <data name="UnpricedItemsMore" xml:space="preserve">
     <value>… and {0} more.</value>
   </data>
+  <data name="MutedTitle" xml:space="preserve">
+    <value>Muted</value>
+  </data>
+  <data name="MutedHint" xml:space="preserve">
+    <value>These findings are marked as “intentional”: they do not count in the health band. If a finding disappears, its mute goes with it — if it comes back, it speaks up again.</value>
+  </data>
+  <data name="MuteTooltip" xml:space="preserve">
+    <value>Mute — intentional</value>
+  </data>
+  <data name="MuteAria" xml:space="preserve">
+    <value>Mute finding</value>
+  </data>
+  <data name="UnmuteTooltip" xml:space="preserve">
+    <value>Unmute</value>
+  </data>
+  <data name="UnmuteAria" xml:space="preserve">
+    <value>Unmute</value>
+  </data>
   <data name="MoneyPrintersHint" xml:space="preserve">
     <value>For these recipes the ingredients cost less at a trader than the result earns there. The calculation uses the cheapest purchase and the best sale — that is what a player will look for.</value>
   </data>

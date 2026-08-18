@@ -1873,6 +1873,38 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("GameProjects");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.HealthCheckMute", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CheckKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EntityName")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId", "CheckKey", "EntityId")
+                        .IsUnique();
+
+                    b.ToTable("HealthCheckMutes");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Item", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3943,6 +3975,17 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .IsRequired();
 
                     b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.HealthCheckMute", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("GameProject");
                 });

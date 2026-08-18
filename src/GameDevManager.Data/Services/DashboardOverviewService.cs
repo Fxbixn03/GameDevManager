@@ -59,7 +59,8 @@ public class DashboardOverviewService(
     TechTreeService techTree,
     EconomyService economy,
     VoiceOverService voiceOvers,
-    ContentRuleService rules)
+    ContentRuleService rules,
+    HealthCheckMuteService mutes)
 {
     /// <summary>
     /// Die zuletzt bearbeiteten Entitäten quer durch alle Module, jüngste zuerst.
@@ -132,20 +133,54 @@ public class DashboardOverviewService(
     /// </summary>
     public async Task<HealthSummary> GetHealthAsync(Guid projectId, CancellationToken ct = default)
     {
+        // Die entitätsbezogenen Funde vorab — sie lassen sich je Entität stummschalten
+        // („bewusst so“); stummgeschaltete zählen im Band nicht mit. Prüfungen ohne einzelne
+        // Entität (Ringe, Bedingungen, Regeln, Vertonung) haben keinen Stummschalter.
+        var deadItems = await statistics.FindDeadItemsAsync(projectId, ct);
+        var questsWithout = await quests.FindQuestsWithoutCompletionAsync(projectId, ct);
+        var dialogueProblems = await dialogues.FindProblemsAsync(projectId, ct);
+        var overfull = await loot.FindOverfullTablesAsync(projectId, ct);
+        var orphaned = await statistics.FindOrphanedAssetsAsync(projectId, ct);
+        var printers = await economy.FindMoneyPrintersAsync(projectId, ct);
+        var unpriced = await economy.FindUnpricedItemsAsync(projectId, ct);
+
+        var current = new Dictionary<string, HashSet<Guid>>
+        {
+            [HealthCheckKeys.DeadItems] = [.. deadItems.Select(item => item.Id)],
+            [HealthCheckKeys.QuestsWithoutCompletion] = [.. questsWithout.Select(quest => quest.Id)],
+            [HealthCheckKeys.DialogueDeadEnds] = [.. dialogueProblems.Select(problem => problem.DialogueId)],
+            [HealthCheckKeys.OverfullLoot] = [.. overfull.Select(table => table.Id)],
+            [HealthCheckKeys.OrphanedAssets] = [.. orphaned.Select(orphan => orphan.AssetId)],
+            [HealthCheckKeys.MoneyPrinters] = [.. printers.Select(printer => printer.RecipeId)],
+            [HealthCheckKeys.UnpricedItems] = [.. unpriced.Select(item => item.ItemId)]
+        };
+
+        // Verschwundene Funde nehmen ihre Stummschaltung mit — kein Leichenbestand: Kehrt der
+        // Fund zurück, meldet er sich wieder.
+        await mutes.PruneStaleAsync(projectId, current, ct);
+        var muted = await mutes.GetMutedKeysAsync(projectId, ct);
+
+        int Visible(string checkKey, IEnumerable<Guid> entityIds) =>
+            entityIds.Count(id => !muted.Contains((checkKey, id)));
+
         List<HealthCheckResult> checks =
         [
             new(HealthCheckKeys.DeadItems, ModuleKeys.Items,
-                (await statistics.FindDeadItemsAsync(projectId, ct)).Count),
+                Visible(HealthCheckKeys.DeadItems, deadItems.Select(item => item.Id))),
             new(HealthCheckKeys.CraftingCycles, ModuleKeys.Crafting,
                 (await crafting.FindCyclesAsync(projectId, ct)).Count),
             new(HealthCheckKeys.QuestsWithoutCompletion, ModuleKeys.Quests,
-                (await quests.FindQuestsWithoutCompletionAsync(projectId, ct)).Count),
+                Visible(HealthCheckKeys.QuestsWithoutCompletion, questsWithout.Select(quest => quest.Id))),
+
+            // Gezählt werden die Probleme, stummgeschaltet wird je Dialog — ein Dialog mit
+            // drei Sackgassen ist ein „bewusst so“ und nicht drei.
             new(HealthCheckKeys.DialogueDeadEnds, ModuleKeys.Dialogs,
-                (await dialogues.FindProblemsAsync(projectId, ct)).Count),
+                dialogueProblems.Count(problem =>
+                    !muted.Contains((HealthCheckKeys.DialogueDeadEnds, problem.DialogueId)))),
             new(HealthCheckKeys.OverfullLoot, ModuleKeys.Loot,
-                (await loot.FindOverfullTablesAsync(projectId, ct)).Count),
+                Visible(HealthCheckKeys.OverfullLoot, overfull.Select(table => table.Id))),
             new(HealthCheckKeys.OrphanedAssets, ModuleKeys.Assets,
-                (await statistics.FindOrphanedAssetsAsync(projectId, ct)).Count),
+                Visible(HealthCheckKeys.OrphanedAssets, orphaned.Select(orphan => orphan.AssetId))),
 
             // Bedingungen hängen an Entitäten aller Module — ein einzelnes Sprungziel gibt es
             // dafür nicht, die Zeile führt auf die Statistik-Seite.
@@ -160,12 +195,12 @@ public class DashboardOverviewService(
             // Die Wirtschafts-Prüfung: Zutaten billiger als das Ergebnis. Der Weg dorthin
             // führt ins Crafting — dort steht das Rezept, das man ändern muss.
             new(HealthCheckKeys.MoneyPrinters, ModuleKeys.Crafting,
-                (await economy.FindMoneyPrintersAsync(projectId, ct)).Count),
+                Visible(HealthCheckKeys.MoneyPrinters, printers.Select(printer => printer.RecipeId))),
 
             // Items, die bei keinem Händler einen Preis haben — die Pflegelücke, die die
             // Gelddruckmaschinen-Prüfung zur Vermutung macht. Der Weg führt in die Items.
             new(HealthCheckKeys.UnpricedItems, ModuleKeys.Items,
-                (await economy.FindUnpricedItemsAsync(projectId, ct)).Count),
+                Visible(HealthCheckKeys.UnpricedItems, unpriced.Select(item => item.ItemId))),
 
             // Zeilen, deren Text in einer Sprache vorliegt, ohne dass sie eingesprochen wäre.
             // Ohne Sprachen im Projekt findet die Prüfung nichts — wer keine Lokalisierung

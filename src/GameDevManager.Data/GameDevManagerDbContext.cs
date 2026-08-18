@@ -199,6 +199,9 @@ public class GameDevManagerDbContext(
     /// <summary>Gelöschte Entitäten als JSON-Baum — Werkzeug-Daten wie das Änderungsprotokoll.</summary>
     public DbSet<RecycleBinEntry> RecycleBinEntries => Set<RecycleBinEntry>();
 
+    /// <summary>Stummgeschaltete Health-Check-Funde — Werkzeug-Daten wie das Änderungsprotokoll.</summary>
+    public DbSet<HealthCheckMute> HealthCheckMutes => Set<HealthCheckMute>();
+
     /// <summary>
     /// Schaltet das Änderungsprotokoll für diesen Kontext ab. Gesetzt von Import und
     /// Projekt-Duplizierung: Beide schreiben den gesamten Bestand eines Projekts auf einmal,
@@ -412,6 +415,20 @@ public class GameDevManagerDbContext(
 
             // Beim Wiederherstellen wird über die ursprüngliche GUID gesucht.
             entity.HasIndex(e => e.EntityId);
+        });
+
+        modelBuilder.Entity<HealthCheckMute>(entity =>
+        {
+            entity.Property(e => e.CheckKey).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.EntityName).HasMaxLength(200);
+
+            entity.HasOne(e => e.GameProject)
+                .WithMany()
+                .HasForeignKey(e => e.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Ein Fund ist höchstens einmal stumm — der zweite Klick wäre sonst eine zweite Zeile.
+            entity.HasIndex(e => new { e.GameProjectId, e.CheckKey, e.EntityId }).IsUnique();
         });
 
         modelBuilder.Entity<Asset>(entity =>

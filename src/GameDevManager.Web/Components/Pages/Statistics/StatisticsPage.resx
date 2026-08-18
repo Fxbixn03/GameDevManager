@@ -111,6 +111,24 @@
   <data name="UnpricedItemsMore" xml:space="preserve">
     <value>… und {0} weitere.</value>
   </data>
+  <data name="MutedTitle" xml:space="preserve">
+    <value>Stummgeschaltet</value>
+  </data>
+  <data name="MutedHint" xml:space="preserve">
+    <value>Diese Funde sind als „bewusst so“ markiert: Sie zählen im Zustandsband nicht mit. Verschwindet der Fund, fällt die Stummschaltung von selbst weg — kehrt er zurück, meldet er sich wieder.</value>
+  </data>
+  <data name="MuteTooltip" xml:space="preserve">
+    <value>Stummschalten — bewusst so</value>
+  </data>
+  <data name="MuteAria" xml:space="preserve">
+    <value>Fund stummschalten</value>
+  </data>
+  <data name="UnmuteTooltip" xml:space="preserve">
+    <value>Stummschaltung aufheben</value>
+  </data>
+  <data name="UnmuteAria" xml:space="preserve">
+    <value>Stummschaltung aufheben</value>
+  </data>
   <data name="MoneyPrintersHint" xml:space="preserve">
     <value>Bei diesen Rezepten kosten die Zutaten beim Händler weniger, als das Ergebnis dort einbringt. Gerechnet wird mit dem günstigsten Einkauf und dem besten Verkauf — den sucht sich ein Spieler.</value>
   </data>

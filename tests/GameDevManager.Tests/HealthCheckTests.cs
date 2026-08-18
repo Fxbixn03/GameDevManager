@@ -11,6 +11,95 @@ namespace GameDevManager.Tests;
 /// </summary>
 public class HealthCheckTests
 {
+    // -------------------------------------------------------------------- Stummschaltung
+
+    private static async Task<LootTable> SeedOverfullTableAsync(TestDatabase database, string name)
+    {
+        await using var db = database.CreateContext();
+
+        var itemId = Guid.NewGuid();
+        var table = new LootTable
+        {
+            GameProjectId = database.ProjectId,
+            Name = name,
+            RollMode = LootRollMode.SinglePick,
+            Entries =
+            [
+                new LootEntry { ItemId = itemId, Chance = 60 },
+                new LootEntry { ItemId = itemId, Chance = 50 }
+            ]
+        };
+
+        db.LootTables.Add(table);
+        await db.SaveChangesAsync();
+
+        return table;
+    }
+
+    [Fact]
+    public async Task Ein_stummgeschalteter_Fund_zaehlt_nicht_im_Zustandsband()
+    {
+        using var database = new TestDatabase();
+        var table = await SeedOverfullTableAsync(database, "Truhe");
+
+        var mutes = database.GetService<HealthCheckMuteService>();
+        var overview = database.GetService<DashboardOverviewService>();
+
+        var loud = await overview.GetHealthAsync(database.ProjectId);
+        Assert.Equal(1, loud.Checks.Single(c => c.CheckKey == HealthCheckKeys.OverfullLoot).Findings);
+
+        await mutes.MuteAsync(database.ProjectId, HealthCheckKeys.OverfullLoot, table.Id, table.Name);
+
+        var muted = await overview.GetHealthAsync(database.ProjectId);
+        Assert.Equal(0, muted.Checks.Single(c => c.CheckKey == HealthCheckKeys.OverfullLoot).Findings);
+
+        // Einsehbar bleibt sie — nur eben still.
+        var entry = Assert.Single(await mutes.GetForProjectAsync(database.ProjectId));
+        Assert.Equal("Truhe", entry.EntityName);
+
+        // Aufheben macht den Fund wieder laut.
+        await mutes.UnmuteAsync(database.ProjectId, HealthCheckKeys.OverfullLoot, table.Id);
+
+        var again = await overview.GetHealthAsync(database.ProjectId);
+        Assert.Equal(1, again.Checks.Single(c => c.CheckKey == HealthCheckKeys.OverfullLoot).Findings);
+    }
+
+    [Fact]
+    public async Task Eine_Stummschaltung_faellt_weg_wenn_der_Fund_verschwindet()
+    {
+        using var database = new TestDatabase();
+        var table = await SeedOverfullTableAsync(database, "Truhe");
+
+        var mutes = database.GetService<HealthCheckMuteService>();
+        await mutes.MuteAsync(database.ProjectId, HealthCheckKeys.OverfullLoot, table.Id, table.Name);
+
+        // Der Fund verschwindet: Die Tabelle wird auf 100 % zurechtgestutzt.
+        await using (var db = database.CreateContext())
+        {
+            var entry = db.LootEntries.First(e => e.LootTableId == table.Id && e.Chance == 50);
+            entry.Chance = 40;
+            await db.SaveChangesAsync();
+        }
+
+        // Der Prüf-Lauf räumt die Stummschaltung ab — kein Leichenbestand.
+        await database.GetService<DashboardOverviewService>().GetHealthAsync(database.ProjectId);
+
+        Assert.Empty(await mutes.GetForProjectAsync(database.ProjectId));
+    }
+
+    [Fact]
+    public async Task Ohne_Schreibrecht_laesst_sich_nichts_stummschalten()
+    {
+        using var database = new TestDatabase();
+        var table = await SeedOverfullTableAsync(database, "Truhe");
+
+        database.Permissions.Current = UserPermissions.Full with { IsAdministrator = false, CanWrite = false };
+
+        await Assert.ThrowsAsync<ContentValidationException>(() => database
+            .GetService<HealthCheckMuteService>()
+            .MuteAsync(database.ProjectId, HealthCheckKeys.OverfullLoot, table.Id, table.Name));
+    }
+
     // ------------------------------------------------------------------------------- Loot
 
     [Fact]
