@@ -233,19 +233,41 @@
         // Fehlt die Datenbank oder ist das Projekt leer, bleibt der Startscreen ohne Regen —
         // er ist reine Dekoration und darf die Anmeldung nicht aufhalten.
         //
-        // Der Regen zeigt Namen angelegter Inhalte und läuft damit auch vor der Anmeldung.
-        // Das ist Absicht: Er ist der Startscreen. Wer das Werkzeug offen ins Netz stellt und
-        // die Namen nicht zeigen will, hängt das Laden hier an SignedIn.
+        // Vor der Anmeldung fallen neutrale Platzhalter statt angelegter Inhalte: Die Seite
+        // wird statisch gerendert, der Regen käme sonst fertig mit der Antwort — und Namen
+        // von Inhalten wären für Installationen im offenen Netz ein Informationsleck. Die
+        // Modulnamen stammen aus der festen Registry und verraten nichts über das Projekt.
         try
         {
-            var projectId = await Project.GetCurrentIdAsync();
-            _drops = BuildDrops(await StartScreen.SampleEntitiesAsync(projectId, MaxDrops));
+            if (SignedIn)
+            {
+                var projectId = await Project.GetCurrentIdAsync();
+                _drops = BuildDrops(await StartScreen.SampleEntitiesAsync(projectId, MaxDrops));
+            }
+            else
+            {
+                _drops = BuildDrops(BuildPlaceholders());
+            }
         }
         catch (Exception)
         {
             _drops = [];
         }
     }
+
+    /// <summary>
+    /// Neutrale Tropfen für den nicht angemeldeten Blick: je umgesetztes Modul einer, mit
+    /// Modulname und -icon statt eines Inhaltsnamens. <see cref="Guid.Empty"/> kennzeichnet
+    /// den Platzhalter — <see cref="BuildDrops"/> lässt dann die Modulzeile leer, sonst
+    /// stünde derselbe Name zweimal übereinander.
+    /// </summary>
+    private List<StartScreenEntity> BuildPlaceholders() =>
+        [.. ModuleRegistry.All
+            .Where(module => module.Implemented)
+            .Take(MaxDrops)
+            .Select(module => new StartScreenEntity(
+                new SearchHit(Guid.Empty, module.Id, SearchHitKind.Entity, Modules.NameOrKey(module.Id), null, null),
+                RarityColor: null))];
 
     /// <summary>
     /// Verteilt die Entitäten auf Bahnen und würfelt je Tropfen die Tiefe aus: was größer und
@@ -282,7 +304,9 @@
 
             drops.Add(new RainDrop(
                 hit,
-                Modules.NameOrKey(hit.ModuleKey),
+                // Platzhalter tragen den Modulnamen schon als Namen — die Modulzeile bliebe
+                // sonst dieselbe Angabe zweimal übereinander.
+                hit.Id == Guid.Empty ? string.Empty : Modules.NameOrKey(hit.ModuleKey),
                 ModuleRegistry.Find(hit.ModuleKey)?.Icon ?? Icons.Material.Filled.Category,
                 Style(
                     left,
