@@ -205,6 +205,9 @@ public class GameDevManagerDbContext(
     /// <summary>Abnahme-Anfragen des Review-Workflows — Werkzeug-Daten wie die Anmerkungen.</summary>
     public DbSet<ReviewRequest> ReviewRequests => Set<ReviewRequest>();
 
+    /// <summary>Die Feld-Zuordnung des Kampf-Simulators — Werkzeug-Konfiguration je Projekt.</summary>
+    public DbSet<CombatMapping> CombatMappings => Set<CombatMapping>();
+
     /// <summary>
     /// Schaltet das Änderungsprotokoll für diesen Kontext ab. Gesetzt von Import und
     /// Projekt-Duplizierung: Beide schreiben den gesamten Bestand eines Projekts auf einmal,
@@ -458,6 +461,17 @@ public class GameDevManagerDbContext(
             // Die Maske fragt „was steht an dieser Entität an?“, das Band „was wartet auf mich?“.
             entity.HasIndex(e => e.OwnerEntityId);
             entity.HasIndex(e => new { e.GameProjectId, e.AssignedUserId, e.Decision });
+        });
+
+        modelBuilder.Entity<CombatMapping>(entity =>
+        {
+            entity.HasOne(e => e.GameProject)
+                .WithMany()
+                .HasForeignKey(e => e.GameProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Eine Zuordnung je Projekt — die zweite wäre ein Widerspruch.
+            entity.HasIndex(e => e.GameProjectId).IsUnique();
         });
 
         modelBuilder.Entity<Asset>(entity =>

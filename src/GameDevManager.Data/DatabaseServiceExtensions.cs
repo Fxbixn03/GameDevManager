@@ -145,6 +145,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<BulkEditService>();
         services.AddScoped<SeriesService>();
         services.AddScoped<ReviewService>();
+        services.AddScoped<CombatService>();
         services.AddScoped<SavedViewService>();
         services.AddScoped<ContentRuleService>();
         services.AddScoped<WebhookService>();

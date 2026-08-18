@@ -102,6 +102,9 @@
   <data name="ToEconomy" xml:space="preserve">
     <value>Economy</value>
   </data>
+  <data name="ToCombat" xml:space="preserve">
+    <value>Combat simulator</value>
+  </data>
   <data name="UnpricedItemsTitle" xml:space="preserve">
     <value>Unpriced items</value>
   </data>

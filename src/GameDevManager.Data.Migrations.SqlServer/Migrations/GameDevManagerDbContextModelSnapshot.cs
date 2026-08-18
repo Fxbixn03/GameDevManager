@@ -553,6 +553,35 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                     b.ToTable("Collectibles");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.CombatMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DamageFieldId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DefenseFieldId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("HealthFieldId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("SpeedFieldId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId")
+                        .IsUnique();
+
+                    b.ToTable("CombatMappings");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Condition", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3616,6 +3645,17 @@ namespace GameDevManager.Data.Migrations.SqlServer.Migrations
                         .IsRequired();
 
                     b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.CombatMapping", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("GameProject");
                 });

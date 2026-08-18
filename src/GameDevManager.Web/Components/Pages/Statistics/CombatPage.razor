@@ -1,0 +1,263 @@
+@page "/modules/statistics/kampf"
+@inject CombatService Combat
+@inject ContentTypeService ContentTypes
+@inject ReferenceService References
+@inject ProjectContext Project
+@inject IUserPermissionsProvider PermissionsProvider
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<CombatPage> L
+
+@*
+    Der Kampf-Simulator: zwei Wertesätze gegeneinander, nach dem Muster des Loot-Simulators.
+    Welches Feld was bedeutet (Leben, Schaden, Verteidigung, Tempo), ordnet der Nutzer zu —
+    die Felder definiert er selbst, also verdrahtet der Simulator keine Namen. Seit dem
+    Spieler-Umbau sind Spielerfiguren überführbare NPCs, „Spieler gegen Boss“ ist damit
+    derselbe Fall wie „Mob gegen Mob“.
+*@
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<ModuleHeader Module="Module" Subtitle="@L["Subtitle"]">
+    <Actions>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.QueryStats"
+                   Href="/modules/statistics">
+            @L["ToStatistics"]
+        </MudButton>
+    </Actions>
+</ModuleHeader>
+
+@if (_mapping is null)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid Spacing="3">
+        @* ---------------------------------------------------------- Feld-Zuordnung *@
+        <MudItem xs="12" md="5">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["MappingHeading"]</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-1 mb-2">
+                    @L["MappingHint"]
+                </MudText>
+
+                @if (_fields.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["NoFields"]</MudText>
+                }
+                else
+                {
+                    @FieldSelect(L["RoleHealth"], () => _mapping.HealthFieldId, id => _mapping.HealthFieldId = id)
+                    @FieldSelect(L["RoleDamage"], () => _mapping.DamageFieldId, id => _mapping.DamageFieldId = id)
+                    @FieldSelect(L["RoleDefense"], () => _mapping.DefenseFieldId, id => _mapping.DefenseFieldId = id)
+                    @FieldSelect(L["RoleSpeed"], () => _mapping.SpeedFieldId, id => _mapping.SpeedFieldId = id)
+
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               Disabled="@(!_permissions.CanWrite)"
+                               OnClick="SaveMappingAsync"
+                               Class="mt-3">
+                        @L["SaveMapping"]
+                    </MudButton>
+                }
+            </MudPaper>
+        </MudItem>
+
+        @* --------------------------------------------------------------- Der Kampf *@
+        <MudItem xs="12" md="7">
+            <MudPaper Elevation="0" Class="gdm-panel pa-4">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">@L["FightHeading"]</MudText>
+
+                <MudGrid Spacing="2" Class="mt-1">
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="Guid?" @bind-Value="_npcAId" Label="@L["SideA"]"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var npc in _npcs)
+                            {
+                                <MudSelectItem T="Guid?" Value="@((Guid?)npc.Id)">@npc.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudNumericField @bind-Value="_levelA" Label="@L["LevelLabel"]"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Class="mt-2" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="Guid?" @bind-Value="_npcBId" Label="@L["SideB"]"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var npc in _npcs)
+                            {
+                                <MudSelectItem T="Guid?" Value="@((Guid?)npc.Id)">@npc.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudNumericField @bind-Value="_levelB" Label="@L["LevelLabel"]"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Class="mt-2" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-3" Wrap="Wrap.Wrap">
+                    @* Derselbe Startwert ergibt denselben Lauf — der Knopf daneben ist der
+                       Unterschied zwischen „nochmal“ und „nochmal dasselbe“. *@
+                    <MudNumericField @bind-Value="_seed" Label="@L["SeedLabel"]"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width:160px;" />
+                    <MudTooltip Text="@L["RerollTooltip"]">
+                        <MudIconButton Icon="@Icons.Material.Filled.Casino"
+                                       aria-label="@L["RerollAria"]"
+                                       OnClick="@(() => _seed = Random.Shared.Next(1, 1_000_000))" />
+                    </MudTooltip>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.SportsKabaddi"
+                               Disabled="@(_npcAId is null || _npcBId is null)"
+                               OnClick="RunAsync">
+                        @L["RunButton"]
+                    </MudButton>
+                </MudStack>
+
+                @if (_missingMapping)
+                {
+                    @* Die erklärende Leermeldung: Ohne Leben und Schaden endet kein Kampf —
+                       ein Fehlerbalken erklärte nicht, was zu tun ist. *@
+                    <MudAlert Severity="Severity.Info" Class="mt-3">@L["MappingMissing"]</MudAlert>
+                }
+
+                @if (_statsA is not null && _statsB is not null && _result is not null)
+                {
+                    <MudDivider Class="my-3" />
+
+                    <MudGrid Spacing="2">
+                        @Side(_statsA, _result.WinsA, _result.AverageDamagePerRoundA, _result.HitChanceA)
+                        @Side(_statsB, _result.WinsB, _result.AverageDamagePerRoundB, _result.HitChanceB)
+                    </MudGrid>
+
+                    <MudText Typo="Typo.body2" Class="gdm-mono mt-2">
+                        @L["Rounds", _result.MedianRounds.ToString("0.#"), _result.MinRounds, _result.MaxRounds]
+                    </MudText>
+                    @if (_result.Draws > 0)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @L["Draws", _result.Draws]
+                        </MudText>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private static readonly ModuleDefinition Module = ModuleRegistry.Get(ModuleKeys.Statistics);
+
+    private UserPermissions _permissions = UserPermissions.Full;
+
+    private CombatMapping? _mapping;
+    private List<FieldDefinition> _fields = [];
+    private List<EntitySummary> _npcs = [];
+
+    private Guid? _npcAId;
+    private Guid? _npcBId;
+    private double _levelA = 1;
+    private double _levelB = 1;
+    private int _seed = 42;
+
+    private CombatantStats? _statsA;
+    private CombatantStats? _statsB;
+    private CombatResult? _result;
+    private bool _missingMapping;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _permissions = await PermissionsProvider.GetCurrentAsync();
+
+        var projectId = await Project.GetCurrentIdAsync();
+
+        _mapping = await Combat.GetMappingAsync(projectId);
+        _npcs = await References.GetEntitiesAsync(projectId, ModuleKeys.Npcs);
+
+        // Zur Wahl stehen die Zahlen- und Kurvenfelder der NPC-Arten — eigene wie geerbte,
+        // ohne Dubletten (dieselbe Sammellogik wie in der Massenbearbeitung).
+        var types = await ContentTypes.GetTypesAsync(projectId, ModuleKeys.Npcs);
+        _fields =
+        [
+            .. types
+                .SelectMany(type => type.Fields.Concat(type.InheritedFields))
+                .Where(field => field.Type is ContentFieldType.Integer or ContentFieldType.Decimal or ContentFieldType.Curve)
+                .GroupBy(field => field.Id)
+                .Select(group => group.First())
+                .OrderBy(field => field.Name, StringComparer.CurrentCultureIgnoreCase)
+        ];
+    }
+
+    private async Task SaveMappingAsync()
+    {
+        try
+        {
+            await Combat.SaveMappingAsync(_mapping!);
+            Snackbar.Add(L["MappingSaved"], Severity.Success);
+        }
+        catch (ContentValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task RunAsync()
+    {
+        // Ohne Leben und Schaden endet kein Kampf — statt eines Fehlers eine Erklärung.
+        _missingMapping = _mapping!.HealthFieldId is null || _mapping.DamageFieldId is null;
+        _result = null;
+
+        if (_missingMapping || _npcAId is null || _npcBId is null)
+        {
+            return;
+        }
+
+        var projectId = await Project.GetCurrentIdAsync();
+
+        _statsA = await Combat.ResolveStatsAsync(projectId, _npcAId.Value, _mapping, _levelA);
+        _statsB = await Combat.ResolveStatsAsync(projectId, _npcBId.Value, _mapping, _levelB);
+
+        if (_statsA is null || _statsB is null)
+        {
+            Snackbar.Add(L["NpcMissing"], Severity.Error);
+            return;
+        }
+
+        _result = CombatSimulation.Run(_statsA, _statsB, _seed);
+    }
+
+    /// <summary>Ein Rollen-Auswahlfeld — viermal dieselbe Zeile, einmal gebaut.</summary>
+    private RenderFragment FieldSelect(string label, Func<Guid?> get, Action<Guid?> set) => __builder =>
+    {
+        <MudSelect T="Guid?"
+                   Value="@get()"
+                   ValueChanged="@(id => set(id))"
+                   Label="@label"
+                   Clearable="true"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Class="mt-2">
+            @foreach (var field in _fields)
+            {
+                <MudSelectItem T="Guid?" Value="@((Guid?)field.Id)">@field.Name</MudSelectItem>
+            }
+        </MudSelect>
+    };
+
+    /// <summary>Die Ergebnisspalte einer Seite.</summary>
+    private RenderFragment Side(CombatantStats stats, int wins, double damagePerRound, double hitChance) => __builder =>
+    {
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.subtitle2">@stats.Name</MudText>
+            <MudText Typo="Typo.h5" Class="gdm-mono"
+                     Color="@(wins * 2 >= _result!.Fights ? Color.Primary : Color.Default)">
+                @L["WinRate", (100.0 * wins / _result!.Fights).ToString("0.#")]
+            </MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono d-block">
+                @L["SideStats", stats.Health.ToString("0.#"), stats.Damage.ToString("0.#"), stats.Defense.ToString("0.#"), stats.Speed.ToString("0.#")]
+            </MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="gdm-mono d-block">
+                @L["SideDetail", damagePerRound.ToString("0.#"), (hitChance * 100).ToString("0")]
+            </MudText>
+        </MudItem>
+    };
+}

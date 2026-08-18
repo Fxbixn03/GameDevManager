@@ -548,6 +548,35 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                     b.ToTable("Collectibles");
                 });
 
+            modelBuilder.Entity("GameDevManager.Domain.Entities.CombatMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DamageFieldId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DefenseFieldId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("HealthFieldId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("SpeedFieldId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameProjectId")
+                        .IsUnique();
+
+                    b.ToTable("CombatMappings");
+                });
+
             modelBuilder.Entity("GameDevManager.Domain.Entities.Condition", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3611,6 +3640,17 @@ namespace GameDevManager.Data.Migrations.Sqlite.Migrations
                         .IsRequired();
 
                     b.Navigation("ContentType");
+
+                    b.Navigation("GameProject");
+                });
+
+            modelBuilder.Entity("GameDevManager.Domain.Entities.CombatMapping", b =>
+                {
+                    b.HasOne("GameDevManager.Domain.Entities.GameProject", "GameProject")
+                        .WithMany()
+                        .HasForeignKey("GameProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("GameProject");
                 });

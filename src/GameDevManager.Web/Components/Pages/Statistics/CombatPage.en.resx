@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Combat simulator – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Two stat sets against each other: hit chance, damage per round, rounds until K.O. — as a distribution, not just an average.</value>
+  </data>
+  <data name="ToStatistics" xml:space="preserve">
+    <value>To statistics</value>
+  </data>
+  <data name="MappingHeading" xml:space="preserve">
+    <value>Field mapping</value>
+  </data>
+  <data name="MappingHint" xml:space="preserve">
+    <value>Which field of the NPC types plays which role. Number fields provide their number, curve fields are evaluated at the chosen level. The mapping applies per project.</value>
+  </data>
+  <data name="NoFields" xml:space="preserve">
+    <value>The NPC types have no number or curve fields yet — create fields first, then map them.</value>
+  </data>
+  <data name="RoleHealth" xml:space="preserve">
+    <value>Health</value>
+  </data>
+  <data name="RoleDamage" xml:space="preserve">
+    <value>Damage</value>
+  </data>
+  <data name="RoleDefense" xml:space="preserve">
+    <value>Defense</value>
+  </data>
+  <data name="RoleSpeed" xml:space="preserve">
+    <value>Speed</value>
+  </data>
+  <data name="SaveMapping" xml:space="preserve">
+    <value>Save mapping</value>
+  </data>
+  <data name="MappingSaved" xml:space="preserve">
+    <value>Mapping saved.</value>
+  </data>
+  <data name="FightHeading" xml:space="preserve">
+    <value>The fight</value>
+  </data>
+  <data name="SideA" xml:space="preserve">
+    <value>Side A</value>
+  </data>
+  <data name="SideB" xml:space="preserve">
+    <value>Side B</value>
+  </data>
+  <data name="LevelLabel" xml:space="preserve">
+    <value>Level (for curve fields)</value>
+  </data>
+  <data name="SeedLabel" xml:space="preserve">
+    <value>Seed</value>
+  </data>
+  <data name="RerollTooltip" xml:space="preserve">
+    <value>Roll a new seed — “again” instead of “the same again”</value>
+  </data>
+  <data name="RerollAria" xml:space="preserve">
+    <value>Roll a new seed</value>
+  </data>
+  <data name="RunButton" xml:space="preserve">
+    <value>Run 1000 fights</value>
+  </data>
+  <data name="MappingMissing" xml:space="preserve">
+    <value>The mapping for health or damage is missing — without it no fight ever ends. Map and save the fields on the left, then the simulator runs.</value>
+  </data>
+  <data name="NpcMissing" xml:space="preserve">
+    <value>One of the combatants no longer exists.</value>
+  </data>
+  <data name="WinRate" xml:space="preserve">
+    <value>{0} % wins</value>
+  </data>
+  <data name="SideStats" xml:space="preserve">
+    <value>Health {0} · Damage {1} · Defense {2} · Speed {3}</value>
+  </data>
+  <data name="SideDetail" xml:space="preserve">
+    <value>{0} damage per round · {1} % hit chance</value>
+  </data>
+  <data name="Rounds" xml:space="preserve">
+    <value>Rounds until K.O.: median {0}, fastest {1}, longest {2}</value>
+  </data>
+  <data name="Draws" xml:space="preserve">
+    <value>{0} fights ended in a draw.</value>
+  </data>
+</root>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Kampf-Simulator – GameDevManager</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Zwei Wertesätze gegeneinander: Trefferchance, Schaden je Runde, Runden bis K.O. — als Verteilung, nicht nur als Mittelwert.</value>
+  </data>
+  <data name="ToStatistics" xml:space="preserve">
+    <value>Zur Statistik</value>
+  </data>
+  <data name="MappingHeading" xml:space="preserve">
+    <value>Feld-Zuordnung</value>
+  </data>
+  <data name="MappingHint" xml:space="preserve">
+    <value>Welches Feld der NPC-Arten welche Rolle spielt. Zahlenfelder liefern ihre Zahl, Kurvenfelder werden auf der gewählten Stufe ausgewertet. Die Zuordnung gilt je Projekt.</value>
+  </data>
+  <data name="NoFields" xml:space="preserve">
+    <value>Die NPC-Arten haben noch keine Zahlen- oder Kurvenfelder — erst Felder anlegen, dann zuordnen.</value>
+  </data>
+  <data name="RoleHealth" xml:space="preserve">
+    <value>Leben</value>
+  </data>
+  <data name="RoleDamage" xml:space="preserve">
+    <value>Schaden</value>
+  </data>
+  <data name="RoleDefense" xml:space="preserve">
+    <value>Verteidigung</value>
+  </data>
+  <data name="RoleSpeed" xml:space="preserve">
+    <value>Tempo</value>
+  </data>
+  <data name="SaveMapping" xml:space="preserve">
+    <value>Zuordnung speichern</value>
+  </data>
+  <data name="MappingSaved" xml:space="preserve">
+    <value>Zuordnung gespeichert.</value>
+  </data>
+  <data name="FightHeading" xml:space="preserve">
+    <value>Der Kampf</value>
+  </data>
+  <data name="SideA" xml:space="preserve">
+    <value>Seite A</value>
+  </data>
+  <data name="SideB" xml:space="preserve">
+    <value>Seite B</value>
+  </data>
+  <data name="LevelLabel" xml:space="preserve">
+    <value>Stufe (für Kurvenfelder)</value>
+  </data>
+  <data name="SeedLabel" xml:space="preserve">
+    <value>Startwert</value>
+  </data>
+  <data name="RerollTooltip" xml:space="preserve">
+    <value>Neuen Startwert würfeln — „nochmal“ statt „nochmal dasselbe“</value>
+  </data>
+  <data name="RerollAria" xml:space="preserve">
+    <value>Neuen Startwert würfeln</value>
+  </data>
+  <data name="RunButton" xml:space="preserve">
+    <value>1000 Kämpfe rechnen</value>
+  </data>
+  <data name="MappingMissing" xml:space="preserve">
+    <value>Es fehlt die Zuordnung für Leben oder Schaden — ohne sie endet kein Kampf. Links die Felder zuordnen und speichern, dann rechnet der Simulator.</value>
+  </data>
+  <data name="NpcMissing" xml:space="preserve">
+    <value>Einen der Kämpfer gibt es nicht mehr.</value>
+  </data>
+  <data name="WinRate" xml:space="preserve">
+    <value>{0} % Siege</value>
+  </data>
+  <data name="SideStats" xml:space="preserve">
+    <value>Leben {0} · Schaden {1} · Verteidigung {2} · Tempo {3}</value>
+  </data>
+  <data name="SideDetail" xml:space="preserve">
+    <value>{0} Schaden je Runde · {1} % Trefferchance</value>
+  </data>
+  <data name="Rounds" xml:space="preserve">
+    <value>Runden bis K.O.: Median {0}, schnellster {1}, längster {2}</value>
+  </data>
+  <data name="Draws" xml:space="preserve">
+    <value>{0} Kämpfe endeten unentschieden.</value>
+  </data>
+</root>
