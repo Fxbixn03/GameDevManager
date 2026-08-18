@@ -186,6 +186,28 @@ public class SampleProjectService(
             BuyPrice = 1,
             SortOrder = 2
         });
+        // Barren und Griff tragen ebenfalls Preise — sonst meldete die Preislücken-Prüfung
+        // sie als unbepreist. Die Ankaufspreise liegen unter den Zutatenkosten der Rezepte,
+        // damit keine Gelddruckmaschine entsteht (2× Erz zu 3 G → Barren bringt 5 G;
+        // 1× Holz zu 2 G → zwei Griffe bringen je 1 G).
+        smith.Entity.Offers.Add(new TraderOffer
+        {
+            NpcId = smith.Entity.Id,
+            ItemId = ingot,
+            CurrencyId = gold.Entity.Id,
+            SellPrice = 8,
+            BuyPrice = 5,
+            SortOrder = 3
+        });
+        smith.Entity.Offers.Add(new TraderOffer
+        {
+            NpcId = smith.Entity.Id,
+            ItemId = hilt,
+            CurrencyId = gold.Entity.Id,
+            SellPrice = 2,
+            BuyPrice = 1,
+            SortOrder = 4
+        });
         await npcs.SaveNpcAsync(smith, ct);
 
         // Das Schwert gibt es erst ab Stufe 5 — die Bedingung hängt am einzelnen Posten,

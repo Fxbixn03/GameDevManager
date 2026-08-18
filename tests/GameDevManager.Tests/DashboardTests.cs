@@ -172,7 +172,8 @@ public class DashboardTests
                 HealthCheckKeys.OrphanedAssets,
                 HealthCheckKeys.OverfullLoot,
                 HealthCheckKeys.QuestsWithoutCompletion,
-                HealthCheckKeys.UnlockCycles
+                HealthCheckKeys.UnlockCycles,
+                HealthCheckKeys.UnpricedItems
             ],
             health.Checks.Select(check => check.CheckKey).OrderBy(key => key, StringComparer.Ordinal).ToArray());
     }

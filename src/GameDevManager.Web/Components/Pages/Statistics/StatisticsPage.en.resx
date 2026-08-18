@@ -99,6 +99,15 @@
   <data name="MoneyPrintersTitle" xml:space="preserve">
     <value>Money printers</value>
   </data>
+  <data name="UnpricedItemsTitle" xml:space="preserve">
+    <value>Unpriced items</value>
+  </data>
+  <data name="UnpricedItemsHint" xml:space="preserve">
+    <value>No trader carries these items with a price. As long as they are unpriced, the money-printer check remains a guess for them — a quest item without a price can be intentional, though.</value>
+  </data>
+  <data name="UnpricedItemsMore" xml:space="preserve">
+    <value>… and {0} more.</value>
+  </data>
   <data name="MoneyPrintersHint" xml:space="preserve">
     <value>For these recipes the ingredients cost less at a trader than the result earns there. The calculation uses the cheapest purchase and the best sale — that is what a player will look for.</value>
   </data>

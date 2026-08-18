@@ -257,6 +257,8 @@ NPCs verweisen über `Npc.LootTableId` auf eine Tabelle. Beim Löschen einer Tab
 - **Fehlende Preise machen den Fund zur Vermutung** (`MissingPrices`, `IsCertain`) statt ihn zu unterschlagen; ein Rezept, für das gar kein Preis bekannt ist, fällt dagegen ganz heraus — sonst stünde der halbe Bestand im Fund, nur weil noch niemand Preise gepflegt hat.
 - **Gemeldet, nicht verboten** — dieselbe Linie wie beim Loot-Check.
 
+Daneben macht `FindUnpricedItemsAsync` die **Preislücke** sichtbar: alle Items, die bei keinem Händler einen Preis tragen — genau die Lücke, die den Gelddruckmaschinen-Fund zur Vermutung macht. Ein Preis auf einer Seite des Handels (Verkauf **oder** Ankauf) genügt; ein Posten ganz ohne Preis bepreist nichts. Als Health Check `unpricedItems` im Zustandsband (Sprungziel Items) und als Abschnitt der Statistik-Seite, auf 25 Zeilen gekappt. Das Beispielprojekt bepreist deshalb auch Barren und Griff.
+
 ### Quests und ihre Ziele
 
 `QuestObjective` zerlegt eine Quest in ihre Schritte („Sprich mit Alrik“, „Sammle 5 Kräuter“, „Kehre zurück“) — eine Kind-Sammlung nach dem Muster von `RecipeIngredient` und `CutsceneShot`, mit Text, Reihenfolge und `IsOptional`. Vier Dinge dahinter:

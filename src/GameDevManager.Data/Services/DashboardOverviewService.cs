@@ -16,6 +16,7 @@ public static class HealthCheckKeys
     public const string ImpossibleConditions = "impossibleConditions";
     public const string UnlockCycles = "unlockCycles";
     public const string MoneyPrinters = "moneyPrinters";
+    public const string UnpricedItems = "unpricedItems";
     public const string MissingRecordings = "missingRecordings";
 
     /// <summary>
@@ -160,6 +161,11 @@ public class DashboardOverviewService(
             // führt ins Crafting — dort steht das Rezept, das man ändern muss.
             new(HealthCheckKeys.MoneyPrinters, ModuleKeys.Crafting,
                 (await economy.FindMoneyPrintersAsync(projectId, ct)).Count),
+
+            // Items, die bei keinem Händler einen Preis haben — die Pflegelücke, die die
+            // Gelddruckmaschinen-Prüfung zur Vermutung macht. Der Weg führt in die Items.
+            new(HealthCheckKeys.UnpricedItems, ModuleKeys.Items,
+                (await economy.FindUnpricedItemsAsync(projectId, ct)).Count),
 
             // Zeilen, deren Text in einer Sprache vorliegt, ohne dass sie eingesprochen wäre.
             // Ohne Sprachen im Projekt findet die Prüfung nichts — wer keine Lokalisierung

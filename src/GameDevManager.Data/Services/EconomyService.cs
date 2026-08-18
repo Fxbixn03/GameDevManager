@@ -28,6 +28,9 @@ public sealed record MoneyPrinter(
     public bool IsCertain => MissingPrices == 0;
 }
 
+/// <summary>Ein Item, das bei keinem Händler einen Preis hat — die Pflegelücke.</summary>
+public sealed record UnpricedItem(Guid ItemId, string Name, string? TypeName);
+
 /// <summary>
 /// Die Wirtschafts-Prüfung: wo erzeugt ein Spieler Geld aus dem Nichts?
 /// <para>
@@ -48,6 +51,36 @@ public sealed record MoneyPrinter(
 /// </summary>
 public class EconomyService(IDbContextFactory<GameDevManagerDbContext> factory)
 {
+    /// <summary>
+    /// Alle Items, die bei keinem Händler einen Preis haben — weder Verkauf noch Ankauf.
+    /// Genau diese Lücke macht die Gelddruckmaschinen-Prüfung zur Vermutung; hier wird sie
+    /// als Liste sichtbar. Reine Auswertung über die vorhandenen Händler-Posten, kein eigener
+    /// Datenbestand — und gemeldet, nicht verboten: Ein Quest-Item ohne Preis kann Absicht sein.
+    /// </summary>
+    public async Task<List<UnpricedItem>> FindUnpricedItemsAsync(
+        Guid projectId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        // Ein Posten ohne jeden Preis bepreist nichts — ein Händler, der etwas führt, aber
+        // nicht handelt, ist ein gültiger Fall und lässt die Lücke offen.
+        var pricedItemIds = await db.TraderOffers
+            .AsNoTracking()
+            .Where(offer => offer.Npc!.GameProjectId == projectId
+                && (offer.SellPrice != null || offer.BuyPrice != null))
+            .Select(offer => offer.ItemId)
+            .Distinct()
+            .ToListAsync(ct);
+
+        return await db.Items
+            .AsNoTracking()
+            .Where(item => item.GameProjectId == projectId && !pricedItemIds.Contains(item.Id))
+            .OrderBy(item => item.Name)
+            .ThenBy(item => item.Id)
+            .Select(item => new UnpricedItem(item.Id, item.Name, item.ContentType!.Name))
+            .ToListAsync(ct);
+    }
+
     public async Task<List<MoneyPrinter>> FindMoneyPrintersAsync(
         Guid projectId, CancellationToken ct = default)
     {

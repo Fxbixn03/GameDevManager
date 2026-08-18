@@ -99,6 +99,15 @@
   <data name="MoneyPrintersTitle" xml:space="preserve">
     <value>Gelddruckmaschinen</value>
   </data>
+  <data name="UnpricedItemsTitle" xml:space="preserve">
+    <value>Items ohne Preis</value>
+  </data>
+  <data name="UnpricedItemsHint" xml:space="preserve">
+    <value>Diese Items führt kein Händler mit einem Preis. Solange sie unbepreist sind, bleibt die Gelddruckmaschinen-Prüfung an ihnen eine Vermutung — ein Quest-Item ohne Preis kann aber Absicht sein.</value>
+  </data>
+  <data name="UnpricedItemsMore" xml:space="preserve">
+    <value>… und {0} weitere.</value>
+  </data>
   <data name="MoneyPrintersHint" xml:space="preserve">
     <value>Bei diesen Rezepten kosten die Zutaten beim Händler weniger, als das Ergebnis dort einbringt. Gerechnet wird mit dem günstigsten Einkauf und dem besten Verkauf — den sucht sich ein Spieler.</value>
   </data>

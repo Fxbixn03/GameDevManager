@@ -259,6 +259,45 @@ else
             }
         </MudPaper>
 
+        @* Items ohne Preis: die Pflegelücke, die die Gelddruckmaschinen-Prüfung zur
+           Vermutung macht. Gemeldet, nicht verboten — ein Quest-Item ohne Preis kann
+           Absicht sein. *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(_unpricedItems.Count)" Color="@StatusColor(_unpricedItems.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>@L["UnpricedItemsTitle"]</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(_unpricedItems.Count)</MudText>
+                <MudSpacer />
+                <MudLink Href="/modules/items" Typo="Typo.caption">@L["ToItems"]</MudLink>
+            </MudStack>
+
+            @if (_unpricedItems.Count > 0)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
+                    @L["UnpricedItemsHint"]
+                </MudText>
+            }
+
+            @* Bei hunderten unbepreisten Items ist die vollständige Liste keine Auskunft mehr. *@
+            @foreach (var item in _unpricedItems.Take(25))
+            {
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="py-1">
+                    <MudLink Href="@($"/modules/items/{item.ItemId}")" Typo="Typo.body2">@item.Name</MudLink>
+                    @if (item.TypeName is not null)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.TypeName</MudText>
+                    }
+                </MudStack>
+            }
+
+            @if (_unpricedItems.Count > 25)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mt-2">
+                    @L["UnpricedItemsMore", _unpricedItems.Count - 25]
+                </MudText>
+            }
+        </MudPaper>
+
         @* Vertonung: Zeilen, deren Text in einer Sprache vorliegt, ohne dass sie
            eingesprochen wäre. Ohne Sprachen im Projekt findet die Prüfung nichts. *@
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
@@ -307,6 +346,7 @@ else
     private List<ConditionProblem> _conditionProblems = [];
     private List<UnlockCycle> _unlockCycles = [];
     private List<MoneyPrinter> _moneyPrinters = [];
+    private List<UnpricedItem> _unpricedItems = [];
     private List<VoiceOverGap> _missingRecordings = [];
 
     protected override async Task OnInitializedAsync()
@@ -323,6 +363,7 @@ else
         _conditionProblems = await Conditions.FindProblemsAsync(projectId);
         _unlockCycles = await TechTree.FindCyclesAsync(projectId);
         _moneyPrinters = await Economy.FindMoneyPrintersAsync(projectId);
+        _unpricedItems = await Economy.FindUnpricedItemsAsync(projectId);
         _missingRecordings = await VoiceOvers.FindMissingRecordingsAsync(projectId);
 
         // Zuletzt, weil die Anzeige darauf wartet — so erscheinen die Checks gemeinsam.

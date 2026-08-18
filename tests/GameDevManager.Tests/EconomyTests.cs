@@ -62,6 +62,37 @@ public class EconomyTests
     }
 
     [Fact]
+    public async Task Items_ohne_Haendlerpreis_stehen_in_der_Preisluecken_Liste()
+    {
+        using var test = new TestDatabase();
+
+        // Erz hat einen Preis, der Barren-Posten trägt keinen — und das Schwert steht bei
+        // gar keinem Händler. Beide Unbepreisten gehören in die Liste.
+        await SeedAsync(test, ingredientSellPrice: 3, outputBuyPrice: null);
+
+        await using (var db = test.CreateContext())
+        {
+            db.Items.Add(new Item { GameProjectId = test.ProjectId, Name = "Schwert" });
+            await db.SaveChangesAsync();
+        }
+
+        var unpriced = await test.GetService<EconomyService>().FindUnpricedItemsAsync(test.ProjectId);
+
+        Assert.Equal(["Barren", "Schwert"], unpriced.Select(item => item.Name).ToList());
+    }
+
+    [Fact]
+    public async Task Ein_Preis_auf_einer_Seite_des_Handels_genuegt_gegen_die_Preisluecke()
+    {
+        using var test = new TestDatabase();
+
+        // Der Barren hat nur einen Ankaufspreis — unbepreist ist er damit nicht.
+        await SeedAsync(test, ingredientSellPrice: 3, outputBuyPrice: 5);
+
+        Assert.Empty(await test.GetService<EconomyService>().FindUnpricedItemsAsync(test.ProjectId));
+    }
+
+    [Fact]
     public async Task Zutaten_billiger_als_das_Ergebnis_ist_ein_Fund()
     {
         using var test = new TestDatabase();
