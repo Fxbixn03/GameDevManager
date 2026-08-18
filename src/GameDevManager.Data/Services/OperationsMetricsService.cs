@@ -22,7 +22,20 @@ public sealed record OperationsMetrics(
     long AssetBytes,
     int SnapshotCount,
     double? NewestSnapshotAgeHours,
-    IReadOnlyList<BackgroundRunInfo> BackgroundRuns);
+    IReadOnlyList<BackgroundRunInfo> BackgroundRuns,
+    IReadOnlyList<ProjectMetrics> Projects);
+
+/// <summary>
+/// Die Kennzahlen eines einzelnen Projekts. Bewusst nur die GUID und Zahlen — kein Name:
+/// Keine Kennzahl soll Inhaltsnamen verraten, auch nicht den des Projekts.
+/// </summary>
+public sealed record ProjectMetrics(
+    Guid ProjectId,
+    int ContentCount,
+    int AssetCount,
+    long AssetBytes,
+    int SnapshotCount,
+    double? NewestSnapshotAgeHours);
 
 /// <summary>
 /// Sammelt die Betriebs-Kennzahlen. Reine Auswertung ohne eigenen Datenbestand — dasselbe
@@ -68,26 +81,63 @@ public class OperationsMetricsService(
         {
             // Die Hintergrundläufe stehen trotzdem da — gerade wenn die Datenbank klemmt,
             // ist ihre Fehlerzahl die interessante Auskunft.
-            return new OperationsMetrics(false, error, 0, 0, 0, 0, 0, 0, null, backgroundRuns.GetAll());
+            return new OperationsMetrics(false, error, 0, 0, 0, 0, 0, 0, null, backgroundRuns.GetAll(), []);
         }
 
         await using var db = await factory.CreateDbContextAsync(ct);
 
         var projects = await db.GameProjects.AsNoTracking().Select(project => project.Id).ToListAsync(ct);
 
+        // Assets tragen keine Projekt-Spalte — sie hängen über die GUID am Besitzer. Einmal
+        // geladen und je Projekt über die Entitäts-GUIDs zugeordnet; Werkzeug-Assets ohne
+        // Besitzer gehören keinem Projekt und zählen nur in der Gesamtzahl.
+        var assets = await db.Assets
+            .AsNoTracking()
+            .Select(asset => new { asset.OwnerEntityId, asset.SizeBytes })
+            .ToListAsync(ct);
+
+        var snapshots = SnapshotFiles();
+        var snapshotsByProject = snapshots
+            .GroupBy(ProjectIdFromSnapshot)
+            .Where(group => group.Key is not null)
+            .ToDictionary(group => group.Key!.Value, group => group.ToList());
+
         // Gezählt wird über die Modul-Quellen, damit ein neues Modul von selbst mitzählt —
         // dieselbe Überlegung wie beim Bearbeitungsstand des Dashboards.
         var content = 0;
+        var perProject = new List<ProjectMetrics>(projects.Count);
+
         foreach (var projectId in projects)
         {
+            var entityIds = new HashSet<Guid>();
+
             foreach (var source in sources)
             {
-                content += (await source.LoadAllAsync(db, projectId, ct)).Count;
+                foreach (var entity in await source.LoadAllAsync(db, projectId, ct))
+                {
+                    entityIds.Add(entity.Id);
+                }
             }
+
+            content += entityIds.Count;
+
+            var ownAssets = assets
+                .Where(asset => asset.OwnerEntityId is { } owner && entityIds.Contains(owner))
+                .ToList();
+            var ownSnapshots = snapshotsByProject.GetValueOrDefault(projectId, []);
+
+            perProject.Add(new ProjectMetrics(
+                projectId,
+                entityIds.Count,
+                ownAssets.Count,
+                ownAssets.Sum(asset => asset.SizeBytes),
+                ownSnapshots.Count,
+                ownSnapshots.Count == 0
+                    ? null
+                    : (DateTime.UtcNow - ownSnapshots.Max(File.GetLastWriteTimeUtc)).TotalHours));
         }
 
         var assetBytes = DirectorySize(assetOptions.RootPath);
-        var snapshots = SnapshotFiles();
 
         return new OperationsMetrics(
             true,
@@ -95,13 +145,27 @@ public class OperationsMetricsService(
             projects.Count,
             content,
             await db.AppUsers.CountAsync(ct),
-            await db.Assets.CountAsync(ct),
+            assets.Count,
             assetBytes,
             snapshots.Count,
             snapshots.Count == 0
                 ? null
                 : (DateTime.UtcNow - snapshots.Max(File.GetLastWriteTimeUtc)).TotalHours,
-            backgroundRuns.GetAll());
+            backgroundRuns.GetAll(),
+            perProject);
+    }
+
+    /// <summary>
+    /// Die Projekt-GUID aus dem Dateinamen eines Exportstands — er endet immer auf
+    /// „-&lt;guid:N&gt;.zip“. Eine fremde Datei ergibt <c>null</c> und bleibt unzugeordnet.
+    /// </summary>
+    private static Guid? ProjectIdFromSnapshot(string path)
+    {
+        var name = Path.GetFileNameWithoutExtension(path);
+
+        return name.Length >= 32 && Guid.TryParseExact(name[^32..], "N", out var projectId)
+            ? projectId
+            : null;
     }
 
     /// <summary>
@@ -209,6 +273,39 @@ public class OperationsMetricsService(
             WriteLabeled("gdm_background_errors_total",
                 "Failed runs since process start.",
                 run => run.ErrorCount);
+        }
+
+        // Je Projekt, mit der GUID als Label — bewusst nicht mit dem Namen: Keine Kennzahl
+        // verrät Inhaltsnamen. Das Alter des jüngsten Stands fehlt ohne Stand, wie oben.
+        if (metrics.Projects.Count > 0)
+        {
+            void WriteProjects(string name, string help, Func<ProjectMetrics, double?> value)
+            {
+                builder.AppendLine($"# HELP {name} {help}");
+                builder.AppendLine($"# TYPE {name} gauge");
+
+                foreach (var project in metrics.Projects)
+                {
+                    if (value(project) is { } number)
+                    {
+                        builder.AppendLine(string.Create(
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            $"{name}{{project=\"{project.ProjectId:D}\"}} {number}"));
+                    }
+                }
+            }
+
+            WriteProjects("gdm_project_content_entities",
+                "Number of content entities in the project.", project => project.ContentCount);
+            WriteProjects("gdm_project_assets",
+                "Number of asset rows owned by entities of the project.", project => project.AssetCount);
+            WriteProjects("gdm_project_asset_bytes",
+                "Bytes of the assets owned by entities of the project.", project => project.AssetBytes);
+            WriteProjects("gdm_project_export_snapshots",
+                "Number of retained export snapshots of the project.", project => project.SnapshotCount);
+            WriteProjects("gdm_project_newest_snapshot_age_hours",
+                "Age of the newest export snapshot of the project in hours.",
+                project => project.NewestSnapshotAgeHours);
         }
 
         return builder.ToString();

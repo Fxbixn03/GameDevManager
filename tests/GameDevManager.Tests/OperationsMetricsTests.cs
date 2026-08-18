@@ -85,11 +85,36 @@ public class OperationsMetricsTests
     [Fact]
     public void Zahlen_stehen_im_Prometheus_Text_in_fester_Kultur()
     {
-        var metrics = new OperationsMetrics(true, null, 1, 2, 3, 4, 5678, 1, 1.5, []);
+        var metrics = new OperationsMetrics(true, null, 1, 2, 3, 4, 5678, 1, 1.5, [], []);
 
         // Ein Komma wäre dort kein Dezimaltrenner — dieselbe Regel wie bei den Kurvenausdrücken.
         Assert.Contains("gdm_newest_snapshot_age_hours 1.5", OperationsMetricsService.ToPrometheus(metrics),
             StringComparison.Ordinal);
+    }
+
+    // ------------------------------------------------------------------- Je Projekt
+
+    [Fact]
+    public async Task Kennzahlen_je_Projekt_zaehlen_Inhalte_und_Staende_mit_der_GUID_als_Label()
+    {
+        using var test = new TestDatabase();
+        await SeedItemAsync(test, "Schwert");
+        await test.GetService<ExportSnapshotService>().CreateAsync(test.ProjectId, includeAssets: false);
+
+        var metrics = await test.GetService<OperationsMetricsService>().CollectAsync();
+
+        var project = Assert.Single(metrics.Projects);
+        Assert.Equal(test.ProjectId, project.ProjectId);
+        Assert.Equal(1, project.ContentCount);
+        Assert.Equal(1, project.SnapshotCount);
+        Assert.NotNull(project.NewestSnapshotAgeHours);
+
+        // Im Prometheus-Text steht die GUID als Label — und kein Name.
+        var text = OperationsMetricsService.ToPrometheus(metrics);
+        Assert.Contains(
+            $"gdm_project_content_entities{{project=\"{test.ProjectId:D}\"}} 1",
+            text, StringComparison.Ordinal);
+        Assert.DoesNotContain("Schwert", text, StringComparison.Ordinal);
     }
 
     // -------------------------------------------------------------- Hintergrundläufe
@@ -135,7 +160,7 @@ public class OperationsMetricsTests
     [Fact]
     public void Ein_nie_gelaufener_Dienst_hat_keine_Reihe()
     {
-        var metrics = new OperationsMetrics(true, null, 1, 0, 1, 0, 0, 0, null, []);
+        var metrics = new OperationsMetrics(true, null, 1, 0, 1, 0, 0, 0, null, [], []);
 
         Assert.DoesNotContain(
             "gdm_background_", OperationsMetricsService.ToPrometheus(metrics), StringComparison.Ordinal);
