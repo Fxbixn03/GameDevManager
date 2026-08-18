@@ -27,7 +27,7 @@ Man legt seine Daten strukturiert während Planungsphasen an und kann diese spä
 
 ## Datenbank
 
-Das Tool ist self-hosted und lässt die Datenbank frei wählen (`Database:Provider` in den appsettings): **SQL Server, PostgreSQL, MySQL, SQLite und Oracle** — je Provider mit eigenem Migrations-Projekt, SQLite als Vorgabe für den schnellen Start. Für Oracle ist die kostenlose **Database Free (23ai)** die Referenz; die Anbindung läuft über Oracles offiziellen EF-Core-Provider. MariaDB steht auf der Liste, wartet aber auf eine Pomelo-Fassung für EF Core 10 — der bisherige MySQL-Provider (Oracles `MySql.EntityFrameworkCore`) unterstützt MariaDB offiziell nicht.
+Das Tool ist self-hosted und lässt die Datenbank frei wählen (`Database:Provider` in den appsettings): **SQL Server, PostgreSQL, MySQL, MariaDB, SQLite und Oracle** — je Provider mit eigenem Migrations-Projekt, SQLite als Vorgabe für den schnellen Start. Für Oracle ist die kostenlose **Database Free (23ai)** die Referenz; die Anbindung läuft über Oracles offiziellen EF-Core-Provider. **MariaDB** ist bewusst ein eigener Provider und teilt sich nichts mit MySQL: Die MySQL-Anbindung nutzt Oracles `MySql.EntityFrameworkCore`, das MariaDB offiziell nicht unterstützt; MariaDB läuft über die Pomelo-Codebasis — vorerst als Microting-Fork (`Microting.EntityFrameworkCore.MySql`), bis das offizielle Pomelo EF Core 10 unterstützt (der Umzug ist als Issue festgehalten).
 
 ## Geplante Module
 

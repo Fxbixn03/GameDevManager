@@ -297,6 +297,15 @@ public static class DatabaseServiceExtensions
                 x => x.MigrationsAssembly("GameDevManager.Data.Migrations.Sqlite")),
             DatabaseProvider.Oracle => builder.UseOracle(connectionString,
                 x => x.MigrationsAssembly("GameDevManager.Data.Migrations.Oracle")),
+
+            // Pomelos UseMySql (kleines „ql“) — nicht Oracles UseMySQL eine Zeile höher; die
+            // beiden unterscheiden sich nur in der Schreibweise. Die ServerVersion steht fest
+            // (LTS 11.4) statt AutoDetect: Zur Entwurfszeit und beim Start soll keine
+            // Verbindung nötig sein, und sie bestimmt nur, welche SQL-Fähigkeiten Pomelo
+            // voraussetzt — ältere Server ab 10.x verstehen das erzeugte Schema ebenso.
+            DatabaseProvider.MariaDb => builder.UseMySql(connectionString,
+                new MariaDbServerVersion(new Version(11, 4)),
+                x => x.MigrationsAssembly("GameDevManager.Data.Migrations.MariaDb")),
             _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, "Unbekannter Datenbank-Provider.")
         };
 }

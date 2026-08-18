@@ -4,6 +4,7 @@
     <ProjectReference Include="..\GameDevManager.Data\GameDevManager.Data.csproj" />
     <ProjectReference Include="..\GameDevManager.Data.Migrations.SqlServer\GameDevManager.Data.Migrations.SqlServer.csproj" />
     <ProjectReference Include="..\GameDevManager.Data.Migrations.PostgreSql\GameDevManager.Data.Migrations.PostgreSql.csproj" />
+    <ProjectReference Include="..\GameDevManager.Data.Migrations.MariaDb\GameDevManager.Data.Migrations.MariaDb.csproj" />
     <ProjectReference Include="..\GameDevManager.Data.Migrations.MySql\GameDevManager.Data.Migrations.MySql.csproj" />
     <ProjectReference Include="..\GameDevManager.Data.Migrations.Oracle\GameDevManager.Data.Migrations.Oracle.csproj" />
     <ProjectReference Include="..\GameDevManager.Data.Migrations.Sqlite\GameDevManager.Data.Migrations.Sqlite.csproj" />

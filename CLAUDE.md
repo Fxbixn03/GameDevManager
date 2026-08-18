@@ -18,7 +18,7 @@ dotnet run --project src/GameDevManager.Web      # startet die Blazor-Server-App
 dotnet tool restore                              # stellt dotnet-ef (lokales Tool-Manifest) her
 ```
 
-EF-Core-Befehle laufen über das lokale Tool `dotnet ef` (Version im [dotnet-tools.json](dotnet-tools.json) gepinnt). Migrationen werden **pro Provider** in das jeweilige Migrations-Projekt erzeugt, mit Web als Startup-Projekt — für jede Schemaänderung alle **fünf** Provider durchlaufen (SqlServer, PostgreSql, MySql, Sqlite, **Oracle**). Oracle kam später dazu und beginnt deshalb mit **einer** `Initial`-Migration über das komplette Schema statt der nachgestellten Historie: Die ließe sich nur aus historischen Modellständen erzeugen, und es gibt keine Oracle-Bestandsinstallation, die sie bräuchte — jede neue Schemaänderung bekommt ab jetzt auch dort ihre gleichnamige Migration. Referenz-Zielversion ist die kostenlose Database Free (23ai); `bool` liegt dort als NUMBER(1), `Guid` als RAW(16), die längsten generierten Bezeichner (~55 Zeichen) bleiben unter der 128-Byte-Grenze. **MariaDB ist geplant, aber blockiert**: Pomelo liegt nur bis EF Core 9 vor, und Oracles `MySql.EntityFrameworkCore` unterstützt MariaDB offiziell nicht — dokumentiert in Issue #45.
+EF-Core-Befehle laufen über das lokale Tool `dotnet ef` (Version im [dotnet-tools.json](dotnet-tools.json) gepinnt). Migrationen werden **pro Provider** in das jeweilige Migrations-Projekt erzeugt, mit Web als Startup-Projekt — für jede Schemaänderung alle **sechs** Provider durchlaufen (SqlServer, PostgreSql, MySql, **MariaDb**, Sqlite, **Oracle**). Oracle und MariaDB kamen später dazu und beginnen deshalb mit **einer** `Initial`-Migration über das komplette Schema statt der nachgestellten Historie: Die ließe sich nur aus historischen Modellständen erzeugen, und es gibt keine Bestandsinstallationen, die sie bräuchten — jede neue Schemaänderung bekommt ab jetzt auch dort ihre gleichnamige Migration. Zu Oracle: Referenz-Zielversion ist die kostenlose Database Free (23ai); `bool` liegt dort als NUMBER(1), `Guid` als RAW(16), die längsten generierten Bezeichner (~55 Zeichen) bleiben unter der 128-Byte-Grenze. Zu MariaDB: **eigener Provider, getrennt von MySQL** — Oracles `MySql.EntityFrameworkCore` unterstützt MariaDB offiziell nicht, und Pomelo erzeugt für MariaDB teils anderes SQL. Die Anbindung läuft über die Pomelo-API (`UseMySql` mit fester `MariaDbServerVersion(11.4)` — kein AutoDetect, zur Entwurfszeit soll keine Verbindung nötig sein), **vorerst als Microting-Fork** `Microting.EntityFrameworkCore.MySql`, weil das offizielle Pomelo nur bis EF Core 9 vorliegt; der Umzug auf das Original ist **Issue #52**. Achtung Schreibweise: Pomelos `UseMySql` und Oracles `UseMySQL` unterscheiden sich nur in der Großschreibung.
 
 Wichtig: Der DbContext nimmt seinen Provider zur Entwurfszeit aus derselben Konfiguration wie zur Laufzeit. Ohne Umgebungsvariable erzeugt jeder Lauf SQLite-SQL (der Standard aus `appsettings.json`) — auch im SqlServer-Projekt. `Database__Provider` muss deshalb je Lauf mitgegeben werden:
 
@@ -31,12 +31,12 @@ $env:Database__Provider="SqlServer"; dotnet ef migrations add <Name> --project s
 
 ## Architektur
 
-Klassische Schichtung mit einer Besonderheit: Die EF-Migrationen sind pro Datenbank-Provider in eigene Assemblies ausgelagert, weil das Tool self-hosted ist und Nutzer ihre Datenbank frei wählen können (SQL Server, PostgreSQL, MySQL, SQLite, Oracle).
+Klassische Schichtung mit einer Besonderheit: Die EF-Migrationen sind pro Datenbank-Provider in eigene Assemblies ausgelagert, weil das Tool self-hosted ist und Nutzer ihre Datenbank frei wählen können (SQL Server, PostgreSQL, MySQL, MariaDB, SQLite, Oracle).
 
 ```
 GameDevManager.Domain    ← Entitäten, keine Abhängigkeiten
-GameDevManager.Data      ← EF Core, DbContext; referenziert Domain, bündelt alle fünf Provider-Pakete
-GameDevManager.Data.Migrations.{SqlServer|PostgreSql|MySql|Sqlite|Oracle}
+GameDevManager.Data      ← EF Core, DbContext; referenziert Domain, bündelt alle sechs Provider-Pakete
+GameDevManager.Data.Migrations.{SqlServer|PostgreSql|MySql|MariaDb|Sqlite|Oracle}
                          ← je ein Projekt nur für die Migrationen des jeweiligen Providers
 GameDevManager.Web       ← Blazor Server (net10.0) + MudBlazor; referenziert Data und alle Migrations-Projekte
 GameDevManager.Tests     ← xunit (unter tests/); echte Dienste gegen SQLite im Speicher

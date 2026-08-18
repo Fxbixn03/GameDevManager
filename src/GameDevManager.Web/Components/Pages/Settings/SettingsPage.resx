@@ -147,6 +147,9 @@
   <data name="ProviderOracle" xml:space="preserve">
     <value>Oracle</value>
   </data>
+  <data name="ProviderMariaDb" xml:space="preserve">
+    <value>MariaDB</value>
+  </data>
   <data name="ProviderSqlite" xml:space="preserve">
     <value>SQLite</value>
   </data>

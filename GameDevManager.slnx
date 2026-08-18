@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/GameDevManager.Data.Migrations.MariaDb/GameDevManager.Data.Migrations.MariaDb.csproj" />
     <Project Path="src/GameDevManager.Data.Migrations.MySql/GameDevManager.Data.Migrations.MySql.csproj" />
     <Project Path="src/GameDevManager.Data.Migrations.Oracle/GameDevManager.Data.Migrations.Oracle.csproj" />
     <Project Path="src/GameDevManager.Data.Migrations.PostgreSql/GameDevManager.Data.Migrations.PostgreSql.csproj" />
