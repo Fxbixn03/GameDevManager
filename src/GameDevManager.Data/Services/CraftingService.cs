@@ -230,6 +230,30 @@ public class CraftingService(
         recipe.Name = stored.Name;
     }
 
+    /// <summary>
+    /// Zieht die gespeicherten Namen aller Rezepte nach, die ein Item als Ziel führen. Der Name
+    /// wird beim Speichern aus den Ziel-Items gebildet und stünde nach dem Umbenennen eines Items
+    /// sonst bis zum nächsten Speichern des Rezepts veraltet in Suche, Referenzansicht und
+    /// Auswahlfeldern. Der Zeitstempel bleibt unangetastet: Eine offene Rezept-Maske liefe sonst
+    /// beim Speichern in einen Schreibkonflikt, den kein zweiter Bearbeiter verursacht hat.
+    /// </summary>
+    public async Task RefreshNamesForItemAsync(Guid itemId, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        var recipes = await db.Recipes
+            .Include(r => r.Outputs)
+            .Where(r => r.Outputs.Any(o => o.ItemId == itemId))
+            .ToListAsync(ct);
+
+        foreach (var recipe in recipes)
+        {
+            recipe.Name = await BuildNameAsync(db, [.. recipe.Outputs.OrderBy(o => o.SortOrder)], ct);
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
     /// <summary>Prüft eine Zeilenliste — Ziel-Items und Zutaten haben dieselben Regeln.</summary>
     private static void ValidateLines<TLine>(List<TLine> lines, string quantityMessage, string duplicateMessage)
         where TLine : IRecipeLine

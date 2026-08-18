@@ -112,6 +112,31 @@ public class CraftingTests
     }
 
     [Fact]
+    public async Task Umbenanntes_Item_zieht_den_gespeicherten_Rezeptnamen_nach()
+    {
+        using var database = new TestDatabase();
+
+        Guid fackelId;
+        await using (var db = database.CreateContext())
+        {
+            fackelId = AddItem(db, database.ProjectId, "Fackel").Id;
+            AddRecipe(db, database.ProjectId, [(fackelId, 2)], []);
+            await db.SaveChangesAsync();
+        }
+
+        var items = database.GetService<ItemService>();
+        var context = await items.LoadForEditAsync(database.ProjectId, fackelId);
+        context!.Entity.Name = "Kienspan";
+        await items.SaveItemAsync(context);
+
+        await using (var db = database.CreateContext())
+        {
+            var recipe = Assert.Single(db.Recipes);
+            Assert.Equal("2× Kienspan", recipe.Name);
+        }
+    }
+
+    [Fact]
     public async Task FindCyclesAsync_findet_Items_die_sich_selbst_herstellen()
     {
         using var database = new TestDatabase();

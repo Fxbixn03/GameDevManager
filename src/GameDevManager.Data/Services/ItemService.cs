@@ -13,6 +13,7 @@ public class ItemService(
     IDbContextFactory<GameDevManagerDbContext> factory,
     ContentTypeService contentTypes,
     AssetService assets,
+    CraftingService crafting,
     IStringLocalizer<DataMessages> messages)
 {
     /// <summary>Übersicht aller Items eines Projekts, alphabetisch.</summary>
@@ -96,6 +97,7 @@ public class ItemService(
 
         var now = DateTime.UtcNow;
         var stored = await db.Items.FirstOrDefaultAsync(i => i.Id == item.Id, ct);
+        var renamed = stored is not null && stored.Name != item.Name.Trim();
 
         if (stored is null)
         {
@@ -126,6 +128,13 @@ public class ItemService(
 
         await ContentFields.StageValuesAsync(db, context, messages, ct);
         await db.SaveChangesAsync(ct);
+
+        // Der gespeicherte Rezeptname wird aus den Ziel-Items gebildet — nach einem Umbenennen
+        // stünde er sonst bis zum nächsten Speichern des Rezepts veraltet da.
+        if (renamed)
+        {
+            await crafting.RefreshNamesForItemAsync(item.Id, ct);
+        }
 
         // Die Maske zeigt anschließend den gespeicherten Stand.
         item.CreatedAtUtc = stored.CreatedAtUtc;
