@@ -172,6 +172,9 @@ public class DashboardTests
                 HealthCheckKeys.OrphanedAssets,
                 HealthCheckKeys.OverfullLoot,
                 HealthCheckKeys.QuestsWithoutCompletion,
+                HealthCheckKeys.StoryDeadMentions,
+                HealthCheckKeys.StoryEmptyMaps,
+                HealthCheckKeys.StoryUnlinkedNpcs,
                 HealthCheckKeys.UnlockCycles,
                 HealthCheckKeys.UnpricedItems
             ],

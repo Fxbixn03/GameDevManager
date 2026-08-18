@@ -283,6 +283,15 @@
   <data name="Check_unpricedItems" xml:space="preserve">
     <value>Items ohne Preis</value>
   </data>
+  <data name="Check_storyDeadMentions" xml:space="preserve">
+    <value>Story: tote Erwähnungen</value>
+  </data>
+  <data name="Check_storyUnlinkedNpcs" xml:space="preserve">
+    <value>Story: nur erzählte NPCs</value>
+  </data>
+  <data name="Check_storyEmptyMaps" xml:space="preserve">
+    <value>Story: Orte ohne Markierung</value>
+  </data>
   <data name="Check_missingRecordings" xml:space="preserve">
     <value>Zeilen ohne Aufnahme</value>
   </data>

@@ -8,6 +8,7 @@
 @inject EconomyService Economy
 @inject VoiceOverService VoiceOvers
 @inject QuestService Quests
+@inject StoryConsistencyService StoryConsistency
 @inject HealthCheckMuteService Mutes
 @inject ProjectContext Project
 @inject ISnackbar Snackbar
@@ -320,6 +321,53 @@ else
             }
         </MudPaper>
 
+        @* Der Konsistenz-Assistent Story vs. Daten: Erwähnungen gegen den Bestand.
+           Stummgeschaltet wird am Anker des Fundes — bei toten Erwähnungen der Abschnitt,
+           sonst die erwähnte Entität („bewusst nur erzählt“ ist ein NPC, kein Abschnitt). *@
+        <MudPaper Elevation="0" Class="gdm-panel pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                <MudIcon Icon="@StatusIcon(VisibleStoryFindings.Count)" Color="@StatusColor(VisibleStoryFindings.Count)" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1"><b>@L["StoryConsistencyTitle"]</b></MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FundLabel(VisibleStoryFindings.Count)</MudText>
+                <MudSpacer />
+                <MudLink Href="/modules/story" Typo="Typo.caption">@L["ToStory"]</MudLink>
+            </MudStack>
+
+            @if (VisibleStoryFindings.Count > 0)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block mb-2">
+                    @L["StoryConsistencyHint"]
+                </MudText>
+            }
+
+            @foreach (var finding in VisibleStoryFindings)
+            {
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="py-1">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @StoryCheckLabel(finding.CheckKey)
+                    </MudText>
+                    <MudLink Href="@($"/modules/story/{finding.StoryEntryId}")" Typo="Typo.body2">
+                        @finding.StoryEntryName
+                    </MudLink>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">→</MudText>
+                    @if (finding.TargetModuleKey is { } targetModule)
+                    {
+                        <MudLink Href="@($"{ModuleRegistry.Get(targetModule).Route}/{finding.TargetEntityId}")"
+                                 Typo="Typo.body2">
+                            @finding.TargetName
+                        </MudLink>
+                    }
+                    else
+                    {
+                        @* Die Gegenstelle ist weg — der Anzeigename der Erwähnung bleibt. *@
+                        <MudText Typo="Typo.body2">@finding.TargetName</MudText>
+                    }
+                    @MuteButton(finding.CheckKey, finding.MuteEntityId,
+                        finding.CheckKey == HealthCheckKeys.StoryDeadMentions ? finding.StoryEntryName : finding.TargetName)
+                </MudStack>
+            }
+        </MudPaper>
+
         @* Vertonung: Zeilen, deren Text in einer Sprache vorliegt, ohne dass sie
            eingesprochen wäre. Ohne Sprachen im Projekt findet die Prüfung nichts. *@
         <MudPaper Elevation="0" Class="gdm-panel pa-4">
@@ -399,6 +447,7 @@ else
     private List<UnlockCycle> _unlockCycles = [];
     private List<MoneyPrinter> _moneyPrinters = [];
     private List<UnpricedItem> _unpricedItems = [];
+    private List<StoryConsistencyFinding> _storyFindings = [];
     private List<VoiceOverGap> _missingRecordings = [];
 
     private Guid _projectId;
@@ -421,6 +470,7 @@ else
         _unlockCycles = await TechTree.FindCyclesAsync(projectId);
         _moneyPrinters = await Economy.FindMoneyPrintersAsync(projectId);
         _unpricedItems = await Economy.FindUnpricedItemsAsync(projectId);
+        _storyFindings = await StoryConsistency.FindProblemsAsync(projectId);
         _missingRecordings = await VoiceOvers.FindMissingRecordingsAsync(projectId);
 
         // Verschwundene Funde nehmen ihre Stummschaltung mit — kein Leichenbestand.
@@ -432,7 +482,10 @@ else
             [HealthCheckKeys.OverfullLoot] = [.. _overfullTables.Select(table => table.Id)],
             [HealthCheckKeys.OrphanedAssets] = [.. _orphanedAssets.Select(orphan => orphan.AssetId)],
             [HealthCheckKeys.MoneyPrinters] = [.. _moneyPrinters.Select(printer => printer.RecipeId)],
-            [HealthCheckKeys.UnpricedItems] = [.. _unpricedItems.Select(item => item.ItemId)]
+            [HealthCheckKeys.UnpricedItems] = [.. _unpricedItems.Select(item => item.ItemId)],
+            [HealthCheckKeys.StoryDeadMentions] = StoryMuteAnchors(HealthCheckKeys.StoryDeadMentions),
+            [HealthCheckKeys.StoryUnlinkedNpcs] = StoryMuteAnchors(HealthCheckKeys.StoryUnlinkedNpcs),
+            [HealthCheckKeys.StoryEmptyMaps] = StoryMuteAnchors(HealthCheckKeys.StoryEmptyMaps)
         });
         await ReloadMutesAsync();
 
@@ -462,6 +515,19 @@ else
 
     private List<UnpricedItem> VisibleUnpricedItems =>
         [.. _unpricedItems.Where(item => !IsMuted(HealthCheckKeys.UnpricedItems, item.ItemId))];
+
+    private List<StoryConsistencyFinding> VisibleStoryFindings =>
+        [.. _storyFindings.Where(finding => !IsMuted(finding.CheckKey, finding.MuteEntityId))];
+
+    private HashSet<Guid> StoryMuteAnchors(string checkKey) =>
+        [.. _storyFindings.Where(finding => finding.CheckKey == checkKey).Select(finding => finding.MuteEntityId)];
+
+    private string StoryCheckLabel(string checkKey) => checkKey switch
+    {
+        HealthCheckKeys.StoryDeadMentions => L["StoryDeadMentionLabel"],
+        HealthCheckKeys.StoryUnlinkedNpcs => L["StoryUnlinkedNpcLabel"],
+        _ => L["StoryEmptyMapLabel"]
+    };
 
     private bool IsMuted(string checkKey, Guid entityId) => _muted.Contains((checkKey, entityId));
 
@@ -518,6 +584,9 @@ else
         HealthCheckKeys.OrphanedAssets => L["OrphansTitle"],
         HealthCheckKeys.MoneyPrinters => L["MoneyPrintersTitle"],
         HealthCheckKeys.UnpricedItems => L["UnpricedItemsTitle"],
+        HealthCheckKeys.StoryDeadMentions => L["StoryDeadMentionLabel"],
+        HealthCheckKeys.StoryUnlinkedNpcs => L["StoryUnlinkedNpcLabel"],
+        HealthCheckKeys.StoryEmptyMaps => L["StoryEmptyMapLabel"],
         _ => checkKey
     };
 

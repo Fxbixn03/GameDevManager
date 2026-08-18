@@ -17,6 +17,11 @@ public static class HealthCheckKeys
     public const string UnlockCycles = "unlockCycles";
     public const string MoneyPrinters = "moneyPrinters";
     public const string UnpricedItems = "unpricedItems";
+
+    // Der Konsistenz-Assistent Story vs. Daten — drei Prüfungen, eine Gruppe.
+    public const string StoryDeadMentions = "storyDeadMentions";
+    public const string StoryUnlinkedNpcs = "storyUnlinkedNpcs";
+    public const string StoryEmptyMaps = "storyEmptyMaps";
     public const string MissingRecordings = "missingRecordings";
 
     /// <summary>
@@ -60,6 +65,7 @@ public class DashboardOverviewService(
     EconomyService economy,
     VoiceOverService voiceOvers,
     ContentRuleService rules,
+    StoryConsistencyService storyConsistency,
     HealthCheckMuteService mutes)
 {
     /// <summary>
@@ -143,6 +149,13 @@ public class DashboardOverviewService(
         var orphaned = await statistics.FindOrphanedAssetsAsync(projectId, ct);
         var printers = await economy.FindMoneyPrintersAsync(projectId, ct);
         var unpriced = await economy.FindUnpricedItemsAsync(projectId, ct);
+        var storyFindings = await storyConsistency.FindProblemsAsync(projectId, ct);
+
+        HashSet<Guid> StoryMutes(string checkKey) =>
+        [
+            .. storyFindings.Where(finding => finding.CheckKey == checkKey)
+                .Select(finding => finding.MuteEntityId)
+        ];
 
         var current = new Dictionary<string, HashSet<Guid>>
         {
@@ -152,7 +165,10 @@ public class DashboardOverviewService(
             [HealthCheckKeys.OverfullLoot] = [.. overfull.Select(table => table.Id)],
             [HealthCheckKeys.OrphanedAssets] = [.. orphaned.Select(orphan => orphan.AssetId)],
             [HealthCheckKeys.MoneyPrinters] = [.. printers.Select(printer => printer.RecipeId)],
-            [HealthCheckKeys.UnpricedItems] = [.. unpriced.Select(item => item.ItemId)]
+            [HealthCheckKeys.UnpricedItems] = [.. unpriced.Select(item => item.ItemId)],
+            [HealthCheckKeys.StoryDeadMentions] = StoryMutes(HealthCheckKeys.StoryDeadMentions),
+            [HealthCheckKeys.StoryUnlinkedNpcs] = StoryMutes(HealthCheckKeys.StoryUnlinkedNpcs),
+            [HealthCheckKeys.StoryEmptyMaps] = StoryMutes(HealthCheckKeys.StoryEmptyMaps)
         };
 
         // Verschwundene Funde nehmen ihre Stummschaltung mit — kein Leichenbestand: Kehrt der
@@ -201,6 +217,19 @@ public class DashboardOverviewService(
             // Gelddruckmaschinen-Prüfung zur Vermutung macht. Der Weg führt in die Items.
             new(HealthCheckKeys.UnpricedItems, ModuleKeys.Items,
                 Visible(HealthCheckKeys.UnpricedItems, unpriced.Select(item => item.ItemId))),
+
+            // Der Konsistenz-Assistent Story vs. Daten — je Prüfung eine Zeile, gezählt
+            // werden Fundstellen, stummgeschaltet wird am Anker des Fundes (bei toten
+            // Erwähnungen der Abschnitt, sonst die erwähnte Entität).
+            new(HealthCheckKeys.StoryDeadMentions, ModuleKeys.Story,
+                storyFindings.Count(finding => finding.CheckKey == HealthCheckKeys.StoryDeadMentions
+                    && !muted.Contains((HealthCheckKeys.StoryDeadMentions, finding.MuteEntityId)))),
+            new(HealthCheckKeys.StoryUnlinkedNpcs, ModuleKeys.Story,
+                storyFindings.Count(finding => finding.CheckKey == HealthCheckKeys.StoryUnlinkedNpcs
+                    && !muted.Contains((HealthCheckKeys.StoryUnlinkedNpcs, finding.MuteEntityId)))),
+            new(HealthCheckKeys.StoryEmptyMaps, ModuleKeys.Story,
+                storyFindings.Count(finding => finding.CheckKey == HealthCheckKeys.StoryEmptyMaps
+                    && !muted.Contains((HealthCheckKeys.StoryEmptyMaps, finding.MuteEntityId)))),
 
             // Zeilen, deren Text in einer Sprache vorliegt, ohne dass sie eingesprochen wäre.
             // Ohne Sprachen im Projekt findet die Prüfung nichts — wer keine Lokalisierung

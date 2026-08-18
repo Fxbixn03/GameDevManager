@@ -114,6 +114,24 @@
   <data name="UnpricedItemsMore" xml:space="preserve">
     <value>… and {0} more.</value>
   </data>
+  <data name="StoryConsistencyTitle" xml:space="preserve">
+    <value>Story vs. data</value>
+  </data>
+  <data name="StoryConsistencyHint" xml:space="preserve">
+    <value>The story texts mention entities — this is where the data does not follow. A character that is intentionally narration-only can be muted.</value>
+  </data>
+  <data name="ToStory" xml:space="preserve">
+    <value>To the story</value>
+  </data>
+  <data name="StoryDeadMentionLabel" xml:space="preserve">
+    <value>Mentioned but deleted:</value>
+  </data>
+  <data name="StoryUnlinkedNpcLabel" xml:space="preserve">
+    <value>Narration only:</value>
+  </data>
+  <data name="StoryEmptyMapLabel" xml:space="preserve">
+    <value>Place without marker:</value>
+  </data>
   <data name="MutedTitle" xml:space="preserve">
     <value>Muted</value>
   </data>

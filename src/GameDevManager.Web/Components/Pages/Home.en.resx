@@ -313,6 +313,15 @@
   <data name="Check_unpricedItems" xml:space="preserve">
     <value>Unpriced items</value>
   </data>
+  <data name="Check_storyDeadMentions" xml:space="preserve">
+    <value>Story: dead mentions</value>
+  </data>
+  <data name="Check_storyUnlinkedNpcs" xml:space="preserve">
+    <value>Story: narration-only NPCs</value>
+  </data>
+  <data name="Check_storyEmptyMaps" xml:space="preserve">
+    <value>Story: places without markers</value>
+  </data>
   <data name="Check_missingRecordings" xml:space="preserve">
     <value>Lines without a recording</value>
   </data>

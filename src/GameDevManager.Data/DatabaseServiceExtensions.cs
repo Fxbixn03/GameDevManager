@@ -158,6 +158,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<CombatService>();
         services.AddScoped<MailNotificationService>();
         services.AddScoped<PresenceOverviewService>();
+        services.AddScoped<StoryConsistencyService>();
         services.AddScoped<SavedViewService>();
         services.AddScoped<ContentRuleService>();
         services.AddScoped<WebhookService>();

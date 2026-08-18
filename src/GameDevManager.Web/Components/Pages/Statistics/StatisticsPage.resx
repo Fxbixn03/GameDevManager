@@ -114,6 +114,24 @@
   <data name="UnpricedItemsMore" xml:space="preserve">
     <value>… und {0} weitere.</value>
   </data>
+  <data name="StoryConsistencyTitle" xml:space="preserve">
+    <value>Story vs. Daten</value>
+  </data>
+  <data name="StoryConsistencyHint" xml:space="preserve">
+    <value>Die Story-Texte erwähnen Entitäten — hier steht, wo die Daten nicht mitziehen. Eine bewusst nur erzählte Figur lässt sich stummschalten.</value>
+  </data>
+  <data name="ToStory" xml:space="preserve">
+    <value>Zur Story</value>
+  </data>
+  <data name="StoryDeadMentionLabel" xml:space="preserve">
+    <value>Erwähnt, aber gelöscht:</value>
+  </data>
+  <data name="StoryUnlinkedNpcLabel" xml:space="preserve">
+    <value>Nur erzählt:</value>
+  </data>
+  <data name="StoryEmptyMapLabel" xml:space="preserve">
+    <value>Ort ohne Markierung:</value>
+  </data>
   <data name="MutedTitle" xml:space="preserve">
     <value>Stummgeschaltet</value>
   </data>
