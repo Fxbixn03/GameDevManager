@@ -288,6 +288,457 @@ public static class EnginePackageWriter
                     }
                 }
             }
+            """),
+
+        new($"{Folder}unity/Editor/GdmSyncWindow.cs", """
+            using System;
+            using System.Collections.Concurrent;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Net.Http;
+            using System.Text;
+            using System.Threading;
+            using System.Threading.Tasks;
+            using UnityEditor;
+            using UnityEngine;
+
+            namespace GameDevManager.Editor
+            {
+                /// <summary>
+                /// Der Live-Sync: verbindet den Editor mit dem laufenden Tool und lädt
+                /// geänderte Module in die StreamingAssets-Struktur nach — Protokoll siehe
+                /// knowledge/live-sync.md im Tool. Ohne Verbindung verhält sich das Paket
+                /// wie immer: Dateien aus StreamingAssets, zuletzt exportiert oder geladen.
+                ///
+                /// Geschrieben wird ausschließlich unter GdmContent.RootPath/content — das
+                /// Paket fasst nichts außerhalb seines Ordners an.
+                /// </summary>
+                public sealed class GdmSyncWindow : EditorWindow
+                {
+                    /// <summary>Muss zur SyncProtocol.Version des Tools passen.</summary>
+                    private const int ProtocolVersion = 1;
+
+                    // EditorPrefs überleben den Domain-Reload — je Projektpfad ein Satz.
+                    private static string Prefix
+                    {
+                        get { return "GameDevManager.Sync." + Application.dataPath.GetHashCode() + "."; }
+                    }
+
+                    private static string Url
+                    {
+                        get { return EditorPrefs.GetString(Prefix + "Url", "http://localhost:5000"); }
+                        set { EditorPrefs.SetString(Prefix + "Url", value); }
+                    }
+
+                    private static string ApiKey
+                    {
+                        get { return EditorPrefs.GetString(Prefix + "Key", string.Empty); }
+                        set { EditorPrefs.SetString(Prefix + "Key", value); }
+                    }
+
+                    private static string ProjectId
+                    {
+                        get { return EditorPrefs.GetString(Prefix + "Project", string.Empty); }
+                        set { EditorPrefs.SetString(Prefix + "Project", value); }
+                    }
+
+                    private static bool Enabled
+                    {
+                        get { return EditorPrefs.GetBool(Prefix + "Enabled", false); }
+                        set { EditorPrefs.SetBool(Prefix + "Enabled", value); }
+                    }
+
+                    // "*" heißt Voll-Abgleich; sonst ein Modul-Schlüssel je Eintrag.
+                    private static readonly ConcurrentQueue<string> Pending = new ConcurrentQueue<string>();
+                    private static CancellationTokenSource _connection;
+                    private static volatile string _status = string.Empty;
+                    private static volatile bool _failed;
+
+                    [Serializable]
+                    private struct Hello
+                    {
+                        public int protocolVersion;
+                    }
+
+                    [Serializable]
+                    private struct SyncEvent
+                    {
+                        public string moduleKey;
+                    }
+
+                    [Serializable]
+                    private struct Changes
+                    {
+                        public int protocolVersion;
+                        public List<SyncEvent> events;
+                    }
+
+                    /// <summary>
+                    /// Nach jedem Domain-Reload neu verdrahten: Der Hintergrund-Task von
+                    /// vorhin ist weg, die EditorPrefs sagen, ob er wiederkommen soll.
+                    /// </summary>
+                    [InitializeOnLoadMethod]
+                    private static void Restore()
+                    {
+                        EditorApplication.update += Pump;
+
+                        if (Enabled)
+                        {
+                            Connect();
+                        }
+                    }
+
+                    [MenuItem("Window/GameDevManager/Live-Sync")]
+                    private static void Open()
+                    {
+                        GetWindow<GdmSyncWindow>("GDM Live-Sync");
+                    }
+
+                    private void OnGUI()
+                    {
+                        using (new EditorGUI.DisabledScope(Enabled))
+                        {
+                            Url = EditorGUILayout.TextField("Tool-Adresse", Url);
+                            ApiKey = EditorGUILayout.PasswordField("API-Schlüssel", ApiKey);
+                            ProjectId = EditorGUILayout.TextField("Projekt-GUID", ProjectId);
+                        }
+
+                        EditorGUILayout.Space();
+
+                        if (!Enabled)
+                        {
+                            EditorGUILayout.HelpBox(
+                                "Die Projekt-GUID steht im Tool im Referenz-Panel des Projekts "
+                                + "oder unter /api/v1/projects.", MessageType.None);
+
+                            if (GUILayout.Button("Verbinden"))
+                            {
+                                Enabled = true;
+                                Connect();
+                            }
+                        }
+                        else
+                        {
+                            EditorGUILayout.HelpBox(
+                                string.IsNullOrEmpty(_status) ? "Verbinde …" : _status,
+                                _failed ? MessageType.Error : MessageType.Info);
+
+                            if (GUILayout.Button("Trennen"))
+                            {
+                                Enabled = false;
+                                Disconnect();
+                                _status = string.Empty;
+                                _failed = false;
+                            }
+                        }
+                    }
+
+                    private void OnInspectorUpdate()
+                    {
+                        Repaint();
+                    }
+
+                    private static void Connect()
+                    {
+                        Disconnect();
+
+                        _connection = new CancellationTokenSource();
+                        _status = "Verbinde …";
+                        _failed = false;
+
+                        var token = _connection.Token;
+                        Task.Run(() => ListenAsync(token));
+                    }
+
+                    private static void Disconnect()
+                    {
+                        if (_connection != null)
+                        {
+                            _connection.Cancel();
+                            _connection = null;
+                        }
+                    }
+
+                    private static async Task ListenAsync(CancellationToken token)
+                    {
+                        while (!token.IsCancellationRequested)
+                        {
+                            try
+                            {
+                                using (var client = new HttpClient())
+                                {
+                                    client.Timeout = Timeout.InfiniteTimeSpan;
+
+                                    var request = new HttpRequestMessage(
+                                        HttpMethod.Get, Url.TrimEnd('/') + "/api/v1/sync/events");
+                                    request.Headers.TryAddWithoutValidation("X-API-Key", ApiKey);
+
+                                    using (var response = await client.SendAsync(
+                                        request, HttpCompletionOption.ResponseHeadersRead, token))
+                                    {
+                                        if ((int)response.StatusCode == 401 || (int)response.StatusCode == 403)
+                                        {
+                                            // Kein neuer Versuch: Ein falscher Schlüssel wird
+                                            // durch Warten nicht richtig.
+                                            _status = "Der API-Schlüssel wurde abgelehnt — im Tool "
+                                                + "unter Konto → API-Schlüssel prüfen.";
+                                            _failed = true;
+                                            return;
+                                        }
+
+                                        response.EnsureSuccessStatusCode();
+
+                                        using (var stream = await response.Content.ReadAsStreamAsync())
+                                        using (var reader = new StreamReader(stream))
+                                        {
+                                            await ReadEventsAsync(reader, token);
+                                        }
+                                    }
+                                }
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                return;
+                            }
+                            catch (Exception ex)
+                            {
+                                _status = "Tool nicht erreichbar (" + ex.Message + ") — neuer Versuch in 5 s.";
+                                _failed = true;
+
+                                try { await Task.Delay(5000, token); }
+                                catch (OperationCanceledException) { return; }
+                            }
+                        }
+                    }
+
+                    private static async Task ReadEventsAsync(StreamReader reader, CancellationToken token)
+                    {
+                        var eventName = string.Empty;
+
+                        while (!token.IsCancellationRequested)
+                        {
+                            var line = await reader.ReadLineAsync();
+
+                            if (line == null)
+                            {
+                                // Das Tool hat getrennt — draußen neu verbinden; das hello
+                                // der neuen Verbindung stößt den Voll-Abgleich an.
+                                throw new IOException("Die Verbindung wurde beendet.");
+                            }
+
+                            if (line.StartsWith("event: "))
+                            {
+                                eventName = line.Substring("event: ".Length);
+                            }
+                            else if (line.StartsWith("data: "))
+                            {
+                                Handle(eventName, line.Substring("data: ".Length));
+                            }
+                        }
+                    }
+
+                    private static void Handle(string eventName, string json)
+                    {
+                        if (eventName == "hello")
+                        {
+                            var hello = JsonUtility.FromJson<Hello>(json);
+
+                            if (hello.protocolVersion != ProtocolVersion)
+                            {
+                                // Nicht raten, was neue Felder bedeuten — das Paket neu
+                                // erzeugen (Export mit Ziel Unity) und austauschen.
+                                _status = "Das Tool spricht Protokoll " + hello.protocolVersion
+                                    + ", dieses Paket Version " + ProtocolVersion
+                                    + " — bitte das Paket über einen neuen Export aktualisieren.";
+                                _failed = true;
+                                Disconnect();
+                                return;
+                            }
+
+                            _status = "Verbunden — gleiche vollständig ab …";
+                            _failed = false;
+                            Pending.Enqueue("*");
+                            return;
+                        }
+
+                        if (eventName == "changes")
+                        {
+                            foreach (var entry in JsonUtility.FromJson<Changes>(json).events)
+                            {
+                                // Sammeleinträge (changelog) heißen: potenziell alles anders.
+                                Pending.Enqueue(entry.moduleKey == "changelog" ? "*" : entry.moduleKey);
+                            }
+                        }
+                    }
+
+                    /// <summary>
+                    /// Der Hauptfaden holt die Dateien: Schreiben und AssetDatabase gehören
+                    /// nicht in den Hintergrund-Task.
+                    /// </summary>
+                    private static void Pump()
+                    {
+                        if (Pending.IsEmpty)
+                        {
+                            return;
+                        }
+
+                        var modules = new HashSet<string>();
+                        string key;
+
+                        while (Pending.TryDequeue(out key))
+                        {
+                            modules.Add(key);
+                        }
+
+                        var contentPath = Path.Combine(GdmContent.RootPath, "content");
+
+                        if (modules.Contains("*"))
+                        {
+                            // Voll-Abgleich: alle Module, die der Export hier abgelegt hat —
+                            // was es lokal nicht gibt, hat auch niemand verwendet.
+                            modules.Clear();
+
+                            if (Directory.Exists(contentPath))
+                            {
+                                foreach (var file in Directory.GetFiles(contentPath, "*.json"))
+                                {
+                                    modules.Add(Path.GetFileNameWithoutExtension(file));
+                                }
+                            }
+                        }
+
+                        var refreshed = 0;
+
+                        foreach (var moduleKey in modules)
+                        {
+                            if (DownloadModule(moduleKey, contentPath))
+                            {
+                                refreshed++;
+                            }
+                        }
+
+                        if (refreshed > 0)
+                        {
+                            GdmContent.Clear();
+                            AssetDatabase.Refresh();
+                            _status = "Aktualisiert: " + refreshed + " Module um "
+                                + DateTime.Now.ToString("HH:mm:ss") + ".";
+                            _failed = false;
+                        }
+                    }
+
+                    private static bool DownloadModule(string moduleKey, string contentPath)
+                    {
+                        try
+                        {
+                            using (var client = new HttpClient())
+                            {
+                                client.Timeout = TimeSpan.FromSeconds(10);
+
+                                var request = new HttpRequestMessage(HttpMethod.Get,
+                                    Url.TrimEnd('/') + "/api/v1/projects/" + ProjectId
+                                    + "/modules/" + moduleKey);
+                                request.Headers.TryAddWithoutValidation("X-API-Key", ApiKey);
+
+                                var response = client.SendAsync(request).GetAwaiter().GetResult();
+
+                                using (response)
+                                {
+                                    if (!response.IsSuccessStatusCode)
+                                    {
+                                        return false;
+                                    }
+
+                                    var payload = response.Content.ReadAsStringAsync()
+                                        .GetAwaiter().GetResult();
+
+                                    // Die API liefert Metadaten drumherum; die Datei im
+                                    // Exportformat trägt nur die Entitätenliste.
+                                    var entities = ExtractNamedArray(payload, "entities");
+
+                                    if (entities == null)
+                                    {
+                                        return false;
+                                    }
+
+                                    Directory.CreateDirectory(contentPath);
+                                    File.WriteAllText(
+                                        Path.Combine(contentPath, moduleKey + ".json"),
+                                        "{\"" + moduleKey + "\":" + entities + "}",
+                                        new UTF8Encoding(false));
+
+                                    return true;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _status = "Nachladen von „" + moduleKey + "“ schlug fehl: " + ex.Message;
+                            _failed = true;
+                            return false;
+                        }
+                    }
+
+                    /// <summary>
+                    /// Schneidet das Array hinter "name": aus einem JSON-Text — mit Blick auf
+                    /// Zeichenketten und Escapes, damit eine Klammer im Namen nichts verschiebt.
+                    /// </summary>
+                    private static string ExtractNamedArray(string json, string name)
+                    {
+                        var marker = "\"" + name + "\":";
+                        var index = json.IndexOf(marker, StringComparison.Ordinal);
+
+                        if (index < 0)
+                        {
+                            return null;
+                        }
+
+                        var start = json.IndexOf('[', index + marker.Length);
+
+                        if (start < 0)
+                        {
+                            return null;
+                        }
+
+                        var depth = 0;
+                        var inString = false;
+
+                        for (var position = start; position < json.Length; position++)
+                        {
+                            var current = json[position];
+
+                            if (inString)
+                            {
+                                if (current == '\\')
+                                {
+                                    position++;
+                                }
+                                else if (current == '"')
+                                {
+                                    inString = false;
+                                }
+
+                                continue;
+                            }
+
+                            if (current == '"')
+                            {
+                                inString = true;
+                            }
+                            else if (current == '[')
+                            {
+                                depth++;
+                            }
+                            else if (current == ']' && --depth == 0)
+                            {
+                                return json.Substring(start, position - start + 1);
+                            }
+                        }
+
+                        return null;
+                    }
+                }
+            }
             """)
     ];
 

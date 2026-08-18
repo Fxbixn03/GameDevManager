@@ -23,6 +23,11 @@ public class EnginePackageTests
         Assert.Contains("package/unity/Runtime/GdmContent.cs", paths);
         Assert.Contains("package/unity/Editor/GdmReferenceDrawer.cs", paths);
         Assert.Contains("package/unity/Editor/GdmContentWindow.cs", paths);
+        Assert.Contains("package/unity/Editor/GdmSyncWindow.cs", paths);
+
+        // Das Sync-Fenster muss dieselbe Protokollversion sprechen wie der Endpunkt.
+        var sync = files.Single(file => file.Path.EndsWith("GdmSyncWindow.cs"));
+        Assert.Contains($"ProtocolVersion = {SyncProtocol.Version}", sync.Content);
     }
 
     [Fact]
